@@ -1,0 +1,13 @@
+bund_dawn:
+  id: bund_dawn
+  title: "The Bund, Dawn"
+  description: "A grey mist hangs over the Huangpu River. Japanese warships sit motionless, their flags limp in the humid air. The promenade is nearly empty, save for a few rickshaw pullers huddled by the railing."
+  exits:
+    west: nanking_road
+
+nanking_road:
+  id: nanking_road
+  title: "Nanking Road"
+  description: "The great shopping street is a ghost of itself. Metal shutters are drawn over shop fronts. A Japanese patrol marches past, their boots echoing on the cobblestones."
+  exits:
+    east: bund_dawn
