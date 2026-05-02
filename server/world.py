@@ -63,7 +63,7 @@ def load_rooms(path: str, items: Dict[str, Item]) -> Dict[str, Room]:
 class World:
     def __init__(self):
         items = load_items("server/data/items.yaml")
-        self.rooms: Dict[str, Room] = load_rooms("server/data/rooms.yaml")
+        self.rooms: Dict[str, Room] = load_rooms("server/data/rooms.yaml", items)
 
     def get_room(self, room_id: str) -> Room | None:
         return self.rooms.get(room_id)
@@ -80,6 +80,10 @@ class World:
             "Exits:",
         ]
         if room.exits:
+            lines.append("You see here: " + ", ".join(item.name for item in room.items))
+            lines.append("")
+        lines.append("Exits:")
+        if room.exits:
             for direction, dest_id in room.exits.items():
                 dest = self.get_room(dest_id)
                 name = dest.title if dest else "unknown"
@@ -87,6 +91,3 @@ class World:
         else:
             lines.append("None")
         return "\n".join(lines)
-
-
-    
