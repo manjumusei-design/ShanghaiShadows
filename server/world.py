@@ -11,37 +11,58 @@ class Item:
     description: str
     takeable: bool = True
 
-    
+
 @dataclass
 class Room:
     id: str
     title: str
     description: str
     exits: Dict[str, str] = field(default_factory=dict)
-    items: List[str] = field(default_factory=list)
+    items: List[Item] = field(default_factory=list)
     npcs: List[str] = field(default_factory=list)
 
 
-def load_rooms(path: str) -> Dict[str, Room]:
+def load_items(path: str) -> Dict[str, Item]:
+    with open(path, "r", encoding="utf-8") as f:
+        data = yaml.safe_load(f)
+
+    items: Dict[str, Item] = {}
+    for item_data in data.get("items", []):
+        item = Item(
+            id=item_data["id"],
+            name=item_data["name"],
+            description=item_data["description"],
+            takeable=item_data.get("takeable", True),
+        )
+        items[item.id] = item
+    return items
+
+
+def load_rooms(path: str, items: Dict[str, Item]) -> Dict[str, Room]:
     with open(path, "r", encoding="utf-8") as f:
         data = yaml.safe_load(f)
 
     rooms: Dict[str, Room] = {}
     for room_id, fields in data.items():
+        room_items = []
+        for item_id in fields.get("items", []):
+            if item_id in items:
+                room_items.append(replace(items[item_id]))
+
         rooms[room_id] = Room(
             id=fields["id"],
             title=fields["title"],
             description=fields["description"],
             exits=fields.get("exits", {}),
-            items=fields.get("items", []),
+            items=room_items,
             npcs=fields.get("npcs", []),
         )
     return rooms
 
 
 class World:
-    """This is to hold the room graph and to provide navigation function"""
     def __init__(self):
+        items = load_items("server/data/items.yaml")
         self.rooms: Dict[str, Room] = load_rooms("server/data/rooms.yaml")
 
     def get_room(self, room_id: str) -> Room | None:
