@@ -4,7 +4,10 @@ bund_dawn:
   description: "A grey mist hangs over the Huangpu River. Japanese warships sit motionless, their flags limp in the humid air. The promenade is nearly empty, save for a few rickshaw pullers huddled by the railing."
   exits:
     west: nanking_road
-
+  items:
+    - ration_card
+    - brass_key
+    
 nanking_road:
   id: nanking_road
   title: "Nanking Road"
