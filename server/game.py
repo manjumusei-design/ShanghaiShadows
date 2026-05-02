@@ -1,13 +1,27 @@
 import asyncio
 import json
-from typing import Dict
-from .world import World, load_rooms
-from .parser import Parser, Command  # now actually used
+from typing import Dict, List
+
+from .world import World, load_items, load_rooms, Item, Room
+from .parser import Parser, Command
+
+
+def _find_item_by_name(name: str, items: List[Item]) -> Item | None:
+    name = name.lower().strip()
+    for item in items:
+        if item.name.lower() == name:
+            return item
+    for item in items:
+        if name in item.name.lower():
+            return item
+    return None
+
 
 class PlayerSession:
     def __init__(self, websocket):
         self.websocket = websocket
         self.location = "bund_dawn"
+        self.inventory: List[Item] = []
         self.running = True
 
     async def send(self, text: str):
