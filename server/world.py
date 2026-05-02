@@ -5,6 +5,14 @@ import yaml
 
 
 @dataclass
+class Item:
+    id: str
+    name: str
+    description: str
+    takeable: bool = True
+
+    
+@dataclass
 class Room:
     id: str
     title: str
