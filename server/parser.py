@@ -16,9 +16,11 @@ class Parser:
         "look": ["look", "l", "examine", "x"],
         "go": ["go", "move", "walk", "head", "north", "south", "east", "west",
                "n", "s", "e", "w"],
+        "take": ["take", "get", "grab"],
+        "drop": ["drop", "discard"],
+        "inventory": ["inventory", "i", "inv"],
         "quit": ["quit", "exit", "logout", "bye"],
         "help": ["help", "h", "?"],
-        "inventory": ["inventory", "i", "inv"],
     }
 
     DIRECTIONS = {"north", "south", "east", "west", "n", "s", "e", "w"}
@@ -40,8 +42,8 @@ class Parser:
             # For example if north is typed alone, the game will treat is as "go north", maybe i can incorporate HCAI API for future use?
             return Command(verb="go", args=[first], raw=text)
         if verb is None: 
+            # For unknown commands
             return Command(verb="unknown", args=tokens, raw=text)
-        # Basic stripping here
         args = [t for t in tokens[1:] if t not in ("the", "a", "an")]
         return Command(verb=verb, args=args, raw=text)
     
