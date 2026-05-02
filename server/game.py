@@ -34,31 +34,60 @@ class PlayerSession:
 class GameServer:
     def __init__(self):
         self.world = World()
-        self.parser = Parser()  
+        self.parser = Parser()
         self.sessions: Dict[str, PlayerSession] = {}
-        self.handlers = {
-            "look": self.handle_look,
-            "go": self.handle_go,
-            "inventory": self.handle_inventory,
-            "help": self.handle_help,
-            "quit": self.handle_quit,
-        }
 
     async def handle_client(self, websocket):
         session = PlayerSession(websocket)
         client_id = f"{websocket.remote_address}"
         self.sessions[client_id] = session
+
         await self._send_welcome(session)
-        await self.handle_look(session, None)  # initial look
+        await self._do_look(session)
         await session.send_prompt()
-        try: 
-            async for message in websocket: 
-                raw = message.strip()
-                if not raw:
+        try:
+            async for message in websocket:
+                data = message.strip().lower()
+                if not data:
+                    await session.send_prompt()
                     continue
-                command = self.parser.parse(raw)
-                handler = self.handlers.get(command.verb, self.handle_unknown)
-                await handler(session, command)
+                if data in ("north", "south", "east", "west", "n", "s", "e", "w"):
+                    await self._do_go(session, data)
+                elif data == "look":
+                    await self._do_look(session)
+                elif data.startswith("go "):
+                    direction = data[3:].strip()
+                    await self._do_go(session, direction)
+                elif data.startswith("take "):
+                    item_name = data[5:].strip()
+                    await self._do_take(session, item_name)
+                elif data.startswith("get "):
+                    item_name = data[4:].strip()
+                    await self._do_take(session, item_name)
+                elif data.startswith("grab "):
+                    item_name = data[5:].strip()
+                    await self._do_take(session, item_name)
+                elif data.startswith("drop "):
+                    item_name = data[5:].strip()
+                    await self._do_drop(session, item_name)
+                elif data == "discard" and False:
+                    pass  
+                elif data in ("inventory", "i", "inv"):
+                    await self._do_inventory(session)
+                elif data == "quit":
+                    await self._cmd_quit(session)
+                    break
+                elif data == "help":
+                    await self._cmd_help(session)
+                else:
+                    cmd = self.parser.parse(message)
+                    if cmd and cmd.verb in ("take", "drop"):
+                        if cmd.verb == "take":
+                            await self._do_take(session, cmd.arg_str())
+                        else:
+                            await self._do_drop(session, cmd.arg_str())
+                    else:
+                        await session.send("Huh?\n")
                 if session.running:
                     await session.send_prompt()
         except Exception as exc:
@@ -66,56 +95,79 @@ class GameServer:
         finally:
             self.sessions.pop(client_id, None)
 
-        # C.Helper
-    async def handle_look(self, session: PlayerSession, _):
-        room = self.world.get_room(session.location)
-        text = f"{room.title}\n{room.description}\n"
-        if room.exits:
-            text += f"Exits: {', '.join(room.exits.keys())}\n"
-        await session.send(text)
+    async def _send_welcome(self, session: PlayerSession):
+        welcome = (
+            "Shanghai, 1938. The city bleeds under occupation.\n"
+            "Type HELP for available commands.\n"
+        )
+        await session.send(welcome)
 
-    async def handle_go(self, session: PlayerSession, command: Command):
-        direction = command.object
-        if not direction:
-            await session.send("Go where?\n")
-            return
-        
+    async def _do_look(self, session: PlayerSession):
+        text = self.world.format_room(session.location)
+        await session.send(text + "\n")
+
+    async def _do_go(self, session: PlayerSession, direction: str):
         room = self.world.get_room(session.location)
         if direction in room.exits:
             session.location = room.exits[direction]
-            await self.handle_look(session, None)
+            await self._do_look(session)
         else:
             await session.send("You can't go that way.\n")
 
-    async def handle_inventory(self, session: PlayerSession, _):
-            await session.send("You are carrying nothing. The streets are dangerous enough empty-handed.\n")
+    async def _do_take(self, session: PlayerSession, item_name: str):
+        if not item_name:
+            await session.send("Take what?\n")
+            return
+        room = self.world.get_room(session.location)
+        item = _find_item_by_name(item_name, room.items)
+        if not item:
+            await session.send("You don't see that here.\n")
+            return
+        if not item.takeable:
+            await session.send("You can't take that.\n")
+            return
+        room.items.remove(item)
+        session.inventory.append(item)
+        await session.send(f"You take {item.name}.\n")
 
-    async def handle_help(self, session: PlayerSession, _):
+    async def _do_drop(self, session: PlayerSession, item_name: str):
+        if not item_name:
+            await session.send("Drop what?\n")
+            return
+        item = _find_item_by_name(item_name, session.inventory)
+        if not item:
+            await session.send("You don't have that.\n")
+            return
+        session.inventory.remove(item)
+        room = self.world.get_room(session.location)
+        room.items.append(item)
+        await session.send(f"You drop {item.name}.\n")
+
+    async def _do_inventory(self, session: PlayerSession):
+        if not session.inventory:
+            await session.send("You are empty-handed.\n")
+            return
+        text = "You are carrying:\n"
+        for item in session.inventory:
+            text += f"  {item.name}\n"
+        await session.send(text)
+
+    async def _cmd_quit(self, session: PlayerSession):
+        await session.send("Goodbye.\n")
+        session.running = False
+        await session.websocket.close()
+
+    async def _cmd_help(self, session: PlayerSession):
         help_text = (
             "\nAvailable commands:\n"
             "  LOOK           - Examine your surroundings\n"
             "  GO <direction> - Move (north, south, east, west)\n"
+            "  TAKE <item>    - Pick up an item\n"
+            "  DROP <item>    - Drop an item\n"
             "  INVENTORY (I)  - Check your belongings\n"
             "  HELP           - Show this message\n"
             "  QUIT           - Leave the game\n"
-            "\nYou can also type a direction alone, e.g. 'north' or 'n'.\n"
+            "\n"
+            "You can also type a direction alone, e.g. 'north' or 'n'.\n"
         )
         await session.send(help_text)
-
-    async def handle_quit(self, session: PlayerSession, _):
-        await session.send("Farewell until we meet again.\n")
-        session.running = False
-        await session.websocket.close()
-
-    async def handle_unknown(self, session: PlayerSession,_):
-        await session.send("Huh? (Type HELP for a list of commands!.)\n")
-
-        #Helper func
-
-    async def _send_welcome(self, session: PlayerSession):
-        welcome = (
-            "Shanghai Shadows\n\n"
-            "Shanghai, 1938. The city bleeds under the brutal Japanese occupation.\n"
-            "Type HELP for available commands.\n"
-        )
-        await session.send(welcome)
