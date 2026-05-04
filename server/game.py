@@ -83,20 +83,20 @@ class GameServer:
         if not direction:
             await session.send("Go where?\n")
             return
-        
+
         room = self.world.get_room(session.location)
         if direction in room.exits:
             session.location = room.exits[direction]
             await self._cmd_look(session, cmd)
         else:
             await session.send("You can't go that way.\n")
-            
+
     async def _cmd_take(self, session: PlayerSession, cmd: Command):
         item_name = cmd.direct_obj
         if not item_name:
             await session.send("Take what?\n")
             return
-        
+
         room = self.world.get_room(session.location)
         item = _find_item_by_name(item_name, room.items)
         if not item:
@@ -104,7 +104,7 @@ class GameServer:
             return
         if not item.takeable:
             await session.send("You can't take that.\n")
-            return 
+            return
         room.items.remove(item)
         session.inventory.append(item)
         await session.send(f"You take {item.name}.\n")
@@ -151,3 +151,45 @@ class GameServer:
             "You can also type a direction alone, e.g. 'north' or 'n'.\n"
         )
         await session.send(help_text)
+
+    async def _cmd_talk_to(self, session: PlayerSession, cmd: Command):
+        await session.send("Talking has not been implemented.\n")
+
+    async def _cmd_give(self, session: PlayerSession, cmd: Command):
+        await session.send("Giving has not been implemented.\n")
+
+    async def _cmd_ask(self, session: PlayerSession, cmd: Command):
+        await session.send("Asking has not been implemented.\n")
+    
+    async def _cmd_ask_about(self, session: PlayerSession, cmd: Command):
+        await session.send("Asking has not been implemented.\n")
+    
+    async def _cmd_whisper(self,session: PlayerSession, cmd: Command):
+        await session.send("Whispering has not been implemented.\n")
+
+    async def _cmd_plant(self, session: PlayerSession, cmd: Command):
+        await session.send("Planting has not been implemented.\n")
+    
+    async def _cmd_disguise_as(self, session: PlayerSession, cmd: Command):
+        await session.send("Disguising has not been implemented.\n")
+    
+    async def _cmd_hide(self, session: PlayerSession, cmd: Command):
+        await session.send("Disguises have not been implemented yet.\n")
+
+    async def _cmd_read(self, session: PlayerSession, cmd: Command):
+        await session.send("Reading has not been implemented yet.\n")
+
+    async def _cmd_use(self, session: PlayerSession, cmd: Command):
+        await session.send("Using items has not been implemented yet.\n")
+
+    async def _cmd_wait(self, session: PlayerSession, cmd: Command):
+        await session.send("Using items has not been implemented yet.\n")
+
+    async def _cmd_sleep(self, session: PlayerSession, cmd: Command):
+        await session.send("Sleeping has not been implemented yet.\n")
+    
+    async def _cmd_journal(self, session: PlayerSession, cmd: Command):
+        await session.send("Your Journal is empty.\n")
+
+    async def _cmd_unknown(self, session: PlayerSession, cmd: Command):
+        await session.send(f"I don't understand '{cmd.raw}'. Try HELP.\n")
