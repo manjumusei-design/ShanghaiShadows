@@ -39,3 +39,18 @@ class EventScheduler:
                     payload=ev,
                 )
             )
+
+    def process(self, game_time: GameTime, broadcast):
+        total = (game_time.day - 1) * 1440 + game_time.minute
+        while self.events and self.events[0].trigger_minute <= total:
+            event = heapq.heappop(self.events)
+            for action in event.payload.get("actions", []):
+                if action["type"] == "message_to_player":
+                    broadcast(action["text"])
+            if event.payload.get("recurring"):
+                heapq.heappush(self.events,ScheduledEvent(
+                        trigger_minute=event.trigger_minute + 1440,
+                        event_id=event.event_id,
+                        payload=event.payload,
+                    ),
+                )
