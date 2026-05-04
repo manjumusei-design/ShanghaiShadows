@@ -29,3 +29,15 @@ def load_npcs(path: str) -> Dict[str, Npc]:
             dialogue=npc_data.get("dialogue",{})
         )
     return npcs
+
+
+def get_dialogue(npc: Npc, player_trust: Dict[str, int]) -> str:
+    trust_score = player_trust.get(npc.faction, 50)
+    if trust_score > 70:
+        key = "friendly" if "friendly" in npc.dialogue else "greeting"
+    elif trust_score < 30:
+        key = "hostile" if "hostile" in npc.dialogue else "neutral"
+    else: 
+        key = "greeting" if "greeting" in npc.dialogue else "neutral"
+    lines = npc.dialogue.get(key, ["..."])
+    return random.choice(lines)
