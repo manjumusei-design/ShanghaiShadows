@@ -1,0 +1,23 @@
+npcs:
+  - id: liu_wei
+    name: "Liu Wei, the rickshaw puller"
+    description: "A wiry man in his forties, with calloused hands and deep set eyes that have seen more than most."
+    faction: civilian
+    schedule:
+      6: "bund_dawn"
+      12: "nanking_road"
+      18: "bund_dawn"
+      21: "nanking_raod"
+    dialogue:
+      greeting:
+        - "You seem to need a ride. I can take you anywhere in the city, for a price."
+        - "Careful around the HongKou district, day in and day out, the Kampeitai are watching."
+      friendly:
+        - "I knew your friend, he was a good man."
+        - "The Japanese devils are everywhere, but we must preservere. Shanghai is our home."
+      neutral:
+        -"I don't know you, but I can take you where you need to go."
+      hostile:
+        - "Don't talk to me, I don't want any trouble."
+
+        
