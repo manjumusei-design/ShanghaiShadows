@@ -4,7 +4,11 @@ from typing import Dict, List
 
 from .world import World, load_items, load_rooms, Item, Room
 from .parser import parse, Command
+from .time_system import GameTime, EventScheduler, time_str
+from .npc import get_dialogue
 
+
+FACTIONS = ["resistance", "kampeitai", "green_gang", "french_concession", "british_concession", "civilian"]
 
 def _find_item_by_name(name: str, items: List[Item]) -> Item | None:
     name = name.lower().strip()
@@ -17,12 +21,23 @@ def _find_item_by_name(name: str, items: List[Item]) -> Item | None:
     return None
 
 
+
+def _find_npc_by_name(name: str, npc_ids: List[str], npcs: Dict[str, any]) -> str | None:
+    name = name.lower().strip()
+    for npc_id in npc_ids:
+        npc = npcs.get(npc_id)
+        if npc and name in npc.name.lower():
+            return npc_id
+    return None
+
+
 class PlayerSession:
     def __init__(self, websocket):
         self.websocket = websocket
         self.location = "bund_dawn"
         self.inventory: List[Item] = []
         self.running = True
+        self. trust = {f: 50 for f in FACTIONS}
 
     async def send(self, text: str):
         await self.websocket.send(json.dumps({"type": "display", "payload": text}))
@@ -34,8 +49,12 @@ class PlayerSession:
 class GameServer:
     def __init__(self):
         self.world = World()
+        self.game_time = GameTime()
+        self.scheduler = EventScheduler()
+        self.scheduler.load_from_yaml("server/data/events.yaml")
         self.sessions: Dict[str, PlayerSession] = {}
-
+        
+    
     async def handle_client(self, websocket):
         session = PlayerSession(websocket)
         client_id = f"{websocket.remote_address}"
