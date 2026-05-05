@@ -108,3 +108,55 @@ class GameServer:
                 return npc_id
         return None
     
+    def _apply_action_trust(self, action: str, visible_room_npcs: List[str] | None = None):
+        rule = self.state.trust_rules.get(action)
+        if not rule:
+            return
+        apply_trust_delta(self.state.player.trust, rule)
+        if getattr(rule, "visible", False):
+            for npc_id in (visible_room_npcs or []):
+                npc = self.state.world.npcs.get(npc_id)
+                if npc:
+                    memory = f"Observed player action: {action}"
+                    if memory not in npc.memory:
+                        npc.memory.append(memory)
+
+    def _move_npcs_if_hour_changed(self):
+        if self.state.game_time.minute % 60 != 0:
+            return
+        hour = self.state.game_time.minute // 60
+        for npc_id, npc in self.state.world.npcs.items():
+            room_id = npc.schedule.get(hour)
+            if not room_id or room_id not in self.state.world.rooms:
+                continue
+            old = self.state.world.npc_locations.get(npc_id)
+            if old == room_id:
+                continue
+            if old and old in self.state.world.rooms and npc_id in self.state.world.rooms[old].npcs: 
+                self.state.world.rooms[old].npcs.remove(npc_id)
+            if npc_id not in self.state.world.rooms[room_id].npcs:
+                self.state.world.rooms[room_id].npcs.append(npc_id)
+            self.state.world.npc_locations[npc_id] = room_id
+
+    def _process_gossip(self):
+        for room in self.state.world.rooms.values():
+            npc_ids = room.npcs
+            if len(npc_ids) < 2:
+                continue
+            for i in range(len(npc_ids) -1):
+                a = self.state.world.npcs.get(npc_ids[i])
+                b = self.state.world.npcs.get(npc_ids[i + 1])
+                if not a or not b:
+                    continue
+                exchange_gossip(a.memory, b.memory, chance = 0.25)
+
+    async def _check_curfew_penalty(self):
+        if self.state.game_time.minute < 1260:
+            return
+        if self.state.last_curfew_penalty_day == self.state.game_time.day:
+            return
+        room = self._room()
+        if room and not room.indoors:
+            self._apply_action_trust("out_after_curfew", room.npcs)
+            self.state.last_curfew_penalty_day = self.state.game_time.day
+            await self._broadcast("The curfew is in force. Staying outside has made people trust you less.")
