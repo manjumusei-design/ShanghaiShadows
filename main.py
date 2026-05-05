@@ -7,6 +7,8 @@ from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 import websockets
 
 from server.game import GameServer
+
+
 class ClientHandler(SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=os.path.join(os.path.dirname(__file__), "client"), **kwargs)
@@ -25,12 +27,15 @@ def start_http_server(host: str = "127.0.0.1", port: int = 8080):
 
 async def start_websocket_server(host: str = "127.0.0.1", port: int = 8765):
     game = GameServer()
+    asyncio.create_task(game.tick_loop())
     stop = asyncio.Future()
 
     async with websockets.serve(game.handle_client, host, port):
-        print(f" Websocket: Game server listening on ws://{host}:{port}/")
-        print("Open browser@ http://{}:{}/".format(host, 8080))
+        print(f"Game server listening on ws://{host}:{port}/")
+        print("Open browser at http://{}:{}/".format(host, 8080))
+        print("Press Ctrl+C to stop.\n")
         await stop
+
 
 def main():
     start_http_server()
