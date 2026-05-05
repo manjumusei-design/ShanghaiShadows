@@ -73,10 +73,16 @@ class GameServer:
                     self.world.rooms[new_room_id].npcs.append(npc_id)
                     self.world.npc_locations[npc_id] = new_room_id
 
-    
-                        
-            
-        
+    async def tick_loop(self):
+        while True:
+            await asyncio.sleep(1)
+            self.game_time.minute += 1
+            if self.game_time.minute >= 1440:
+                self.game_time.minute = 0
+                self.game_time.day += 1
+            self.scheduler.process(self.game_time, self._broadcast)
+            self._move_npcs_if_hour_changed()
+
     async def handle_client(self, websocket):
         session = PlayerSession(websocket)
         client_id = f"{websocket.remote_address}"
@@ -85,6 +91,7 @@ class GameServer:
         await self._send_welcome(session)
         await self._cmd_look(session, Command(verb="look", raw="look"))
         await session.send_prompt()
+        
         try:
             async for message in websocket:
                 text = message.strip()
@@ -173,6 +180,42 @@ class GameServer:
             text += f"  {item.name}\n"
         await session.send(text)
 
+    asyn def _cmd_wait(self, session: PlayerSession, cmd: Command):
+        minutes_str = cmd.direct_obj
+        if not minutes_str: 
+            await session.send("Wait for how long?\n")
+            return
+
+        try:
+            minutes = int(minutes_str)
+        except ValueError:
+            await session.send("You must wait a number of minutes.\n")
+            return
+        
+        for _ in range(minutes):
+            self.game_time.minute += 1
+            if self.game_time.minute >= 1440:
+                self.game_time.minute = 0
+                self.game_time.day += 1
+            self.scheduler.process(self.game_time, self._broadcast)
+            self._move_npcs_if_hour_changed()
+
+        await session.send(f"You wait {minutes} minutes. It is now {time_str(self.game_time)}.\n")
+
+    async def _cmd_talk_to(self, session: PlayerSession, cmd: Command):
+        npc_name = cmd.direct_obj
+        if not npc_name:
+            await session.send("Talk to whom?\n")
+            return
+        room = self.world.get_room(session.location)
+        npc_id = _find_npc_by_name(npc_name, room.npcs, self.world.npcs)
+        if not npc_id:
+            await session.send(" They aren't here.\n")
+            return
+        npc = self.world.npcs[npc_id]
+        line = get_dialogue(npc, session.trust)
+        await session.send(f'{npc.name} says, "{line}"\n')
+
     async def _cmd_quit(self, session: PlayerSession, cmd: Command):
         await session.send("Goodbye.\n")
         session.running = False
@@ -186,15 +229,14 @@ class GameServer:
             "  TAKE <item>    - Pick up an item\n"
             "  DROP <item>    - Drop an item\n"
             "  INVENTORY (I)  - Check your belongings\n"
+            "  WAIT <minutes> - Pass time\n"
+            "  TALK TO <npc>  - Speak with someone\n"
             "  HELP           - Show this message\n"
             "  QUIT           - Leave the game\n"
             "\n"
             "You can also type a direction alone, e.g. 'north' or 'n'.\n"
         )
         await session.send(help_text)
-
-    async def _cmd_talk_to(self, session: PlayerSession, cmd: Command):
-        await session.send("Talking has not been implemented.\n")
 
     async def _cmd_give(self, session: PlayerSession, cmd: Command):
         await session.send("Giving has not been implemented.\n")
@@ -221,9 +263,6 @@ class GameServer:
         await session.send("Reading has not been implemented yet.\n")
 
     async def _cmd_use(self, session: PlayerSession, cmd: Command):
-        await session.send("Using items has not been implemented yet.\n")
-
-    async def _cmd_wait(self, session: PlayerSession, cmd: Command):
         await session.send("Using items has not been implemented yet.\n")
 
     async def _cmd_sleep(self, session: PlayerSession, cmd: Command):
