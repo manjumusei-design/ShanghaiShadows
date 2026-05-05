@@ -54,7 +54,29 @@ class GameServer:
         self.scheduler.load_from_yaml("server/data/events.yaml")
         self.sessions: Dict[str, PlayerSession] = {}
         
+    def _broadcast(self, text: str):
+        for session in list(self.sessions.values()):
+            asyncio.create_task(session.send(text + "\n")
+                                
+    def _move_npcs_if_hour_changed(self):
+        current_hour = self.game_time.minute // 60
+        if self.game_time.minute % 60 != 0:
+            return
+        for npc_id, npc in self.world.npcs.items():
+            if current_hour in npc.schedule:
+                new_room_id = npc.schedule[current_hour]
+                old_room_id = self.world.npc_locations.get(npc_id)
+                if old_room_id != new_room_id:
+                    if old_room_id and old_room_id in self.world.rooms:
+                        if npc_id in self.world.rooms[old_room_id].npcs:
+                            self.world.rooms[old_room_id].npcs.remove(npc_id)
+                    self.world.rooms[new_room_id].npcs.append(npc_id)
+                    self.world.npc_locations[npc_id] = new_room_id
+
     
+                        
+            
+        
     async def handle_client(self, websocket):
         session = PlayerSession(websocket)
         client_id = f"{websocket.remote_address}"
