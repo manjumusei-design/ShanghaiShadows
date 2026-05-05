@@ -82,4 +82,12 @@ class GameServer:
         }
         self.load_snapshot()
 
+    def _room(self):
+        return self.state.world.get_room(self.state.player.current_room)
+
+    async def _broadcast(self, text: str):
+        if not self.sessions:
+            return
+        await asyncio.gather(*(s.send_display(text + "\n") for s in list(self.sessions.values())))
+
 
