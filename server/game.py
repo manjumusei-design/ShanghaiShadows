@@ -269,3 +269,12 @@ class GameServer:
             room.items.append(item)
         await session.send_display(f"You drop {item.name}.\n")
     
+    async def _cmd_inventory(self, session: PlayerSession, cmd: Command):
+        if not self.state.player.inventory:
+            await session.send_display("You are empty-handed.\n")
+            return
+        lines = ["You are carrying:"]
+        for item in self.state.player.inventory:
+            lines.append(f"- {item.name}")
+        await session.send_display("\n".join(lines) + "\n")
+        
