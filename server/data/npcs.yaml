@@ -7,7 +7,7 @@ npcs:
       6: "bund_dawn"
       12: "nanking_road"
       18: "bund_dawn"
-      21: "nanking_raod"
+      21: "nanking_road"
     dialogue:
       greeting:
         - "You seem to need a ride. I can take you anywhere in the city, for a price."
@@ -16,8 +16,6 @@ npcs:
         - "I knew your friend, he was a good man."
         - "The Japanese devils are everywhere, but we must preservere. Shanghai is our home."
       neutral:
-        -"I don't know you, but I can take you where you need to go."
+        - "I don't know you, but I can take you where you need to go."
       hostile:
         - "Don't talk to me, I don't want any trouble."
-
-        
