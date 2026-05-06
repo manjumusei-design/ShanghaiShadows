@@ -223,6 +223,22 @@ class GameServer:
             text += "Exits: " + ", ".join(room.exits.keys()) + "\n"
         await session.send_display(text)
 
+    async def _cmd_go(self, session: PlayerSession, cmd: Command):
+        direction = cmd.direct_obj
+        if not direction:
+            await session.send_display ("Go where?\n")
+            return
+        room = self.room()
+        if not room:
+            await session.send_display("You are nowhere. \n")
+            return
+        dest = room.exits.et(direction)
+        if not dest:
+            await session.send_display("You can't go that way.\n")
+            return
+        self.state.player.current_room = dest
+        await self._cmd_look(session, cmd)
+
 
 
     
