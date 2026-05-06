@@ -160,3 +160,49 @@ class GameServer:
             self._apply_action_trust("out_after_curfew", room.npcs)
             self.state.last_curfew_penalty_day = self.state.game_time.day
             await self._broadcast("The curfew is in force. Staying outside has made people trust you less.")
+
+    async def _advance_time_one_minute(self):
+        self.state.game_time.minute += 1
+        if self.state.game_time.minute >= 1440:
+            self.state.game_time.minute = 0
+            self.state.game_time.day += 1
+        self.state.scheduler.process(self.state.game_time, lambda msg: asyncio.create_task(self._broadcast(msg)))
+        self._move_npcs_if_hour_changed()
+        self._process_gossip()
+        await self._check_curfew_penalty()
+
+    async def tick_loop(self):
+        while True:
+            await asyncio.sleep(1)
+            await self._advance_time_one_minute()
+            if self.state.game_time.minute % 10 == 0:
+                self.save_snapshot()
+
+    async def handle_client(self, websocket):
+        session = PlayerSession(websocket)
+        client_id = f"{websocket.remote_address}"
+        self.sessions[client_id] = session
+        await session.send_display("Shanghai Shadows\n")
+        await self._cmd_look(session, Commnad(verb = "look", raw= "look"))
+        await session.send_prompt()
+
+        try:
+            async for message in websocket:
+                text = message.strip()
+                if not text:
+                    await session.send_prompt()
+                    continue
+
+                cmd = parse(text)
+                if cmd.verb == "pass":
+                    await session.send_prompt()
+                    continue
+                handler = self.command_registry.get(cmd.verb, self._cmd_unknown)
+                await handler(session, cmd)
+                if session.running:
+                    await session.send_prompt()
+        except Exception as exc:
+            print(f"Client {client_id} disconnected: {exc}")
+        finally:
+            self.sessions.pop(client_id, None)
+                 
