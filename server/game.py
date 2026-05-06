@@ -292,3 +292,19 @@ class GameServer:
         await session.send_display(f'{npc.name} says, "{line}"\n')
         self._apply_action_trust(f"talk_to_{npc.faction}", room.npcs if room else [])
         
+    async def _cmd_wait(self, session: PlayerSession, cmd: Command):
+        if not cmd.direct_obj:
+            await session.send_display("Wait how long?\n")
+            return
+        try:
+            minutes = int(cmd.direct_obj)
+        except ValueError:
+            await session.send_display("You must wait a number of minutes.\n")
+            return
+        if minutes < 1:
+            await session.send_display("Wait at least 1 minute.\n")
+            return
+        minutes = min(minutes, 240)
+        for _ in range(minutes):
+            await self._advance_time_one_minute()
+        await session.send_display(f"You wait {minutes} minutes. It is now {time_str(self.state.game_time)}.\n")
