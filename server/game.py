@@ -255,5 +255,17 @@ class GameServer:
         self.state.player.inventory.append(item)
         await session.send_display(f"You take {item.name}.\n")
 
-
+    async def _cmd_drop(self, sessionL PlayerSession, cmdL Command):
+        if not cmd.direct_obj:
+            await session.send_display("Drop what?\n")
+            return
+        item = self._find_item_by_name(cmd.direct_obj, self.state.player.inventory)
+        if not item:
+            await session.send_display("You don't have that.\n")
+            return
+        self.state.player.inventory.remove(item)
+        room = self._room()
+        if room:
+            room.items.append(item)
+        await session.send_display(f"You drop {item.name}.\n")
     
