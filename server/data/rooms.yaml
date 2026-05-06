@@ -7,6 +7,7 @@ bund_dawn:
   items:
     - ration_card
     - brass_key
+  indoors: false
     
 nanking_road:
   id: nanking_road
@@ -14,3 +15,5 @@ nanking_road:
   description: "The great shopping street is a ghost of itself. Metal shutters are drawn over shop fronts. A Japanese patrol marches past, their boots echoing on the cobblestones."
   exits:
     east: bund_dawn
+  indoors: false
+  
