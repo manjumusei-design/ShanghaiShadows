@@ -308,3 +308,9 @@ class GameServer:
         for _ in range(minutes):
             await self._advance_time_one_minute()
         await session.send_display(f"You wait {minutes} minutes. It is now {time_str(self.state.game_time)}.\n")
+
+    async def _cmd_status(self, session: PlayerSession, cmd: Command):
+        lines = [f"{time_str(self.state.game_time)}", "Trust:"]
+        for faction in FACTIONS:
+            lines.append(f"- {faction}: {self.state.player.trust.get(faction, 50)}")
+        await session.send_display("\n".join(lines) + "\n")
