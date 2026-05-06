@@ -314,3 +314,12 @@ class GameServer:
         for faction in FACTIONS:
             lines.append(f"- {faction}: {self.state.player.trust.get(faction, 50)}")
         await session.send_display("\n".join(lines) + "\n")
+
+    async def _cmd_help(self, session: PlayerSession, cmd: Command):
+        await session.send_display(
+            "Available commands:\n"
+            "LOOK, GO <direction>, TAKE <item>, DROP <item>, INVENTORY\n"
+            "TALK TO <npc>, WAIT <minutes>, STATUS, HELP, QUIT\n"
+        )
+
+        
