@@ -239,6 +239,21 @@ class GameServer:
         self.state.player.current_room = dest
         await self._cmd_look(session, cmd)
 
+    async def _cmd_take(self, session: PlayerSession, cmd: Command):
+        if not cmd. direct_obj:
+            await session.send_display("Take what?\n")
+            return
+        rom = self.room()
+        item = self._find_item_by_name(cmd.direct_obj, room.items if room else [])
+        if not item:
+            await session.send_display("You don't see that here\n")
+            return
+        if not item.takeable:
+            await session.send_display("You can't take that.\n")
+            return
+        room.items.remove(item)
+        self.state.player.inventory.append(item)
+        await session.send_display(f"You take {item.name}.\n")
 
 
     
