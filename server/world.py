@@ -159,30 +159,17 @@ class World:
         room = self.get_room(room_id)
         if not room:
             return "You are nowhere."
-        lines = [
-            f"  {room.title}",
-            "",
-            room.description,
-            "",
-        ]
+        lines = [room.title, room.description]
         if room.items:
             lines.append("You see here: " + ", ".join(item.name for item in room.items))
-            lines.append("")
         if room.npcs:
             for npc_id in room.npcs:
                 npc = self.npcs.get(npc_id)
                 if npc:
                     lines.append(npc.name + " is here.")
-            lines.append("")
-        lines.append("Exits:")
         if room.exits:
-            for direction, dest_id in room.exits.items():
-                dest = self.get_room(dest_id)
-                name = dest.title if dest else "unknown"
-                lines.append(f"  {direction:10} => {name}")
-        else:
-            lines.append("None")
-        return "\n".join(lines)
+            lines.append("Exits: " + ", ".join(room.exits.keys()))
+        return "\n".join(lines) + "\n"
 
 
 def load_world() -> World:
