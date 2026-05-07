@@ -115,4 +115,5 @@ class World:
         return "\n".join(lines)
     
 
-def 
+def load_world() -> World:
+    return World()
