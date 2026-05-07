@@ -107,10 +107,7 @@ def parse(text: str) -> Command:
     if first == "whisper" and len(tokens) > 2:
         direct = tokens[1]
         indirect = " ".join(tokens[2:])
-        return Command(verb = "whisper", direct_)
-
-
-
+        return Command(verb="whisper", direct_obj=direct, indirect_obj=indirect, raw=raw)
 
     verb = _resolve_verb(first)
     rest  = tokens[1:]
