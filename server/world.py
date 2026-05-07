@@ -124,6 +124,7 @@ def _load_generated_rooms(data: Dict[str, object], items: Dict[str, Item]) -> Di
 class World:
     def __init__(self):
         items = load_items("server/data/items.yaml")
+        self.item_catalog: Dict[str, Item] = items
         self.rooms: Dict[str, Room] = load_rooms("server/data/rooms.yaml", items)
         self.npcs: Dict[str, Npc] = load_npcs("server/data/npcs.yaml")
         self.npc_locations: Dict[str, str] = {}
