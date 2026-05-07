@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field, replace
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 import yaml
 
@@ -12,6 +12,8 @@ class Item:
     name: str
     description: str
     takeable: bool = True
+    readable_text: str = ""
+    planted_on: str = ""
 
 
 @dataclass
@@ -23,6 +25,7 @@ class Room:
     items: List[Item] = field(default_factory=list)
     npcs: List[str] = field(default_factory=list)
     indoors: bool = False
+    tags: List[str] = field(default_factory=list)
 
 
 def load_items(path: str) -> Dict[str, Item]:
@@ -36,6 +39,7 @@ def load_items(path: str) -> Dict[str, Item]:
             name=item_data["name"],
             description=item_data["description"],
             takeable=item_data.get("takeable", True),
+            readable_text=item_data.get("readable_text", ""),
         )
         items[item.id] = item
     return items
