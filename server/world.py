@@ -3,6 +3,8 @@ from typing import Dict, List
 
 import yaml
 
+from .npc import Npc, load_npcs
+
 
 @dataclass
 class Item:
@@ -20,6 +22,7 @@ class Room:
     exits: Dict[str, str] = field(default_factory=dict)
     items: List[Item] = field(default_factory=list)
     npcs: List[str] = field(default_factory=list)
+    indoors: bool = False
 
 
 def load_items(path: str) -> Dict[str, Item]:
@@ -56,6 +59,7 @@ def load_rooms(path: str, items: Dict[str, Item]) -> Dict[str, Room]:
             exits=fields.get("exits", {}),
             items=room_items,
             npcs=fields.get("npcs", []),
+            indoors=fields.get("indoors", False),
         )
     return rooms
 
@@ -64,6 +68,19 @@ class World:
     def __init__(self):
         items = load_items("server/data/items.yaml")
         self.rooms: Dict[str, Room] = load_rooms("server/data/rooms.yaml", items)
+        self.npcs: Dict[str, Npc] = load_npcs("server/data/npcs.yaml")
+        self.npc_locations: Dict[str, str] = {}
+        self._place_npcs()
+
+        def _place_npcs(self):
+            for npc_id, npc in self.npcs.items():
+                if not npc.schedule:
+                    continue 
+                hour = min(npc.schedule.keys())
+                room_id = npc.schedule[hour]
+                if room_id in self.rooms:
+                    self.rooms[room_id].npcs.append(npc_id)
+                    self.npc_locations[npc_id] = room_id
 
     def get_room(self, room_id: str) -> Room | None:
         return self.rooms.get(room_id)
