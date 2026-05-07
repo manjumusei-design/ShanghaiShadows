@@ -51,5 +51,7 @@ def exchange_gossip(mem_a: List[str], mem_b: List[str], chance: float = 0.2) -> 
     else:
         return False
     memory = random.choice(source)
-    if memory not in target: target.append(memory)
-    return True
+    if memory not in target:
+        target.append(memory)
+        return True
+    return False
