@@ -1,0 +1,8 @@
+events: 
+  - trigger_time: 1200
+    event_id: curfew_warning
+    recurring: true
+    description: "A siren wails across the city. The curfew begins. All citizens must be indoors within the hour."
+    actions:
+      - type: message_to_player
+        text: "A distant siren reminds you that curfew is near"
