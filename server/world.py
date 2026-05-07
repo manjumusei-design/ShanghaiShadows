@@ -108,9 +108,17 @@ def _load_generated_rooms(data: Dict[str, object], items: Dict[str, Item]) -> Di
                 if item_id in items:
                     room_items.append(replace(items[item_id]))
 
-
-
-
+            rooms[room_id] = Room(
+                id=room_id,
+                title=title,
+                description=description,
+                exits=exits,
+                items=room_items,
+                npcs=[],
+                indoors=bool(indoors_pattern and room_index % int(indoors_pattern) == 0),
+                tags=tags + [prefix],
+            )
+    return rooms
 
 
 class World:
