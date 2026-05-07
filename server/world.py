@@ -49,6 +49,10 @@ def load_rooms(path: str, items: Dict[str, Item]) -> Dict[str, Room]:
     with open(path, "r", encoding="utf-8") as f:
         data = yaml.safe_load(f)
 
+    if "districts" in data:
+        return _load_generated_rooms(data, items)
+    
+    
     rooms: Dict[str, Room] = {}
     for room_id, fields in data.items():
         room_items = []
@@ -62,10 +66,51 @@ def load_rooms(path: str, items: Dict[str, Item]) -> Dict[str, Room]:
             description=fields["description"],
             exits=fields.get("exits", {}),
             items=room_items,
+            npcs=[],
             npcs=fields.get("npcs", []),
             indoors=fields.get("indoors", False),
         )
     return rooms
+
+def _load_generated_rooms(data: Dict[str, object], items: Dict[str, Item]) -> Dict[str, Room]:
+    rooms: Dict[str, Room] = {}
+    for district in data.get("districts", []):
+        prefix = district["prefix"]
+        count = int(district["count"])
+        tags = list(district.get("tags", []))
+        indoors_pattern = district.get("indoors_every", 0)
+        room_prefix = district.get("room_prefix", prefix)
+        title_prefix = district.get("title_prefix", prefix.title())
+        description_templates = district.get("description_templates", [])
+        item_cycle = district.get("item_cycle", [])
+        special_names = district.get("special_names", {})
+        special_ids = district.get("special_ids", {})
+        for idx in range(count):
+            room_index = idx + 1
+            room_id = special_ids.get(str(room_index), f"{room_prefix}_{room_index:02d}")
+            title = special_names.get(str(room_index), f"{title_prefix} {room_index}")
+            template = description_templates[idx % len(description_templates)] if description_templates else "The city waits here."
+            description = template.format(index=room_index, title=title)
+            exits: Dict[str, str] = {}
+            if idx > 0:
+                prev_id = special_ids.get(str(room_index - 1), f"{room_prefix}_{room_index - 1:02d}")
+                exits["west"] = prev_id
+            if idx < count - 1:
+                next_id = special_ids.get(str(room_index + 1), f"{room_prefix}_{room_index + 1:02d}")
+                exits["east"] = next_id
+            for connector in district.get("connectors", []):
+                if int(connector["at"]) == room_index:
+                    exits[str(connector["direction"])] = str(connector["to"])
+
+            room_items: List[Item] = []
+            if item_cycle and idx % max(1, len(item_cycle)) == 0:
+                item_id = item_cycle[idx % len(item_cycle)]
+                if item_id in items:
+                    room_items.append(replace(items[item_id]))
+
+
+
+
 
 
 class World:
