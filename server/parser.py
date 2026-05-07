@@ -59,7 +59,7 @@ KNOWN_VERBS = {
     "journal",
     "status",
     "tail",
-    
+    "bond",
 }
 
 
