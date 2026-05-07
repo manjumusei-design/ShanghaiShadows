@@ -1,4 +1,4 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from typing import Dict, List
 
 import yaml
@@ -72,19 +72,19 @@ class World:
         self.npc_locations: Dict[str, str] = {}
         self._place_npcs()
 
-        def _place_npcs(self):
-            for npc_id, npc in self.npcs.items():
-                if not npc.schedule:
-                    continue 
-                hour = min(npc.schedule.keys())
-                room_id = npc.schedule[hour]
-                if room_id in self.rooms:
-                    self.rooms[room_id].npcs.append(npc_id)
-                    self.npc_locations[npc_id] = room_id
+    def _place_npcs(self):
+        for npc_id, npc in self.npcs.items():
+            if not npc.schedule:
+                continue
+            hour = min(npc.schedule.keys())
+            room_id = npc.schedule[hour]
+            if room_id in self.rooms:
+                self.rooms[room_id].npcs.append(npc_id)
+                self.npc_locations[npc_id] = room_id
 
     def get_room(self, room_id: str) -> Room | None:
         return self.rooms.get(room_id)
-    
+
     def format_room(self, room_id: str) -> str:
         room = self.get_room(room_id)
         if not room:
@@ -104,7 +104,7 @@ class World:
                 if npc:
                     lines.append(npc.name + " is here.")
             lines.append("")
-        if room("Exits:")
+        lines.append("Exits:")
         if room.exits:
             for direction, dest_id in room.exits.items():
                 dest = self.get_room(dest_id)
@@ -113,7 +113,7 @@ class World:
         else:
             lines.append("None")
         return "\n".join(lines)
-    
+
 
 def load_world() -> World:
     return World()
