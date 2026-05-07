@@ -22,3 +22,35 @@ class Disguise:
     description: str
 
 
+class StealthSystem:
+    def _init_(self, disguises: Dict[str. Disguise]):
+        self.disguises = disguises
+
+    def apply_disguise(self, disguise_id: str) -> Optional[Disguise]:
+        return self.disguises.get(disguise_id)
+
+    def start_tail(self, target_npc_id: str) -> TailingState:
+        return TailingState(target_npc_id=target_npc_id)
+    
+    def hide_check(
+        self,
+        stealth_skill: int,
+        disguise_bonus: int,
+        room_indoors: bool,
+        observers: List[Npc],
+    ) -> Tuple[bool, int]:
+        observer_pressure = sum(npc.awareness for npc in observers) // max(1, len(observers)) if observers else 25
+        roll = random.randint(1, 100)
+        score = stealth_skill + disguise_bonus + (10 if room_indoors else 0) - (observer_pressure // 2)
+        return roll <= max(15, score), roll
+    
+    def tail_check(
+            self,
+            state: TailingState,
+            target: Npc,
+            stealth_skill: int,
+            disguise_bonus: int,
+            hidden: bool,
+    )
+
+
