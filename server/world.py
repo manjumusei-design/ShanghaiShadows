@@ -144,7 +144,7 @@ class World:
         item = self.item_catalog.get(item_id)
         return replace(item) if item else None
     
-    def get_room(self, room_id: str) -> Room | None:
+    def get_room(self, room_id: str) -> Optional[Room]:
         return self.rooms.get(room_id)
 
     def format_room(self, room_id: str) -> str:
