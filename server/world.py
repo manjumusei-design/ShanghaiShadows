@@ -84,7 +84,7 @@ class World:
 
     def get_room(self, room_id: str) -> Room | None:
         return self.rooms.get(room_id)
-
+    
     def format_room(self, room_id: str) -> str:
         room = self.get_room(room_id)
         if not room:
@@ -94,12 +94,17 @@ class World:
             "",
             room.description,
             "",
-            "Exits:",
         ]
-        if room.exits:
+        if room.items:
             lines.append("You see here: " + ", ".join(item.name for item in room.items))
             lines.append("")
-        lines.append("Exits:")
+        if room.npcs:
+            for npc_id in room.npcs:
+                npc = self.npcs.get(npc_id)
+                if npc:
+                    lines.append(npc.name + " is here.")
+            lines.append("")
+        if room("Exits:")
         if room.exits:
             for direction, dest_id in room.exits.items():
                 dest = self.get_room(dest_id)
@@ -108,3 +113,6 @@ class World:
         else:
             lines.append("None")
         return "\n".join(lines)
+    
+
+def 
