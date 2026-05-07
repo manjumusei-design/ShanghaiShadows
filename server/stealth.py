@@ -45,12 +45,19 @@ class StealthSystem:
         return roll <= max(15, score), roll
     
     def tail_check(
-            self,
-            state: TailingState,
-            target: Npc,
-            stealth_skill: int,
-            disguise_bonus: int,
-            hidden: bool,
-    )
-
-
+        self,
+        state: TailingState,
+        target: Npc,
+        stealth_skill: int,
+        disguise_bonus: int,
+        hidden: bool,
+    ) -> Tuple[bool, int]:
+        roll = random.randint(1, 100)
+        difficulty = target.awareness + 5 * (2 - state.distance)
+        bonus = stealth_skill + disguise_bonus + (10 if hidden else 0)
+        success = roll + bonus >= difficulty
+        if success:
+            state.distance = min(3, state.distance + 1)
+        else:
+            state.distance = max(0, state.distance - 1)
+        return success, roll
