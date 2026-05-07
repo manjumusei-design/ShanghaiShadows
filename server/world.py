@@ -147,6 +147,14 @@ class World:
     def get_room(self, room_id: str) -> Optional[Room]:
         return self.rooms.get(room_id)
 
+    def place_npc(self, npc_id: str, room_id: str) -> None:
+        old_room_id = self.npc_locations.get(npc_id)
+        if old_room_id and old_room_id in self.rooms and npc_id in self.rooms[old_room_id].npcs:
+            self.rooms[old_room_id].npcs.remove(npc_id)
+        if room_id in self.rooms and npc_id not in self.rooms[room_id].npcs:
+            self.rooms[room_id].npcs.append(npc_id)
+            self.npc_locations[npc_id] = room_id
+
     def format_room(self, room_id: str) -> str:
         room = self.get_room(room_id)
         if not room:
