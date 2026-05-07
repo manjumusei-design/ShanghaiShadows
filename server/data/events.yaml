@@ -5,4 +5,4 @@ events:
     description: "A siren wails across the city. The curfew begins. All citizens must be indoors within the hour."
     actions:
       - type: message_to_player
-        text: "A distant siren reminds you that curfew is near"
+        text: "A distant siren reminds you that curfew is near. The streets will soon become dangerous."
