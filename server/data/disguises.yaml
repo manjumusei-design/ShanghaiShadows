@@ -1,0 +1,31 @@
+disguises:
+  - id: japanese_officer
+    name: "a Japanese officer"
+    apparent_faction: "kempeitai"
+    bonus: 18
+    description: "The cut of the coat and the arrogance it demands is unmistakable. The insignia of the puppet government is sewn onto the collar, while the cap bears the rising sun emblem. Wearing this disguise will allow you to move more freely in areas controlled by the Japanese, but be careful not to draw too much attention."
+
+  - id: coolie
+    name: "a dock coolie"
+    apparent_faction: "civilian"
+    bonus: 10
+    description: "Bent shoulders and lowered eyes make you easier to overlook. The coarse fabric of the tunic and trousers is stained with grime ansd sweat. Wearing this disguise will allow you to blend in with the working class."
+
+  - id: priest
+    name: "a tired priest"
+    apparent_faction: "civilian"
+    bonus: 8
+    description: "Piety buys a little distance. The simple robes and worn sandals are a huble disguise, but the air of resignation and quiet dignity may help you avoid suspicion in certian circles."
+
+  - id: refugee
+    name: "a displaced refugee"
+    apparent_faction: "civilian"
+    bonus: 8
+    description: "The tattered clothes and weary expression tell a story of loss and hardship. Wearing this disguise will allow you to evoke sympathy and avoid scrutiny, but be prepared to endure the hardships that come with it," 
+
+  - id: courier
+    name: "a resistance courier"
+    apparent__faction: "resistance"
+    bonus: 14
+    description: "The nondescript clothing and satchel full of messages make you a valuable asset to the resistance, but also a target for the Japanese. Wearing this disguise will allow you to move more freely within resistance circles, but be careful not to get caught with incriminating evidence."
+    
