@@ -58,6 +58,8 @@ KNOWN_VERBS = {
     "sleep",
     "journal",
     "status",
+    "tail",
+    
 }
 
 
