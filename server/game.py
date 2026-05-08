@@ -225,6 +225,17 @@ class GameServer:
                     if memory not in npc.memory:
                         npc.memory.append(memory)
 
+    def _move_npcs_if_hour_changed(self, context: SessionContext):
+        if context.state.game_time.minute % 60 !=0:
+            return
+        hour = context.state.game_time.minute // 60
+        for npc_id, npc in context.state.world.npcs.items():
+            room_id = npc.schedule.get(hour)
+            if room_id and room_id in context.state.world.rooms:
+                context.state.world.place_npc(npc_id, room_id)
+
+    
+        
     def _apply_action_trust(self, action: str, visible_room_npcs: List[str] | None = None):
         rule = self.state.trust_rules.get(action)
         if not rule:
