@@ -244,9 +244,16 @@ class GameServer:
                 b = context.state.world.npcs.get(npc_ids[i + 1])
                 if not a or not b:
                     continue
-                if exchange gossip(a.memory, b.memory, chance=0.25):
-                    rumor = random_memory = b.memory[-1] if b.memory else "a piece of gossip"
-        
+                if exchange_gossip(a.memory, b.memory, chance=0.25):
+                    rumor = random_memory = b.memory[-1] if b.memory else ""
+                    if rumor:
+                        context.state.rumour_mill.setdefault(b.faction, []).append(random_memory)
+                        context.state.rumour_mill[b.faction] = context.state.rumour_mill[b.faction][-12:]
+
+
+
+
+
     def _apply_action_trust(self, action: str, visible_room_npcs: List[str] | None = None):
         rule = self.state.trust_rules.get(action)
         if not rule:
