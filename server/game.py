@@ -156,10 +156,9 @@ class GameServer:
             "give": self._cmd_stub,
             "use": self._cmd_stub,
             "sleep": self._cmd_stub,
-            "journal": self._cmd_stub,
             "bond": self._cmd_stub,
         }
-        self.load_snapshot()
+
 
     def _room(self):
         return self.state.world.get_room(self.state.player.current_room)
