@@ -262,6 +262,84 @@ class GameServer:
             self._log_event(context, "You were seen outside after curfew.")
             await self._post_display(context, "The curfew is in force. Faces turn away from you in the dark as everyone hurriedly scurries back to their residence.")
 
+    async def _check_planted_evidence(self, context: SessionContext):
+        if not context.state.planted_evidence:
+            return
+        remaining  = []
+        for planted in context.state.planted_evidence:
+            room = context.state.world.get_room(str(planted["room_id"]))
+            target = str(planted.get("target", "")).lower()
+            triggered = False
+            if room:
+                for npc_id in room.npcs:
+                    npc = context.state.world.npcs.get(npc_id)
+                    if not npc:
+                        continue
+                    if not target or target in npc.faction.lower() or target in npc.role.lower() or target in npc.name.lower():
+                        event_text = f"Your planted {planted['item_name']} in {room.title} has stirred suspicion."
+                        self._log_event(context, event_text)
+                        context.state.rumour_mill.setdefault(npc.faction, []).append(event_text)
+                        await self._post_display(context, event_text)
+                        triggered = True
+                        break
+                    if not triggered:
+                        remaining.append(planted)
+                context.state.planted_evidence = remaining
+
+    async def _process_tailing(self, context: SessionContext):
+        tail = context.state.tailing_state
+        if not tail:
+            return
+        current_total = (context.state.game_time.day - 1) * 1440 + context.state.game_time.minute
+        if current_total - tail.last_checked_minute < 5:
+            return
+        tail.last_checked_minute = current_total
+        tail.elapsed_minutes += 5
+        target = context.state.world.npcs.get(tail.target_npc_id)
+        if not target:
+            context.state.tailing_state = None
+            await self._post_display(context, "Your target has vanished into the city's folds.")
+            return
+        success, _ = self.stealth.tail_check(
+            tail,
+            target,
+            context.state.player.stealth_skill,
+            self._disguise_bonus(context),
+            context.state.player.hidden,
+        )
+        if not success and tail.distance <= 0:
+            context.state.tailing_state = None
+            self._log_event(context, f"{target.name} spotted you while you were tailing them.")
+            await self._post_display(context, f"{target.name} glances over a shoulder, slows, and knows exactly what you are doing.")
+            return
+        target_room = context.state.world.npc_locations.get(target.id)
+        if success and target_room and context.state.player.current_room != target_room:
+            context.state.player.current_room = target_room
+            context.state.player.hidden = False
+            await self._post_display(context, f"You shadow {target.name} and keep them in sight.")
+
+    async def _check_newspaper(self, context: SessionContext):
+        if context.state.game_time.minute != 360:
+            return
+        if context.state.last_newspaper_day == context.state.game_time.day:
+            return
+        context.state.last_newspaper_day = context.state.game_time.day
+        newspaper = await self._generate_newspaper(context)
+        context.state.player.newspapers.append(newspaper)
+        item = Item(
+            id=f"newspaper_day_{context.state.game_time.day}",
+            name=f"Shanghai Times, Day {context.state.game_time.day}",
+            description="A folded sheet of fresh newsprint, still smelling faintly of ink.",
+            readable_text=newspaper["body"],
+        )
+        context.state.player.inventory(item)
+        self._log_event(context, "A new newspaper is out. You pick up a copy and add it to your inventory.")
+        await self._post_display(context, "At dawn a newspaper runner slips a fresh edition into your hands.")
+
+    async def _generate_newspaper(self, context: SessionContext) -> Dict[str, object]:
+        recent = context.state.player.world_events[-8] or 
+
+
 
 
 
