@@ -34,7 +34,7 @@ VERB_ALIASES = {
     "h": "help",
     "?": "help",
     "stat": "status",
-}
+}   
 
 KNOWN_VERBS = {
     "look",

@@ -189,10 +189,10 @@ class GameServer:
                 return item
         return None
     
-    def _find_Npc_by_name(self, name: str, npc_ids: List[str]) -> str | None:
+    def _find_npc_by_name(self, context: SessionContext, name: str, npc_ids: List[str]) -> Optional[str]:
         q = name.lower().strip()
         for npc_id in npc_ids:
-            npc = self.state.world.npcs.get(npc_id)
+            npc = context.state.world.npcs.get(npc_id) 
             if npc and (q in npc.name.lower() or q in npc.id.lower()):
                 return npc_id
         return None
