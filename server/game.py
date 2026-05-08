@@ -337,7 +337,31 @@ class GameServer:
         await self._post_display(context, "At dawn a newspaper runner slips a fresh edition into your hands.")
 
     async def _generate_newspaper(self, context: SessionContext) -> Dict[str, object]:
-        recent = context.state.player.world_events[-8] or 
+        recent = context.state.player.world_events[-8:] or ["A quiet night passed with only whispers in the lanes."]
+        prompt = (
+            "You are the editor of the Shanghai Times in occupied Shanghai, November 1938. "
+            "Write four propaganda-tinged headlines with one-sentence summaries. "
+            "Respond as strict JSON with key 'headlines', where each headline has 'title' and 'summary'. "
+            f"Player timeline events: {recent}"
+        )
+        result = await self.ai_client.chat_json(
+            [{"role": "user", "content": prompt}],
+            timeout_seconds=4.0,
+        )
+        if result and isinstance(result.get("headlines"), list):
+            lines = []
+            for row in result["headlines"][:4]:
+                title = str(row.get("title", "Late Edition")).strip()
+                summary = str(row.get("summary", "")).strip()
+                lines.append(f"{title}\n{summary}")
+            body = "\n\n".join(lines)
+        else:
+            fallback = recent[-4:]
+            blocks = []
+            for idx, event in enumerate(fallback, start=1):
+                blocks.append(f"Headline {idx}\nOfficials insist order holds after reports that {event.lower()}")
+            body = "\n\n".join(blocks)
+        return {"day": context.state.game_time.day, "body": body}
 
 
 
