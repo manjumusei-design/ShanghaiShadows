@@ -363,7 +363,47 @@ class GameServer:
             body = "\n\n".join(blocks)
         return {"day": context.state.game_time.day, "body": body}
 
+    async def _maybe_trigger_storylet(self, context: SessionContext):
+        active = self.storylet_manager.maybe_trigger(context.state)
+        if not active:
+            return
+        context.state.active_storylet = active
+        lines = [active.narrative]
+        for idx, option in enumerate(active.options, start=1):
+            lines.append(f"{idx}. {option.text}")
+        await self._post_display(context, "\n".join(lines))
 
+    async def _resolve_storylet_choice(self, context: SessionContext, )
+        active = context.state.active_storylet
+        if not active:
+            return
+        try:
+            choice = int(text.strip())
+        except ValueError:
+            await context.session.send_prompt("Choose 1-" + str(len(active.options)) + ": ")
+            return
+        if choice < 1 or choice > len(active.options):
+            await context.session.send_prompt("Choose 1-" + str(len(active.options)) + ": ")
+            return
+        option = active.options[choice - 1]
+        await self.apply_storylet_effects(context, option. effects)
+        context.state.storylet_history.append(active.storylet_id)
+        followup = option.followup_storylet
+        context.state.active_storylet=None
+        if followup and followup in self.storylet_manager.storylets:
+            storylet = self.storylet_manager.storylets[followup]
+            context.state.active_storylet = ActiveStorylet(
+                storylet_id=storylet.id,
+                narrative=storylet.narrative,
+                options=storylet.options
+            )
+            lines = [storylet.narrative]
+            for idx, followup_option in enumerate(storylet.options, start=1):
+                lines.append(f"{idx}.{followup_option.text}")
+            await self._post_display(context, "\n".join(lines))
+        else:
+            await self._cmd_look(context, Command(verb="look", raw="look"))
+        
 
 
 
