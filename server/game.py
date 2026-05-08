@@ -159,16 +159,27 @@ class GameServer:
             "bond": self._cmd_stub,
         }
 
+    def _new_state(self) -> GameState:
+        world = World()
+        player = PlayerState()
+        scheduler = EventScheduler()
+        scheduler.load_from_yaml(EVENTS_PATH)
+        trust_rules = load_trust_rules(TRUST_RULES_PATH)
+        return GameState(
+            world=world,
+            player=player,
+            game_time=GameTime(),
+            scheduler=scheduler,
+            trust_rules=trust_rules,
+        )
 
-    def _room(self):
-        return self.state.world.get_room(self.state.player.current_room)
+    def _room(self, context: SessionContext):
+        return context.state.world.get_room(context.state.player.current_room) if context.state else None 
 
-    async def _broadcast(self, text: str):
-        if not self.sessions:
-            return
-        await asyncio.gather(*(s.send_display(text + "\n") for s in list(self.sessions.values())))
-
-    def _find_item_by_name(self, name: str, items: List[Item]) -> Item | None:
+    def _save_path(self, slot_name: str) -> Path:
+        return SAVES_DIR / f"{slot_name}.json"
+    
+    def _find_item_by_name(self, name: str, items: List[Item]) -> Optional[Item]:
         q = name.lower().strip()
         for item in items:
             if item.name.lower() == q or item.id.lower() == q:
