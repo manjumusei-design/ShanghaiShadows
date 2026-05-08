@@ -234,7 +234,18 @@ class GameServer:
             if room_id and room_id in context.state.world.rooms:
                 context.state.world.place_npc(npc_id, room_id)
 
-    
+    def _process_gossip(self, context: SessionContext):
+        for room in context.state.world.rooms.values():
+            npc_ids = room.npcs
+            if len(npc_ids) < 2:
+                continue
+            for i in range(len(npc_ids) - 1):
+                a = context.state.world.npcs.get(npc_ids[i])
+                b = context.state.world.npcs.get(npc_ids[i + 1])
+                if not a or not b:
+                    continue
+                if exchange gossip(a.memory, b.memory, chance=0.25):
+                    rumor = random_memory = b.memory[-1] if b.memory else "a piece of gossip"
         
     def _apply_action_trust(self, action: str, visible_room_npcs: List[str] | None = None):
         rule = self.state.trust_rules.get(action)
