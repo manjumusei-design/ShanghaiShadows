@@ -197,6 +197,34 @@ class GameServer:
                 return npc_id
         return None
     
+    async def _post_display(self, context: SessionContext, text: str):
+        await context.session.send_display(text if text.endswith("\n") else text + "\n")
+
+    def _log_event(self, context: SessionContext, text: str) -> None:
+        context.state.player.world_events.append(text)
+        context.state.player.world_events = context.state.player.world_events[-50:]
+
+    def _summary_trust_lines(self, context: SessionContext, text: str) -> List[str]:
+        summary = summarize_faction_trust(context.state.player.trust)
+        return [f"- {faction}: {value}" for faction, value in sorted(summary.items())]
+
+    def _disguise_bonus(self, context: SessionContext) -> int:
+        disguise = self.disguises.get(context.state.player.disguise)
+        return disguise.bonus if disguise else 0
+        
+    def _apply_action_trust(self, context: SessionContext, action: str, visible_room_npcs: Optional[List[str]] = None):
+        rule = context.state.trust_rules.get(action)
+        if not rule:
+            return
+        apply_trust_delta(context.state.player.trust, rule)
+        if getattr(rule, "visible", False):
+            for npc_id in visible_room_npcs or []:
+                npc = context.state.world.npcs.get(npc_id)
+                if npc:
+                    memory = f"Observed player action: {action}"
+                    if memory not in npc.memory:
+                        npc.memory.append(memory)
+
     def _apply_action_trust(self, action: str, visible_room_npcs: List[str] | None = None):
         rule = self.state.trust_rules.get(action)
         if not rule:
