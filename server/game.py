@@ -1,27 +1,41 @@
 import asyncio
 import json
+import re
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Awaitable, Callable, Dict, List
+from typing import Awaitable, Callable, Dict, List, Optional
 
-from .npc import get_dialogue
+import yaml
+
+from .ai_client import AIClient
+from .config import load_dotenv
+from .npc import Npc, get_dialogue
 from .parser import Command, parse
+from .stealth import Disguise, StealthSystem, TailingState
+from .storylets import ActiveStorylet, StoryletManager, load_storylets
 from .time_system import EventScheduler, GameTime, time_str
-from .trust import apply_trust_delta, exchange_gossip, load_trust_rules
+from .trust import (TrustMap, apply_trust_delta, change_trust, default_trust, exchange_gossip, get_role_trust, load_trust_rules, summarize_faction_trust,)
 from .world import Item, World
 
 
-FACTIONS = ["resistance", "kampeitai", "green_gang", "french_concession", "british_concession", "civilian"]
-
-SAVE_PATH = Path("server/data/savegame.json")
-
+EVENTS_PATH = "server/data/events.yaml"
+TRUST_RULES_PATH = "server/data/trust_rules.yaml"
+DISGUISES_PATH = "server/data/disguises.yaml"
+STORYLETS_PATH = "server/data/storylets.yaml"
+SAVES_DIR = Path("server/data/saves") 
 
 @dataclass
 class PlayerState:
     name: str = "Stranger"
     current_room: str = "bund_dawn"
     inventory: List[Item] = field(default_factory=list)
-    trust: Dict[str, int] = field(default_factory=lambda: {f: 50 for f in FACTIONS})
+    trust: TrustMap = field(default_factory=default_trust)
+    disguise: str = ""
+    stealth_skill: int = 55
+    hidden: bool = False
+    flags: List[str] = field(default_factory=list)
+    world_events: List[str] = field(default_factory=list)
+    newspapers: List[Dict[str, object]] = field(default_factory=list)
   
 
 @dataclass
