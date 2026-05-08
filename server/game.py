@@ -76,8 +76,8 @@ class PlayerSession:
     async def send_display(self, text: str):
         await self.websocket.send(json.dumps({"type": "display", "payload": text}))
 
-    async def send_prompt(self):
-        await self.websocket.send(json.dumps({"type": "prompt", "payload": "> "}))
+    async def send_prompt(self, text: str = "> "):
+        await self.websocket.send(json.dumps({"type": "prompt", "payload": text}))
 
 
 class GameServer:
