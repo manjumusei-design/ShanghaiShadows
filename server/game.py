@@ -107,6 +107,22 @@ def _deserialize_item(row: Dict[str, object]) -> Item:
     )
 
 
+def load_disguises(path: str) -> Dict[str, Disguise]:
+    with open(path, "r", encoding="utf-8") as f:
+        data = yaml.safe_load(f) or {}
+    disguises: Dict[str, Disguise] = {}
+    for row in data.get("disguises", []):
+        disguise = Disguise(
+            id=row["id"],
+            name=row["name"],
+            apparent_faction=row["apparent_faction"],
+            bonus=int(row.get("bonus", 0)),
+            description=row.get("description", ""),
+        )
+        disguises[disguise.id] = disguise
+    return disguises
+
+
 class GameServer:
     def __init__(self):
         world = World()
