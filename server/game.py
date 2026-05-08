@@ -45,7 +45,27 @@ class GameState:
     game_time: GameTime
     scheduler: EventScheduler
     trust_rules: Dict[str, object]
+    storylet_history: List[str] = field(default_factory=list)
+    active_storylet: Optional[ActiveStorylet] = None
+    tailing_state: Optional[TailingState] = None
+    planted_evidence: List[Dict[str, object]] = field(default_factory=list)
+    rumour_mill: Dict[str, List[str]] = field(default_factory=dict)
     last_curfew_penalty_day: int = 0
+    last_newspaper_day: int = 0
+
+    def get_trust_value(self, key: str) -> int:
+        if "." in key:
+            faction, role = key.split(".", 1)
+            return get_role_trust(self.player.trust, faction, role)
+        return get_role_trust(self.player.trust, key)
+    
+
+@dataclass
+class SessionContext:
+    session: "PlayerSession"
+    slot_name: str = ""
+    state: Optional[GameState] = None
+    seconds_seince_autosave: int = 0
 
 
 class PlayerSession:
