@@ -250,6 +250,17 @@ class GameServer:
                         context.state.rumour_mill.setdefault(b.faction, []).append(random_memory)
                         context.state.rumour_mill[b.faction] = context.state.rumour_mill[b.faction][-12:]
 
+    async def _check_curfew_penalty(self, context: SessionContext):
+        if context.state.game_time.minute < 1260:
+            return
+        if context.state.last_curfew_penalty_day == context.state.game_time.day:
+            return
+        room = self._room(context)
+        if room and not room.indoors:
+            self._apply_action_trust(context, "out after curfew", room.npcs)
+            context.state.last_curfew_penalty_day = context.state.game_time.day
+            self._log_event(context, "You were seen outside after curfew.")
+            await self._post_display(context, "The curfew is in force. Faces turn away from you in the dark as everyone hurriedly scurries back to their residence.")
 
 
 
