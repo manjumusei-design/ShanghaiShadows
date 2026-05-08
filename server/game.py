@@ -80,6 +80,33 @@ class PlayerSession:
         await self.websocket.send(json.dumps({"type": "prompt", "payload": text}))
 
 
+def _sanitize_slot_name(raw: str) -> str:
+    cleaned = re.sub(r"[^a-zA-Z0-9_-]+", "_", raw.strip().lower()).strip("_")
+    return cleaned or "default"
+
+
+def _serialize_item(item: Item) -> Dict[str, object]:
+    return {
+        "id": item.id,
+        "name": item.name,
+        "description": item.description,
+        "takeable": item.takeable,
+        "readable_text": item.readable_text,
+        "planted_on": item.planted_on,
+    }
+
+
+def _deserialize_item(row: Dict[str, object]) -> Item:
+    return Item(
+        id=str(row["id"]),
+        name=str(row["name"]),
+        description=str(row["description"]),
+        takeable=bool(row.get("takeable", True)),
+        readable_text=str(row.get("readable_text", "")),
+        planted_on=str(row.get("planted_on", "")),
+    )
+
+
 class GameServer:
     def __init__(self):
         world = World()
