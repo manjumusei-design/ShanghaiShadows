@@ -433,68 +433,24 @@ class GameServer:
                 context.state.world.place_npc(npc_id, room_id)
 
 
-    def _apply_action_trust(self, action: str, visible_room_npcs: List[str] | None = None):
-        rule = self.state.trust_rules.get(action)
-        if not rule:
-            return
-        apply_trust_delta(self.state.player.trust, rule)
-        if getattr(rule, "visible", False):
-            for npc_id in (visible_room_npcs or []):
-                npc = self.state.world.npcs.get(npc_id)
-                if npc:
-                    memory = f"Observed player action: {action}"
-                    if memory not in npc.memory:
-                        npc.memory.append(memory)
+    async def _advance_time_one_minute(self, context: SessionContext):
+        context.state.game_time.minute += 1
+        if context.state.game_time.minute >= 1440:
+            context.state.game_time.minute = 0
+            context.state.game_time += 1
+        context.state.scheduler.process(
+            context.state.game_time,
+            lambda msg: asyncio.create_task(self._post_display(context,msg)),
+        )
+        self._move_npcs_if_hour_changed(context)
+        self._process_gossip(context)
+        await self._check_planted_evidence(context)
+        await self._process_tailing(context)
+        await self._check_curfew_penalty(context)
+        await self._check_newspaper(context)
+        if context.state.game_time.minute % 15 == 0:
+            await self._maybe_trigger_storylet(context)
 
-    def _move_npcs_if_hour_changed(self):
-        if self.state.game_time.minute % 60 != 0:
-            return
-        hour = self.state.game_time.minute // 60
-        for npc_id, npc in self.state.world.npcs.items():
-            room_id = npc.schedule.get(hour)
-            if not room_id or room_id not in self.state.world.rooms:
-                continue
-            old = self.state.world.npc_locations.get(npc_id)
-            if old == room_id:
-                continue
-            if old and old in self.state.world.rooms and npc_id in self.state.world.rooms[old].npcs: 
-                self.state.world.rooms[old].npcs.remove(npc_id)
-            if npc_id not in self.state.world.rooms[room_id].npcs:
-                self.state.world.rooms[room_id].npcs.append(npc_id)
-            self.state.world.npc_locations[npc_id] = room_id
-
-    def _process_gossip(self):
-        for room in self.state.world.rooms.values():
-            npc_ids = room.npcs
-            if len(npc_ids) < 2:
-                continue
-            for i in range(len(npc_ids) -1):
-                a = self.state.world.npcs.get(npc_ids[i])
-                b = self.state.world.npcs.get(npc_ids[i + 1])
-                if not a or not b:
-                    continue
-                exchange_gossip(a.memory, b.memory, chance = 0.25)
-
-    async def _check_curfew_penalty(self):
-        if self.state.game_time.minute < 1260:
-            return
-        if self.state.last_curfew_penalty_day == self.state.game_time.day:
-            return
-        room = self._room()
-        if room and not room.indoors:
-            self._apply_action_trust("out_after_curfew", room.npcs)
-            self.state.last_curfew_penalty_day = self.state.game_time.day
-            await self._broadcast("The curfew is in force. Staying outside has made people trust you less.")
-
-    async def _advance_time_one_minute(self):
-        self.state.game_time.minute += 1
-        if self.state.game_time.minute >= 1440:
-            self.state.game_time.minute = 0
-            self.state.game_time.day += 1
-        self.state.scheduler.process(self.state.game_time, lambda msg: asyncio.create_task(self._broadcast(msg)))
-        self._move_npcs_if_hour_changed()
-        self._process_gossip()
-        await self._check_curfew_penalty()
 
     async def tick_loop(self):
         while True:
