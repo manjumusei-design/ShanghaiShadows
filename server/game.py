@@ -37,7 +37,6 @@ class PlayerState:
     world_events: List[str] = field(default_factory=list)
     newspapers: List[Dict[str, object]] = field(default_factory=list)
 
-
 @dataclass
 class GameState:
     world: World
