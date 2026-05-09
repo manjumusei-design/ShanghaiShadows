@@ -451,27 +451,44 @@ class GameServer:
         if context.state.game_time.minute % 15 == 0:
             await self._maybe_trigger_storylet(context)
 
-
     async def tick_loop(self):
         while True:
             await asyncio.sleep(1)
-            await self._advance_time_one_minute()
-            if self.state.game_time.minute % 10 == 0:
-                self.save_snapshot()
+            for context in list(self.sessions.values()):
+                if not context.state or not context.session.running:
+                    continue
+            await self._advance_time_one_minute(context)
+            context.seconds_since_autosave += 1
+            if context.seconds_since_autosave >=300:
+                self.save_slot(context)
+                context.seconds_since_autosave = 0
 
     async def handle_client(self, websocket):
         session = PlayerSession(websocket)
         client_id = f"{websocket.remote_address}"
-        self.sessions[client_id] = session
-        await session.send_display("Shanghai Shadows\n")
-        await self._cmd_look(session, Commnad(verb = "look", raw= "look"))
-        await session.send_prompt()
+        context = SessionContext(session=session)
+        self.sessions[client_id] = context
+        await session.send_display("Shanghai Shadows\nEnter save slot codename to continue.\n")
+        await session.send_prompt("slot> ")
 
         try:
             async for message in websocket:
                 text = message.strip()
-                if not text:
+                if not context.state:
+                    if not text:
+                        await session.send_prompt("slot> ")
+                        continue
+                    context.slot_name = _sanitize_slot_name(text)
+                    context.state = self.load_slot(context.slot_name)
+                    await session.send_display(f"Loaded slot '{context.slot_name}'.\n")
+                    await self._cmd_look(context, Command(verb="look", raw="lok"))
                     await session.send_prompt()
+                    continue
+
+                if context.state.active_storylet:
+                    await self._resolve_storylet_choice(context, text)
+                    if session.running:
+                        await session.send_prompt()
                     continue
 
                 cmd = parse(text)
@@ -479,12 +496,14 @@ class GameServer:
                     await session.send_prompt()
                     continue
                 handler = self.command_registry.get(cmd.verb, self._cmd_unknown)
-                await handler(session, cmd)
+                await handler(context, cmd)
                 if session.running:
                     await session.send_prompt()
         except Exception as exc:
             print(f"Client {client_id} disconnected: {exc}")
         finally:
+            if context.state:
+                self.save_slot(context)
             self.sessions.pop(client_id, None)
 
     async def _cmd_look(self, session: PlayerSession, cmd: Command):
