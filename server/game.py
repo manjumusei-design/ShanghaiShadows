@@ -36,7 +36,7 @@ class PlayerState:
     flags: List[str] = field(default_factory=list)
     world_events: List[str] = field(default_factory=list)
     newspapers: List[Dict[str, object]] = field(default_factory=list)
-  
+
 
 @dataclass
 class GameState:
@@ -58,14 +58,14 @@ class GameState:
             faction, role = key.split(".", 1)
             return get_role_trust(self.player.trust, faction, role)
         return get_role_trust(self.player.trust, key)
-    
+
 
 @dataclass
 class SessionContext:
     session: "PlayerSession"
     slot_name: str = ""
     state: Optional[GameState] = None
-    seconds_seince_autosave: int = 0
+    seconds_since_autosave: int = 0
 
 
 class PlayerSession:
@@ -125,7 +125,7 @@ def load_disguises(path: str) -> Dict[str, Disguise]:
 
 class GameServer:
     def __init__(self):
-        load dotenv()
+        load_dotenv()
         SAVES_DIR.mkdir(parents=True, exist_ok=True)
         self.ai_client = AIClient()
         self.disguises = load_disguises(DISGUISES_PATH)
@@ -174,11 +174,11 @@ class GameServer:
         )
 
     def _room(self, context: SessionContext):
-        return context.state.world.get_room(context.state.player.current_room) if context.state else None 
+        return context.state.world.get_room(context.state.player.current_room) if context.state else None
 
     def _save_path(self, slot_name: str) -> Path:
         return SAVES_DIR / f"{slot_name}.json"
-    
+
     def _find_item_by_name(self, name: str, items: List[Item]) -> Optional[Item]:
         q = name.lower().strip()
         for item in items:
@@ -188,15 +188,15 @@ class GameServer:
             if q in item.name.lower() or q in item.id.lower():
                 return item
         return None
-    
+
     def _find_npc_by_name(self, context: SessionContext, name: str, npc_ids: List[str]) -> Optional[str]:
         q = name.lower().strip()
         for npc_id in npc_ids:
-            npc = context.state.world.npcs.get(npc_id) 
+            npc = context.state.world.npcs.get(npc_id)
             if npc and (q in npc.name.lower() or q in npc.id.lower()):
                 return npc_id
         return None
-    
+
     async def _post_display(self, context: SessionContext, text: str):
         await context.session.send_display(text if text.endswith("\n") else text + "\n")
 
@@ -204,14 +204,14 @@ class GameServer:
         context.state.player.world_events.append(text)
         context.state.player.world_events = context.state.player.world_events[-50:]
 
-    def _summary_trust_lines(self, context: SessionContext, text: str) -> List[str]:
+    def _summary_trust_lines(self, context: SessionContext) -> List[str]:
         summary = summarize_faction_trust(context.state.player.trust)
         return [f"- {faction}: {value}" for faction, value in sorted(summary.items())]
 
     def _disguise_bonus(self, context: SessionContext) -> int:
         disguise = self.disguises.get(context.state.player.disguise)
         return disguise.bonus if disguise else 0
-        
+
     def _apply_action_trust(self, context: SessionContext, action: str, visible_room_npcs: Optional[List[str]] = None):
         rule = context.state.trust_rules.get(action)
         if not rule:
@@ -226,7 +226,7 @@ class GameServer:
                         npc.memory.append(memory)
 
     def _move_npcs_if_hour_changed(self, context: SessionContext):
-        if context.state.game_time.minute % 60 !=0:
+        if context.state.game_time.minute % 60 != 0:
             return
         hour = context.state.game_time.minute // 60
         for npc_id, npc in context.state.world.npcs.items():
@@ -257,7 +257,7 @@ class GameServer:
             return
         room = self._room(context)
         if room and not room.indoors:
-            self._apply_action_trust(context, "out after curfew", room.npcs)
+            self._apply_action_trust(context, "out_after_curfew", room.npcs)
             context.state.last_curfew_penalty_day = context.state.game_time.day
             self._log_event(context, "You were seen outside after curfew.")
             await self._post_display(context, "The curfew is in force. Faces turn away from you in the dark as everyone hurriedly scurries back to their residence.")
@@ -265,7 +265,7 @@ class GameServer:
     async def _check_planted_evidence(self, context: SessionContext):
         if not context.state.planted_evidence:
             return
-        remaining  = []
+        remaining = []
         for planted in context.state.planted_evidence:
             room = context.state.world.get_room(str(planted["room_id"]))
             target = str(planted.get("target", "")).lower()
@@ -282,9 +282,9 @@ class GameServer:
                         await self._post_display(context, event_text)
                         triggered = True
                         break
-                    if not triggered:
-                        remaining.append(planted)
-                context.state.planted_evidence = remaining
+            if not triggered:
+                remaining.append(planted)
+        context.state.planted_evidence = remaining
 
     async def _process_tailing(self, context: SessionContext):
         tail = context.state.tailing_state
@@ -332,8 +332,8 @@ class GameServer:
             description="A folded sheet of fresh newsprint, still smelling faintly of ink.",
             readable_text=newspaper["body"],
         )
-        context.state.player.inventory(item)
-        self._log_event(context, "A new newspaper is out. You pick up a copy and add it to your inventory.")
+        context.state.player.inventory.append(item)
+        self._log_event(context, "A new newspaper edition reached you at dawn.")
         await self._post_display(context, "At dawn a newspaper runner slips a fresh edition into your hands.")
 
     async def _generate_newspaper(self, context: SessionContext) -> Dict[str, object]:
@@ -373,7 +373,7 @@ class GameServer:
             lines.append(f"{idx}. {option.text}")
         await self._post_display(context, "\n".join(lines))
 
-    async def _resolve_storylet_choice(self, context: SessionContext, )
+    async def _resolve_storylet_choice(self, context: SessionContext, text: str):
         active = context.state.active_storylet
         if not active:
             return
@@ -386,25 +386,52 @@ class GameServer:
             await context.session.send_prompt("Choose 1-" + str(len(active.options)) + ": ")
             return
         option = active.options[choice - 1]
-        await self.apply_storylet_effects(context, option. effects)
+        await self._apply_storylet_effects(context, option.effects)
         context.state.storylet_history.append(active.storylet_id)
         followup = option.followup_storylet
-        context.state.active_storylet=None
+        context.state.active_storylet = None
         if followup and followup in self.storylet_manager.storylets:
             storylet = self.storylet_manager.storylets[followup]
             context.state.active_storylet = ActiveStorylet(
                 storylet_id=storylet.id,
                 narrative=storylet.narrative,
-                options=storylet.options
+                options=storylet.options,
             )
             lines = [storylet.narrative]
             for idx, followup_option in enumerate(storylet.options, start=1):
-                lines.append(f"{idx}.{followup_option.text}")
+                lines.append(f"{idx}. {followup_option.text}")
             await self._post_display(context, "\n".join(lines))
         else:
             await self._cmd_look(context, Command(verb="look", raw="look"))
-        
 
+    async def _apply_storylet_effects(self, context: SessionContext, effects: Dict[str, object]):
+        for flag in effects.get("set_flag", [] if isinstance(effects.get("set_flag"), list) else [effects.get("set_flag")]):
+            if flag and flag not in context.state.player.flags:
+                context.state.player.flags.append(str(flag))
+        for flag in effects.get("clear_flag", [] if isinstance(effects.get("clear_flag"), list) else [effects.get("clear_flag")]):
+            if flag in context.state.player.flags:
+                context.state.player.flags.remove(flag)
+        for trust_key, delta in effects.get("change_trust", {}).items():
+            change_trust(context.state.player.trust, trust_key, int(delta))
+        for item_id in effects.get("add_item", [] if isinstance(effects.get("add_item"), list) else [effects.get("add_item")]):
+            if item_id:
+                item = context.state.world.clone_item(str(item_id))
+                if item:
+                    context.state.player.inventory.append(item)
+        for item_id in effects.get("remove_item", [] if isinstance(effects.get("remove_item"), list) else [effects.get("remove_item")]):
+            if item_id:
+                item = self._find_item_by_name(str(item_id), context.state.player.inventory)
+                if item:
+                    context.state.player.inventory.remove(item)
+        for flag_event in effects.get("log_event", [] if isinstance(effects.get("log_event"), list) else [effects.get("log_event")]):
+            if flag_event:
+                self._log_event(context, str(flag_event))
+        for npc_id, room_id in effects.get("move_npc", {}).items():
+            if npc_id in context.state.world.npcs and room_id in context.state.world.rooms:
+                context.state.world.place_npc(npc_id, room_id)
+        for npc_id, room_id in effects.get("spawn_npc", {}).items():
+            if npc_id in context.state.world.npcs and room_id in context.state.world.rooms:
+                context.state.world.place_npc(npc_id, room_id)
 
 
     def _apply_action_trust(self, action: str, visible_room_npcs: List[str] | None = None):
