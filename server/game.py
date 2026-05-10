@@ -513,21 +513,24 @@ class GameServer:
             return
         await self._post_display(context, context.state.world.format_room(room.id))
 
-    async def _cmd_go(self, session: PlayerSession, cmd: Command):
+    async def _cmd_go(self, context: SessionContext, cmd: Command):
         direction = cmd.direct_obj
         if not direction:
-            await session.send_display ("Go where?\n")
+            await self._post_display(context, "Go where?")
             return
-        room = self.room()
+        room = self._room(context)
         if not room:
-            await session.send_display("You are nowhere. \n")
+            await self._post_display(context, "You are nowhere.")
             return
-        dest = room.exits.et(direction)
-        if not dest:
-            await session.send_display("You can't go that way.\n")
+        dest = room.exits.get(direction)
+        if not dest: 
+            await self._post_display(context, "You can't go that way.")
             return
-        self.state.player.current_room = dest
-        await self._cmd_look(session, cmd)
+        context.state.player.current_room = dest
+        context.state.player.hidden = False
+        self._log_event(context, f"You moved {direction} into {dest}.")
+        await self._cmd_look(context, cmd)
+        await self._maybe_trigger_storylet(context)
 
     async def _cmd_take(self, session: PlayerSession, cmd: Command):
         if not cmd. direct_obj:
