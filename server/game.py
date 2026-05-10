@@ -574,19 +574,16 @@ class GameServer:
             lines.append(f"- {item.name}")
         await self._post_display(context, "\n".join(lines))
         
-    async def _cmd_talk_to(self, session: PlayerSession, cmd: Command):
+    async def _cmd_talk_to(self, context: SessionContext, cmd: Command):
         if not cmd.direct_obj:
-            await session.send_display("Talk to whom?\n")
+            await self._post_display(context, "Talk to whom?")
             return
-        room = self._room()
-        npc_id = self._find_npc_by_name(cmd.direct_obj, room.npcs if room else [])
-        if not npc_id:
-            await session.send_display("They aren't here.\n")
-            return
-        npc = self.state.world.npcs[npc_id]
-        line = get_dialogue(npc, self.state.player.trust)
-        await session.send_display(f'{npc.name} says, "{line}"\n')
-        self._apply_action_trust(f"talk_to_{npc.faction}", room.npcs if room else [])
+        npc = context.state.world.npcs[npc_id]
+        line = get_dialogue(npc, context.state.player.trust)
+        await self._post_display(context, f'{npc.name} says, "{line}"')
+        self._apply_action_trust(context, f"talk_to_{npc.faction}.{npc.role}", room.npcs if room else [])
+        self._log_event(context, f"You spoke with {npc.name}.")
+        await self._maybe_trigger_storylet(context)
         
     async def _cmd_wait(self, session: PlayerSession, cmd: Command):
         if not cmd.direct_obj:
