@@ -644,8 +644,22 @@ class GameServer:
         self._log_event(context, f"You began tailing {target.name}.")
         await self._post_display(context, f"You fall in behind {target.name} and try not to be remembered.")
 
-    async def _cmd_stub(self, session: PlayerSession, cmd: Command):
-        await session.send_display(f"{cmd.verb.upper()} has not been implemented.\n")
+    async def _cmd_hide(self, context: SessionContext, cmd: Command):
+        room = self._room(context)
+        observers = [context.state.world.npcs[npc_id] for npc_id in room.npcs] if room else []
+        success, _ = self.stealth.hide_check(
+            context.state.player.stealth_skill,
+            self._disguise_bonus(context),
+            room.indoors if room else False,
+            observers,
+        )
+        context.state.player.hidden = success
+        if success:
+            self._log_event(context, "You found a place to hide.")
+            await self._post_display(context, "You slip into shadow and become part of the room's silence.")
+        else:
+            self._log_event(context, "You failed to hide cleanly.")
+            await self._post_display(context, "You try to hide, but too many eyes still know where you stand.")
         
     async def _cmd_unknown(self, session: PlayerSession, cmd: Command):
         await session.send_display(f"I don't understand '{cmd.raw}'. Try HELP.\n")
