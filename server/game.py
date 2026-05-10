@@ -661,8 +661,27 @@ class GameServer:
             self._log_event(context, "You failed to hide cleanly.")
             await self._post_display(context, "You try to hide, but too many eyes still know where you stand.")
         
-    async def _cmd_unknown(self, session: PlayerSession, cmd: Command):
-        await session.send_display(f"I don't understand '{cmd.raw}'. Try HELP.\n")
+    async def _cmd_plant(self, context: SessionContext, cmd: Command):
+        if not cmd.direct_obj:
+            await self._post_display(context, "Plant what?")
+            return
+        item = self._find_item_by_name(cmd.direct_obj, context.state.player.inventory)
+        if not item:
+            await self._post_display(context, "You don't have that.")
+            return
+        target = cmd.indirect_obj or cmd.preposition or ""
+        room = self._room(context)
+        context.state.player.inventory.remove(item)
+        context.state.planted_evidence.append(
+            {
+                "room_id": room.id if room else context.state.player.current_room,
+                "item_id": item.id,
+                "item_name": item.name,
+                "target": target,
+            }
+        )
+        self._log_event(context, f"You planted {item.name} for {target or 'whoever finds it'}.")
+        await self._post_display(context, f"You leave {item.name} where someone else will one day pay for noticing it.")
 
     def save_snapshot(self):
         room_items = {rid: [item.id for item in room.items] for rid, room in self.state.world.rooms.items()}
