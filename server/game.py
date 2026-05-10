@@ -550,19 +550,20 @@ class GameServer:
         await self._post_display(context, f"You take {item.name}.")
         await self._maybe_trigger_storylet(context)
 
-    async def _cmd_drop(self, sessionL PlayerSession, cmdL Command):
+    async def _cmd_drop(self, context: SessionContext, cmd: Command):
         if not cmd.direct_obj:
-            await session.send_display("Drop what?\n")
+            await self._post_display(context, "Drop what?")
             return
-        item = self._find_item_by_name(cmd.direct_obj, self.state.player.inventory)
+        item = self._find_item_by_name(cmd.direct_obj, context.state.player.inventory)
         if not item:
-            await session.send_display("You don't have that.\n")
+            await self._post_display(context, "You don't have that.")
             return
-        self.state.player.inventory.remove(item)
-        room = self._room()
+        context.state.player.inventory.remove(item)
+        room = self._room(context)
         if room:
             room.items.append(item)
-        await session.send_display(f"You drop {item.name}.\n")
+        self._log_event(context, f"You dropped {item.name}.")
+        await self._post_display(context, f"You drop {item.name}.")
     
     async def _cmd_inventory(self, session: PlayerSession, cmd: Command):
         if not self.state.player.inventory:
