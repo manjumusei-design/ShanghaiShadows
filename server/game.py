@@ -629,11 +629,20 @@ class GameServer:
         self._log_event(context, f"You adopted the disguise of {disguise.name}.")
         await self._post_display(context, f"You settle into the role of {disguise.name}. {disguise.description}")
 
-    async def _cmd_wait(self, session: PlayerSession, cmd: Command):
-        self.save_snapshot()
-        await session.send_display("Goodbye.\n")
-        session.running = False 
-        await session.websocket.close()
+    async def _cmd_tail(self, context: SessionContext, cmd: Command):
+        if not cmd.direct_obj:
+            await self._post_display(context, "Tail whom?")
+            return
+        room = self._room(context)
+        npc_id = self._find_npc_by_name(context, cmd.direct_obj, room.npcs if room else [])
+        if not npc_id:
+            await self._post_display(context, "They aren't here.")
+            return
+        context.state.tailing_state = self.stealth.start_tail(npc_id)
+        context.state.tailing_state.last_checked_minute = (context.state.game_time.day - 1) * 1440 + context.state.game_time.minute
+        target = context.state.world.npcs[npc_id]
+        self._log_event(context, f"You began tailing {target.name}.")
+        await self._post_display(context, f"You fall in behind {target.name} and try not to be remembered.")
 
     async def _cmd_stub(self, session: PlayerSession, cmd: Command):
         await session.send_display(f"{cmd.verb.upper()} has not been implemented.\n")
