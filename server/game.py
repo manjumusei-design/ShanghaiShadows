@@ -506,22 +506,12 @@ class GameServer:
                 self.save_slot(context)
             self.sessions.pop(client_id, None)
 
-    async def _cmd_look(self, session: PlayerSession, cmd: Command):
-        room = self._room()
-        if not room: 
-            await session.send_display("You are nowhere.\n")
+    async def _cmd_look(self, context: SessionContext, cmd: Command):
+        room = self._room(context)
+        if not room:
+            await self._post_display(context, "You are nowhere.")
             return
-        text = f"{room.title}\n{room.description}\n"
-        if room.items:
-            text += "You see: " + ", ".join(item.name for item in room.items) + "\n"
-        if room.npcs:
-            for npc_id in room.npcs:
-                npc = self.state.world.npcs.get(npc_id)
-                if npc:
-                    text += f"{npc.name} is here.\n"
-        if room.exits:
-            text += "Exits: " + ", ".join(room.exits.keys()) + "\n"
-        await session.send_display(text)
+        await self._post_display(context, context.state.world.format_room(room.id))
 
     async def _cmd_go(self, session: PlayerSession, cmd: Command):
         direction = cmd.direct_obj
