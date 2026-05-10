@@ -590,23 +590,20 @@ class GameServer:
         self._log_event(context, f"You spoke with {npc.name}.")
         await self._maybe_trigger_storylet(context)
 
-        
-    async def _cmd_wait(self, session: PlayerSession, cmd: Command):
+    async def _cmd_wait(self, context: SessionContext, cmd: Command):
         if not cmd.direct_obj:
-            await session.send_display("Wait how long?\n")
+            await self._post_display(context, "Wait how long?")
             return
         try:
             minutes = int(cmd.direct_obj)
         except ValueError:
-            await session.send_display("You must wait a number of minutes.\n")
+            await self._post_display(context, "You must wait a number of minutes.")
             return
-        if minutes < 1:
-            await session.send_display("Wait at least 1 minute.\n")
-            return
-        minutes = min(minutes, 240)
+        minutes = max(1, min(minutes, 240))
         for _ in range(minutes):
-            await self._advance_time_one_minute()
-        await session.send_display(f"You wait {minutes} minutes. It is now {time_str(self.state.game_time)}.\n")
+            await self._advance_time_one_minute(context)
+        self._log_event(context, f"You waited {minutes} minutes.")
+        await self._post_display(context, f"You wait {minutes} minutes. It is now {time_str(context.state.game_time)}.")
 
     async def _cmd_status(self, session: PlayerSession, cmd: Command):
         lines = [f"{time_str(self.state.game_time)}", "Trust:"]
