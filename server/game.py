@@ -696,79 +696,31 @@ class GameServer:
             return
         await self._post_display(context, item.readable_text)
         
-    def save_snapshot(self):
-        room_items = {rid: [item.id for item in room.items] for rid, room in self.state.world.rooms.items()}
-        npc_locations = dict(self.state.world.npc_locations)
-        npc_memory = {nid: list(npc.memory) for nid, npc in self.state.world.npcs.items()}
-        payload = {
-            "player": {
-                "name": self.state.player.name,
-                "current_room": self.state.player.current_room,
-                "inventory": [item.id for item in self.state.player.inventory],
-                "trust": self.state.player.trust,
-            },
-            "time": {"day": self.state.game_time.day, "minute": self.state.game_time.minute},
-            "last_curfew_penalty_day": self.state.last_curfew_penalty_day,
-            "room_items": room_items,
-            "npc_locations": npc_locations,
-            "npc_memory": npc_memory,
-        }
-        SAVE_PATH.write_text(json.dumps(payload, indent=2), encoding="utf-8")
-
-    def load_snapshot(self):
-        if not SAVE_PATH.exists():
+    async def _cmd_journal(self, context: SessionContext, cmd: Command):
+        if not context.state.player.world_events:
+            await self._post_display(context, "Your journal would be blank tonight.")
             return
-        try:
-            data = json.loads(SAVE_PATH.read_text(encoding="utf-8"))
-        except Exception:
-            return
-        
-        player_data = data.get("player", {})
-        self.state.player.name = player_data.get("name", self.state.player.name)
-        self.state.player.current_room = player_data.get("current_room", self.state.player.current_room)
-        self.state.player.trust.update(player_data.get("trust", {}))
+        lines = ["Recent memories:"]
+        for event in context.state.player.world_events[-10:]:
+            lines.append(f"- {event}")
+        await self._post_display(context, "\n".join(lines))
 
-        items_by_id = {}
-        for room in self.state.world.rooms.values():
-            for item in room.items:
-                items_by_id[item.id] =item
-        for item in self.state.player.inventory:
-            items_by_id[item.id] = item
+    async def _cmd_help(self, context: SessionContext, cmd: Command):
+        await self._post_display(
+            context,
+            "LOOK, GO <direction>, TAKE <item>, DROP <item>, INVENTORY, READ <item>\n"
+            "TALK TO <npc>, WAIT <minutes>, STATUS, DISGUISE AS <role>, TAIL <npc>, HIDE, PLANT <item>\n"
+            "HELP, QUIT",
+        )
 
-        room_item_map = data.get("room_items", {})
-        for room_id, item_ids in room_item_map.items():
-            room = self.state.world.rooms.get(room_id)
-            if not room:
-                continue
-            room.items = []
-            for item_id in item_ids:
-                src = items_by_id.get(item_id)
-                if src:
-                    room.items.append(Item(id=src.id, name=src.name, description=src.description, takeable=src.takeable))
+    async def _cmd_quit(self, context: SessionContext, cmd: Command):
+        self.save_slot(context)
+        await self._post_display(context, "Goodbye.")
+        context.session.running = False
+        await context.session.websocket.close()
 
-        self.state.player.inventory = []
-        for item_id in player_data.get("inventory", []):
-            src = items_by_id.get(item_id)
-            if src:
-                self.state.player.inventory.append(Item(id=src.id, name=src.name, description=src.description, takeable=src.takeable))
+    async def _cmd_stub(self, context: SessionContext, cmd: Command):
+        await self._post_display(context, f"{cmd.verb.upper()} has not been implemented.")
 
-        t = data.get("time", {})
-        self.state.game_time.day = int(t.get("day", self.state.game_time.day))
-        self.state.game_time.minute = int(t.get("minute", self.state.game_time.minute))
-        self.state.last_curfew_penalty_day = int(data.get("last_curfew_penalty_day", 0))
-
-        npc_locations = data.get("npc_locations", {})
-        for room in self.state.world.rooms.values():
-            room.npcs = []
-        self.state.world.npc_locations = {}
-        for npc_id, room_id in npc_locations.items():
-            if npc_id in self.state.world.npcs and room_id in self.state.world.rooms:
-                self.state.world.rooms[room_id].npcs.append(npc_id)
-                self.state.world.npc_locations[npc_id] = room_id
-
-        for npc_id, memories in data.get("npc_memory", {}).items():
-            npc = self.state.world.npcs.get(npc_id)
-            if npc:
-                npc.memory = list(memories)
-                
-
+    async def _cmd_unknown(self, context: SessionContext, cmd: Command):
+        await self._post_display(context, f"I don't understand '{cmd.raw}'. Try HELP.")
