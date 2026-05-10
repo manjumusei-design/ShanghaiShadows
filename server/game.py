@@ -683,6 +683,19 @@ class GameServer:
         self._log_event(context, f"You planted {item.name} for {target or 'whoever finds it'}.")
         await self._post_display(context, f"You leave {item.name} where someone else will one day pay for noticing it.")
 
+    async def _cmd_read(self, context: SessionContext, cmd: Command):
+        if not cmd.direct_obj:
+            await self._post_display(context, "Read what?")
+            return
+        item = self._find_item_by_name(cmd.direct_obj, context.state.player.inventory)
+        if not item:
+            await self._post_display(context, "You don't have that.")
+            return
+        if not item.readable_text:
+            await self._post_display(context, "There is nothing useful written on it.")
+            return
+        await self._post_display(context, item.readable_text)
+        
     def save_snapshot(self):
         room_items = {rid: [item.id for item in room.items] for rid, room in self.state.world.rooms.items()}
         npc_locations = dict(self.state.world.npc_locations)
