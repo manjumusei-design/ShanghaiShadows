@@ -565,14 +565,14 @@ class GameServer:
         self._log_event(context, f"You dropped {item.name}.")
         await self._post_display(context, f"You drop {item.name}.")
     
-    async def _cmd_inventory(self, session: PlayerSession, cmd: Command):
-        if not self.state.player.inventory:
-            await session.send_display("You are empty-handed.\n")
+    async def _cmd_inventory(self, context: SessionContext, cmd: Command):
+        if not context.state.player.inventory:
+            await self._post_display(context, "You are empty-handed.")
             return
         lines = ["You are carrying:"]
-        for item in self.state.player.inventory:
+        for item in context.state.player.inventory:
             lines.append(f"- {item.name}")
-        await session.send_display("\n".join(lines) + "\n")
+        await self._post_display(context, "\n".join(lines))
         
     async def _cmd_talk_to(self, session: PlayerSession, cmd: Command):
         if not cmd.direct_obj:
