@@ -536,7 +536,7 @@ class GameServer:
         if not cmd.direct_obj:
             await self._post_display(context, "Take what?")
             return
-        room = self.room(context)
+        room = self._room(context)
         item = self._find_item_by_name(cmd.direct_obj, room.items if room else [])
         if not item:
             await self._post_display(context, "You don't see that here.")
@@ -545,7 +545,7 @@ class GameServer:
             await self._post_display(context, "You can't take that.")
             return
         room.items.remove(item)
-        context.state.player.inventory.remove(item)
+        context.state.player.inventory.append(item)
         self._log_event(context, f"You took {item.name}.")
         await self._post_display(context, f"You take {item.name}.")
         await self._maybe_trigger_storylet(context)
