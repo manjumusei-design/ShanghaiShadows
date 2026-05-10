@@ -724,3 +724,113 @@ class GameServer:
 
     async def _cmd_unknown(self, context: SessionContext, cmd: Command):
         await self._post_display(context, f"I don't understand '{cmd.raw}'. Try HELP.")
+
+    def save_slot(self, context: SessionContext):
+        state = context.state
+        if not state or not context.slot_name:
+            return
+        payload = {
+            "player": {
+                "name": state.player.name,
+                "current_room": state.player.current_room,
+                "inventory": [_serialize_item(item) for item in state.player.inventory],
+                "trust": state.player.trust,
+                "disguise": state.player.disguise,
+                "stealth_skill": state.player.stealth_skill,
+                "hidden": state.player.hidden,
+                "flags": state.player.flags,
+                "world_events": state.player.world_events,
+                "newspapers": state.player.newspapers,
+            },
+            "time": {"day": state.game_time.day, "minute": state.game_time.minute},
+            "room_items": {
+                room_id: [_serialize_item(item) for item in room.items]
+                for room_id, room in state.world.rooms.items()
+            },
+            "npc_locations": state.world.npc_locations,
+            "npc_memory": {npc_id: npc.memory for npc_id, npc in state.world.npcs.items()},
+            "scheduler": state.scheduler.to_payload(),
+            "storylet_history": state.storylet_history,
+            "active_storylet": state.active_storylet.storylet_id if state.active_storylet else "",
+            "tailing_state": {
+                "target_npc_id": state.tailing_state.target_npc_id,
+                "distance": state.tailing_state.distance,
+                "elapsed_minutes": state.tailing_state.elapsed_minutes,
+                "last_checked_minute": state.tailing_state.last_checked_minute,
+            } if state.tailing_state else None,
+            "planted_evidence": state.planted_evidence,
+            "rumour_mill": state.rumour_mill,
+            "last_curfew_penalty_day": state.last_curfew_penalty_day,
+            "last_newspaper_day": state.last_newspaper_day,
+        }
+        self._save_path(context.slot_name).write_text(json.dumps(payload, indent=2), encoding="utf-8")
+
+    def load_slot(self, slot_name: str) -> GameState:
+        state = self._new_state()
+        path = self._save_path(slot_name)
+        if not path.exists():
+            return state
+        try:
+            data = json.loads(path.read_text(encoding="utf-8"))
+        except Exception:
+            return state
+
+        player_data = data.get("player", {})
+        state.player.name = player_data.get("name", state.player.name)
+        state.player.current_room = player_data.get("current_room", state.player.current_room)
+        state.player.inventory = [_deserialize_item(row) for row in player_data.get("inventory", [])]
+        state.player.trust = player_data.get("trust", default_trust())
+        state.player.disguise = player_data.get("disguise", "")
+        state.player.stealth_skill = int(player_data.get("stealth_skill", 55))
+        state.player.hidden = bool(player_data.get("hidden", False))
+        state.player.flags = list(player_data.get("flags", []))
+        state.player.world_events = list(player_data.get("world_events", []))
+        state.player.newspapers = list(player_data.get("newspapers", []))
+        state.game_time.day = int(data.get("time", {}).get("day", 1))
+        state.game_time.minute = int(data.get("time", {}).get("minute", 0))
+
+        room_items = data.get("room_items")
+        if isinstance(room_items, dict):
+            for room in state.world.rooms.values():
+                room.items = []
+            for room_id, rows in room_items.items():
+                room = state.world.rooms.get(room_id)
+                if room:
+                    room.items = [_deserialize_item(row) for row in rows]
+
+        npc_locations = data.get("npc_locations")
+        if isinstance(npc_locations, dict):
+            for room in state.world.rooms.values():
+                room.npcs = []
+            state.world.npc_locations = {}
+            for npc_id, room_id in npc_locations.items():
+                if npc_id in state.world.npcs and room_id in state.world.rooms:
+                    state.world.place_npc(npc_id, room_id)
+        for npc_id, memories in data.get("npc_memory", {}).items():
+            npc = state.world.npcs.get(npc_id)
+            if npc:
+                npc.memory = list(memories)
+
+        state.scheduler.load_from_payload(data.get("scheduler", []))
+        state.storylet_history = list(data.get("storylet_history", []))
+        storylet_id = data.get("active_storylet", "")
+        if storylet_id and storylet_id in self.storylet_manager.storylets:
+            storylet = self.storylet_manager.storylets[storylet_id]
+            state.active_storylet = ActiveStorylet(
+                storylet_id=storylet.id,
+                narrative=storylet.narrative,
+                options=storylet.options,
+            )
+        tail = data.get("tailing_state")
+        if tail:
+            state.tailing_state = TailingState(
+                target_npc_id=tail["target_npc_id"],
+                distance=int(tail.get("distance", 2)),
+                elapsed_minutes=int(tail.get("elapsed_minutes", 0)),
+                last_checked_minute=int(tail.get("last_checked_minute", 0)),
+            )
+        state.planted_evidence = list(data.get("planted_evidence", []))
+        state.rumour_mill = dict(data.get("rumour_mill", {}))
+        state.last_curfew_penalty_day = int(data.get("last_curfew_penalty_day", 0))
+        state.last_newspaper_day = int(data.get("last_newspaper_day", 0))
+        return state
