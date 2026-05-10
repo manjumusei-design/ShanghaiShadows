@@ -616,12 +616,18 @@ class GameServer:
             lines.append("Flags: " + ", ".join(sorted(context.state.player.flags)))
         await self._post_display(context, "\n".join(lines))
 
-    async def _cmd_help(self, session: PlayerSession, cmd: Command):
-        await session.send_display(
-            "Available commands:\n"
-            "LOOK, GO <direction>, TAKE <item>, DROP <item>, INVENTORY\n"
-            "TALK TO <npc>, WAIT <minutes>, STATUS, HELP, QUIT\n"
-        )
+    async def _cmd_disguise_as(self, context: SessionContext, cmd: Command):
+        if not cmd.direct_obj:
+            await self._post_display(context, "Disguise as what?")
+            return
+        query = cmd.direct_obj.lower().replace(" ", "_")
+        disguise = self.disguises.get(query)
+        if not disguise:
+            await self._post_display(context, "That disguise is not prepared for you.")
+            return
+        context.state.player.disguise = disguise.id
+        self._log_event(context, f"You adopted the disguise of {disguise.name}.")
+        await self._post_display(context, f"You settle into the role of {disguise.name}. {disguise.description}")
 
     async def _cmd_wait(self, session: PlayerSession, cmd: Command):
         self.save_snapshot()
