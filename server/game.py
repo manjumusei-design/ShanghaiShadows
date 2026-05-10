@@ -605,11 +605,16 @@ class GameServer:
         self._log_event(context, f"You waited {minutes} minutes.")
         await self._post_display(context, f"You wait {minutes} minutes. It is now {time_str(context.state.game_time)}.")
 
-    async def _cmd_status(self, session: PlayerSession, cmd: Command):
-        lines = [f"{time_str(self.state.game_time)}", "Trust:"]
-        for faction in FACTIONS:
-            lines.append(f"- {faction}: {self.state.player.trust.get(faction, 50)}")
-        await session.send_display("\n".join(lines) + "\n")
+    async def _cmd_status(self, context: SessionContext, cmd: Command):
+        disguise = self.disguises.get(context.state.player.disguise)
+        lines = [time_str(context.state.game_time)]
+        lines.append(f"Disguise: {disguise.name if disguise else 'none'}")
+        lines.append(f"Stealth skill: {context.state.player.stealth_skill}")
+        lines.append("Trust:")
+        lines.extend(self._summary_trust_lines(context))
+        if context.state.player.flags:
+            lines.append("Flags: " + ", ".join(sorted(context.state.player.flags)))
+        await self._post_display(context, "\n".join(lines))
 
     async def _cmd_help(self, session: PlayerSession, cmd: Command):
         await session.send_display(
