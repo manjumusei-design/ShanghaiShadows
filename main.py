@@ -7,7 +7,7 @@ from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 import websockets
 
 from server.game import GameServer
-
+test
 
 class ClientHandler(SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
