@@ -35,3 +35,4 @@ rules:
       civilian.worker: -8
       kempeitai.patrol: 6
     visible: true
+    dfd
