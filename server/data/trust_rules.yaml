@@ -1,28 +1,37 @@
 rules:
-  - action: "talk_to_resistance"
+  - action: "talk_to_resistance.courier"
     deltas:
-      civilian: 10 
-      kempeitai: -5
-      resistance: 0
+      resistance.courier: 10
+      kempeitai.informant: -5
     visible: true
 
-  - action: "talk_to_kempeitai"
+  - action: "talk_to_resistance.safehouse"
     deltas:
-      civilian: -3
-      kempeitai: 8
-      resistance: -10
+      resistance.safehouse: 8
+      kempeitai.officer: -3
+    visible: true
+
+  - action: "talk_to_kempeitai.officer"
+    deltas:
+      kempeitai.officer: 8
+      resistance.courier: -10
+      civilian.resident: -4
+    visible: true
+
+  - action: "talk_to_civilian.vendor"
+    deltas:
+      civilian.vendor: 6
+    visible: false
+
+  - action: "talk_to_green_gang.smuggler"
+    deltas:
+      green_gang.smuggler: 8
+      civilian.vendor: -3
     visible: true
 
   - action: "out_after_curfew"
     deltas:
-      civilian: -10
-      kempeitai: 0
-      resistance: -2
-    visible: true
-
-  - action: "carry_weapon" 
-    deltas:
-      civilian: -10
-      kampeitai: -5
-      resistance: 0
+      civilian.resident: -10
+      civilian.worker: -8
+      kempeitai.patrol: 6
     visible: true
