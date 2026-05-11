@@ -1,0 +1,185 @@
+storylets:
+  - id: wounded_courier
+    location_tags: [old_city, alley]
+    trigger_chance: 0.7
+    preconditions:
+      trust_ranges:
+        civilian.resident: [30, 90]
+      game_hour: [20, 23]
+      flags_missing: [helped_courier, betrayed_courier]
+    narrative: "A man stumbles out of the dark with one hand over a wet wound. A Resistance armband flashes beneath his coat before he hides it again."
+    options:
+      - text: "Help him into the shadows."
+        effects:
+          set_flag: helped_courier
+          change_trust:
+            resistance.courier: 15
+            civilian.resident: 8
+          add_item: bloodied_message
+          log_event: "You hid a wounded courier from the patrols."
+        followup_storylet: grateful_contact
+      - text: "Alert the patrol."
+        effects:
+          set_flag: betrayed_courier
+          change_trust:
+            kempeitai.patrol: 18
+            civilian.resident: -20
+          log_event: "You betrayed a wounded courier to the authorities."
+
+  - id: grateful_contact
+    location_tags: [old_city, shrine]
+    trigger_chance: 0.8
+    preconditions:
+      flags_required: [helped_courier]
+      flags_missing: [met_grateful_contact]
+    narrative: "A woman waiting beside a shrine does not look at you when she speaks. 'The man you saved still breathes. Take this and keep walking.'"
+    options:
+      - text: "Accept the forged pass."
+        effects:
+          set_flag: met_grateful_contact
+          add_item: forged_pass
+          change_trust:
+            resistance.safehouse: 10
+          log_event: "A grateful contact gave you a forged pass."
+      - text: "Refuse and move on."
+        effects:
+          set_flag: met_grateful_contact
+          change_trust:
+            resistance.safehouse: 3
+          log_event: "You refused a reward from the Resistance."
+
+  - id: tea_house_whisper
+    location_tags: [teahouse]
+    trigger_chance: 0.55
+    preconditions:
+      game_hour: [14, 20]
+      flags_missing: [heard_teahouse_whisper]
+    narrative: "Two patrons pause their game of xiangqi when you sit too close. One line drifts your way anyway: 'Tonight. Pier Six. No mistakes.'"
+    options:
+      - text: "Memorize the line and leave quietly."
+        effects:
+          set_flag: heard_teahouse_whisper
+          change_trust:
+            resistance.courier: 4
+          log_event: "You overheard a whisper about Pier Six."
+      - text: "Lean in and press for more."
+        effects:
+          set_flag: heard_teahouse_whisper
+          change_trust:
+            civilian.vendor: -6
+            resistance.courier: -4
+          log_event: "You pressed strangers too hard for information and made them uncomfortable."
+
+  - id: night_knock
+    location_tags: [lilong, residence]
+    trigger_chance: 0.45
+    preconditions:
+      game_hour: [22, 23]
+      flags_missing: [answered_night_knock]
+    narrative: "A knock comes in a rhythm no honest visitor would ever use. The lane outside has already gone quiet."
+    options:
+      - text: "Open the door a crack."
+        effects:
+          set_flag: answered_night_knock
+          change_trust:
+            resistance.safehouse: 8
+          add_item: coded_ledger
+          log_event: "A covert visitor left you a coded ledger."
+      - text: "Stay silent and let them go."
+        effects:
+          set_flag: answered_night_knock
+          change_trust:
+            civilian.resident: 4
+          log_event: "You chose caution over contact after a suspicious knock."
+
+  - id: rice_queue_argument
+    location_tags: [market] 
+    trigger_chance: 0.6
+    preconditions:
+      flags_missing: [settled_rice_queue]
+    narrative: "The ration queue buckles into anger when a clerk tries to close the window early. Hunger subsequently makes the crowd brave for one minute at at time."
+    options:
+      - text: "Calm the crowd and negotiate."
+        effects:
+          set_flag: settled_rice_queue
+          change_trust:
+            civilian.vendor: 8
+            civilian.worker: 5
+          log_event: "You calmed a ration queue before it turned into a riot."
+      - text: "Fan the anger and slip away."
+        effects:
+          set_flag: settled_rice_queue
+          change_trust:
+            green_gang.broker: 4
+            civilian.worker: -8 
+          add_item: hidden_cash
+          log_event: "You profited from unrest at a ration queue."
+
+  - id: patrol_glance
+    location_tags: [checkpoint]
+    trigger_chance: 0.5
+    preconditions:
+      flags_missing: [survived_patrol_glance]
+    narrative: "A patrol sergeant lingers over your papers half a second longer than comfort allows."
+    options:
+      - text: "Hold steady and meet his stare."
+        effects:
+          set_flag: survived_patrol_glance
+          change_trust:
+            kempetai.officer: 5
+          log_event: "You stood firm under a patrol sergeant's scrutiny."
+      - text: "Lower your eyes and apologize."
+        effects:
+          set_flag: survived_patrol_glance
+          change_trust:
+            civilian.resident: 2
+            kempeitai.officer: -2
+          log_event: "You submitted to a patrol sergeant's scrutiny and passed."
+
+  - id: dock_crate
+    location_tags: [dock]
+    trigger_chance: 0.5
+    preconditions:
+      flags_missing: [opened_dock_crate]
+    narrative: "A crate lies split open on the dock, straw spilling into a puddle clack with oil."
+    options:
+      - text: "Search the crate before anyone notices."
+        effects:
+          set_flag: opened_dock_crate
+          add_item: dock_manifest
+          change_trust:
+            british.dockmaster: 3
+            green_gang.smuggler: 5
+          log_event: "You searched a broken crate on the docks."
+      - text: "Flag down a foreman."
+        effects:
+          set_flag: opened_dock_crate
+          change_trust:
+            civilian.worker: 5
+            green_gang.smuggler: -5
+          log_event: "You alerted a foreman about a broken crate."
+
+  - id: hidden_prayer
+    location_tags: [shrine]
+    trigger_chance: 0.5
+    preconditions:
+      flags_missing: [found_hidden_prayer]
+    narrative: "A candle guttering in the draft reveals fresh ash and a folded scrap tucked behind the altar rail."
+    options:
+      - text: "Take the talisman and the note."
+        effects:
+          set_flag: found_hidden_prayer
+          add_item: temple_talisman
+          change_trust:
+            civilian.resident: 6
+            resistance.safehouse: 3
+          log_event: "You found a hidden prayer note in a shrine."
+      - text: "Leave it untouched."
+        effects:
+          set_flag: found_hidden_prayer
+          change_trust:
+            civilian.resident: 3
+          log_event: "You left a hidden shrine message undisturbed."
+
+          
+          
