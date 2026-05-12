@@ -26,7 +26,79 @@ districts:
 
   - prefix: commercial
     room_prefix: commercial
-    title_prefix: "Commercial Street"
-    count: 25
+    title_prefix: "Commercial Street  "
+    count: 25 ds
     tags: [commercial, market, teahouse, printshop, office, food]
-    
+    indoors_every: 4
+    item_cycle: [silk_scarf, newspaper, ration_card, hidden_cash]
+    description_templates: 
+      - "Shop shutters rattle in the wind and painted signs peel over windows that no longer trust daylight."
+      - "The lane carries perfume, frying oil, and the stale fear of people learning to bargain without speaking in plain terms."
+      - "A tram line cuts through the street like a memory of progress from a calmer decade."
+      - "Neon tubes buzz fitfully above shops that trade in luxury and whisphes by night."
+      - "Teahouses, tailors and pawnshops lean close enough to share secrets across the street."
+    special_ids:
+      "1": nanking_road
+    special_names:
+      "1": "Nanking Road"
+    connectors:
+      - at: 1
+        direction: east
+        to: bund_dawn
+      - at: 10
+        direction: south
+        to: french_01
+      - at: 20
+        direction: south
+        to: oldcity_01
+      - at: 25
+        direction: north
+        to: hongkou_01
+
+  - prefix: old_city
+    room_prefix: oldcity
+    title_prefix: "Old City Lane"
+    count: 25
+    tags: [old_city, alley, shrine, residence, school, bridge, clinic]
+    indoors_every: 3
+    item_cycle: [temple_talisman, prayer_beads, bloodied_message, photograph]
+    description_templates:
+      - "Grey brick walls hold the night's damp, and laundry lines sag like tired flags over the alley."
+      - "Small courtyards open and close between walls inked with rain and propaganda."
+      - "The lane smells of cooking rice, old incense, and drains that never quite dry."
+      - "Wooden doors sit shoulder to shoulder, each one thin enough to hear worry through."
+      - "A shrine niche flickers from somewhere unseen, giving the alley more conscience than light."
+    connectors:
+      - at: 1
+        direction: north
+        to: commercial_20
+      - at: 12
+        direction: west
+        to: french_10
+      - at: 25
+        direction: east
+        to: hongkou_10
+
+  - prefix: hongkou
+    room_prefix: hongkou
+    title_prefix: "Hongkou Street."
+    count: 25
+    tags: [hongkou, checkpoint, refugee, station, clinic]
+    indoors_every: 4
+    item_cycle: [forged_pass, patrol_route, ration_card, newspaper]
+    description_templates:
+      - "Patrol boots scrape over tram grit while signboards in several languages stare past one another in silence."
+      - "Cheap boarding houses and military trucks share the same street under a sky the color of dirty tin."
+      - "The refugee line knots around the corner, watched by rifles too tired to lower themselves."
+      - "The district carries soot, diesel, and the brittle patience of people waiting for permission to move."
+      - "Tea steam rises from chipped bowls and dissapears before it reaches the barbed wire."
+    connectors:
+      - at: 1
+        direction: south
+        to: commercial_25
+      - at: 10
+        direction: west
+        to: oldcity_25
+      - at: 20
+        direction: south
+        to: docks_15
