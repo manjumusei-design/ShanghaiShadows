@@ -181,5 +181,26 @@ storylets:
             civilian.resident: 3
           log_event: "You left a hidden shrine message undisturbed."
 
-          
+  - id: alley_child
+    location_tags: [alley]
+    trigger_chance: 0.45
+    preconditions:
+      flags_missing: [helped_alley_child]
+    narrative: "A child with bare feet watches you from behind a broken handcart, too hungry to hide properly."
+    options:
+      - text: "Share what little you have."
+        effects:
+          set_flag: helped_alley_child
+          change_trust:
+            civilian.resident: 10
+            civilian.worker: 6
+          log_event: "You shared scarce provisions with a hungry child."
+      - text: "Keep walking."
+        effects: 
+          set_flag: helped_alley_child
+          change_trust:
+            civilian.resident: -4
+          log_event: "You left a hungry child behind."
+
+
           
