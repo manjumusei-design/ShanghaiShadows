@@ -1,19 +1,32 @@
-bund_dawn:
-  id: bund_dawn
-  title: "The Bund, Dawn"
-  description: "A grey mist hangs over the Huangpu River. Japanese warships sit motionless, their flags limp in the humid air. The promenade is nearly empty, save for a few rickshaw pullers huddled by the railing."
-  exits:
-    west: nanking_road
-  items:
-    - ration_card
-    - brass_key
-  indoors: false
+districts:
+  - prefix: bund
+    room_prefix: bund
+    title_prefix: "Bund Promenade"
+    count: 25
+    tags: [bund, river, checkpoint]
+    indoors_every: 5
+    item_cycle: [ration_card, photograph, newspaper, brass_key]
+    description_templates:
+      - "River mist drifts around bollards and broken reflections while clerks hurry by with thier collars turned up."
+      - "The embankment smells of coal and wet rope, and every footstep seems to carry farther than it should."
+      - "Across the water, cranes and gunmetal hulls hold the dawn in a hard, metallic silence."
+      - "Foreign stone facades glow weakly through the haze, pretending the century has not been split open."
+      - "Rickshaw wheels hiss over damp paving while watchful soldiers make the promenade feel narrower than it is."
+    special_ids:
+      "1": bund_dawm
+    special_names:
+      "1": "The Bund, Dawn"
+    connectors:
+      - at: 1
+        direction: west
+        to: nanking_road
+      - at: 25
+        direction: south 
+        to: docks_01
+
+  - prefix: commercial
+    room_prefix: commercial
+    title_prefix: "Commercial Street"
+    count: 25
+    tags: [commercial, market, teahouse, printshop, office, food]
     
-nanking_road:
-  id: nanking_road
-  title: "Nanking Road"
-  description: "The great shopping street is a ghost of itself. Metal shutters are drawn over shop fronts. A Japanese patrol marches past, their boots echoing on the cobblestones."
-  exits:
-    east: bund_dawn
-  indoors: false
-  
