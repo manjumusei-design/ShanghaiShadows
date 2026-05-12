@@ -201,6 +201,48 @@ storylets:
           change_trust:
             civilian.resident: -4
           log_event: "You left a hungry child behind."
-
-
           
+  - id: smoked_window
+    location_tags: [safehouse]
+    trigger_chance: 0.55
+    preconditions:
+      trust_ranges:
+        resistance.safehouse: [45, 100]
+      flags_missing: [entered_smoked_window]
+    narrative: "One safehouse window is smoked black from within. Someone opens it a finger-width when you pass."
+    options:
+      - text: "Give the passphrase you were told."
+        effects:
+          set_flag: entered_smoked_window
+          change_trust:
+            resistance.safehouse: 12
+          log_event: "A safehouse finally let you inside."
+      - text: "Keep your silence and move on."
+        effects:
+          set_flag: entered_smoked_window
+          change_trust:
+            resistance.safehouse: -3
+          log_event: "You passed by a possible safehouse without making contact."
+
+  - id: contraband_offer
+    location_tags: [market]
+    trigger_chance: 0.5
+    preconditions:
+      flags_missing: [resolved_contraband_offer]
+    narrative: "A vendor opens his coat just enough for you to see medicine where soap should be."
+    options:
+      - text: "Buy the morphine and say nothing."
+        effects:
+          set_flag: resolved_contraband_offer
+          add_item: contraband_morphine
+          change_trust:
+            green_gang.broker: 8
+          log_event: "You bought contraband morphine from a market vendor."
+      - text: "Warn him the patrols are close."
+        effects:
+          set_flag: resolved_contraband_offer
+          change_trust:
+            civilian.vendor: 8
+            green_gang.broker: 2
+          log_event: "You warned a vendor before the patrols arrived."
+
