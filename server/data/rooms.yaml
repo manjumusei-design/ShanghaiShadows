@@ -102,3 +102,30 @@ districts:
       - at: 20
         direction: south
         to: docks_15
+
+  - prefix: french
+    room_prefix: french
+    title_prefix: "French Concession Lane"
+    count: 25
+    tags: [french, balcony, church, office, rooftop, safehouse, attic]
+    indoors_every: 2
+    item_cycle: [silk_scarf, coded_ledger, hidden_cash, temple_talisman]
+    description_templates:
+      - "Plane trees drag their shadows over cracked paving and pale facades with shuttered eyes."
+      - "Balconies lean overhead with ironwork elegant enough to make the war feel like an insult to architecture."
+      - "Coffee, wine, and sewer water compete in the air with no clear victor."
+      - "A church bell somewhere nearby hesitates before each note as though even sound requires permission."
+      - "Clerks, exiles, and oppurtunists pass under striped awnings with practiced indifference."
+    connectors:
+      - at: 1
+        direction: north
+        to: commercial_10
+      - at: 10
+        direction: east
+        to: oldcity_12
+      - at: 25
+        direct: south
+        to: dock_20
+
+
+       
