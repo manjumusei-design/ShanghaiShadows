@@ -127,5 +127,30 @@ districts:
         direct: south
         to: dock_20
 
+  - prefix: docks
+    room_prefix: docks
+    title_prefix: "Huangpu Dock"
+    count: 25
+    tags: [dock, river, warehouse, gambling]
+    indoors_every: 6
+    item_cycle: [dock_manifest, truncheon, hidden_cash, contraband_morphine]
+    description_templates:
+      - "Cargo hooks creak over black water while foremen count men the way they count crates."
+      - "Oil sheens spread rainbow-thin across puddles besides stacks of marked timber and unmarked fear."
+      - "Warehouse doors slam in the wind and every slam sounds like gult correcting itself."
+      - "The wharf smells of brine, rope tar, and fish gone past salvage."
+      - "Dice rattle somewhere behind the sheds even when the sirens start."
+    connectors:
+      - at: 1
+        direction: north
+        to: bund_25
+      - at: 15
+        direction: north
+        to: hongkou_20
+      - at: 20
+        direction: north
+        to: french_25
+      
+
 
        
