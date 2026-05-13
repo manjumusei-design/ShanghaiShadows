@@ -325,5 +325,9 @@ storylets:
           change_trust:
             civilian.resident: 12
           log_event: "You lent a temple talisman to a frightened neighbour."
-      - text: 
-    
+      - text: "Keep it."
+        effects:
+          set_flag: lent_talisman
+          change_trust:
+            civilian.resident: -6
+          log_event: "You refused to lend a talisman to a frightened neighbour."    
