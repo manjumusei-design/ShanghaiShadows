@@ -330,4 +330,69 @@ storylets:
           set_flag: lent_talisman
           change_trust:
             civilian.resident: -6
-          log_event: "You refused to lend a talisman to a frightened neighbour."    
+          log_event: "You refused to lend a talisman to a frightened neighbour."
+
+      - id: ruined_flyer
+        location_tags: [school, old_city]
+        trigger_chance: 0.4
+        preconditions:
+          flags_missing: [found_ruined_flyer]
+        narrative: "Rain has pasted a propaganda flyer to the wall so badly that only a child's drawing shows beneath the torn corner."
+        options:
+          - text: "Peel it away carefully."
+            effets:
+              set_flag: found_ruined_flyer
+              change_trust:
+                civilian.resident: 4
+                resistance.safehouse: 4
+              log_Event: "You uncovered a child's drawing behind a propaganda flyer."
+          - text: "Leave the wall untouched"
+            effects:
+              set_flag: found_ruined_flyer
+              change_trust:
+                civilian.resident: 1
+              log_event: "You left a ruined flyer clinging to a wall."
+
+  - id: choir_attic
+    location_tags: [church, attic]
+    trigger_chance: 0.5
+    preconditions:
+      flags_missing: [heard_attic_choir]
+      game_hour: [18, 22]
+    narrative: "Someone is singing above the rafters in a voice too soft for prayer and too steady for grief."
+    options:
+      - text: "Climb quietly toward the attic."
+        effects:
+          set_flag: heard_attic_choir
+          change_trust:
+            civilian.resident: 6
+            resistance.safehouse: 5
+          log_event: "You found hidden voices in a church attic."
+      - text: "Leave before the song ends."
+        effects:
+          set_flag: heard_attic_choir
+          change_trust:
+            civilian.resident: 2
+          log_event: "You left a church before learning the identity of the singer above you."
+
+  - id: silk_signal
+    location_tags: [french, balcony]
+    trigger_chance: 0.4
+    preconditions:
+      inventory_has: [silk_scarf]
+      flags_missing: [used_silk_signal]
+    narrative: "Across a narrow lane, another balcony displays the same shade of silk as the scarf in your pocket."
+    options:
+      - text: "Raise the scarf in reply."
+        effects:
+          set_flag: "used_silk_signal"
+          change_trust:
+            french_concession.merchant: 10
+            log_event: "You answered a coded silk signal in the French Concession."
+      - text: "Pretend not to notice."
+        effects:
+          set_flag: used_silk_signal
+          change_trust:
+            french_concession.merchant: -5
+            log_event: "You ignored a possible signal from a balcony."
+    
