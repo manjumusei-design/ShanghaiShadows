@@ -288,4 +288,42 @@ storylets:
               civilian.vendor: -2
             log_event: "You ignored a beggar's coded warning."
 
+  - id: river_smell
+    location_tags: [bund]
+    trigger_chance: 0.35
+    precondonditions:
+      game_hour: [4, 7]
+      flags_missing: [morning_river_smell]
+      narrative: "The river smells of rain, coal and something metallic enough to taste. Dawn arrives slowly over ships that do not belong here."
+      options:
+        - text: "Stay and watch the barges."
+          effects:
+            set_flag: morning_river_smell
+            change_trust:
+              british.merchant: 3
+              civilian.worker: 2
+            log_event: "You watched contraband barges move at dawn on the river."
+        - text: "Turn inland before the patrols finish changing shifts."
+          effects:
+            set_flag: morning_river_smell
+            change_trust:
+              kempeitai.patrol: -2
+            log_event: "You left the Bund before the patrols settled into the morning."
+
+  - id: borrowed_prayer
+    location_tags: [residence]
+    trigger_chance: 0.35
+    preconditions: 
+      inventory_has: [temple_talisman]
+      flags_missing: [lent_talisman]
+    narrative: "A neighbour's hands shake when she sees the temple charm in your pocket. 'Just for the night.' she says."
+    options:
+      - text: "Lend her the talisman."
+        effects:
+          set_flag: lent_talisman
+          remove_item: temple_talisman
+          change_trust:
+            civilian.resident: 12
+          log_event: "You lent a temple talisman to a frightened neighbour."
+      - text: 
     
