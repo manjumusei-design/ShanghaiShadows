@@ -460,3 +460,51 @@ storylets:
           change_trust:
             civilian.worker: 1
           log_event: "You ignored the strange call and response on the river."
+
+      - id: hidden_cash_offer
+        location_tags: [gambling]
+        trigger_chance: 0.4
+        preconditions:
+          inventory_has: [hidden_cash]
+          flags_missing: [resolved_cash_offer]
+        narrative: "A bookmaker offers to double your money if you are willing to bet on who survives tommorow's raid."
+        options:
+          - text: "Walk away in disgust."
+            effects:
+              set_flag: resolved_cash_offer
+              change_trust:
+                civilian.resident: 6
+                green_gang.broker: -6
+              log_event: "You refused to bet on the lives of your fellow citizens."
+          - text: "Take the wager."
+            effects:
+              set_flag: resolved_cash_offer
+              change_trust:
+                green_gang.broker: 10
+                civilian.resident: -10
+              log_event: "You gambled on the outcome of a raid."
+
+  - id: patrol_map
+    location_tags: [office, checkpoint]
+    trigger_chance: 0.35
+    preconditions:
+      flags_missing: [found_patrol_map]
+    narrative: "On the wall behind an unattended desk hangs a patrol map annotated in a steadier hand than the official markings."
+    options:
+      - text: "Copy the route into memory."
+        effects:
+          set_flag: found_patrol_map
+          add_item: patrol_route
+          change_trust:
+            resistance.courier: 10
+          log_event: "You copied a patrol route from an unattended office."
+      - text: "Leave before someone returns."
+        effects: 
+          set_flag: found_patrol_map
+          change_trust:
+            kempeitai.patrol: 1
+          log_event: "You left an unattended office without touching the patrol map."
+    
+
+dsd
+      
