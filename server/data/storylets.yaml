@@ -246,3 +246,46 @@ storylets:
             green_gang.broker: 2
           log_event: "You warned a vendor before the patrols arrived."
 
+  - id: ledger_question
+    location_tags: [warehouse]
+    trigger_chance: 0.45
+    preconditions:
+      inventory_has: [coded_ledger]
+      flags_missing: [showed_ledger]
+    narrative: "A warehouse clerk notices the edge of the ledger in your pocket and abruptly loses his composure."
+    options:
+      - text: "Ask him what the numbers mean."
+        effects:
+          set_flag: showed_ledger
+          change_trust:
+            green_gang.broker: 10
+          log_event: "A clerk reacted to the coded ledger you were carrying."
+      - text: "Hide the ledger and leave."
+        effects:
+          set_flag: showed_ledger
+          change_trust:
+            civilian.worker: 3
+          log_event: "You concealed the coded ledger when a clerk noticed it."
+
+  - id: checkpoint_beggar
+    location_tags: [checkpoint]
+    trigger_chance: 0.4
+    preconditions:
+      flags_missing: [met_checkpoint_beggar]
+      narrative: "A beggar sitting just outside the checkpoint taps the curb twice with a tin cup, then looks at your shoes instead of your face."
+      options:
+        - text: "Leave a coin and listen."
+          effects:
+            set_flag: met_checkpoint_beggar
+            change_trust:
+              civilian.vendor: 5
+              resistance.courier: 4
+            log_event: "A beggar near a checkpoint passed you a useful warning"
+        - text: "Ignore the signal."
+          effects:
+            set_flag: met_checkpoint_beggar
+            change_trust:
+              civilian.vendor: -2
+            log_event: "You ignored a beggar's coded warning."
+
+    
