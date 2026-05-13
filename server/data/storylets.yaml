@@ -396,3 +396,67 @@ storylets:
             french_concession.merchant: -5
             log_event: "You ignored a possible signal from a balcony."
     
+  - id: ledger_drop
+    location_tags: [teahouse]
+    trigger_chance: 0.35
+    preconditionos:
+      inventory_has: [coded_ledger]
+      flags_missing: [dropped_ledger_copy]
+    narrative: "A man at the back table folds his napkin with absurd care, and says without looking up, 'Some numbers deserve to travel farther than their owners.'"
+    options:
+      - text: "Leave a copied page of the ledger beneath the saucer."
+        effects:
+          set_flag: dropped_ledger_copy
+          change_trust:
+            resistance.courier: 8
+            green_gang.smuggler: -4
+          log_event: "You quietly passed on a page from the coded ledger."
+      - text: "Keep the ledger intact."
+        effects:
+          set_flag: dropped_ledger_copy
+          change_trust:
+            resistance.courier: -2
+          log_event: "You kept the coded ledger to yourself."
+
+  - id: bombed_shopfront
+    location_tags: [commercial]
+    trigger_chance: 0.45
+    preconditions:
+      flags_missing: [saw_bombed_shopfront]
+    narrative: "A shattered window still smells of last night's explosives. Someone has already swept the glass into a neat, defeated pile."
+    options: 
+      - text: "Help the store owner board it up."
+        effects:
+          set_flag: saw_bombed_shopfront
+          change_trust:
+            civilian.vendor: -3
+            resistance.fighter: 2
+          log_event: "You helped board up a bombed shopfront."
+      - text: "Ask who did it."
+        effects: 
+          set_flag: saw_bombed_shopfront
+          change_trust:
+            civilian.vendor: -3
+            kempeitai.informant: 4
+          log_event: "You pressed a shopkeeper about a bombing while the dust was still fresh."
+
+  - id: ferry_whistle
+    location_tags: [river]
+    trigger_chance: 0.35
+    preconditions:
+      game_hour: [5, 8]
+      flags_missing: [heard_ferry_whistle]
+    narrative: "A ferry whistle sounds once through the mist, then twice in shorter reply from the distance."
+    options:
+      - text: "Mark the rhythm in memory."
+        effects:
+          set_flag: heard_ferry_whistle
+          change_trust:
+            resistance.courier: 5
+          log_event: "You memorized a coded ferry whistle at dawn."
+      - text: "Dismiss it as river business."
+        effects:
+          set_flag: heard_ferry_whistle
+          change_trust:
+            civilian.worker: 1
+          log_event: "You ignored the strange call and response on the river."
