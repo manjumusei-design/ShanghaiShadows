@@ -633,4 +633,71 @@ storylets:
           change_trust:
             civilian.resident: -12
           log_event: "You exploited a refugee family's panic for worldy gains."
-          
+
+  - id: cold_noodles
+    location_tags: [market, food]
+    trigger_chance: 0.35
+    preconditions:
+      flags_missing: [shared_cold_noodles]
+    narrative: "A noodle seller scrapes the bottom of the pot and says there is just enough left for one bowl, maybe two if everyone pretends otherwise."
+    options:
+      - text: "Buy two and share one."
+        effects:
+          set_flag: shared_cold_noodles
+          change_trust:
+            civilian.vendor: 8
+            civilian.worker: 4
+          log_event: "You shared a bowl of cold noodles in the market with a stranger."
+      - text: "Take the last full portion for yourself." 
+        effects:
+          set_flag: shared_cold_noodles
+          change_trust:
+            civilian.vendor: -4
+          log_event: "You took the last full bowl for yourself."
+
+  - id: late_train_manifest
+    location_tags: [station]
+    trigger_chance: 0.35
+    preconditions:
+      inventory_has: [dock_manifest]
+      flags_missing: [compared_manifests]
+    narrative: "A station porter glances at your manifest and goes pale. 'That crate was not meant to leave the river,' he whispers."
+    options:
+    - text: "Ask where it went." 
+      effects:
+        set_flag: compared_manifests
+        change_trist:
+          resistance.courier: 6
+          british.dockmaster: 4
+        log_event: "A porter linked your dock manifest to a vanished rail shipment."
+    - text: "Fold the paper away."
+      effects:
+        set_flag: compared_manifests
+        change_trust:
+          british.dockmaster: -2
+        log_event: "You chose not to press a porter about a suspicious shipment."
+        
+    - id: harbor_funeral
+      location_tags: [dock, river]
+      trigger_chance: 0.3
+      preconditions:
+        flags_missing: [witnessed_harbor_funeral]
+        game_hour: [17, 20]
+      narrative: "Men who never stop to mourn pause just long enough to push a wreath onto the black water."
+      options:
+        - text: "Stand with them in silence."
+          effects:
+            set_flag: witnessed_habor_funeral
+            change_trust:
+              civilian.worker: 7
+              british.dockmaster: 2
+            log_event: "You stood in silence during an impromptu funeral on the docks."
+        - text: "Leave before greif draws attention"
+          effects:
+            set_flag: witnessed_harbor_funeral
+            change_trust:
+              civilian.worker: -2
+            log_event: "You left the harbor before a quiet funeral could become dangerous."
+
+
+
