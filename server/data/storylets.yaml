@@ -569,7 +569,68 @@ storylets:
           change_trust:
             civilian.vendor: 4
           log_event: "You kept a coversation with a pressman."
-          
-          
 
+  - id: rooftop_signal
+    location_tags: [rooftop, french]
+    trigger_chance: 0.35
+    preconditions:
+      game_hour: [19, 23]
+      flags_missing: [saw_rooftop_signal]
+    narrative: "Three lanterns bloom on a nearby rooftop in a sequence too deliberate to be just coincidence."
+    options:
+      - text: "Count the pattern and remember it."
+        effects:
+          set_flag: saw_rooftop_signal
+          change_trust:
+            resistance.fighter: 6
+          log_event: "You memorized a lantern code from the rooftops."
+      - text: "Wave back."
+        effects:
+          set_flag: saw_rooftop_signal
+          change_trust:
+            resistance.fighter: 2
+            kempeitai.patrol: 3
+          log_event: "You answered a rooftop lantern signal and risked being seen."
 
+  - id: exhausted_policeman
+    location_tags: [checkpoint, french]
+    trigger_chance: 0.35
+    preconditions:
+      flags_missing: [judged_policeman]
+    narrative: "A concession policeman rubs his eyes and mutters that there are too many uniforms in the city and none of them truly belong to it."
+    options:
+      - text: "Offer him a ciggarete and listen "
+        effects:
+          set_flag: judged_policeman
+          change_trust:
+            french_concession.police: 8
+          log_event: "You earned a tired policeman's trust."
+      - text: "Tell him everyone serves someone now."
+        effects:
+          set_flag: judged_policeman
+          change_trust:
+            french_concession.police: -6
+          log_event: "You pushed a tired policeman to reality."
+
+  - id: refugee_suitcase
+    location_tags: [station, refugee]
+    trigger_chance: 0.45
+    preconditions:
+      flags_missing: [helped_refugee_suitcase]
+    narrative: "A refugee family has tied their whole life into one suitcase, and the clasp gives way at the edge of the platform."
+    options:
+      - text: "Help them gather the spilled contents."
+        effects:
+          set_flag: helped_refugee_suitcase
+          change_trust:
+            civilian.resident: 10
+            british.consul: 2
+          log_event: "You helped a refugee family gayther the contents of a broken suitcase."
+      - text: "Use the confusion to search what spilled out."
+        effects:
+          set_flag: helped_refugee_suitcase
+          add_item: hidden_cash
+          change_trust:
+            civilian.resident: -12
+          log_event: "You exploited a refugee family's panic for worldy gains."
+          
