@@ -504,7 +504,72 @@ storylets:
           change_trust:
             kempeitai.patrol: 1
           log_event: "You left an unattended office without touching the patrol map."
-    
 
-dsd
-      
+  - id: mourning_clothes
+    location_tags: [cemetery, old_city]
+    trigger_chance: 0.4
+    preconditions:
+      flags_missing: [spoke_to_mourner]
+    narrative: "A mourner in plain black clothes kneels at an unmarked stone and asks whether you have seen anyone brave enough to remember names out loud."
+    options:
+      - text: "Say the city remembers quietly."
+        effects:
+          set_flag: spoke_to_mourner
+          change_trust:
+            civilian.resident: 8
+          log_event: "You comforted a mourner in the cemetery."
+      - text: "Say remembrance is dangerous."
+        effects:
+          set_flag: spoke_to_mourner
+          change_trust:
+            civilian.resident: -4
+            kempeitai.informant: 3
+          log_event: "You warned a mourner that memory itself would become dangerous if combined with resentment."
+
+  - id: backroom_surgeon
+    location_tags: [clinic, alley]
+    trigger_chance: 0.4
+    preconditions:
+      inventory_has: [contraband_morphine]
+      flags_missing: [met_backroom_surgeon]
+    narrative: "In a curtained clinic room, a surgeon rinses blood from his hands and looks at the morphine in your pocket with professional desperation."   
+    options: 
+      - text: "Hand it over."
+        effects:
+          set_flag: met_backroom_surgeon
+          remove_item: contraband_morphine
+          change_trust:
+            civilian.worker: 10
+            resistance.safehouse: 6
+          log_event: "You gave contraband morphine to a backroom surgeon."
+      - text: "Keep it for later."
+        effects:
+          set_flag: met_backroom_surgeon
+          change_trust:
+            civilian.worker: -8
+          log_event: "You withheld morphine from a desperate surgeon."
+
+  - id: pressman_glance 
+    location_tags: [printshop]
+    trigger_chance: 0.35
+    preconditions:
+      flags_missing: [met_pressman]
+    narrative: "The pressman oils a machine that prints half lies and half truths and ultimately, nothing. 'However a broken clock is right twice a day' you say, and the pressman looks up at you with a glint of recognition. 'You know about the midnight runs, don't you?' he asks."
+    options:
+      - text: "Ask what runs after midnight."
+        effects:
+          set_flag: met_pressman
+          change_trust:
+            resistance.safehouse: 7
+            civilian.vendor: 3
+          log_event: "A pressman hinted at midnight printing runs."
+      - text: "Comment on the machine instead."
+        effects:
+          set_flag: met_pressman
+          change_trust:
+            civilian.vendor: 4
+          log_event: "You kept a coversation with a pressman."
+          
+          
+
+
