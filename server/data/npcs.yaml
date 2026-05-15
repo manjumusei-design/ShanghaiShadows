@@ -45,3 +45,30 @@ npcs:
           - "Every day asks too much of everyone, everywhere."
         hostile:
            - "Get out."
+
+  - id: captain_ishikawa
+    name: "Captain Ishikawa"
+    description: "A Kempeitai officer with tight gloves and an air of arrogance tucked behind a wry smile."
+    faction: kempeitai
+    role: officer
+    personality: "cold, observant, politely cruel"
+    awareness: 82
+    faction_leader: true
+    schedule:
+      7: hongkou_03
+      12: hongkou_08
+      18: commercial_18
+      22: hongkou_03
+    dialogue:
+      greeting:
+        - "Shanghai rewards discipline. Try to learn that quickly."
+      friendly:
+        - "Reliable people are so much easier to keep alive."
+      neutral:
+        - "You will answer only what I ask, and nothing more."
+      hostile:
+        - "A liar always believes fear is bad luck."
+
+  - id: madam_xu
+    name: "Madam Xu"
+    description: "Owner of a teahouse where gossip lands softly and leaves armed."
