@@ -72,3 +72,90 @@ npcs:
   - id: madam_xu
     name: "Madam Xu"
     description: "Owner of a teahouse where gossip lands softly and leaves armed."
+    faction: green_gang
+    role: broker
+    personality: "elegant, calculating, amused by weakness"
+    awareness: 68
+    schedule:
+      9: commercial_06
+      14: commercial_09
+      19: commercial_06
+      23: french_15
+    dialogue:
+      greeting:
+        - "Tea costs so little as compared to gossip."
+      friendly:
+        - "For the right friends, I remember the useful things."
+      neutral:
+        - "Business survives ideology by keeping the better books."
+      hostile:
+        - "You are asking to be rememberd for the wrong reason."
+
+  - id: father_benoit
+    name: "Father Benoit"
+    description: "A French Priest whos cassock smells of candle smoke and rainwater."
+    faction: french_concession
+    role: clerks
+    personality: "pious, conflicted, unexpectedly brave"
+    awareness: 40
+    schedule:
+      6: french_02
+      12: french_04
+      18: french_07
+      21: french_02
+    dialogue:
+      greeting:
+        - "Peace is not absent here. It is simply outnumbered."
+      friendly:
+        - "The city keeps confessions that no church can hold."
+      neutral:
+        - "I offer shelter, not certainty."
+      hostile: 
+        - "If you endanger my people, the door closes."
+  
+  - id: thomas_reed
+    name: "Thomas Reed"
+    description: "A British dock clerk with salt on his cuffs and conscience that changes daily."
+    faction: british
+    role: dockmaster
+    personality: "dry, compromised, not yet empty"
+    awareness: 57
+    schedule:
+      8: docks_03
+      12: docks_07
+      18: docks_11
+      22: bund_18
+    dialogie:
+      greeting:
+        - "Nothing enters these ledgers clean, not even the ink."
+      friendly:
+        - "If I tell you the truth, pretend you stole it."
+      neutral:
+        -"Cargo moves. Men vanish. I record only one of those."
+      hostile: 
+        - "You are far too interested in the wrong crates."
+      
+  - id: zhang_lan
+    name: "Zhang Lan"
+    description: "A market noodle seller whose ladle pauses whenever uniforms appear."
+    faction: civilian
+    role: vendor
+    personality: "warn, watchful, practical"
+    awareness: 46
+    schedule:
+      7: commercial_03
+      12: commercial_05
+      18: commercial_03
+      22: oldcity_02
+    dialogue:
+      greeting:
+        - "Eat while it is still hot. Everything else can wait."
+      friendly:
+        - "People talk when noodles are good enough to make them forget their worries."
+      neutral:
+        - "I sell food, although I wish I could sell hope."
+      hostile:
+        - "Take your questions elsewhere, but leave the bowl here."
+
+
+
