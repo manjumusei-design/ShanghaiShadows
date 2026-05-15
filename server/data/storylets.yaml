@@ -677,27 +677,47 @@ storylets:
           british.dockmaster: -2
         log_event: "You chose not to press a porter about a suspicious shipment."
         
-    - id: harbor_funeral
-      location_tags: [dock, river]
-      trigger_chance: 0.3
-      preconditions:
-        flags_missing: [witnessed_harbor_funeral]
-        game_hour: [17, 20]
-      narrative: "Men who never stop to mourn pause just long enough to push a wreath onto the black water."
-      options:
-        - text: "Stand with them in silence."
-          effects:
-            set_flag: witnessed_habor_funeral
-            change_trust:
-              civilian.worker: 7
-              british.dockmaster: 2
-            log_event: "You stood in silence during an impromptu funeral on the docks."
-        - text: "Leave before greif draws attention"
-          effects:
-            set_flag: witnessed_harbor_funeral
-            change_trust:
-              civilian.worker: -2
-            log_event: "You left the harbor before a quiet funeral could become dangerous."
+  - id: harbor_funeral
+    location_tags: [dock, river]
+    trigger_chance: 0.3
+    preconditions:
+      flags_missing: [witnessed_harbor_funeral]
+      game_hour: [17, 20]
+    narrative: "Men who never stop to mourn pause just long enough to push a wreath onto the black water."
+    options:
+      - text: "Stand with them in silence."
+        effects:
+          set_flag: witnessed_harbor_funeral
+          change_trust:
+            civilian.worker: 7
+            british.dockmaster: 2
+          log_event: "You stood in silence during an improvised harbor funeral."
+      - text: "Leave before grief draws attention."
+        effects:
+          set_flag: witnessed_harbor_funeral
+          change_trust:
+            civilian.worker: -2
+          log_event: "You left the harbor before a quiet funeral could become dangerous."
 
-
-
+  - id: counterfeit_stamp
+    location_tags: [office, french]
+    trigger_chance: 0.35
+    preconditions:
+      inventory_has: [forged_pass]
+      flags_missing: [tested_forged_pass]
+    narrative: "A clerk handling permits pauses over your pass, then glances at a drawer where a real seal is hidden under his blotter."
+    options:
+      - text: "Slip him cash and ask for the proper stamp."
+        effects:
+          set_flag: tested_forged_pass
+          remove_item: hidden_cash
+          change_trust:
+            french_concession.clerks: 10
+          log_event: "You bribed a clerk to strengthen a forged pass."
+      - text: "Take your chances and leave."
+        effects:
+          set_flag: tested_forged_pass
+          change_trust:
+            french_concession.clerks: -4
+            kempeitai.officer: 2
+          log_event: "You left with a weak forged pass rather than risk a bribe."
