@@ -3,6 +3,9 @@ npcs:
     name: "Liu Wei, the rickshaw puller"
     description: "A wiry man in his forties, with calloused hands and deep set eyes that have seen more than most."
     faction: civilian
+    role: worker
+    personality: "cautious, loyal when trust is earned."
+    awareness: 48
     schedule:
       6: "bund_dawn"
       12: "nanking_road"
@@ -18,4 +21,27 @@ npcs:
       neutral:
         - "I don't know you, but I can take you where you need to go."
       hostile:
-        - "Don't talk to me, I don't want any trouble."
+        - "Don't talk to me, I have no room for another problem. I have endured enough hardships in this city to last two lifetimes."
+
+  
+  - id: sister_mei
+    name: "Sister Mei"
+    description: "A chapel nurse whose sleeves are always rolled past the elbow and whos patience has survived longer than sleep."
+    faction: civilian
+    role: resident
+    personality: "compassionate, exhausted, quietly stubborn"
+    awareness: 42
+    schedule:
+      6: french_04
+      12: french_08
+      18: french_12
+      22: french_04
+      dialogue:
+        greeting:
+          - "If you are bleeding, sit down. If not, make room for someone who is."
+        friendly:
+          - "Mercy is expensive these days, it's rarely at all virtue"
+        neutral:
+          - "Every day asks too much of everyone, everywhere."
+        hostile:
+           - "Get out."
