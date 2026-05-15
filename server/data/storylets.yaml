@@ -721,3 +721,44 @@ storylets:
             french_concession.clerks: -4
             kempeitai.officer: 2
           log_event: "You left with a weak forged pass rather than risk a bribe."
+
+  - id: ash_under_nails
+    location_tags: [printshop, alley]
+    trigger_chance: 0.3
+    preconditions:
+      flags_missing: [noticed_print_ash]
+    narrative: "The messenger who brushes past you has a printer's"
+    options:
+      - text: "Follow him for about a block."
+        effect:
+          set_flag: noticed_print_ash
+          change_trust:
+            resistance.courier: 5
+        log_event: "You shadowed a messenger carrying printshop ash on his hands."
+      - text: "Memorize his face and let him go."
+        effect:
+          set_flag: noticed_print_ash
+          change_trust:
+            civilian.vendor: 2
+          log_event: "You let a suspicious messenger go after memorizing his face."
+
+  - id: bridge_rain
+    location_tags: [bridge, river]
+    trigger_chance: 0.3
+    preconditions:
+      flags_missing: [stood_in_bridge_rain]
+    narrative: "Rain needles the bridge planks while a woman beneath a torn umbrella asks whether the city still has decent people."
+    options:
+      - text: "Tell her decency survives in fragments."
+        effects:
+          set_flag: stood_in_bridge_rain
+          change_trust:
+            civilian.resident: 8
+          log_event: "You offered a stranger what hope you could on a bridge in the rain."
+      - text: "Tell her survival matters more."
+        effects:
+          set_flag: stood_in_bridge_rain
+          change_trust:
+            civilian.resident: -4
+            green_gang.enforcer: 2
+          log_event: "You answered a question about decency with cold practicality."
