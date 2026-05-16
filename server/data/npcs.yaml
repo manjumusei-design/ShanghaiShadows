@@ -157,5 +157,71 @@ npcs:
       hostile:
         - "Take your questions elsewhere, but leave the bowl here."
 
+  - id: yan_fen
+    name: "Yan Fen"
+    description: "A resistance courier who walks like she is always late is too fast to suspect."
+    faction: resistance
+    role: courier
+    personality: "quick, brave, unsentimental"
+    awareness: 74
+    schedule:
+      6: oldcity_04
+      12: commercial_14
+      18: docks_09
+      22: oldcity_18
+    dialogue:
+      greeting:
+        - "If you know me, think again."
+      friendly:
+        - "A city can still move if enough hands push in secret."
+      neutral:
+        - "I don't linger, neither should you."
+      hostile:
+        - "Turn around and forget my face."
+
+  - id: old_wu
+    name: "Old Wu"
+    description: "A shrine keeper with soot on his sleeves and eyes that miss very little."
+    faction: "civilian"
+    role: resident
+    personality: "patient, shrewd, ceromonial"
+    awareness: 60
+    schedule:
+      5: oldcity_09
+      12: oldcity_11
+      18: oldcity_09
+      21: oldcity_14
+    dialogue:
+      greeting:
+        - "Offerings are cheap. Peace however, is not."
+      friendly:
+        - "Even the Gods listen more closely these days."
+      neutral:
+        - "Light incense if you'd like, but keep your hands steady."
+      hostile:
+        - "Take your bad fortune elsewhere."
+
+  - id: inspector_moreau
+    name: "Inspector Moreau"
+    description: "A concession policeman whose fatigue has sharpened into cynicism."
+    faction: french_concession
+    role: police
+    personality: "tired, skeptical, decent in a pinch"
+    awareness: 63
+    schedule:
+      8: french_06
+      13: french_10
+      19: french_14
+      23: french_06
+    dialogue:
+      greeting:
+        - "Every report is a lie told in a better suit."
+      friendly:
+        - "If I did not still care a little, I would be back in France."
+      neutral:
+        - "Do not make me notice you twice."
+      hostile:
+      - "I am too tired to be patient and now too honest to look away."        
+
 
 
