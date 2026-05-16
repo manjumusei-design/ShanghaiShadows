@@ -223,5 +223,69 @@ npcs:
       hostile:
       - "I am too tired to be patient and now too honest to look away."        
 
+  - id: qiao_ming
+    name: "Qiao Ming"
+    description: "A dockside gambler with sticky nicotine laden fingers and a talent for hearing numbers before they are spoken."
+    faction: green_gang
+    role: smuggler
+    personality: "slick, greedy, charming under pressure"
+    awareness: 66
+    schedule:
+      10: docks_05
+      15: docks_14
+      20: docks_18
+      23: docks_05
+    dialogue:
+      greeting:
+        - "Odds change faster than loyalties here."
+      friendly:
+        - " I can move anything small enough to deny and dangerous to matter."
+      neutral: 
+        - "A price first, a consequence later."
+      hostile:
+        - "You are one question away from expensive trouble."
 
+  - id: hanna_rosen
+    name: "Hanna Rosen"
+    description: "A refugee schoolteacher who folds sorrow into her lessons."
+    faction: british
+    role: merchant
+    personality: "measured, kind, furious"
+    awareness: 44
+    schedule:
+      7: hongkou_11
+      12: hongkou_13
+      17: hongkou_16
+      21: hongkou_11
+    dialogue:
+      greeting:
+        - "Children still ask future-tense 'what if's'. For their sake, I hope it is true."
+      friendly:
+        - "Memory is a form of resistance when power demands erasure."
+      neutral:
+        - "I teach what can still persist."
+      hostile:
+        - "If you bring fear into this room, I will not let it leave."
+
+  - id: sergeant_hayashi
+    name: "Sergeant Hayashi"
+    description: "A patrol sergeant whose boots are always polished and whose suspicions are never off duty."
+    faction: kempeitai
+    role: patrol
+    personality: "disciplined, suspicious, proud"
+    awareness: 76
+    schedule:
+      6: hongkou_01
+      12: commercial_25
+      18: bund_10
+      22: hongkou_05
+    dialogue:
+      greeting:
+        - "Show me your face properly. Then your hands."
+      friendly:
+        - "A useful citizen is a safe one."
+      neutral:
+        - "You may pass. Slowly."
+      hostile:
+        - "You smell like excuses already."
 
