@@ -289,3 +289,66 @@ npcs:
       hostile:
         - "You smell like excuses already."
 
+  - id: lao_peng
+    name: "Lao Peng"
+    description: "A printshop foreman with ink in the seams of his skin."
+    faction: resistance
+    role: safehouse
+    personality: "dependable, defiant"
+    awareness: 58
+    schedule:
+      8: french_18
+      13: french_19
+      18: french_18
+      23: oldcity_20
+    dialogue:
+      greeting:
+        - "Paper burns fast. Ideas do not."
+      friendly:
+        - "If a page survives the night, it has already won something."
+      neutral:
+        - "Mind the ink. It remembers carelessness"
+      hostile:
+        - "Printers are enemies enough, leave me alone."
+
+  - id: mrs_gu
+    name: "Mrs. Gu"
+    description: "A boarding-house keeper who inventories every tenant's grief with professional precision."
+    faction: civilian
+    role:: resident
+    personality: "sharp, maternal, unsentimental"
+    awareness: 51
+    schedule:
+      7: oldcity_13
+      22: oldcity_13
+      12: oldcity_15
+      18: oldcity_13
+    dialogue:
+      greeting:
+        - "Rooms are scarce. Trouble is abundant. I rent only the first."
+      friendly:
+        - "Eat first. Schemes are easier to think of on a full stomach."
+      neutral:
+      - "Pay on time and lie flat."
+      hostile: 
+        - "I have turned away people more dangerous and less obvious than you."
+
+  - id: constable_doyle
+    name: "Constable Doyle"
+    description: "A British concession constable who looks as if he has begun doubting orders in the middle of carrying them out."
+    faction: british
+    role: consul
+    personality: "formal, uneasy, morally fraying"
+    awareness: 54
+    schedule:
+      9: bund_14
+      14: french_09
+      19: commercial_08
+      22: bund_14
+    dialogue:
+      greeting:
+        - "The British Empire is a beacon of civilization. Do not forget that."
+      friendly:
+        - "Some rules deserve to be bent until the Japs remember humanity."
+      neutral:
+        - "Do not force me to choose between duty and decency."
