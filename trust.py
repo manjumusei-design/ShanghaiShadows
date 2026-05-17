@@ -48,6 +48,33 @@ def load_trust_rules(path: str) -> Dict[str, TrustRule]:
     return rules
 
 
+def get_role_trust(trust: TrustMap, faction: str, role: Optional[str] = None) -> int:
+    roles = trust.get(faction, {})
+    if not roles:
+        return 50
+    if role and role in roles:
+        return roles[role]
+    return int(sum(roles.values()) / max(1, len(roles)))
+    
+
+def change_trust(trust: TrustMap, key: str, delta: int) -> int:
+    if "." in key:
+        faction, role = key.split(".", 1)
+        if faction not in trust:
+            trust[faction] = {}
+        prev = trust[faction].get(role, 50)
+        trust[faction][role] = max(0, min(100, prev + int(delta)))
+        return trust[faction][role] - prev
+    
+    if key not in trust:
+        trust[key] = {}
+    changed_total = 0
+    for role, prev in trust[key].items():
+        trust[key][role] = max(0, min(100, prev + int(delta)))
+        changed_total += trust[key][role] - prev
+    return changed_total
+
+
 def apply_trust_delta(player_trust: TrustMap, rule: TrustRule) -> Dict[str, int]:
     changed: Dict[str, int] = {}
     for key, delta in rule.deltas.items():
