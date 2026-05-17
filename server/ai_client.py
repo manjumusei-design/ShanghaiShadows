@@ -53,9 +53,15 @@ class AIClient:
         if not payload:
             return None
         try:
-            return payload["choices"][0]["message"]["content"] //probs have to change in the future 
+            return payload["choices"][0]["message"]["content"]  # probs have to change in the future
         except (KeyError, IndexError, TypeError):
             return None
-        
-    )
-        
+
+    async def chat_json(self,messages: List[Dict[str, str]],timeout_seconds: float = 4.0,) -> Optional[Dict[str, Any]]:
+        content = await self.chat_text(messages, timeout_seconds=timeout_seconds)
+        if not content:
+            return None
+        try:
+            return json.loads(content)
+        except json.JSONDecodeError:
+            return None
