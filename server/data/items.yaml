@@ -1,20 +1,22 @@
 items:
   - id: ration_card
     name: "a tattered ration card"
-    description: "A creased card issued by the municipal authority, stamped with the puppet government's seal that reads *Great Way Municipal Government of Shanghai*."
+    description: "A creased card stamped with the seal of an authority no one trusts."
     takeable: true
+
   - id: brass_key
     name: "a small brass key"
-    description: "A small brass key cold to the touch, with blunt ridges and a simple circular bow with the number '42' engraved on it."
+    description: "Cold to the touch, engraved with the number 42."
     takeable: true
+
   - id: photograph
-    name: "a faded photograph of a family"
-    description: "A man, a woman and two children smile stiffly in a studio portrait. The edges are worn, you cannot help but feel that the smiles hide a deeper sadness."
+    name: "a faded family photograph"
+    description: "A studio smile from a world already gone."
+    takeable: true  
+    readable_text: "On the reverse, in cramped pencil: Remember the lane behind the dye shop."
+
+  - id: truncheon
+    name: "a police truncheon"
+    description: "Heavy, lacquered, and intimate in the way only instruments of force can be."
     takeable: true
-  - id: baton
-    name: "a police baton"
-    description: "Heavy, with a leather wrist strap with an insignia of the puppet government. The baton feels heavy with guilt."
-    takeable: true
-    id: newspaper
-    name: "a crumpled newspaper"
-    description: "The Shanghai Times, dated November 3, 1938. The headline screams of Kuomintang victories that have never happened."
+    
