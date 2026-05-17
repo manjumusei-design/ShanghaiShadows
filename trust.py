@@ -103,6 +103,8 @@ def exchange_gossip(mem_a: List[str], mem_b: List[str], chance: float = 0.2) -> 
     else:
         return False
     memory = random.choice(source)
+    if "heard that" not in memory and random.random() < 0.4:
+        memory = f"Heard that {memory[0].lower() + memory[1:]}"
     if memory not in target:
         target.append(memory)
         return True
