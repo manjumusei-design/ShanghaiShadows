@@ -5,12 +5,32 @@ import random
 import yaml
 
 
+FACTION_ROLES: Dict[str, List[str]] = {
+    "resistance": ["courier", "safehouse", "fighter"],
+    "kempeitai": ["informant", "officer", "patrol"],
+    "green_gang": ["broker", "enforcer", "smuggler"],
+    "french_concession": ["clerks", "police", "merchant"],
+    "british": ["dockmaster", "consul", "merchant"],
+    "civilian": ["resident", "worker", "vendor"],
+}
+
+
+TrustMap = Dict[str, Dict[str, int]]
+
+
 @dataclass
 class TrustRule:
     action: str
     deltas: Dict[str, int]
     visible: bool = False
-    
+
+
+def default_trust() -> TrustMap:
+    return {
+        faction: {role: 50 for role in roles}
+        for faction, roles in FACTION_ROLES.items()
+    }   
+
 
 def load_trust_rules(path: str) -> Dict[str, TrustRule]:
     with open(path, "r", encoding="utf-8") as f:
@@ -28,12 +48,10 @@ def load_trust_rules(path: str) -> Dict[str, TrustRule]:
     return rules
 
 
-def apply_trust_delta(player_trust: Dict[str, int], rule: TrustRule) -> Dict[str, int]:
+def apply_trust_delta(player_trust: TrustMap, rule: TrustRule) -> Dict[str, int]:
     changed: Dict[str, int] = {}
-    for faction, delta in rule.deltas.items():
-        prev = player_trust.get(faction, 50)
-        player_trust[faction] = max(0, min(100, prev + int(delta)))
-        changed[faction] = player_trust[faction] - prev
+    for key, delta in rule.deltas.items():
+        changed[key] = change_trust(player_trust, key, int(delta))
     return changed
 
 
