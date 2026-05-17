@@ -1,7 +1,9 @@
 import random
 from dataclasses import dataclass, field
-from typing import Dict, List
+from typing import Dict, List   
 import yaml
+
+from .trust import TrustMap, get_role_trust
 
 
 @dataclass
@@ -10,6 +12,10 @@ class Npc:
     name: str
     description: str
     faction: str
+    role: str
+    personality: str
+    awareness: int
+    faction_leader: bool
     schedule: Dict[int, str] 
     dialogue: Dict[str, List[str]]
     memory: List[str] = field(default_factory=list)
@@ -25,11 +31,14 @@ def load_npcs(path: str) -> Dict[str, Npc]:
             name=npc_data["name"],
             description=npc_data["description"],
             faction=npc_data["faction"],
-            schedule=npc_data.get("schedule", {}),
-            dialogue=npc_data.get("dialogue",{})
+            role=npc_data.get("role", "resident"),
+            personality=npc_data.get("personality", "guarded"),
+            awareness=int(npc_data.get("awareness", 50)),
+            faction_leader=bool(npc_data.get("faction_leader", False)),
+            schedule={int(hour): room_id for hour, room_id in npc_data.get("schedule", {}).items()},
+            dialogue=npc_data.get("dialogue", {}),
         )
     return npcs
-
 
 def get_dialogue(npc: Npc, player_trust: Dict[str, int]) -> str:
     trust_score = player_trust.get(npc.faction, 50)
