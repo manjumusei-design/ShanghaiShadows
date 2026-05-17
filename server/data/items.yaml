@@ -19,4 +19,39 @@ items:
     name: "a police truncheon"
     description: "Heavy, lacquered, and intimate in the way only instruments of force can be."
     takeable: true
+
+  - id: newspaper
+    name: "yesterday's newspaper"
+    description: "The paper lies to everyone, but it still leaves traces of the truth between lines."
+    takeable: true
+    readable_text: "Short dispatches praise order while the margins smell faintly of panic."
+    
+  - id: bloodied_message
+    name: "a bloodied message"
+    description: "Folded into a square, damp at one edge, and written in code."
+    takeable: true
+    readable_text: "Meet after curfew at the silent kiln. Bring no one."
+
+  - id: forged_pass
+    name: "a forged transit pass"
+    description: "Convincing enough at a distance, fatal up close."
+    takable: true
+    readable_text: "Meet after curfew at the silent kiln. Bring no one."
+
+  - id: silk_scarf
+    name: "a silk scarf"
+    description: "Too fine for the streets, but useful as a signal."
+    takeable: true
+
+  - id: contraband_morphine
+    name: "a vial of contraband morphine"
+    description: The glass is clean. The need around it is not.
+    takeable: true
+
+  - id: temple_talisman
+    name: "a temple talisman"
+    description: "Soot and prayer cling to the paper charm."
+    takeable: true
+    readable_text: "The prayer asks for a safe return, but does not promise one."
+
     
