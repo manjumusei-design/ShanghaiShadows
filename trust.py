@@ -82,6 +82,13 @@ def apply_trust_delta(player_trust: TrustMap, rule: TrustRule) -> Dict[str, int]
     return changed
 
 
+def summarize_faction_trust(trust: TrustMap) -> Dict[str, int]:
+    return {
+        faction: get_role_trust(trust, faction)
+        for faction in trust
+    }
+
+
 def exchange_gossip(mem_a: List[str], mem_b: List[str], chance: float = 0.2) -> bool:
     if random.random() >= chance:
         return False
