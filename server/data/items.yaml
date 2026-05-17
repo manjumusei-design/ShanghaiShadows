@@ -65,3 +65,9 @@ items:
     description: "A map of boots and rifles and boredom."
     takeable: true
     readable_text: "Patrol timings tighten near Hongkou after 20:00."
+    
+  - id: dock_manifest
+    name: "a dock manifest"
+    description: "Stamped, amended and nervously re-stamped."
+    takeable: true
+    readable_text: "Crates marked medical supplies are routed through Pier Six."
