@@ -71,3 +71,10 @@ items:
     description: "Stamped, amended and nervously re-stamped."
     takeable: true
     readable_text: "Crates marked medical supplies are routed through Pier Six."
+
+  - id: prayer_beads
+    name: "a string of prayer beads"
+    description: "The wood has been rubbed smooth by anxious fingers."
+    takeable: true
+
+    
