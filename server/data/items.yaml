@@ -77,4 +77,8 @@ items:
     description: "The wood has been rubbed smooth by anxious fingers."
     takeable: true
 
+  - id: hidden_cash
+    name: "a roll of hidden cash"
+    description: "Small notes bound with twine, enough to buy silence for a night."
+    takable: true
     
