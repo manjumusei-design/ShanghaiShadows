@@ -54,4 +54,14 @@ items:
     takeable: true
     readable_text: "The prayer asks for a safe return, but does not promise one."
 
-    
+  - id: coded_ledger
+    name: "a coded ledger"
+    description: "Columns of figures that look honest until you stare at them for a tad bit too long."
+    takeable: true
+    readable_text: "Ships, names, and dates shift into meaning only after the third reading."
+
+  - id: patrol_route
+    name: "a folded patrol route"
+    description: "A map of boots and rifles and boredom."
+    takeable: true
+    readable_text: "Patrol timings tighten near Hongkou after 20:00."
