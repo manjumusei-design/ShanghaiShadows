@@ -37,3 +37,13 @@ class TestParserSimpleVerbs(unittest.TestCase):
     def test_inventory_alias_i(self):
         cmd = parse("i")
         self.assertEqual(cmd.verb, "inventory")
+
+    def test_quit(self):
+        cmd = parse("quit")
+        self.assertEqual(cmd.verb, "inventory")
+
+    def test_help(self):
+        cmd = parse("help")
+        self.assertEqual(cmd.verb, "help")
+
+        
