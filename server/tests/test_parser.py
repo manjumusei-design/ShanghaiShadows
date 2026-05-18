@@ -84,3 +84,21 @@ class TestParserObjects(unittest.TestCase):
         cmd = parse("get key")
         self.assertEqual(cmd.verb, "take")
         self.assertEqual(cmd.direct_obj, "key")
+
+
+class TestParserPrepositions(unittest.TestCase):
+    def test_give_to(self):
+        cmd = parse("give brass key to guard")
+        self.assertEqual(cmd.verb, "give")
+        self.assertEqual(cmd.direct_obj, "brass key")
+        self.assertEqual(cmd.preposition, "to")
+        self.assertEqual(cmd.indirect_obj, "guard")
+
+    def test_ask_about(self):
+        cmd = parse("ask guard about mission")
+        self.assertEqual(cmd.verb, "ask")
+        self.assertEqual(cmd.direct_obj, "brass key")
+        self.assertEqual(cmd.preposition, "about")
+        self.assertEqual(cmd.indirect_obj, "mission")
+
+    
