@@ -11,3 +11,22 @@ class TestLoadNpcs(unittest.TestCase):
         self.assertEqual(npc.faction, "civilian")
         self.assertEqual(npc.role, "worker")
          
+
+class TestGetDialogue(unittest.TestCase):
+    def setUp(self):
+        self.npc = Npc(
+            id="test",
+            name="Test",
+            description="Test npc.",
+            faction="civilian",
+            personality="test",
+            awareness=50,
+            faction_leader=False,
+            schedule={},
+            dialogue={
+                "greeting": ["Hello."],
+                "friendly": ["Good friend."],
+                "hostile": ["Go away."],
+            },
+        )
+    
