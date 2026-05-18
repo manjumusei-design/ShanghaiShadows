@@ -46,4 +46,21 @@ class TestParserSimpleVerbs(unittest.TestCase):
         cmd = parse("help")
         self.assertEqual(cmd.verb, "help")
 
-        
+
+class TestParserDirections(unittest.TestCase):
+    def test_go_north(self):
+        cmd = parse("go north")
+        self.assertEqual(cmd.verb, "go")
+        self.assertEqual(cmd.direct_obj, "north")
+
+    def test_direction_shorthand_n(self):
+        cmd = parse("n")
+        self.assertEqual(cmd.verb, "go")
+        self.assertEqual(cmd.direct_obj, "n")
+    
+    def test_direction_shorthand_east(self):
+        cmd = parse("east")
+        self.assertEqual(cmd.verb, "go")
+        self.assertEqual(cmd.direct_obj, "east")
+
+
