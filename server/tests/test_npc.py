@@ -17,8 +17,9 @@ class TestGetDialogue(unittest.TestCase):
         self.npc = Npc(
             id="test",
             name="Test",
-            description="Test npc.",
+            description="A test npc.",
             faction="civilian",
+            role="resident",
             personality="test",
             awareness=50,
             faction_leader=False,
@@ -30,3 +31,7 @@ class TestGetDialogue(unittest.TestCase):
             },
         )
     
+    def test_friendly_trust(self):
+        trust = {"civilian": {"resident": 80}}
+        line = get_dialogue(self.npc, trust)
+        self.assertEqual(line, "Good friend.")
