@@ -79,3 +79,8 @@ class TestParserObjects(unittest.TestCase):
         cmd = parse('take "faded photograph"')
         self.assertEqual(cmd.verb, "take")
         self.assertEqual(cmd.direct_obj, "faded photograph")
+
+    def test_get_alias(self):
+        cmd = parse("get key")
+        self.assertEqual(cmd.verb, "take")
+        self.assertEqual(cmd.direct_obj, "key")
