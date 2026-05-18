@@ -41,4 +41,11 @@ class TestGetDialogue(unittest.TestCase):
         line = get_dialogue(self.npc, trust)
         self.assertEqual(line, "Go away.")
 
-        
+    def test_neutral_trust(self):
+        trust = {"civilian": {"resident": 80}}
+        line = get_dialogue(self.npc, trust)
+        self.assertEqual(line, "Hello.")
+
+    def test_default_trust(self):
+        line = get_dialogue(self.npc, {})
+        self.assertEqual(line, "Hello")
