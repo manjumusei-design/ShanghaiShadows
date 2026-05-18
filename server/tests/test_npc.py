@@ -49,3 +49,8 @@ class TestGetDialogue(unittest.TestCase):
     def test_default_trust(self):
         line = get_dialogue(self.npc, {})
         self.assertEqual(line, "Hello")
+
+
+if __name__ == "__main__":
+    unittest.main()
+    
