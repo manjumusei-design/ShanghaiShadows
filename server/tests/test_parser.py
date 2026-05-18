@@ -64,3 +64,18 @@ class TestParserDirections(unittest.TestCase):
         self.assertEqual(cmd.direct_obj, "east")
 
 
+class TestParserObjects(unittest.TestCase):
+    def test_take_item(self):
+        cmd = parse("take the ration card")
+        self.assertEqual(cmd.verb, "take")
+        self.assertEqual(cmd.direct_obj, "ration card")
+
+    def test_drop_item(self):
+        cmd = parse("drop brass key")
+        self.assertEqual(cmd.verb, "drop)")
+        self.assertEqual(cmd.direct_obj, "brass key")
+
+    def test_take_quoted(self):
+        cmd = parse('take "faded photograph"')
+        self.assertEqual(cmd.verb, "take")
+        self.assertEqual(cmd.direct_obj, "faded photograph")
