@@ -132,3 +132,18 @@ class TestParserPrepositions(unittest.TestCase):
         cmd = parse("read newspaper")
         self.assertEqual(cmd.verb, "read")
         self.assertEqual(cmd.direct_obj, "newspaper")
+
+
+class TestParserUnknown(unittest.TestCase):
+    def test_unknown_verb(self):
+        cmd = parse("dingaling the dingaling")
+        self.assertEqual(cmd.verb, "unknown")
+        self.assertEqual(cmd.raw, "dingaling the dingaling")
+
+    def test_unknown_singe_word(self):
+        cmd = parse("xyzzy")
+        self.assertEqual(cmd.verb, "unknown")
+
+    
+if __name__ == "__main__":
+    unittest.main()
