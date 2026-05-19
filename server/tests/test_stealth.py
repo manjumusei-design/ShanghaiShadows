@@ -34,12 +34,10 @@ class TestStealthSystem(unittest.TestCase):
         self.assertIsNotNone(disguise)
         self.assertEqual(disguise.bonus, 10)
 
-
-
-
-
-
-
+    def test_start_tail(self):
+        tail = self.system.start_tail("target")
+        self.assertEqual(tail.target_npc_id, "target")
+        self.assertEqual(tail.distance, 2)
 
 
 if __name__ == "__main__":
