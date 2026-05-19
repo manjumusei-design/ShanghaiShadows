@@ -49,6 +49,28 @@ class TestEventScheduler(unittest.TestCase):
         sched.process(GameTime(minute=10, day=1), calls.append)
         self.assertEqual(calls, ["Hello"])
 
+    def test_recurring_event(self):
+        sched = EventScheduler()
+        sched.add_event(
+            ScheduledEvent(
+                trigger_minute=10,
+                event_id="daily",
+                payload={
+                    "recurring": True,
+                    "actions": [
+                        {"type": "message_to_player", "text": "Tick"}
+                    ]
+                },
+            )
+        )
+        calls = []
+        sched.process(GameTime(minute=10, day=1), calls.append)
+        self.assertEqual(len(calls), 1)
+        self.assertEqual(len(sched.events), 1)
+        calls.clear()
+        sched.process(GameTime(minute=10, day=2), calls.append)
+        self.assertEqual(len(calls), 1)
+
 
 if __name__ == "__main__":
     unittest.main()
