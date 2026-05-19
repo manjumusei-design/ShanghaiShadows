@@ -101,4 +101,34 @@ class TestParserPrepositions(unittest.TestCase):
         self.assertEqual(cmd.preposition, "about")
         self.assertEqual(cmd.indirect_obj, "mission")
 
-    
+    def test_ask_about_no_npc(self):
+        cmd = parse("ask about mission")
+        self.assertEqual(cmd.verb, "ask about")
+        self.assertEqual(cmd.direct_obj, "mission")
+
+    def test_plant_on(self):
+        cmd = parse("plant document on desk")
+        self.assertEqual(cmd.verb, "plant")
+        self.assertEqual(cmd.direct_obj, "document")
+        self.assertEqual(cmd.preposition, "on")
+        self.assertEqual(cmd.indirect_obj, "desk")
+
+    def test_talk_to_with_articles(self):
+        cmd = parse("talk to the old woman")
+        self.assertEqual(cmd.verb, "talk to")
+        self.assertEqual(cmd.direct_obj, "old woman")
+
+    def test_disguise_as(self):
+        cmd = parse("disguise as a soldier")
+        self.assertEqual(cmd.verb, "disguise as")
+        self.assertEqual(cmd.direct_obj, "soldier")
+
+    def test_tail(self):
+        cmd = parse("tail liu wei")
+        self.assertEqual(cmd.verb, "tail")
+        self.assertEqual(cmd.direct_obj, "liu wei")
+
+    def test_read(self):
+        cmd = parse("read newspaper")
+        self.assertEqual(cmd.verb, "read")
+        self.assertEqual(cmd.direct_obj, "newspaper")
