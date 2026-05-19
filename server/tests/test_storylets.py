@@ -16,6 +16,5 @@ class TestStorylets(unittest.TestCase):
         self.assertIn("resistance", state.player.trust)
         self.assertIn("courier", state.player.trust["resistance"])
 
-
 if __name__ == "__main__":
     unittest.main
