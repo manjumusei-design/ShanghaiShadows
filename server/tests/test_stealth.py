@@ -29,7 +29,10 @@ class TestStealthSystem(unittest.TestCase):
             dialogue={},
         )
 
-
+    def test_apply_disguise(self):
+        disguise = self.system.apply_disguise("coolie")
+        self.assertIsNotNone(disguise)
+        self.assertEqual(disguise.bonus, 10)
 
 
 
