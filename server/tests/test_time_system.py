@@ -32,7 +32,22 @@ class TestEventScheduler(unittest.TestCase):
         self.assertEqual(len(calls), 0)
         self.assertEqual(len(sched.events), 0)
 
-    def test_message_to
+    def test_message_to_player(self):
+        sched = EventScheduler()
+        sched.add_event(
+            ScheduledEvent(
+                trigger_minute=10,
+                event_id="msg",
+                payload={
+                    "actions": [
+                        {"type": "message_to_player", "text": "Hello"}
+                    ]
+                },
+            )
+        )
+        calls = []
+        sched.process(GameTime(minute=10, day=1), calls.append)
+        self.assertEqual(calls, ["Hello"])
 
 
 if __name__ == "__main__":

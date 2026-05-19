@@ -80,5 +80,4 @@ items:
   - id: hidden_cash
     name: "a roll of hidden cash"
     description: "Small notes bound with twine, enough to buy silence for a night."
-    takable: true
-    
+    takeable: true
