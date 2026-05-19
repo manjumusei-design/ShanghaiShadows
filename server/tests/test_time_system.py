@@ -24,7 +24,16 @@ class TestEventScheduler(unittest.TestCase):
         calls = []
         def broadcast(msg):
             calls.append(msg)
-        
+        gt = GameTime(minute=5, day=1)
+        sched.process(gt, broadcast)
+        self.assertEqual(len(sched.events), 0)
+        gt.minute = 10
+        sched.process(gt, broadcast)
+        self.assertEqual(len(calls), 0)
+        self.assertEqual(len(sched.events), 0)
+
+    def test_message_to
+
 
 if __name__ == "__main__":
     unittest.main()
