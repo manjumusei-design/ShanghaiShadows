@@ -81,3 +81,38 @@ items:
     name: "a roll of hidden cash"
     description: "Small notes bound with twine, enough to buy silence for a night."
     takeable: true
+
+  - id: cold_noodles
+    name: "a bowl of cold noodles"
+    description: "Stale but filling."
+    takeable: true
+    food_value: 15
+    morale_restore: 3
+
+  - id: rice_bowl
+    name: "a bowl of rice"
+    description: "Plain, but it keeps you moving."
+    takeable: true
+    food_value: 5
+    morale_restore: 3
+
+  - id: tea
+    name: "a cup of tea"
+    description: "Warm and comforting."
+    takeable: true
+    food_value: 25
+    morale_restore: 10
+
+  - id: dried_fish
+    name: "dried fish"
+    description: "Salty and preserved."
+    takeable: true
+    food_value: 25
+    morale_restore: 2
+
+  - id: street_snack
+    name: "a street vendor's snack"
+    description: "Grease and dough, filling enough" 
+    takeable: true
+    food_value: 12
+    morale_restore: 8
