@@ -73,5 +73,3 @@ class EventScheduler:
                     payload=row.get("payload", {}),
                 )
             )
-
-    
