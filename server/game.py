@@ -22,7 +22,13 @@ EVENTS_PATH = "server/data/events.yaml"
 TRUST_RULES_PATH = "server/data/trust_rules.yaml"
 DISGUISES_PATH = "server/data/disguises.yaml"
 STORYLETS_PATH = "server/data/storylets.yaml"
-SAVES_DIR = Path("server/data/saves") 
+SAVES_DIR = Path("server/data/saves")
+
+HUNGER_DECAY_RATE = 0.5
+HUNGER_HEALTH_DAMAGE = 2
+LOW_HUNGER_THRESHOLD = 20
+MORALE_CHECK_BONUS = 10
+
 
 @dataclass
 class PlayerState:
