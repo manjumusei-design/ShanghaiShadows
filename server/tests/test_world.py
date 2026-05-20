@@ -34,3 +34,35 @@ class TestLoadRooms(unittest.TestCase):
         self.assertEqual(bund.exits["west"], "nanking_road")
         self.assertIn("east", bund.exits)
 
+
+class TestWorld(unittest.TestCase):
+    def test_get_room(self):
+        world = World()
+        room = world.get_room("bund_dawn")
+        self.assertIsNotNone(room)
+        self.assertEqual(room.id, "bund_dawn")
+
+    def test_get_room_missing(self):
+        world = World()
+        self.assertIsNone(world.get_room("nonexistent"))
+
+    def test_format_room_contains_title(self):
+        world = World()
+        text = world.format_room("bund_dawn")
+        self.assertIn("The Bund, Dawn", text)
+
+    def test_format_room_contains_items(self):
+        world = World()
+        text = world.format_room("bund_dawn")
+        self.assertIn("You see here:", text)
+        self.assertIn("The Bund, Dawn", text)
+
+
+    def test_format_room_contains_exits(self):
+        world = World()
+        text = world.format_room("bund_dawn")
+        self.assertIn("Exits:", text)
+        self.assertIn("west", text)
+
+if __name__ == "__main__":
+    unittest.main()
