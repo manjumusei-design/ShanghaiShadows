@@ -16,4 +16,21 @@ class TestLoadItems(unittest.TestCase):
         self.assertEqual(card.name, "a tattered ration card")
         self.assertTrue(card.takeable)
         
-    
+
+class TestLoadRooms(unittest.TestCase):
+    def test_loads_rooms_with_items(self):
+        items = load_items("server/data/items.yaml")
+        rooms = load_rooms("server/data/rooms/yaml", items)
+        self.assertGreaterEqual(len(rooms), 150)
+        bund = rooms["bund_dawn"]
+        self.assertEqual(bund.title, "The Bund, Dawn")
+        self.assertTrue(bund.items)
+        self.assertIn("bund", bund.tags)
+
+    def test_room_exits(self):
+        items = load_items("server/data/items.yaml")
+        rooms = load_rooms("server//data/rooms/yaml", items)
+        bund = rooms["bund_dawn"]
+        self.assertEqual(bund.exits["west"], "nanking_road")
+        self.assertIn("east", bund.exits)
+
