@@ -677,15 +677,15 @@ Respond in character, 1-2 sentences maximum. Keep it period-appropriate, emotion
         if not cmd.direct_obj:
             await self._post_display(context, "Talk to whom?")
             return
-        room = self._room(context)
-        npc_id = self._find_npc_by_name(context, cmd.direct_obj, room.npcs if room else [])
+        npc_id = self._resolve_npc(context, cmd.direct_obj)
         if not npc_id:
             await self._post_display(context, "They aren't here.")
             return
         npc = context.state.world.npcs[npc_id]
-        line = get_dialogue(npc, context.state.player.trust)
+        line = await self._generate_npc_dialogue(context, npc, f"Hello, {npc.name}.")
         await self._post_display(context, f'{npc.name} says, "{line}"')
-        self._apply_action_trust(context, f"talk_to_{npc.faction}.{npc.role}", room.npcs if room else [])
+        self._record_conversation(context, npc_id, f"Hello, {npc.name}.", line)
+        self._apply_action_trust(context, f"talk_to_{npc.faction}.{npc.role}", self._room_npcs(context))
         self._log_event(context, f"You spoke with {npc.name}.")
         await self._maybe_trigger_storylet(context)
 
