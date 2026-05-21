@@ -213,6 +213,14 @@ class GameServer:
             if npc and (q in npc.name.lower() or q in npc.id.lower()):
                 return npc_id
         return None
+    
+    def _resolve_npc(self, context: SessionContext, name: str) -> Optional[str]:
+        room = self._room(context)
+        return self._find_npc_by_name(context, name, room.npcs if room else[])
+
+    def _room_npcs(self, context: SessionContext) -> List[str]:
+        room = self._room(context)
+        return room.npcs if room else []
 
     async def _post_display(self, context: SessionContext, text: str):
         await context.session.send_display(text if text.endswith("\n") else text + "\n")
