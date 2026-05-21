@@ -689,6 +689,23 @@ Respond in character, 1-2 sentences maximum. Keep it period-appropriate, emotion
         self._log_event(context, f"You spoke with {npc.name}.")
         await self._maybe_trigger_storylet(context)
 
+    async def _cmd_ask_about(self, context: SessionContext, cmd: Command):
+        if not cmd.direct_obj or not cmd.indirect_obj:
+            await self._post_display(context, "Ask whom about what?")
+            return
+        npc_id = self._resolve_npc(context, cmd.direct_obj)
+        if not npc_id:
+            await self._post_display(context, "They aren't here.")
+            return
+        npc = context.state.world.npcs[npc_id]
+        topic = cmd.indirect_obj
+        line = await self._generate_npc_dialogue(context, npc, f"Tell me about {topic}.")
+        await self._post_display(context, f'{npc.name} says, "{line}"')
+        self._record_conversation(context, npc_id, f"Tell me about {topic}.", line)
+        self._apply_action_trust(context, f"ask_about_{npc.faction}.{npc.role}", self._room_npcs(context))
+        self._log_event(context, f"You asked {npc.name} about {topic}.")
+        await self._maybe_trigger_storylet(context)
+
     async def _cmd_wait(self, context: SessionContext, cmd: Command):
         if not cmd.direct_obj:
             await self._post_display(context, "Wait how long?")
@@ -698,12 +715,6 @@ Respond in character, 1-2 sentences maximum. Keep it period-appropriate, emotion
         except ValueError:
             await self._post_display(context, "You must wait a number of minutes.")
             return
-        minutes = max(1, min(minutes, 240))
-        for _ in range(minutes):
-            await self._advance_time_one_minute(context)
-        self._log_event(context, f"You waited {minutes} minutes.")
-        await self._post_display(context, f"You wait {minutes} minutes. It is now {time_str(context.state.game_time)}.")
-
     async def _cmd_status(self, context: SessionContext, cmd: Command):
         disguise = self.disguises.get(context.state.player.disguise)
         lines = [time_str(context.state.game_time)]
