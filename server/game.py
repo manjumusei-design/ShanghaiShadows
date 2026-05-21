@@ -498,7 +498,9 @@ class GameServer:
         await self._check_newspaper(context)
         if context.state.game_time.minute % 15 == 0:
             await self._maybe_trigger_storylet(context)
+        self._process_survival_tick(context)
 
+        
     async def tick_loop(self):
         while True:
             await asyncio.sleep(1)
