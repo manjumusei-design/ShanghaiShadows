@@ -639,7 +639,40 @@ class GameServer:
         for item in context.state.player.inventory:
             lines.append(f"- {item.name}")
         await self._post_display(context, "\n".join(lines))
-        
+    
+    async def _generate_npc_dialogue(self, context: SessionContext, npc: Npc, player_input: str) -> str:
+        room = self._room(context)
+        memory_context = ""
+        if npc.memory:
+            memory_context = "Recent memories: " + "; ".join(npc.memory[-3:])
+        trust_score = get_role_trust(context.state.player.trust, npc.faction, npc.role)
+        trust_desc = "friendly" if trust_score > 70 else "hostile" if trust_score < 30 else "neutral"
+        rel = self._get_relationship(context, npc.id)
+        rel_context = ""
+        if rel["friendship"] > 70:
+            rel_context = "You consider this player a friend."
+        elif rel ["fear"] > 70:
+            rel_context = "You are somewhat afraid of this player."
+        elif rel ["indebtedness"] > 50:
+            rel_context = "You feel indebted to this player."
+        prompt = f"""You are {npc.name}, a {npc.role} of the {npc.faction} faction in occupied Shanghai, November 1938.
+Personality: {npc.personality}.
+Awareness level: {npc.awareness}/100.
+Relationship with player: {trust_desc} (trust: {trust_score}/100).
+{memory_context}
+{rel_context}
+Current location: {room.title if rooom else "somewhere in Shanghai"}.
+The player says: "{player_input}"
+Respond in character, 1-2 sentences maximum. Keep it period-appropriate, emotionally authentic, and consistent with your faction alignment. Do not break character or acknowledge being an AI. """
+
+        try:
+            result = await self.ai_client.chat_text([{"role": "user", "content": prompt}], timeout_seconds=3.0)
+            if result:
+                return result.strip()
+        except Exception as e:
+            print(f" AI dialogue generation fail: {e}")
+        return get_dialogue(npc, context.state.player.trust)
+            
     async def _cmd_talk_to(self, context: SessionContext, cmd: Command):
         if not cmd.direct_obj:
             await self._post_display(context, "Talk to whom?")
