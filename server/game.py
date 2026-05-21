@@ -715,6 +715,12 @@ Respond in character, 1-2 sentences maximum. Keep it period-appropriate, emotion
         except ValueError:
             await self._post_display(context, "You must wait a number of minutes.")
             return
+        minutes = max(1, min(minutes, 240))
+        for _ in range(minutes):
+            await self.advance_time_one_minute(context)
+        self. _log_event(context, f"You waited {minutes} minutes.")
+        await self._post_display(context, f"You wait {minutes} minutes. It is now {time_str(context.state.game_time)}.")
+
     async def _cmd_status(self, context: SessionContext, cmd: Command):
         disguise = self.disguises.get(context.state.player.disguise)
         lines = [time_str(context.state.game_time)]
