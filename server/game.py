@@ -1,6 +1,7 @@
 import asyncio
 import json
 import re
+from collections import deque
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Awaitable, Callable, Dict, List, Optional
@@ -23,11 +24,9 @@ TRUST_RULES_PATH = "server/data/trust_rules.yaml"
 DISGUISES_PATH = "server/data/disguises.yaml"
 STORYLETS_PATH = "server/data/storylets.yaml"
 SAVES_DIR = Path("server/data/saves")
-
 HUNGER_DECAY_RATE = 0.5
 HUNGER_HEALTH_DAMAGE = 2
 LOW_HUNGER_THRESHOLD = 20
-MORALE_CHECK_BONUS = 10
 
 
 @dataclass
@@ -42,6 +41,11 @@ class PlayerState:
     flags: List[str] = field(default_factory=list)
     world_events: List[str] = field(default_factory=list)
     newspapers: List[Dict[str, object]] = field(default_factory=list)
+    health: int = 100
+    hunger: int = 100
+    morale: int = 80
+    arrested: bool = False
+    relationships: Dict[str, Dict[str, int]] = field(default_factory=dict)  # npc_id -> {friendship, fear, indebtedness}
 
 @dataclass
 class GameState:
@@ -57,6 +61,7 @@ class GameState:
     rumour_mill: Dict[str, List[str]] = field(default_factory=dict)
     last_curfew_penalty_day: int = 0
     last_newspaper_day: int = 0
+    conversation_history: List[Dict[str, str]] = field(default_factory=list)
 
     def get_trust_value(self, key: str) -> int:
         if "." in key:
@@ -98,6 +103,8 @@ def _serialize_item(item: Item) -> Dict[str, object]:
         "takeable": item.takeable,
         "readable_text": item.readable_text,
         "planted_on": item.planted_on,
+        "food_value": item.food_value,
+        "morale_restore": item.morale_restore,
     }
 
 
@@ -109,6 +116,8 @@ def _deserialize_item(row: Dict[str, object]) -> Item:
         takeable=bool(row.get("takeable", True)),
         readable_text=str(row.get("readable_text", "")),
         planted_on=str(row.get("planted_on", "")),
+        food_value=int(row.get("food_value", 0)),
+        morale_restore=int(row.get("morale_restore", 0)),
     )
 
 
@@ -156,12 +165,14 @@ class GameServer:
             "journal": self._cmd_journal,
             "unknown": self._cmd_unknown,
             "ask": self._cmd_stub,
-            "ask about": self._cmd_stub,
+            "ask about": self._cmd_ask_about,
             "whisper": self._cmd_stub,
             "give": self._cmd_stub,
             "use": self._cmd_stub,
-            "sleep": self._cmd_stub,
-            "bond": self._cmd_stub,
+            "eat": self._cmd_eat,
+            "sleep": self._cmd_sleep,
+            "rest": self._cmd_rest,
+            "bond": self._cmd_bond,
         }
 
     def _new_state(self) -> GameState:
@@ -208,6 +219,17 @@ class GameServer:
     def _log_event(self, context: SessionContext, text: str) -> None:
         context.state.player.world_events.append(text)
         context.state.player.world_events = context.state.player.world_events[-50:]
+
+
+    def _record_conversation(self, context: SessionContext, npc_id: str, player_input: str, npc_response: str):
+        context.state.conversation_history.append({
+            "npc_id": npc_id,
+            "player_input": player_input,
+            "npc_response": npc_response,
+            "time": context.state.game_time.minute,
+            "day": context.state.game_time.day,
+        })
+        context.state.conversation_history = context.state.conversation_history[-20:]
 
     def _summary_trust_lines(self, context: SessionContext) -> List[str]:
         summary = summarize_faction_trust(context.state.player.trust)
