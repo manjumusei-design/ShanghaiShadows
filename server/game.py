@@ -544,6 +544,8 @@ class GameServer:
                         continue
                     context.slot_name = _sanitize_slot_name(text)
                     context.state = self.load_slot(context.slot_name)
+                    if "awaiting_new_character" in context.state.player.flags:
+                        await self._initialize_new_character(context)
                     await session.send_display(f"Loaded slot '{context.slot_name}'.\n")
                     await self._cmd_look(context, Command(verb="look", raw="lok"))
                     await session.send_prompt()
