@@ -439,34 +439,47 @@ class GameServer:
             await self._cmd_look(context, Command(verb="look", raw="look"))
 
     async def _apply_storylet_effects(self, context: SessionContext, effects: Dict[str, object]):
-        for flag in effects.get("set_flag", [] if isinstance(effects.get("set_flag"), list) else [effects.get("set_flag")]):
+        def _as_list(val):
+            if isinstance(val, list):
+                return val
+            return [val] if val else []
+
+        for flag in _as_list(effects.get("set_flag")):
             if flag and flag not in context.state.player.flags:
                 context.state.player.flags.append(str(flag))
-        for flag in effects.get("clear_flag", [] if isinstance(effects.get("clear_flag"), list) else [effects.get("clear_flag")]):
+        for flag in _as_list(effects.get("clear_flag")):
             if flag in context.state.player.flags:
                 context.state.player.flags.remove(flag)
         for trust_key, delta in effects.get("change_trust", {}).items():
             change_trust(context.state.player.trust, trust_key, int(delta))
-        for item_id in effects.get("add_item", [] if isinstance(effects.get("add_item"), list) else [effects.get("add_item")]):
+        for item_id in _as_list(effects.get("add_item")):
             if item_id:
                 item = context.state.world.clone_item(str(item_id))
                 if item:
                     context.state.player.inventory.append(item)
-        for item_id in effects.get("remove_item", [] if isinstance(effects.get("remove_item"), list) else [effects.get("remove_item")]):
+        for item_id in _as_list(effects.get("remove_item")):
             if item_id:
                 item = self._find_item_by_name(str(item_id), context.state.player.inventory)
                 if item:
                     context.state.player.inventory.remove(item)
-        for flag_event in effects.get("log_event", [] if isinstance(effects.get("log_event"), list) else [effects.get("log_event")]):
+        for flag_event in _as_list(effects.get("log_event")):
             if flag_event:
                 self._log_event(context, str(flag_event))
-        for npc_id, room_id in effects.get("move_npc", {}).items():
-            if npc_id in context.state.world.npcs and room_id in context.state.world.rooms:
-                context.state.world.place_npc(npc_id, room_id)
-        for npc_id, room_id in effects.get("spawn_npc", {}).items():
-            if npc_id in context.state.world.npcs and room_id in context.state.world.rooms:
-                context.state.world.place_npc(npc_id, room_id)
+        for key in ("move_npc", "spawn_npc"):
+            for npc_id, room_id in effects.get(key, {}).items():
+                if npc_id in context.state.world.npcs and room_id in context.state.world.rooms:
+                    context.state.world.place_npc(npc_id, room_id)
+        
+        #Ded 
+        if "kill_player" in effects:
+            death_reason = effects.get("death_reason:, "You have met your end in Shanghai.")
+            asnycio.create_task(self._handle_player_death(context, death_reason))
+            return
 
+        if "arrest_player" in effects:
+            context.state.player.arrested = True
+            self._log_event(context, "You have been arrested.")
+            await self._post_display(context, "Armed officers surround you. 'Youre coming with us.'")
 
     async def _advance_time_one_minute(self, context: SessionContext):
         context.state.game_time.minute += 1
