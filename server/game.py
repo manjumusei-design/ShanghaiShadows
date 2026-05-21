@@ -724,6 +724,9 @@ Respond in character, 1-2 sentences maximum. Keep it period-appropriate, emotion
     async def _cmd_status(self, context: SessionContext, cmd: Command):
         disguise = self.disguises.get(context.state.player.disguise)
         lines = [time_str(context.state.game_time)]
+        lines.append(f"Health: {context.state.player.health}/100")
+        lines.append(f"Hunger: {context.state.player.hunger}/100")
+        lines.append(f"Morale: {context.state.player.morale}/100")
         lines.append(f"Disguise: {disguise.name if disguise else 'none'}")
         lines.append(f"Stealth skill: {context.state.player.stealth_skill}")
         lines.append("Trust:")
