@@ -229,7 +229,6 @@ class GameServer:
         context.state.player.world_events.append(text)
         context.state.player.world_events = context.state.player.world_events[-50:]
 
-
     def _record_conversation(self, context: SessionContext, npc_id: str, player_input: str, npc_response: str):
         context.state.conversation_history.append({
             "npc_id": npc_id,
@@ -238,8 +237,7 @@ class GameServer:
             "time": context.state.game_time.minute,
             "day": context.state.game_time.day,
         })
-        context.state.conversation_history = context.state.conversation_history[-20:]
-
+        
     def _summary_trust_lines(self, context: SessionContext) -> List[str]:
         summary = summarize_faction_trust(context.state.player.trust)
         return [f"- {faction}: {value}" for faction, value in sorted(summary.items())]
