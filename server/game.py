@@ -500,7 +500,21 @@ class GameServer:
             await self._maybe_trigger_storylet(context)
         self._process_survival_tick(context)
 
-        
+        #Deathcon
+        is_dead, death_message = self._check_death_conditions(context)
+        if is dead:
+            asyncio.create_task(self._handle_player_death(context, death_message))
+            return
+
+    def _process_survival_tick(self, contexxt: SessionContext):
+        context.state.player.hunger = max(0, context.state.player.hunger - HUNGER_DECAY_RATE)
+        if context.state.player.hunger <= LOW_HUNGER_THRESHOLD:
+            context.state.player_.health = max(0, context.state.player.health - HUNGER_HEALTH_DAMAGE)
+            if context.state.game_time.minute % 30 == 0:
+                asyncio.create_task(self._post_display(context, "Your stomach growls in hunger."))
+        if context.state.player.hunger > 80 and context.state.game_time.minute % 60 == 20:
+            context.state.player.health = min(100, context.state.player.health + 1)
+
     async def tick_loop(self):
         while True:
             await asyncio.sleep(1)

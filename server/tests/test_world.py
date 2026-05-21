@@ -55,7 +55,7 @@ class TestWorld(unittest.TestCase):
         world = World()
         text = world.format_room("bund_dawn")
         self.assertIn("You see here:", text)
-        self.assertIn("The Bund, Dawn", text)
+        self.assertIn("The  Bund, Dawn", text)
 
 
     def test_format_room_contains_exits(self):
