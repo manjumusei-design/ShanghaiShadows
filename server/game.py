@@ -28,7 +28,6 @@ HUNGER_DECAY_RATE = 0.5
 HUNGER_HEALTH_DAMAGE = 2
 LOW_HUNGER_THRESHOLD = 20
 
-
 @dataclass
 class PlayerState:
     name: str = "Stranger"
@@ -47,6 +46,7 @@ class PlayerState:
     arrested: bool = False
     relationships: Dict[str, Dict[str, int]] = field(default_factory=dict)  # npc_id -> {friendship, fear, indebtedness}
 
+
 @dataclass
 class GameState:
     world: World
@@ -61,7 +61,8 @@ class GameState:
     rumour_mill: Dict[str, List[str]] = field(default_factory=dict)
     last_curfew_penalty_day: int = 0
     last_newspaper_day: int = 0
-    conversation_history: List[Dict[str, str]] = field(default_factory=list)
+
+    conversation_history: deque = field(default_factory=lambda: deque(maxlen=20))
 
     def get_trust_value(self, key: str) -> int:
         if "." in key:
