@@ -740,7 +740,11 @@ Respond in character, 1-2 sentences maximum. Keep it period-appropriate, emotion
             context.state.player.relationships[npc_id] = {}
         return context.state.player.relationships[npc_id]
 
-
+    def _modify_relationship(self, context: SessionContext, npc_id: str, changes: Dict[str, int]):
+        rel = self._get_relationship(context, npc_id)
+        for key, delta in changes.items():
+        if key in rel:
+            rel[key] = max(0, min(100, rel[key] + delta))
 
     async def _cmd_disguise_as(self, context: SessionContext, cmd: Command):
         if not cmd.direct_obj:
