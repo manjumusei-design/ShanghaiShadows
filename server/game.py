@@ -851,6 +851,25 @@ Respond in character, 1-2 sentences maximum. Keep it period-appropriate, emotion
     async def _cmd_stub(self, context: SessionContext, cmd: Command):
         await self._post_display(context, f"{cmd.verb.upper()} has not been implemented.")
 
+    async def _def_cmd_eat(self, context: SessionContext, cmd: Command):
+        if not cmd.direct_obj:
+            await self._post_display(context, "Eat what?")
+            return
+        item = self._find_item_by_name(cmd.direct_obj, context.state.player.inventory)
+        if not item:
+            await self._post_display(context, "You dont have that.")
+            return
+        food_value = item.food_value
+        morale_restore = item.morale_restore
+        if food_value == 0:
+            await self.post_display(context, "That's not food.")
+            return
+        context.state.player.inventory.remove(item)
+        context.state.player.hungry = min(100, context.state.player.hunger + food_value)
+        context.state.player.morale = min(100, context.state.player.morale + morale_restore)
+        self._log_event(context, f"You ate {item.name}.")
+        await self._post_display(context, f"You eat {item.name}. It settles your stomach.")
+        
     async def _cmd_unknown(self, context: SessionContext, cmd: Command):
         await self._post_display(context, f"I don't understand '{cmd.raw}'. Try HELP.")
 
