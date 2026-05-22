@@ -735,6 +735,13 @@ Respond in character, 1-2 sentences maximum. Keep it period-appropriate, emotion
             lines.append("Flags: " + ", ".join(sorted(context.state.player.flags)))
         await self._post_display(context, "\n".join(lines))
 
+    def _get_relationship(self, context: SessionContext, npc_id:)
+        if npc_id not in context.state.player.relationships:
+            context.state.player.relationships[npc_id] = {}
+        return context.state.player.relationships[npc_id]
+
+
+
     async def _cmd_disguise_as(self, context: SessionContext, cmd: Command):
         if not cmd.direct_obj:
             await self._post_display(context, "Disguise as what?")
