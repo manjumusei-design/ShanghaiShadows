@@ -870,6 +870,21 @@ Respond in character, 1-2 sentences maximum. Keep it period-appropriate, emotion
         self._log_event(context, f"You ate {item.name}.")
         await self._post_display(context, f"You eat {item.name}. It settles your stomach.")
         
+    async def _cmd_sleep(self, context: SessionContext, cmd: Command):
+        room = self._room(context)
+        if not room or not room.indoors:
+            await self._post_display(contexxt, "You need shelter to rest safely.")
+            return
+        hours = 6
+        minutes = hours * 60
+        context.state.player.health = min(100, context.state.player.health + 10)
+        context.state.player.morale = min(100, context.state.player.morale + 15)
+        context.state.player.hunger = max(0, context.state.player.hunger - 20)
+        for _ in range(minutes):
+            await self._advance_time_one_minute(context)
+        self._log_event(context, "You slept for several hours.")
+        await self._post_display(context, f"You sleep for {hours} hours and wake refreshed. It is now {time_str(context.state.game_time)}.")
+    
     async def _cmd_unknown(self, context: SessionContext, cmd: Command):
         await self._post_display(context, f"I don't understand '{cmd.raw}'. Try HELP.")
 
