@@ -763,8 +763,7 @@ Respond in character, 1-2 sentences maximum. Keep it period-appropriate, emotion
         if not cmd.direct_obj:
             await self._post_display(context, "Tail whom?")
             return
-        room = self._room(context)
-        npc_id = self._find_npc_by_name(context, cmd.direct_obj, room.npcs if room else [])
+        npc_id = self._resolve_npc(context, cmd.direct_obj)
         if not npc_id:
             await self._post_display(context, "They aren't here.")
             return
