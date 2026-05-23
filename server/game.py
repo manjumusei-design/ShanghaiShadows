@@ -885,6 +885,52 @@ Respond in character, 1-2 sentences maximum. Keep it period-appropriate, emotion
         self._log_event(context, "You slept for several hours.")
         await self._post_display(context, f"You sleep for {hours} hours and wake refreshed. It is now {time_str(context.state.game_time)}.")
     
+    async def _cmd_rest(self, context: SessionContext, cmd: Command): 
+        context.state.player.morale = min(100, context.state.player.morale + 5)
+        for _ in range(15):
+            await self._advance_time_one_minute(context)
+        await self._post_display(context, "You rest quietly for fifteen minutes, catching your breath.") # Test since idk how this will work and interact with other users. 
+
+    async def _cmd_bond(self, context: SessionContext, cmd: Command):
+        if not cmd.direct_obj:
+            await self._post_display(context, "Bond with whom?")
+            return
+        npc_id = self._resolve_npc(context, cmd.direct_obj)
+        if not npc_id:
+            await self._post_display(context, "They aren't here.")
+            return
+
+        action = cmd.preposition or cmd.indirect_obj or "share_meal"
+        if action == "share_meal":
+            food_items = [item for item in context.state.player.inventory if item.food_value > 0]
+            if not food_items:
+                await self._post_display(context, "You have no food to share.")
+                return
+            food = food_items[0]
+            context.state.player.inventory.remove(food)
+            self._modify_relationship(context, npc_id, {"friendship": 15, "indebtedness": 5})
+            self._log_event(context, f"You shared a meal with {context.state.world.npcs[npc_id].name}.")
+            await self._post_display(context, f"You share {food.name}. They seem grateful for the company.")
+
+        elif action == "gift":
+            if not cmd.indirect_obj:
+                await self._post_display(context, "Gift what item?")
+                return
+            item = self._find_item_by_name(cmd.indirect_obj, context.state.player.inventory)
+            if not item:
+                await self._post_display(context, "You don't have that.")
+                return
+            context.state.player.inventory.remove(item)
+            gift_value = 10 if item.readable_text else 20
+            self._modify_relationship(context, npc_id, {"friendship": gift_value, "indebtedness": gift_value // 2})
+            self._log_event(context, f"You gifted {item.name} to {context.state.world.npcs[npc_id].name}.")
+            await self._post_display(context, f"You give {item.name}. Their expression softens.")
+        else:
+            await self._post_display(context, "Bond actions: SHARE MEAL, GIFT <item>")
+        await self._maybe_trigger_storylet(context)
+
+            
+        
     async def _cmd_unknown(self, context: SessionContext, cmd: Command):
         await self._post_display(context, f"I don't understand '{cmd.raw}'. Try HELP.")
 
