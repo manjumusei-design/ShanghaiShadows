@@ -929,8 +929,6 @@ Respond in character, 1-2 sentences maximum. Keep it period-appropriate, emotion
             await self._post_display(context, "Bond actions: SHARE MEAL, GIFT <item>")
         await self._maybe_trigger_storylet(context)
 
-            
-        
     async def _cmd_unknown(self, context: SessionContext, cmd: Command):
         await self._post_display(context, f"I don't understand '{cmd.raw}'. Try HELP.")
 
@@ -950,6 +948,11 @@ Respond in character, 1-2 sentences maximum. Keep it period-appropriate, emotion
                 "flags": state.player.flags,
                 "world_events": state.player.world_events,
                 "newspapers": state.player.newspapers,
+                "health": state.player.health,
+                "hunger": state.player.hunger,
+                "morale": state.player.morale,
+                "arrested": state.player.arrested,
+                "relationships": state.player.relationships,
             },
             "time": {"day": state.game_time.day, "minute": state.game_time.minute},
             "room_items": {
