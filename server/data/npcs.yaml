@@ -353,3 +353,24 @@ npcs:
         - "I can offer little beyond a warning."
       hostile:
         - "Do not force me to choose between duty and decency in public."
+
+  - id: dr_zhao
+    name: "Dr. Zhao, the underground physician"
+    description: "A weary doctor whose clinic treats more rope burns and bullet wounds than fevers these days."
+    faction: resistance
+    role: doctor
+    personality: "compassionate, secretive, haunted"
+    awareness: 75
+    schedule:
+      8: hidden_02
+      14: commercial_05
+      20: hidden_02
+    dialogue:
+      greeting:
+        - "Come in quietly. These days even the walls have ears."
+      friendly:
+        - "I might be able to patch you up, but I can't fix what this city does to people."
+      neutral:
+        - "What can I do for today? Make it worth the risk."
+      hostile:
+        - "My door is closed to those who bring harm to my patients."
