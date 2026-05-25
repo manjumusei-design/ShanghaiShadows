@@ -990,6 +990,93 @@ Respond in character, 1-2 sentences maximum. Keep it period-appropriate, emotion
                 return True, "The Kempeitai don't believe your story. They drag you to Bridge House Prison. You will not return."
         return False, ""
     
+    async def _generate_obituary(self, context: SessionContext, death_message: str) -> str:
+        player = context.state.player
+
+        key_flags = [flag for flag in player.flags if flag.startswith("legacy_")]
+        key_events = player.world_events[-5:] if player.world_events else ["A quiet life in Shanghai"]
+        cause = "natural causes" if player.health <= 0 else "arrested by authorities"
+
+        prompt = f"""Write a short 1938 Shanghai Times obituary for a person with these characteristics:
+
+Name: {player.name}
+Reputation: Respected among: {[f for f, roles in player.trust.items() if any(v > 70 for v in roles.values())]}
+Key actions: {key_events}
+Cause of death: {cause}
+
+Style requirements:
+- Factual and cold, with subtle propaganda undertones
+- 2-3 sentences maximum
+- Period-appropriate language for 1938 Shanghai
+- Mention their likely impact on the community
+
+Respond as plain text, no JSON formatting."""
+
+        try:
+            result = await self.ai_client.chat_text([{"role": "user", "content": prompt}], timeout_seconds=4.0)
+            if result:
+                return result.strip()
+        except Exception as e:
+            print(f"Obituary generation failed: {e}")
+        return f"{player.name}, a resident of Shanghai, passed away recently. They will be remembered by those who knew them."
+
+    async def _handle_player_death(self, context: SessionContext, death_message: str):
+        obituary = await self._generate_obituary(context, death_message)
+        end_screen = f"""THE END
+
+{death_message}
+
+---
+{obituary}
+---
+
+Your legacy in Shanghai will be remembered by those who knew you.
+"""
+
+        await self._post_display(context, end_screen)
+        context.state.player.flags.append("player_died")
+        self.save_slot(context)
+        context.session.running = False
+        await context.session.websocket.close()
+
+    async def _generate_character_background(self, context: SessionContext) -> dict:
+        """Generate new character background based on previous character's legacy."""
+        previous_player = context.state.player
+
+        high_trust_factions = [f for f, roles in previous_player.trust.items() if any(v > 70 for v in roles.values())]
+        low_trust_factions = [f for f, roles in previous_player.trust.items() if any(v < 30 for v in roles.values())]
+        legacy_flags = [flag for flag in previous_player.flags if flag.startswith("legacy_")]
+
+        prompt = f"""Generate a character background for a new person starting in occupied Shanghai, November 1938.
+
+Previous character context:
+- Name: {previous_player.name}
+- Known for helping: {high_trust_factions if high_trust_factions else "no particular faction"}
+- Suspicious to: {low_trust_factions if low_trust_factions else "no particular faction"}
+- Legacy actions: {legacy_flags if legacy_flags else "nothing remarkable"}
+
+Generate background details:
+1. A name (Chinese or European)
+2. A brief connection to the previous character
+3. Starting trust bonuses/penalties based on rumors
+4. A personal motivation
+
+Respond as JSON with keys: name, background_connection, trust_adjustments, motivation"""
+
+        try:
+            result = await self.ai_client.chat_json([{"role": "user", "content": prompt}], timeout_seconds=4.0)
+            if result:
+                return result
+        except Exception as e:
+            print(f"Background generation failed: {e}")
+
+        return {
+            "name": "Chen Wei",
+            "background_connection": "You heard stories about the previous person who lived here.",
+            "trust_adjustments": {},
+            "motivation": "Just trying to survive until the war ends."
+        }
+
     def load_slot(self, slot_name: str) -> GameState:
         state = self._new_state()
         path = self._save_path(slot_name)
