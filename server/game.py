@@ -979,6 +979,17 @@ Respond in character, 1-2 sentences maximum. Keep it period-appropriate, emotion
         }
         self._save_path(context.slot_name).write_text(json.dumps(payload, indent=2), encoding="utf-8")
 
+    def _check_death_conditions(self, context: SessionContext) -> tuple[bool, str]:
+        player = context.state.player
+        if player.health <= 0:
+            return True, "You collapse in the cold alley, too weak to continue. Shanghai claims another victim."
+
+        if player.arrested:
+            kempeitai_trust = get_role_trust(player.trust, "kempeitai", None)
+            if kempeitai_trust < 25:
+                return True, "The Kempeitai don't believe your story. They drag you to Bridge House Prison. You will not return."
+        return False, ""
+    
     def load_slot(self, slot_name: str) -> GameState:
         state = self._new_state()
         path = self._save_path(slot_name)
