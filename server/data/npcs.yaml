@@ -378,4 +378,21 @@ npcs:
   - id: waiter_chen
     name: "Chen, the waiter"
     description: "A young man who seems to have ears everywhere."
-    
+    faction: civilian
+    role: vendor
+    personality: "observant, quiet, ambitious"
+    awareness: 60
+    schedule:
+      10: commercial_08
+      14: commercial_08
+      18: commercial_08
+      22: commercial_08
+    dialogue:
+      greeting:
+        - "The special is silence today. What would you like instead?"
+      friendly:
+        - "There's something you should know about tonight's patrol route."
+      neutral:
+        - "Order what you want, but watch what you say."
+      hostile:
+        - "I don't serve those who bring trouble to my establishment."
