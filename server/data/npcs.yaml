@@ -8,9 +8,9 @@ npcs:
     awareness: 48
     schedule:
       6: "bund_dawn"
-      12: "nanking_road"
+      12: "nanjing_road"
       18: "bund_dawn"
-      21: "nanking_road"
+      21: "nanjing_road"
     dialogue:
       greeting:
         - "You seem to need a ride. I can take you anywhere in the city, for a price."
@@ -36,15 +36,15 @@ npcs:
       12: french_08
       18: french_12
       22: french_04
-      dialogue:
-        greeting:
-          - "If you are bleeding, sit down. If not, make room for someone who is."
-        friendly:
-          - "Mercy is expensive these days, it's rarely at all virtue"
-        neutral:
-          - "Every day asks too much of everyone, everywhere."
-        hostile:
-           - "Get out."
+    dialogue:
+      greeting:
+        - "If you are bleeding, sit down. If not, make room for someone who is."
+      friendly:
+        - "Mercy is expensive these days, it's rarely at all virtue"
+      neutral:
+        - "Every day asks too much of everyone, everywhere."
+      hostile:
+        - "Get out."
 
   - id: captain_ishikawa
     name: "Captain Ishikawa"
