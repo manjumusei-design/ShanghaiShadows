@@ -374,3 +374,8 @@ npcs:
         - "What can I do for today? Make it worth the risk."
       hostile:
         - "My door is closed to those who bring harm to my patients."
+
+  - id: waiter_chen
+    name: "Chen, the waiter"
+    description: "A young man who seems to have ears everywhere."
+    
