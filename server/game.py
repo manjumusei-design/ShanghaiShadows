@@ -1077,6 +1077,13 @@ Respond as JSON with keys: name, background_connection, trust_adjustments, motiv
             "motivation": "Just trying to survive until the war ends."
         }
 
+    def _apply_inherited_trust(self, context: SessionContext,adjustments: dict) -> TrustMap:
+        base_trust = default_trust()
+
+        for key, delta in adjustments.items():
+            change_trust(base_trust, key, int(delta))
+        return base_trust
+
     def load_slot(self, slot_name: str) -> GameState:
         state = self._new_state()
         path = self._save_path(slot_name)
