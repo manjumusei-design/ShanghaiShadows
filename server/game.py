@@ -1084,6 +1084,48 @@ Respond as JSON with keys: name, background_connection, trust_adjustments, motiv
             change_trust(base_trust, key, int(delta))
         return base_trust
 
+    async def _initialize_new_character(self, context: SessionContext):
+        background = await self._generate_character_background(context)
+
+        new_player = PlayerState(
+            name=background.get("name", "Newcomer"),
+            current_room="bund_dawn",
+            inventory=[],
+            trust=self._apply_inherited_trust(context, background.get("trust_adjustments", {})),
+            disguise="",
+            stealth_skill=55,
+            hidden=False,
+            flags=[],
+            world_events=[],
+            newspapers=[],
+            health=100,
+            hunger=100,
+            morale=80,
+            arrested=False
+        )
+
+        old_player = context.state.player
+        context.state.player = new_player
+        context.state.conversation_history = deque(maxlen=20)
+        context.state.storylet_history = []
+        context.state.active_storylet = None
+        context.state.tailing_state = None
+        context.state.planted_evidence = []
+        context.state.last_curfew_penalty_day = 0
+
+        welcome_text = f"""
+              A NEW CHAPTER BEGINS
+
+You are {new_player.name}, {background['background_connection']}
+
+{background['motivation']}
+
+The city remembers what came before, and now you must find your own path.
+"""
+
+        await self._post_display(context, welcome_text)
+        await self._cmd_look(context, Command(verb="look", raw="look"))
+
     def load_slot(self, slot_name: str) -> GameState:
         state = self._new_state()
         path = self._save_path(slot_name)
