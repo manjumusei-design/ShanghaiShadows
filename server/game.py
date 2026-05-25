@@ -1056,7 +1056,7 @@ Previous character context:
 - Legacy actions: {legacy_flags if legacy_flags else "nothing remarkable"}
 
 Generate background details:
-1. A name (Chinese or European)
+1. A name (Chinese or European/Japanese)
 2. A brief connection to the previous character
 3. Starting trust bonuses/penalties based on rumors
 4. A personal motivation
