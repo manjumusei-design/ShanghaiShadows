@@ -23,7 +23,6 @@ npcs:
       hostile:
         - "Don't talk to me, I have no room for another problem. I have endured enough hardships in this city to last two lifetimes."
 
-  
   - id: sister_mei
     name: "Sister Mei"
     description: "A chapel nurse whose sleeves are always rolled past the elbow and whos patience has survived longer than sleep."
@@ -87,13 +86,13 @@ npcs:
       friendly:
         - "For the right friends, I remember the useful things."
       neutral:
-        - "Business survives ideology by keeping the better books."
+        - "Business survives ideology by keeping better books."
       hostile:
-        - "You are asking to be rememberd for the wrong reason."
+        - "You are asking to be remembered for the wrong reason."
 
   - id: father_benoit
     name: "Father Benoit"
-    description: "A French Priest whos cassock smells of candle smoke and rainwater."
+    description: "A French priest whose cassock smells of candle smoke and rainwater."
     faction: french_concession
     role: clerks
     personality: "pious, conflicted, unexpectedly brave"
@@ -110,12 +109,12 @@ npcs:
         - "The city keeps confessions that no church can hold."
       neutral:
         - "I offer shelter, not certainty."
-      hostile: 
+      hostile:
         - "If you endanger my people, the door closes."
-  
+
   - id: thomas_reed
     name: "Thomas Reed"
-    description: "A British dock clerk with salt on his cuffs and conscience that changes daily."
+    description: "A British dock clerk with salt on his cuffs and a conscience he edits daily."
     faction: british
     role: dockmaster
     personality: "dry, compromised, not yet empty"
@@ -125,22 +124,22 @@ npcs:
       12: docks_07
       18: docks_11
       22: bund_18
-    dialogie:
+    dialogue:
       greeting:
-        - "Nothing enters these ledgers clean, not even the ink."
+        - "Nothing enters these ledgers clean, not even the paper."
       friendly:
         - "If I tell you the truth, pretend you stole it."
       neutral:
-        -"Cargo moves. Men vanish. I record only one of those."
-      hostile: 
+        - "Cargo moves. Men vanish. I record only one of those."
+      hostile:
         - "You are far too interested in the wrong crates."
-      
+
   - id: zhang_lan
     name: "Zhang Lan"
     description: "A market noodle seller whose ladle pauses whenever uniforms appear."
     faction: civilian
     role: vendor
-    personality: "warn, watchful, practical"
+    personality: "warm, watchful, practical"
     awareness: 46
     schedule:
       7: commercial_03
@@ -151,15 +150,15 @@ npcs:
       greeting:
         - "Eat while it is still hot. Everything else can wait."
       friendly:
-        - "People talk when noodles are good enough to make them forget their worries."
+        - "People talk when noodles are good enough to make them careless."
       neutral:
-        - "I sell food, although I wish I could sell hope."
+        - "I sell food, not certainty."
       hostile:
-        - "Take your questions elsewhere, but leave the bowl here."
+        - "Take your questions somewhere that can survive them."
 
   - id: yan_fen
     name: "Yan Fen"
-    description: "A resistance courier who walks like she is always late is too fast to suspect."
+    description: "A resistance courier who walks like she is always late and therefore never suspicious."
     faction: resistance
     role: courier
     personality: "quick, brave, unsentimental"
@@ -175,16 +174,16 @@ npcs:
       friendly:
         - "A city can still move if enough hands push in secret."
       neutral:
-        - "I don't linger, neither should you."
+        - "I don't linger. Neither should you."
       hostile:
         - "Turn around and forget my face."
 
   - id: old_wu
     name: "Old Wu"
     description: "A shrine keeper with soot on his sleeves and eyes that miss very little."
-    faction: "civilian"
+    faction: civilian
     role: resident
-    personality: "patient, shrewd, ceromonial"
+    personality: "patient, shrewd, ceremonial"
     awareness: 60
     schedule:
       5: oldcity_09
@@ -193,11 +192,11 @@ npcs:
       21: oldcity_14
     dialogue:
       greeting:
-        - "Offerings are cheap. Peace however, is not."
+        - "Offerings are cheap. Peace is not."
       friendly:
-        - "Even the Gods listen more closely these days."
+        - "Even the gods listen more closely these days."
       neutral:
-        - "Light incense if you'd like, but keep your hands steady."
+        - "Light a stick if you must, but keep your hands steady."
       hostile:
         - "Take your bad fortune elsewhere."
 
@@ -206,7 +205,7 @@ npcs:
     description: "A concession policeman whose fatigue has sharpened into cynicism."
     faction: french_concession
     role: police
-    personality: "tired, skeptical, decent in a pinch"
+    personality: "tired, skeptical, decent in flashes"
     awareness: 63
     schedule:
       8: french_06
@@ -217,15 +216,15 @@ npcs:
       greeting:
         - "Every report is a lie told in a better suit."
       friendly:
-        - "If I did not still care a little, I would be back in France."
+        - "If I did not still care a little, I would have transferred."
       neutral:
         - "Do not make me notice you twice."
       hostile:
-      - "I am too tired to be patient and now too honest to look away."        
+        - "I am too tired to be patient and too honest to look away."
 
   - id: qiao_ming
     name: "Qiao Ming"
-    description: "A dockside gambler with sticky nicotine laden fingers and a talent for hearing numbers before they are spoken."
+    description: "A dockside gambler with nicotine fingers and a talent for hearing numbers before they are spoken."
     faction: green_gang
     role: smuggler
     personality: "slick, greedy, charming under pressure"
@@ -239,18 +238,18 @@ npcs:
       greeting:
         - "Odds change faster than loyalties here."
       friendly:
-        - " I can move anything small enough to deny and dangerous to matter."
-      neutral: 
-        - "A price first, a consequence later."
+        - "I can move anything small enough to deny and dangerous enough to matter."
+      neutral:
+        - "A price first, a conscience later."
       hostile:
         - "You are one question away from expensive trouble."
 
   - id: hanna_rosen
     name: "Hanna Rosen"
-    description: "A refugee schoolteacher who folds sorrow into her lessons."
+    description: "A refugee schoolteacher who folds sorrow into perfect posture."
     faction: british
     role: merchant
-    personality: "measured, kind, furious"
+    personality: "measured, kind, privately furious"
     awareness: 44
     schedule:
       7: hongkou_11
@@ -259,13 +258,13 @@ npcs:
       21: hongkou_11
     dialogue:
       greeting:
-        - "Children still ask future-tense 'what if's'. For their sake, I hope it is true."
+        - "Children still ask future-tense questions. That must mean something."
       friendly:
         - "Memory is a form of resistance when power demands erasure."
       neutral:
-        - "I teach what can still persist."
+        - "I teach what can still be carried."
       hostile:
-        - "If you bring fear into this room, I will not let it leave."
+        - "If you bring fear into this room, leave first and apologize elsewhere."
 
   - id: sergeant_hayashi
     name: "Sergeant Hayashi"
@@ -283,7 +282,7 @@ npcs:
       greeting:
         - "Show me your face properly. Then your hands."
       friendly:
-        - "A useful citizen is a safe one."
+        - "A useful citizen knows when to stand still."
       neutral:
         - "You may pass. Slowly."
       hostile:
@@ -294,7 +293,7 @@ npcs:
     description: "A printshop foreman with ink in the seams of his skin."
     faction: resistance
     role: safehouse
-    personality: "dependable, defiant"
+    personality: "laconic, dependable, quietly defiant"
     awareness: 58
     schedule:
       8: french_18
@@ -307,31 +306,31 @@ npcs:
       friendly:
         - "If a page survives the night, it has already won something."
       neutral:
-        - "Mind the ink. It remembers carelessness"
+        - "Mind the ink. It remembers carelessness."
       hostile:
-        - "Printers are enemies enough, leave me alone."
+        - "Printers have enemies enough without volunteers."
 
   - id: mrs_gu
     name: "Mrs. Gu"
     description: "A boarding-house keeper who inventories every tenant's grief with professional precision."
     faction: civilian
-    role:: resident
+    role: resident
     personality: "sharp, maternal, unsentimental"
     awareness: 51
     schedule:
       7: oldcity_13
-      22: oldcity_13
       12: oldcity_15
       18: oldcity_13
+      22: oldcity_13
     dialogue:
       greeting:
         - "Rooms are scarce. Trouble is abundant. I rent only the first."
       friendly:
-        - "Eat first. Schemes are easier to think of on a full stomach."
+        - "Eat first. Schemes sound wiser on a full stomach."
       neutral:
-      - "Pay on time and lie flat."
-      hostile: 
-        - "I have turned away people more dangerous and less obvious than you."
+        - "Pay on time and lie quietly."
+      hostile:
+        - "I have turned away men more dangerous and less obvious than you."
 
   - id: constable_doyle
     name: "Constable Doyle"
@@ -347,8 +346,10 @@ npcs:
       22: bund_14
     dialogue:
       greeting:
-        - "The British Empire is a beacon of civilization. Do not forget that."
+        - "Procedure remains the same, though the city beneath it has changed."
       friendly:
-        - "Some rules deserve to be bent until the Japs remember humanity."
+        - "Some rules deserve to be bent until they remember humanity."
       neutral:
-        - "Do not force me to choose between duty and decency."
+        - "I can offer little beyond a warning."
+      hostile:
+        - "Do not force me to choose between duty and decency in public."
