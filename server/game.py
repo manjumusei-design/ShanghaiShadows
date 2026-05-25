@@ -1144,4 +1144,72 @@ The city remembers what came before, and now you must find your own path.
             self._load_complete_state(state, data)
         return state
 
-    
+    def _load_world_state_only(self, state: GameState, data: dict):
+        state.game_time.day = int(data.get("time", {}).get("day", 1))
+        state.game_time.minute = int(data.get("time", {}).get("minute", 0))
+        room_items = data.get("room_items")
+        if isinstance(room_items, dict):
+            for room in state.world.rooms.values():
+                room.items = []
+            for room_id, rows in room_items.items():
+                room = state.world.rooms.get(room_id)
+                if room:
+                    room.items = [_deserialize_item(row) for row in rows]
+
+        npc_locations = data.get("npc_locations")
+        if isinstance(npc_locations, dict):
+            for room in state.world.rooms.values():
+                room.npcs = []
+            state.world.npc_locations = {}
+            for npc_id, room_id in npc_locations.items():
+                if npc_id in state.world.npcs and room_id in state.world.rooms:
+                    state.world.place_npc(npc_id, room_id)
+        for npc_id, memories in data.get("npc_memory", {}).items():
+            npc = state.world.npcs.get(npc_id)
+            if npc:
+                npc.memory = list(memories)
+        state.scheduler.load_from_payload(data.get("scheduler", []))
+        state.rumour_mill = dict(data.get("rumour_mill", {}))
+
+    def _load_complete_state(self, state: GameState, data: dict):
+        self._load_world_state_only(state, data)
+
+        player_data = data.get("player", {})
+        state.player.name = player_data.get("name", state.player.name)
+        state.player.current_room = player_data.get("current_room", state.player.current_room)
+        state.player.inventory = [_deserialize_item(row) for row in player_data.get("inventory", [])]
+        state.player.trust = player_data.get("trust", default_trust())
+        state.player.disguise = player_data.get("disguise", "")
+        state.player.stealth_skill = int(player_data.get("stealth_skill", 55))
+        state.player.hidden = bool(player_data.get("hidden", False))
+        state.player.flags = list(player_data.get("flags", []))
+        state.player.world_events = list(player_data.get("world_events", []))
+        state.player.newspapers = list(player_data.get("newspapers", []))
+        state.player.health = int(player_data.get("health", 100))
+        state.player.hunger = int(player_data.get("hunger", 100))
+        state.player.morale = int(player_data.get("morale", 80))
+        state.player.arrested = bool(player_data.get("arrested", False))
+        state.player.relationships = dict(player_data.get("relationships", {}))
+        state.storylet_history = list(data.get("storylet_history", []))
+        storylet_id = data.get("active_storylet", "")
+        if storylet_id and storylet_id in self.storylet_manager.storylets:
+            storylet = self.storylet_manager.storylets[storylet_id]
+            state.active_storylet = ActiveStorylet(
+                storylet_id=storylet.id,
+                narrative=storylet.narrative,
+                options=storylet.options,
+            )
+        tail = data.get("tailing_state")
+        if tail:
+            state.tailing_state = TailingState(
+                target_npc_id=tail["target_npc_id"],
+                distance=int(tail.get("distance", 2)),
+                elapsed_minutes=int(tail.get("elapsed_minutes", 0)),
+                last_checked_minute=int(tail.get("last_checked_minute", 0)),
+            )
+        state.planted_evidence = list(data.get("planted_evidence", []))
+        state.rumour_mill = dict(data.get("rumour_mill", {}))
+        state.last_curfew_penalty_day = int(data.get("last_curfew_penalty_day", 0))
+        state.last_newspaper_day = int(data.get("last_newspaper_day", 0))
+        state.conversation_history = deque(data.get("conversation_history", []), maxlen=20)
+        return state
