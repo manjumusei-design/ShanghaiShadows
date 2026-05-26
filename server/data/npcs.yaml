@@ -442,4 +442,68 @@ npcs:
         - "The young act like they invented resistance. We, the old have invented survival."
 
 
-  
+  - id: priest_li
+    name: "Father Li"
+    description: "A Buddhist priest who provides sanctuary while preaching non-violence."
+    faction: civilian
+    role: resident
+    personality: "peaceful, conflicted, philosophical"
+    awareness: 45
+    schedule: 
+      7: church_05
+      10: church_08
+      14: church_08
+      18: oldcity_03
+    dialogue:
+      greeting:
+        - "Peace comes from within, even when the world outside is at war."
+      friendly:
+        - "I can offer you shelter, but I cannot offer you absoulution for what you must do."
+      neutral:
+        - "Sit in meditation. The world can wait a few more minutes."
+      hostile:
+        - "I cannot offer sanctuary to those who carry darkness in their hearts."
+
+  - id: gangster_wu
+    name: "Wu, the enforcer"
+    description: "A green gang enforcer who cares more about business than any sort of ideology."
+    faction: green_gang
+    role: enforcer
+    personality: "pragmatic, loyal, dangerous"
+    awareness: 72
+    schedule:
+      10: commercial_12
+      14: warehouse_08
+      20: docks_18
+      23: commercial_12
+    dialogue:
+      greeting:
+        - "Business doesn't stop for ideology. Neither do I."
+      friendly:
+        - "You've been reliable. That earns you some benefits."
+      neutral:
+        - "What do you want? Make it worth my while."
+      hostile:
+        - "Cross me, and you'll learn why the Green Gang still runs this city."
+      
+  - id: reporter_chen
+    name: "Chen, the underground journalist"
+    description: "A journalist who writes the truth between the lines of occupation newspapers."
+    faction: civilian
+    role: courier
+    personality: "truth-seeking, brave, paranoid"
+    awareness: 68
+    schedule:
+      9: commercial_05
+      13: french_11
+      17: commercial_12
+      21: hidden_08
+    dialogue:
+      greeting:
+        - "The official news says one thing, but everyone knows the truth says another."
+      friendly:
+        - "I have information that you might find useful for your work."
+      neutral:
+        - "Read between the lines. That's where the real news is hidden."
+      hostile:
+        - "I don't trust everyone who claims to want the truth. Some want to use it."
