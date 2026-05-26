@@ -507,3 +507,25 @@ npcs:
         - "Read between the lines. That's where the real news is hidden."
       hostile:
         - "I don't trust everyone who claims to want the truth. Some want to use it."
+
+  - id: student_luo
+    name: "Luo, the student"
+    description: "A university student who uses his education for resistance literature."
+    faction: resistance
+    role: courier
+    personality: "idealistic, brave, naive"
+    awareness: 40
+    schedule:
+      9: school_05
+      13: french_07
+      17: school_12
+      21: oldcity_08
+    dialogue:
+      greeting:
+        - "Education is the only weapon that they can never take away from us."
+      friendly:
+        - "I have some pamphlets that might interest you, if you can keep them safe."
+      neutral:
+        - "Keep your voice down. The walls have ears."
+      hostile:
+        - "I'm sorry, I can't talk to strangers about things that matter."
