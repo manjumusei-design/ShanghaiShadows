@@ -544,4 +544,11 @@ npcs:
       22: hongkou_01
     dialogue:
       greeting:
-        - "Papers, "
+        - "Papers, please. Don't make this difficult for either of us."
+      friendly:
+        - "I try to give people the benefit of the doubt when I can."
+      neutral:
+        - "Just answer the questions and keep your hands visible."
+      hostile:
+        - "I've seen enough violence to know when someone is hiding something."
+        
