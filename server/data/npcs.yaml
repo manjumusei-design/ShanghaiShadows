@@ -396,3 +396,50 @@ npcs:
         - "Order what you want, but watch what you say."
       hostile:
         - "I don't serve those who bring trouble to my establishment."
+
+  - id: sister_wang
+    name: "Sister Wang"
+    description: "A resistance organizer who hides her work behind community charity."
+    faction: resistance
+    role: safehouse
+    personality: "fierce, maternal, pragmatic"
+    awareness: 70
+    schedule:
+      9: residence_05
+      13: church_12
+      17: residence_10
+      21: church_08
+    dialogue:
+      greeting:
+        - "Helping neighbours is what decent people do, even in times like these."
+      friendly:
+        - "Your courage has been noticed in circles where it matters."
+      neutral:
+        - "Charity is the only currency that sill matters in this city."
+      hostile:
+        - "My resources go to those who understand what resistance truly means."
+
+  - id: elder chen
+    name: "Elder Chen"
+    description: "A respected elder who remembers Shanghai before the occupation."
+    faction: civilian
+    role: resident
+    personality: "wise, patient, influential"
+    awareness: 40
+    schedule:
+      8: residence_02
+      12: church_10
+      16: residence_10
+      20: residence_02
+    dialogue:
+      greeting:
+        - "I've seen this city change governments like clothes, but its heart remains the same."
+      friendly:
+        - "Your actions remind me of when Shanghai still had fight in it."
+      neutral:
+        - "Sit and listen. The old stories have wisdom that the newspapers never print."
+      hostile:
+        - "The young act like they invented resistance. We, the old have invented survival."
+
+
+  
