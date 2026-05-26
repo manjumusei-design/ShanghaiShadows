@@ -529,3 +529,19 @@ npcs:
         - "Keep your voice down. The walls have ears."
       hostile:
         - "I'm sorry, I can't talk to strangers about things that matter."
+
+  - id: sergeant_yamamoto
+    name: "Sergeant Yamamoto"
+    description: "A Kempeitai sergeant who follows orders without enthusiasm but without hesistation."
+    faction: kempeitai
+    role: patrol
+    personality: "dutiful, weary, conflicted"
+    awareness: 65
+    schedule:
+      7: hongkou_01
+      12: hongkou_01
+      16: hongkou_05
+      22: hongkou_01
+    dialogue:
+      greeting:
+        - "Papers, "
