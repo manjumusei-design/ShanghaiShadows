@@ -551,4 +551,27 @@ npcs:
         - "Just answer the questions and keep your hands visible."
       hostile:
         - "I've seen enough violence to know when someone is hiding something."
-        
+
+  - id: vendor_lin
+    name: "Lin, the vegtable vendor"
+    description: "An old woman who sells vegtables and information with equal discretion."
+    faction: civilian
+    role: vendor
+    personality: "grandmotherly, sharp, networked"
+    awareness: 55
+    schedule:
+      8: commercial_10
+      12: commercial_10
+      16: commercial_10
+      20: commercial_10
+    dialogue:
+      greeting:
+        - "Fresh today, assuming fresh still means anything these days."
+      friendly:
+        - "Take extra. You never know when you'll need your strength."
+      neutral:
+        - "Buy what you need, but don't draw attention to yourself."
+      hostile:
+        - "I'm afraid I'm out of what you're looking for, in more ways than one."
+
+
