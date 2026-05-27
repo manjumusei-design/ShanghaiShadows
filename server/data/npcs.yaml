@@ -617,3 +617,47 @@ npcs:
       hostile:
         - "My shop serves respectable people. Kindly leave."
     
+  - id: madam_tanaka
+    name: "Madam Tanaka"
+    description: "A Japanese civilian who runs a laundry and endures the hatred of neighbours she never wronged."\
+    faction: kempeitai
+    role: resident
+    personality: "gentle, frightened, trapped by nationality"
+    awareness: 38
+    schedule:
+      7: hongkou_07
+      12: hongkou_09
+      18: hongkou_07
+      22: hongkou_07
+    dialogue:
+      greting:
+        - "I only wash clothes. That is all. Please believe me."
+      friendly:
+        "Not all of us chose to be here. Some of us were brought by husbands who chose the empire."
+      neutral:
+        - "The laundry will be ready tommorow. Please do not come after dark."
+      hostile:
+        - "I know what you think of me. You are not entirely wrong."
+
+  - id: chef_wang
+    name: "Chef Wang"
+    description: "A dockside cook whose kitchen feed laborers and whose back room feeds secrets to anyone who pays."
+    faction: green_gang
+    role: broker
+    personality: "generous with food, stingy with truth, loyal to profit"
+    awareness: 62
+    schedule:
+      9: docks_06
+      12: docks_06
+      18: docks_06
+      23: warehouse_03
+    dialogue:
+      greeting:
+        - "Sit down. The congee is hot and the walls are thick."
+      friendly:
+        - "Someone left a package for you. It is under the third counter." # Might need to add alternative dialogue
+      neutral:
+        - "Eat first. Business after. That is how trust is built."
+      hostile:
+        - "My kitchen feeds people who respect it. Not people who poison it."
+        
