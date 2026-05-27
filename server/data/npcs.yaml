@@ -667,6 +667,7 @@ npcs:
     faction: kempeitai
     role: informant
     awareness: 78
+    personality: "polite, calculating, two-faced"
     schedule:
       9: commercial_20
       13: bund_12
@@ -677,3 +678,53 @@ npcs:
         - "Silk knows no loyalty. It simply flows towards money."
       friendly:
         - "The garrison changes guard at midnight. You did not hear it from me."
+      neutral:
+        - "I trade in goods, not politics. Please remember that."
+      hostile:
+        - "I have friends who wear uniforms. Would you like to meet them?"
+
+  - id: corporal_watanabe
+    name: "Corporal Watanabe"
+    description: "A young Kempeitai corporal who joined for duty and stays because leaving is not an option."
+    faction: kempeitai
+    role: patrol
+    personality: "nervous, obedient, ashamed"
+    awareness: 60
+    schedule:
+      7: bund_08
+      12: commercial_20
+      18: bund_15
+      23: hongkou_02
+    dialogue:
+      greeting:
+        - "Papers. Quickly. I do not wish to be here longer than nessecary."
+      friendly:
+        - "I was a student once. I remember what books feel like."
+      neutral:
+        - "Move along. I did not see anything."
+      hostile:
+        - "Do not test me. I have orders I do not enjoy following."
+      
+  - id: diplomat_renault
+    name: "Monsieur Renault"
+    description: "A French diplomat who drinks too much and knows too little, or perhaps the reverse?"
+    faction: french_concession
+    role: clerks
+    personality: "urbane, cynical, quietly sober"
+    awareness: 50
+    schedule:
+      10: french_03
+      14: french_07
+      19: french_11
+      23: french_03
+    dialogue:
+      greeting:
+        - "Diplomacy is the art of letting someone else have your way. Shanghai tests that saying daily."
+      friendly:
+        - "The consulate safe can hold more than documents, if you understand my meaning."
+      neutral:
+        - "I cannot help everyone. I can barely help myself."
+      hostile:
+        - "You overestimate my influence and underestimate my caution."
+
+    
