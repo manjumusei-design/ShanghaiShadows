@@ -660,4 +660,20 @@ npcs:
         - "Eat first. Business after. That is how trust is built."
       hostile:
         - "My kitchen feeds people who respect it. Not people who poison it."
-        
+
+  - id: merchant_sato
+    name: "Merchant Sato"
+    description: "A Japanese tradesman who deals in silk and espionage with equal competence."
+    faction: kempeitai
+    role: informant
+    awareness: 78
+    schedule:
+      9: commercial_20
+      13: bund_12
+      18: commercial_15
+      22: hongkou_03
+    dialogue:
+      greeting:
+        - "Silk knows no loyalty. It simply flows towards money."
+      friendly:
+        - "The garrison changes guard at midnight. You did not hear it from me."
