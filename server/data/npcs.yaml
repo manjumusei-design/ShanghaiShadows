@@ -727,4 +727,24 @@ npcs:
       hostile:
         - "You overestimate my influence and underestimate my caution."
 
-    
+  - id: professor_muller
+    name: "Professor Muller"
+    description: "A German adademic exiled from Nazi Germany who finds Shanghai no less complicated."
+    faction: british
+    role: clerks
+    personality: "bookish, melancholic, principled"
+    awareness: 46
+    schedule:
+      9: french_03
+      12: school_03
+      17: french_06
+      22: french_13
+    dialogue:
+      greeting:
+        - "History does not repeat, but it rhymes with disturbing frequency in this city."
+      friendly: 
+        - "I have documents that prove what the world prefers to ignore."
+      neutral:
+        - "I teach because it is the only honest work left."
+      hostile:
+        - "I left one regime that burned books. I will not tolerate another."
