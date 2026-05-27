@@ -574,4 +574,46 @@ npcs:
       hostile:
         - "I'm afraid I'm out of what you're looking for, in more ways than one."
 
-
+  - id: nurse_su
+    name: "Nurse Su, the battlefield nurse"
+    description: "A former battlefield nurse who treats civilians caught in the crossfire"
+    faction: civilian
+    role: doctor
+    personality: "tough, experienced, burned out"
+    awareness: 55
+    schedule:
+      8: oldcity_06
+      14: hidden_05
+      20: oldcity_06
+    dialogue:
+      greeting:
+        - "I've seen wounds that don't heal and people who don't die. This city tests both."
+      friendly:
+        - "You have good instincts. That matters in this city."
+      neutral:
+        - "Medical supplies are scarce. Don't waste them."
+      hostile:
+        - "I treat everyone, but I don't help everyone. Remember the difference."
+    
+  - id: tailor_zhou
+    name: "Zhou, the tailor"
+    description: "A master tailor who measures clients for suits and for trust with the same quiet precision."
+    faction: civilian
+    role: vendor
+    personality: "meticulous, discreet, quietly observant"
+    awareness: 52
+    schedule:
+      8: commercial_07
+      12: commercial_07
+      17: commercial_07
+      21: residence_08
+    dialogue:
+      greeting:
+        - "A good suit hides nothing and reveals everything about the man wearing it."
+      friendly:
+        - "I stitched a message into the lining. Read it when you are alone."
+      neutral:
+        - "I sell clothes, not conversations. Pay at the counter."
+      hostile:
+        - "My shop serves respectable people. Kindly leave."
+    
