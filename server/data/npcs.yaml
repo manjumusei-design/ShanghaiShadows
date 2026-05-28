@@ -814,5 +814,49 @@ npcs:
         - "I deliver packages, not promises. Keep your expectations modest."
       hostile:
         - "I do not stop for people I do not trust. Do not make me stop now."
-      
-      
+    
+  - id: widow_chen
+    name: "Widow Chen"
+    description: "An elderly woman in black who lights candles at the shrine for sons who will not return."
+    faction: civilian
+    role: resident
+    personality: "grief-stricken, stubborn, suprisingly informed"
+    awareness: 48
+    schedule:
+      6: oldcity_09
+      10: residence_03
+      15: church_06
+      20: oldcity_09
+    dialogue:
+      greeting:
+        - "Grief is patient. It can wait while we talk."
+      friendly:
+        - "My sons died so others could live. Help me make that mean something."
+      neutral:
+        - "I keep to myself. The city respects that, even if soldiers do not."
+      hostile:
+        - "You remind me of the men who took my sons. Leave my sight."
+
+  - id: lieutenant_nakamura
+    name: "Lieutenant Nakamura"
+    description: "A Kempeitai intelligence officer who plays chess with suspects and lives three moves ahead."
+    faction: kempeitai
+    role: officer
+    personality: "intellectual, patient, ruthless"
+    awareness: 85
+    schedule:
+      8: hongkou_02
+      13: commercial_22
+      19: hongkou_10
+      23: hongkou_02
+    dialogue:
+      greeting:
+        - "Every person in Shanghai is a piece on a board. The question is who moves you."
+      friendly:
+        - "I prefer voluntary cooperation. It saves paperwork and reduces screaming."
+      neutral:
+        - "Answer carefully. I have a very good memory for inconsistencies."
+      hostile:
+        - "You have been predictable. That is the most dangerous thing you can be."
+
+        
