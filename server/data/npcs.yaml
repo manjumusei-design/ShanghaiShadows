@@ -748,3 +748,27 @@ npcs:
         - "I teach because it is the only honest work left."
       hostile:
         - "I left one regime that burned books. I will not tolerate another."
+
+  - id: rickshaw_ah_fook
+    name: "Ah Fook"
+    description: "A teenage rickshaw boy who knows eery shortcut and sees everything from the street level."
+    faction: civilian
+    role: worker
+    personality: "cheerful, cunning, fearless"
+    awareness: 65
+    schedule:
+      6: bund_03
+      10: commercial_04
+      15: hongkou_08
+      20: bund_03
+    dialogue:
+      greeting:
+        - "Need a ride? I know Shanghai better than any map"
+      friendly:
+        - "I saw soldiers moving toward the warehouse district tonight. Just so you know."
+      neutral:
+        - "Fare is fare. I don't carry passengers who haggle with danger."
+      hostile:
+        - "I don't know anything and I didn't see anything. Leave me alone."
+    
+  
