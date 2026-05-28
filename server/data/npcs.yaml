@@ -771,4 +771,24 @@ npcs:
       hostile:
         - "I don't know anything and I didn't see anything. Leave me alone."
     
-  
+  - id: abramowitz
+    name: "Herr Abramowitz"
+    description: "A Jewish refugee violinist who plays in cafes and carries the weight of two lost homelands."
+    faction: german
+    role: merchant
+    personality: "artistic, greiving, resilient"
+    awareness: 42
+    schedule:
+      10: french_01
+      14: commercial_13
+      19: french_09
+      23: french_16
+    dialogue:
+      greeting:
+        - "Music does not need permission to exist. Neither, apparently, do I."
+      friendly:
+        - "The cafe owner hides people upstairs when the patrols come. Remember that."
+      neutral:
+        - "I play for my supper. THe city pays in silence and small kindnesses."
+      hostile:
+        - "I have lost one home already. I will not let youtake this one."
