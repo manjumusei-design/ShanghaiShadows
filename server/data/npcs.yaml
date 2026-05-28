@@ -968,3 +968,69 @@ npcs:
         - "Prayer costs nothing. Everything else has a price in Shanghai."
       hostile:
         - "The spirits do not welcome those who carry violence in their hearts."
+
+  - id: captian_chen
+    name: "Captain Chen"
+    description: "A former Nationalist officer now hiding in plain sight as a warehouse foreman."
+    faction: resistance
+    role: officer
+    personality: "disciplined, haunted, strategic"
+    awareness: 80
+    schedule:
+      6: wrehouse_02
+      12: warehouse_06
+      18: hidden_25
+      23: warehouse_02
+    dialogue:
+      greeting:
+        - "THe war did not end. It simply moved indoors."
+      friendly:
+        - "We are planning something that could shift the balance. I need people I can trust."
+      neutral:
+        - "I supervise cargo. Ask no more questions."
+      hostile:
+        - "I have killed men for less than what you are implying. Walk away now."
+      
+  - id: singer_mei_lan
+    name: "Mei Lan, the opera singer"
+    description: "An opera performer whose voice carries through the French Concession and whose sympathies carry further."
+    faction: french_concession
+    role: resident
+    personality: "dramatic, generous, secretly fearless"
+    awareness: 45
+    schedule:
+      10: french_10
+      14: french_13
+      19: commercial_10
+      23: french_10
+    dialogue:
+      greeting:
+        - "The stage is the only place left where truth can hide inside beauty."
+      friendly:
+        - "I hide people in the costume room between shows. The soldiers never look there."
+      neutral:
+        - "I sing for my supper. The rest is none of your business."
+      hostile:
+        - "If you endanger my audience, I will ensure you never hear music again."
+
+  - id: fisherman_li
+    name: "Li, the river fisherman"
+    description: "A Huangpu fisherman who knows the river's moods and smuggles people across under cover of fog."
+    faction: green_gang
+    role: smuggler
+    personality: "weathered, superstitious, reliable"
+    awareness: 60
+    schedule:
+      4: docks_02
+      8: docks_02
+      16: docks_08
+      22: docks_02
+    dialogue:
+      greeting:
+        - "The river does not care about flags. It takes everyone equally."
+      friendly:
+        - "My boat can carry three across before dawn. Be at the pier at midnight."
+      neutral:
+        - "I catch fish. Nothing more. Understand?"
+      hostile:
+        - "The river is deep and the night is dark. People disappear from piers."
