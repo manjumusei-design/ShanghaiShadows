@@ -14,6 +14,8 @@ class Item:
     takeable: bool = True
     readable_text: str = ""
     planted_on: str = ""
+    food_value: int = 0
+    morale_restore: int = 0
 
 
 @dataclass
@@ -40,6 +42,8 @@ def load_items(path: str) -> Dict[str, Item]:
             description=item_data["description"],
             takeable=item_data.get("takeable", True),
             readable_text=item_data.get("readable_text", ""),
+            food_value=int(item_data.get("food_value", 0)),
+            morale_restore=int(item_data.get("morale_restore", 0)),
         )
         items[item.id] = item
     return items
