@@ -902,3 +902,25 @@ npcs:
         - "I teach children. Everything else is rumour."
       hostile:
         - "I will not endanger my students for anyone's cause."
+      
+  - id: dancer_lily
+    name: "Lily, the dance hall girl"
+    description: "A dance hall performer who hears confessions from drunk officers and sells them to the highest bidder."
+    faction: green_gang
+    role: informant
+    personality: "glamorous, calculating, survivalist"
+    awareness: 70
+    schedule:
+      14: french_08
+      18: french_14
+      22: commercial_18
+      2: french_17
+    dialogue:
+      greeting:
+        - "Men tell dancers things they would never tell their wives. It is a professional hazard."
+      friendly:
+        - "An officer mentioned a raid planned for the old city tommorow. That will be two favours you owe me."
+      neutral:
+        - "Dance with me or do not. But do not waste my time with questions."
+      hostile:
+        - "I know powerful men. Annoying me is a very poor long-term strategy."
