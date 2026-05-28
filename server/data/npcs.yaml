@@ -924,3 +924,47 @@ npcs:
         - "Dance with me or do not. But do not waste my time with questions."
       hostile:
         - "I know powerful men. Annoying me is a very poor long-term strategy."
+
+  - id: engineer_kowalski
+    name: "Engineer Kowalski"
+    description: "A Polish engineer who builds bridges by trade and has decided Shanghai needs fewer of them."
+    faction: british
+    role: dockmaster
+    personality: "practical, cynical, quietly heroic"
+    awareness: 50
+    schedule:
+      7: warehouse_05
+      12: warehouse_10
+      17: warehouse_05=
+      22: bund_20
+    dialogue:
+      greeting:
+        - "I build things that hold weight. Trust is harder to engineer than bridges."
+      friendly:
+        - "The supply tunnel under warehouse seven is still intact. Use it wisely."
+      neutral:
+        - "I work with steel and concrete. People are less reliable."
+      hostile:
+        - "I have seen enough destruction. Do not bring more to my doorstep."
+    
+  - id: monk_jing
+    name: "Monk Jing"
+    description: "A Buddhist monk who tends a hidden shrine and offers counsel that sounds like prophecy."
+    faction: civilian
+    role: resident
+    personality: "serene, cryptic, deeply connected"
+    awareness: 58
+    schedule:
+      5: church_04
+      10: oldcity_07
+      16: hidden_20
+      21: church_04
+    dialogue:
+      greeting:
+        - "The city breathes. If you listen carefully, it tells you who is coming."
+      friendly:
+        - "I have seen your path in the incense smoke. Walk carefully tonight."
+      neutral:
+        - "Prayer costs nothing. Everything else has a price in Shanghai."
+      hostile:
+        - "The spirits do not welcome those who carry violence in their hearts."
