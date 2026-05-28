@@ -7,40 +7,40 @@ districts:
     indoors_every: 5
     item_cycle: [ration_card, photograph, newspaper, brass_key]
     description_templates:
-      - "River mist drifts around bollards and broken reflections while clerks hurry by with thier collars turned up."
-      - "The embankment smells of coal and wet rope, and every footstep seems to carry farther than it should."
+      - "River mist drifts around bollards and broken reflections while clerks hurry by with their collars turned up."
+      - "The embankment smells of coal smoke and wet rope, and every footstep seems to carry farther than it should."
       - "Across the water, cranes and gunmetal hulls hold the dawn in a hard, metallic silence."
       - "Foreign stone facades glow weakly through the haze, pretending the century has not been split open."
       - "Rickshaw wheels hiss over damp paving while watchful soldiers make the promenade feel narrower than it is."
     special_ids:
-      "1": bund_dawm
+      "1": bund_dawn
     special_names:
       "1": "The Bund, Dawn"
     connectors:
       - at: 1
         direction: west
-        to: nanking_road
+        to: nanjing_road
       - at: 25
-        direction: south 
+        direction: south
         to: docks_01
 
   - prefix: commercial
     room_prefix: commercial
-    title_prefix: "Commercial Street  "
-    count: 25 ds
+    title_prefix: "Commercial Street"
+    count: 25
     tags: [commercial, market, teahouse, printshop, office, food]
     indoors_every: 4
     item_cycle: [silk_scarf, newspaper, ration_card, hidden_cash]
-    description_templates: 
+    description_templates:
       - "Shop shutters rattle in the wind and painted signs peel over windows that no longer trust daylight."
-      - "The lane carries perfume, frying oil, and the stale fear of people learning to bargain without speaking in plain terms."
-      - "A tram line cuts through the street like a memory of progress from a calmer decade."
-      - "Neon tubes buzz fitfully above shops that trade in luxury and whisphes by night."
-      - "Teahouses, tailors and pawnshops lean close enough to share secrets across the street."
+      - "The lane carries perfume, frying oil, and the stale fear of people learning to bargain without speaking plainly."
+      - "A tram line cuts through the street like a memory of speed from a calmer decade."
+      - "Neon tubes buzz fitfully above shops that trade in luxury by day and whispers by night."
+      - "Teahouses, tailors, and pawnshops lean close enough to share secrets across the street."
     special_ids:
-      "1": nanking_road
+      "1": nanjing_road
     special_names:
-      "1": "Nanking Road"
+      "1": "Nanjing Road"
     connectors:
       - at: 1
         direction: east
@@ -81,7 +81,7 @@ districts:
 
   - prefix: hongkou
     room_prefix: hongkou
-    title_prefix: "Hongkou Street."
+    title_prefix: "Hongkou Street"
     count: 25
     tags: [hongkou, checkpoint, refugee, station, clinic]
     indoors_every: 4
@@ -89,9 +89,9 @@ districts:
     description_templates:
       - "Patrol boots scrape over tram grit while signboards in several languages stare past one another in silence."
       - "Cheap boarding houses and military trucks share the same street under a sky the color of dirty tin."
-      - "The refugee line knots around the corner, watched by rifles too tired to lower themselves."
+      - "A refugee line knots around the corner, watched by rifles too tired to lower themselves."
       - "The district carries soot, diesel, and the brittle patience of people waiting for permission to move."
-      - "Tea steam rises from chipped bowls and dissapears before it reaches the barbed wire."
+      - "Tea steam rises from chipped bowls and disappears before it reaches the barbed wire."
     connectors:
       - at: 1
         direction: south
@@ -111,11 +111,11 @@ districts:
     indoors_every: 2
     item_cycle: [silk_scarf, coded_ledger, hidden_cash, temple_talisman]
     description_templates:
-      - "Plane trees drag their shadows over cracked paving and pale facades with shuttered eyes."
+      - "Plane trees drag their shadows over cracked paving and pale stucco facades with shuttered eyes."
       - "Balconies lean overhead with ironwork elegant enough to make the war feel like an insult to architecture."
       - "Coffee, wine, and sewer water compete in the air with no clear victor."
-      - "A church bell somewhere nearby hesitates before each note as though even sound requires permission."
-      - "Clerks, exiles, and oppurtunists pass under striped awnings with practiced indifference."
+      - "A church bell somewhere nearby hesitates before each note as though even sound needs permission."
+      - "Clerks, exiles, and opportunists pass under striped awnings with practiced indifference."
     connectors:
       - at: 1
         direction: north
@@ -124,8 +124,8 @@ districts:
         direction: east
         to: oldcity_12
       - at: 25
-        direct: south
-        to: dock_20
+        direction: south
+        to: docks_20
 
   - prefix: docks
     room_prefix: docks
@@ -136,8 +136,8 @@ districts:
     item_cycle: [dock_manifest, truncheon, hidden_cash, contraband_morphine]
     description_templates:
       - "Cargo hooks creak over black water while foremen count men the way they count crates."
-      - "Oil sheens spread rainbow-thin across puddles besides stacks of marked timber and unmarked fear."
-      - "Warehouse doors slam in the wind and every slam sounds like gult correcting itself."
+      - "Oil sheens spread rainbow-thin across puddles beside stacks of marked timber and unmarked fear."
+      - "Warehouse doors slam in the wind and every slam sounds like guilt correcting itself."
       - "The wharf smells of brine, rope tar, and fish gone past salvage."
       - "Dice rattle somewhere behind the sheds even when the sirens start."
     connectors:
@@ -147,9 +147,6 @@ districts:
       - at: 15
         direction: north
         to: hongkou_20
-      - at: 20
-        direction: north
-        to: french_25
       
 
 
