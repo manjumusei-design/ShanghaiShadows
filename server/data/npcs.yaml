@@ -881,3 +881,24 @@ npcs:
       hostile:
         - "I sell vegtables, not trust. Find someone else to question."
   
+  - id: teacher_gao
+    name: "Teacher Gao"
+    description: "A schoolteacher who teaches approved curriculum by day and banned history by candlelight."
+    faction: resistance
+    role: courier
+    personality: "gentle, subversive, endlessly patient"
+    awareness: 55
+    schedule:
+      7: school_02
+      12: school_08
+      17: school_10
+      21: hidden_15
+    dialogue:
+      greeting:
+        - "A classroom is the last free space in this city, if you know what to listen for."
+      friendly:
+        - "Tomorrow's lesson is about a republic that existed once. Come if you can."
+      neutral:
+        - "I teach children. Everything else is rumour."
+      hostile:
+        - "I will not endanger my students for anyone's cause."
