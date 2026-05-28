@@ -56,6 +56,8 @@ KNOWN_VERBS = {
     "use",
     "wait",
     "sleep",
+    "eat",
+    "rest",
     "journal",
     "status",
     "tail",
