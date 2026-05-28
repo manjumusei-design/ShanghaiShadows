@@ -859,4 +859,25 @@ npcs:
       hostile:
         - "You have been predictable. That is the most dangerous thing you can be."
 
-        
+  - id: farmer_xu
+    name: "Farmer Xu"
+    description: "A displaced farmer who sells vegtables at the market and dreams of land that no longer exists."
+    faction: civilian
+    role: vendor
+    personality: "quiet, dignified, mournful"
+    awareness: 35
+    schedule:
+      5: commercial_02
+      10: commercial_02
+      15: residence_06
+      20: oldcity_05
+    dialogue:
+      greeting:
+        - "The soil here is concrete. Nothing grows other than fear and resentment."
+      friendly:
+        - "I saved you the best radishes. Good food is the first step of resistance."
+      neutral:
+        - "Prices are what they are. Blame the occupation, not the honest farmer."
+      hostile:
+        - "I sell vegtables, not trust. Find someone else to question."
+  
