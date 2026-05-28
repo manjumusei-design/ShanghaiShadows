@@ -1034,3 +1034,70 @@ npcs:
         - "I catch fish. Nothing more. Understand?"
       hostile:
         - "The river is deep and the night is dark. People disappear from piers."
+
+  - id: baker_goldberg
+    name: "Goldberg, the baker"
+    description: "A Jewish baker who fled Vienna with nothing but his recipes and an unbreakable will to feed people."
+    faction: british
+    role: merchant
+    personality: "warm, stubborn, miraculously cheerful"
+    awareness: 40
+    schedule:
+      5: french_02
+      9: french_02
+      14: commercial_03
+      20: french_02
+    dialogue:
+      greeting:
+        - "Bread does not ask your nationality. It only asks that you are hungry."
+      friendly:
+        - "I save the best loaves for people who need strength for difficult work."
+      neutral:
+        - "Two shekels a loaf. No haggling. The flour cost me more than pride."
+      hostile:
+        - "I survived Austria. Your threats are a footnote."
+
+  - id: watchmaker_feng
+    name: "Feng, the watchmaker"
+    description: "An elderly watchmaker whose shop is a front for forging documents with mechanical precision."
+    faction: resistance
+    role: safehouse
+    personality: "precise, patient, morally certain"
+    awareness: 68
+    schedule:
+      8: commercial_09
+      12: commercial_09
+      17: commercial_09
+      22: hidden_10
+    dialogue:
+      greeting:
+        - "Every watch I repair is a small victory against time. Papers are the same."
+      friendly:
+        - "I can make you a passport that would fool the Emperor himself. Come back tonight."
+      neutral:
+        - "I fix clocks. That is what the sign says."
+      hostile:
+        - "My hands shake when I am nervous. Leave now."
+
+  - id: orphan_xiao
+    name: "Xiao, the street orphan"
+    description: "A twelve-year-old boy with quick fingers and quicker feet who survives by being invisible and useful."
+    faction: civilian
+    role: worker
+    personality: "street-smart, loyal to those who feed him, afraid of uniforms"
+    awareness: 58
+    schedule:
+      6: bund_05
+      10: commercial_04
+      15: hongkou_06
+      20: oldcity_04
+    dialogue:
+      greeting:
+        - "I can go anywhere. Nobody watches children. That is their mistake."
+      friendly:
+        - "The soldiers leave their back door open during shift change. I can show you."
+      neutral:
+        - "I do not know anything. I am just a kid."
+      hostile:
+        - "I will scream and everyone will look at you. Leave me alone."
+
