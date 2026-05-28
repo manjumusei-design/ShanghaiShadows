@@ -791,4 +791,28 @@ npcs:
       neutral:
         - "I play for my supper. THe city pays in silence and small kindnesses."
       hostile:
-        - "I have lost one home already. I will not let youtake this one."
+        - "I have lost one home already. I will not let you take this one."
+    
+  - id: courier_zheng
+    name: "Zheng, the bicycle courier"
+    description: "A young woman who delivers packages across the city with unnerving speed and discretion."
+    faction: resistance
+    role: courier
+    personality: "athletic, focused, humourless"
+    awareness: 72
+    schedule: 
+      7: hidden_12
+      11: commercial_16
+      16: french_20
+      21: hidden_12
+    dialogue:
+      greeting:
+        - "I have three minutes. Say what you need to say."
+      friendly:
+        - "The route through the old city is clear tonight. Use it before dawn."
+      neutral:
+        - "I deliver packages, not promises. Keep your expectations modest."
+      hostile:
+        - "I do not stop for people I do not trust. Do not make me stop now."
+      
+      
