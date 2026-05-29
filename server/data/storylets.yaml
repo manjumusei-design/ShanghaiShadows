@@ -798,4 +798,8 @@ storylets:
             civilian.resident: 8
           log_event: "A friend warned you about a raid."\
       - text: "Continue as planned."
-      
+        effects:
+          change_trust:
+            civilian.resident: -5
+          log_event: "You ignored a friend's warning about a raid."
+          
