@@ -802,4 +802,23 @@ storylets:
           change_trust:
             civilian.resident: -5
           log_event: "You ignored a friend's warning about a raid."
-      
+
+  - id: old_friend_reunion
+    location_tags: [market, residence]
+    trigger_chance: 0.35
+    preconditions:
+      trust_ranges:
+        civilian.resident: [70, 100]
+    narrative: "An old friend spots you through the crowd and asks, 'Do you remember when Shanghai was different?'"
+    options:
+      - text: "Share a meal and talk about old times."
+        effects:
+          add_item: rice_bowl
+          change_trust:
+            civilian.resident: 12
+          log_event: "You shared a meal and talked about better times with an old friend."
+      - text: "Say you need to keep moving."
+        effects:
+          change_trust:
+            civilian.resident: -3
+          log_event: "You hurried past an old friend who wanted to talk."
