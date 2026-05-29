@@ -783,4 +783,19 @@ storylets:
             civilian.resident: -5
           log_event: "You refused a neighbor's kindness."
 
-          
+  - id: raid_warning
+    location_tags: [checkpoint]
+    trigger_chance: 0.3
+    preconditions:
+      game_hour: [19, 23]
+      flags_required: [friend_saves_player]
+    narrative: "Someone pulls you into an alley. 'Not tonight. They're raiding the checkpoint. Take the back way.'"
+    options:
+      - text: "Follow their advice."
+        effects:
+          set_flag: avoided_raid
+          change_trust:
+            civilian.resident: 8
+          log_event: "A friend warned you about a raid."\
+      - text: "Continue as planned."
+      
