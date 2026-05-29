@@ -50,7 +50,7 @@ newspaper.fallback_prefix: "Headline"
 
 
 
-greeting: "Shanghai Shadows\nEnter save slot codename to continue.\n"
+greeting: "Shanghai Shadows\nEnter your codename to continue.\n"
 slot_prompt: "slot> "
 loaded: "Loaded slot '{slot}'.\n"
 new_chapter: "A NEW CHAPTER BEGINS"
