@@ -842,9 +842,8 @@ storylets:
             ccp: 8
           log_event: "You helped dockworkers organize a strike against Japanese overseers."
           add_item: resistance_map
-      - text: "Walk away before the overseer notices you."
+      - text: "Disperse the crowd."
         effects:
           change_trust:
             kempeitai.informant: 3
-          log_event: "You chose not to help the dockworkers."
-          
+          log_event: "You chose to disperse a group of workers."
