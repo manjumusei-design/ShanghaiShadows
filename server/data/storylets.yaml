@@ -847,3 +847,28 @@ storylets:
           change_trust:
             kempeitai.informant: 3
           log_event: "You chose to disperse a group of workers."
+
+  - id: ccp_sabotage_supply_run
+    location_tags: [warehouse, docks]
+    trigger_chance: 0.4
+    preconditions:
+      trust_ranges:
+        ccp.guerilla: [50, 100]
+      flags_missing: [sabotaged_supplies]
+    narrative: "A Japanese supply truck sits idling outside a warehouse, its driver chatting with a guard. The cargo contains ammunition bound for the front lines that could be destroyed with a well-placed fire. The risk is enormous. The reward is just as big."
+    options:
+      - text: "Slip behind the truck and ignite the fuel line."
+        effects:
+          set_flag: sabotaged_supplies
+          change_trust:
+            ccp.guerilla: 20
+            kempeitai.officer: -20
+          change_influence:
+            ccp: 10
+          log_event: "You destroyed a Japanese ammunition truck. The explosion lit up the warehouse district."
+      - text: "Report the truck's location to the underground. Let others take the risk."
+        effects:
+          change_trust:
+            ccp.guerilla: 5
+          log)event: "You passed intelligence about a Japanese supply truck to the underground."
+          
