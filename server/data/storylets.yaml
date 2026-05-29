@@ -762,3 +762,25 @@ storylets:
             civilian.resident: -4
             green_gang.enforcer: 2
           log_event: "You answered a question about decency with cold practicality."
+
+  - id: soup_delivery
+    location_tags: [residence]
+    trigger_chance: 0.4
+    preconditions:
+      game_hour: [18, 22]
+      trust_ranges:
+        civilian.resident: [50, 100]
+    narrative: "There's a knock at your door. When you open it, you find a bowl of hot soup and a note: 'For when the nights get cold.'"
+    options:
+      - text: "Accept it with gratitude."
+        effects:
+          change_trust:
+            civilian.resident: 10
+          log_event: "A neighbor brought you soup when you were struggling."
+      - text: "Leave it outside."
+        effects:
+          change_trust:
+            civilian.resident: -5
+          log_event: "You refused a neighbor's kindness."
+
+          
