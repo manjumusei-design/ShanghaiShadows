@@ -871,4 +871,30 @@ storylets:
           change_trust:
             ccp.guerilla: 5
           log)event: "You passed intelligence about a Japanese supply truck to the underground."
-          
+
+  - id: ccp_distribute_pamphlets
+    location_tags: [old_city, school]
+    trigger_chance: 0.6
+    preconditions:
+      trust_ranges:
+        ccp.courier: [35, 100]
+      game_hour: [17,22]
+      flags_missing: [distributed_pamphlets] 
+    narrative: "A stack of resistance pamphlets sits in a hidden compartment beneath a market stall. The text exposes the Nanjing Massacre in unflinching detail that entails the systematic murder of hundreds of thousands of Chinese civilians by Japanese soldiers. Distributing them is a death sentence. Not distributing them means the truth dies."
+    options:
+      - text: "Take the pamphlets and slip them into passerby's hands."
+        effects:
+          set_flag: distributed_pamphlets
+          change_trust:
+            ccp.courier: 12
+            civilian.resident: 8
+            kempeitai.patrol: -15
+          change_influence:
+            ccp: 6
+          log_event: "You distributed banned pamphlets exposing Japanese atrocities in the old city."
+          add_item: ccp_pamphlet
+      - text: "Leave them. The risk is too great right now."
+        effects:
+          change_trust:
+            kempeitai.patrol: 2
+          log_event: "You decided not to distribute the pamphlets tonight."
