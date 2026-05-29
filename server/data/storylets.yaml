@@ -822,3 +822,29 @@ storylets:
           change_trust:
             civilian.resident: -3
           log_event: "You hurried past an old friend who wanted to talk."
+
+  - id: ccp_recruit_workers
+    location_tags: [commercial, docks]
+    trigger_chance: 0.5
+    preconditions:
+      trust_ranges:
+        ccp.organizer: [40, 100]
+      flags_missing: [recruited_workers]
+    narrative: "A group of dockworkers gather in a shadowed alley, their faces gaunt from forced labour. They whisper about organizing a strike. A Japanese overseer watches from across the street, his truncheon tapping against his palm."
+    otions:
+      - text: "Address the workers and help them organize."
+        effects:
+          set_flag: recruited_workers
+          change_trust:
+            ccp.organizer: 15
+            kempeitai.informant: -10
+          change_influence:
+            ccp: 8
+          log_event: "You helped dockworkers organize a strike against Japanese overseers."
+          add_item: resistance_map
+      - text: "Walk away before the overseer notices you."
+        effects:
+          change_trust:
+            kempeitai.informant: 3
+          log_event: "You chose not to help the dockworkers."
+          
