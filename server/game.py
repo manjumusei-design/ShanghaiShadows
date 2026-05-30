@@ -66,9 +66,12 @@ class GameState:
     rumour_mill: Dict[str, List[str]] = field(default_factory=dict)
     last_curfew_penalty_day: int = 0
     last_newspaper_day: int = 0
-
     conversation_history: deque = field(default_factory=lambda: deque(maxlen=20))
-
+    event_log: List[Dict] = field(default_factory=list)
+    legacy_book: List[Dict] = field(default_factory=list)
+    ccp_influence: int = 10
+    gmd_influence: int = 15
+    
     def get_trust_value(self, key: str) -> int:
         if "." in key:
             faction, role = key.split(".", 1)
@@ -82,7 +85,8 @@ class SessionContext:
     slot_name: str = ""
     state: Optional[GameState] = None
     seconds_since_autosave: int = 0
-
+    seconds_since_state_broadcast: int = 0
+    
 
 class PlayerSession:
     def __init__(self, websocket):
