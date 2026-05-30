@@ -86,7 +86,7 @@ class SessionContext:
     state: Optional[GameState] = None
     seconds_since_autosave: int = 0
     seconds_since_state_broadcast: int = 0
-    
+
 
 class PlayerSession:
     def __init__(self, websocket):
@@ -98,6 +98,12 @@ class PlayerSession:
 
     async def send_prompt(self, text: str = "> "):
         await self.websocket.send(json.dumps({"type": "prompt", "payload": text}))
+
+    async def send_state(self, payload: dict):
+        await self.websocket.send(json.dumps)
+
+    async def send_state(self, items: List[str]):
+        await self.websocket.send(json.dumps({"type": "completions", "payload": items}))
 
 
 def _sanitize_slot_name(raw: str) -> str:
