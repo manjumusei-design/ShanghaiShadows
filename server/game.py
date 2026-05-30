@@ -156,11 +156,16 @@ def load_disguises(path: str) -> Dict[str, Disguise]:
 class GameServer:
     def __init__(self):
         load_dotenv()
+        load_locale(get_setting("Locale", "en"))
         SAVES_DIR.mkdir(parents=True, exist_ok=True)
         self.ai_client = AIClient()
         self.disguises = load_disguises(DISGUISES_PATH)
         self.stealth = StealthSystem(self.disguises)
-        self.storylet_manager = StoryletManager(load_storylets(STORYLETS_PATH))
+        storylets = load_storylets(STORYLETS_PATH)
+        custom_storylets_path = Path("server/data/custom/storylets.yaml")
+        if custom_storylets_path.exists():
+            storylets.update(load_storylets(str(custom_storylets_path)))
+        self.storylet_manager = StoryletManager(storylets)
         self.sessions: Dict[str, SessionContext] = {}
         self.command_registry: Dict[str, Callable[[SessionContext, Command], Awaitable[None]]] = {
             "look": self._cmd_look,
