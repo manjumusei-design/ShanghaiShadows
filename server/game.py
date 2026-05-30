@@ -9,13 +9,17 @@ from typing import Awaitable, Callable, Dict, List, Optional
 import yaml
 
 from .ai_client import AIClient
-from .config import load_dotenv
+from .config import get_setting, load_dotenv
+from .journal import collect_recent_events, generate_journal_entry, generate_life_retrospective
+from .locales import get as loc
+from .locales import load_locale
 from .npc import Npc, get_dialogue
 from .parser import Command, parse
 from .stealth import Disguise, StealthSystem, TailingState
 from .storylets import ActiveStorylet, StoryletManager, load_storylets
 from .time_system import EventScheduler, GameTime, time_str
-from .trust import (TrustMap, apply_trust_delta, change_trust, default_trust, exchange_gossip, get_role_trust, load_trust_rules, summarize_faction_trust,)
+from .trust import (TrustMap, apply_trust_delta, change_trust, default_trust, exchange_gossip, get_role_trust, load_trust_rules, migrate_resistance_to_ccp_gmd, summarize_faction_trust,)
+from .victory import (check_victory_conditions, compile_legacy_narrative, compute_progress, generate_liberation_newspaper, generate_time_skip_summary, adjust_influence, apply_time_skip,)
 from .world import Item, World
 
 
@@ -27,6 +31,7 @@ SAVES_DIR = Path("server/data/saves")
 HUNGER_DECAY_RATE = 0.5
 HUNGER_HEALTH_DAMAGE = 2
 LOW_HUNGER_THRESHOLD = 20
+STATE_BROADCAST_INTERVAL = 5
 
 @dataclass
 class PlayerState:
