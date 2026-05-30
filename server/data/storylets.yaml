@@ -924,3 +924,27 @@ storylets:
             gmd.offier: 5
           log_event: You reported a Japanese officer's movements to GMD intelligence."
 
+  - id: gmd_smuggle_medicine
+    location_tags: [docks, warehouse]
+    trigger_chance: 0.5
+    preconditions:
+      trust_ranges:
+        gmd.smuggler: [40, 100]
+      flags_missing: [smuggled_medicine]
+    narrative: "A fishing boat slips into the wharf at midnight, its hull packed full with medical supplies like quinine, bandages, surgical tools that are meant for underground clinics that treat Chinese civilians while Japanese hospitals turn them away. The Kempeitai patrol boat is due in twenty minutes."
+    options:
+      - text: "Help unload the supplies before the patrol arrives."
+        effects:
+          set_flag: smuggled_medicine
+          change_trust:
+            gmd.smuggler: 15
+            civilian.resident: 10
+          change_influence:
+            gmd: 7
+          log_event: "You helped smuggle medical supplies past the Japanese blockade."
+          add_item: quinine_bottle
+      - text: "Signal the boat to move on since it's too dangerous tonight."
+        effects:
+          change_trust:
+            gmd.smuggler: -5
+          log_event: "You turned away a smuggling boat due to Kempeitai patrol risk."
