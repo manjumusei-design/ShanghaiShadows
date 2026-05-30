@@ -213,6 +213,36 @@ class GameServer:
     def _room(self, context: SessionContext):
         return context.state.world.get_room(context.state.player.current_room) if context.state else None
 
+    async def _broadcast_state(self, context: SessionContext):
+        state = context.state
+        if not state:
+            return
+        summary = summarize_faction_trust(state.player.trust)
+        disguise = self.disguises.get(state.player.disguise)
+        await context.session.send_state({
+            "health": state.player.health,
+            "hunger": state.player.hunger,
+            "morale": state.player.morale,
+            "trust": summary,
+            "disguise": disguise.name if disguise else "",
+            "game_time": time_str(state.game_time),
+            "day": state.game_time.day,
+            "progress_percent": compute_progress(state.game_time.day),
+            "ccp_influence": state.ccp_influence,
+            "gmd_influence": state.gmd_influence,
+        })
+
+    def _build_completions(self, context: SessionContext) -> List[str]:
+        verbs = [v for v in self.command_registry if v not in ("unknown", "stub")]
+        room = self._room(context)
+        if room:
+            verbs.extend(room.exits.keys())
+            for npc_id in room.npcs:
+                npc = context.state.world.npcs.get(npc_id)
+                if npc:
+                    verbs.append(npc.name.lower())
+        return verbs
+
     def _save_path(self, slot_name: str) -> Path:
         return SAVES_DIR / f"{slot_name}.json"
 
