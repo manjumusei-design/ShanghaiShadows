@@ -898,3 +898,28 @@ storylets:
           change_trust:
             kempeitai.patrol: 2
           log_event: "You decided not to distribute the pamphlets tonight."
+
+  - id: gmd_intercept_orders
+    location_tags: [french, bund]
+    trigger_chance: 0.4
+    preconditions:
+      trust_ranges:
+        gmd.spy: [45, 100]
+      flags_missing: [intercepted_orders]
+    narrative: "A Japanese staff car parks outside a French Concession cafe. Inside, an officer leaves a leather satchel unattended while he takes a phone call. The satchel likely contains military orders such as intelligence that could save hundreds of lives."
+    options:
+      - text: "Slip past the guard and photograph the documents."
+        effects:
+          set_flag: intercepted_orders
+          change_trust:
+            gmd.spy: 18
+            kempeitai.officer: -15
+          change_influence:
+            gmd: 8
+          log_event: "You intercepted Japanese military orders from an unattended satchel."
+          add_item: code_book
+      - text: "Note the officer's movements and report to intelligence."
+        effects::
+          change_trust: 
+            gmd.offier: 5
+          log_event: You reported a Japanese officer's movements to GMD intelligence."

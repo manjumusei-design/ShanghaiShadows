@@ -635,7 +635,7 @@ npcs:
       friendly:
         "Not all of us chose to be here. Some of us were brought by husbands who chose the empire."
       neutral:
-        - "The laundry will be ready tommorow. Please do not come after dark."
+      - "The laundry will be ready tommorow. Please do not come after dark."
       hostile:
         - "I know what you think of me. You are not entirely wrong."
 
