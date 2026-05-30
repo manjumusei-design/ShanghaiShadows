@@ -39,9 +39,14 @@ async def start_websocket_server(host: str = "127.0.0.1", port: int = 8765):
 
 
 def main():
-    start_http_server()
+    http_host = get_setting("HTTP_HOST", "127.0.0.1") #TODO: FALLBACK!!!!!!!!!!!!!!!!!!!!
+    http_port = int(get_setting("HTTP_PORT", "8080"))
+    ws_host = get_setting("WS_HOST", "127.0.0.1")
+    ws_port = int(get_setting("WS_PORT", "8765"))
+
+    start_http_server(http_host, http_port)
     try: 
-        asyncio.run(start_websocket_server())
+        asyncio.run(start_websocket_server(ws_host, ws_port))
     except KeyboardInterrupt:
         print("Shutting down server")
         sys.exit(0)
