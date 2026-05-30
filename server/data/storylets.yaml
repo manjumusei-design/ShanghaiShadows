@@ -948,3 +948,26 @@ storylets:
           change_trust:
             gmd.smuggler: -5
           log_event: "You turned away a smuggling boat due to Kempeitai patrol risk."
+
+  - id: ccp_safe_house_raid
+    location_tags: [hidden_shanghai, residential]
+    trigger_chance: 0.3
+    preconditions:
+      trust_ranges:
+        ccp.organizer: []
+      game_hour: [0, 5]
+    narrative: "Footsteps in the alley. Voices speaking Japanese. The Kempeitai are conducting a midnight sweep going door to door, dragging out anyone without papers. A neighbour's child clings to your leg, trembling. You can hear screams from down the block."
+    options:
+      - text: "Hide the child and shelter the neighbours in the basement."
+        effects:
+          change_trust:
+            ccp.organizer: 10
+            civilian.resident: 15
+          change_influence:
+            ccp: 5
+          log_event: "You sheltered neighbours from a Kempeitai midnight raid."
+      - text: "Lock your door and stay silent."
+        effects:
+          change_trust:
+            civilian.resident: -10
+          log_event: "You stayed silent during a Kempeitai raid."
