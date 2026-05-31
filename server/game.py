@@ -1068,6 +1068,32 @@ Respond in character, 1-2 sentences maximum. Keep it period-appropriate, emotion
                 return True, loc("death.arrest")
         return False, ""
     
+    async def _trigger_ending(self, context: SessionContext, ending_type: str):
+        newspaper = await generte_liberation_newspaper(self.ai_client, ending_type, context.state.legacy_book)
+        legacy = await compile_legacy_narrative(self.ai_client, context.state.legacy_book)
+        if ending_type in ("ccp_uprising", "ccp_uprising_early"):
+            headline = loc("victory.ccp_headline")
+            body = loc("victory.ccp_body")
+        else:
+            headline = loc("victory.gmd_headline")
+            body = loc("victory.gmd_body")
+
+        end_screen = f"""
+  {headline}
+
+{body}
+---
+{newspaper}
+{legacy}
+  {loc("victory.footer")}
+"""
+        await self._post_display(context, end_screen)
+        context.state.player.flags.append("player_died")
+        self.save_slot(context)
+        context.session.running = False
+        await context.session.websocket.close()
+
+
     async def _generate_obituary(self, context: SessionContext, death_message: str) -> str:
         player = context.state.player
 
