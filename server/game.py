@@ -350,7 +350,7 @@ class GameServer:
             self._apply_action_trust(context, "out_after_curfew", room.npcs)
             context.state.last_curfew_penalty_day = context.state.game_time.day
             self._log_event(context, "You were seen outside after curfew.")
-            await self._post_display(context, "The curfew is in force. Faces turn away from you in the dark as everyone hurriedly scurries back to their residence.")
+            await self._post_display(context, loc("curfew.warning"))
 
     async def _check_planted_evidence(self, context: SessionContext):
         if not context.state.planted_evidence:
