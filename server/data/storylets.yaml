@@ -831,7 +831,7 @@ storylets:
         ccp.organizer: [40, 100]
       flags_missing: [recruited_workers]
     narrative: "A group of dockworkers gather in a shadowed alley, their faces gaunt from forced labour. They whisper about organizing a strike. A Japanese overseer watches from across the street, his truncheon tapping against his palm."
-    otions:
+    options:
       - text: "Address the workers and help them organize."
         effects:
           set_flag: recruited_workers
@@ -853,7 +853,7 @@ storylets:
     trigger_chance: 0.4
     preconditions:
       trust_ranges:
-        ccp.guerilla: [50, 100]
+        ccp.guerrilla: [50, 100]
       flags_missing: [sabotaged_supplies]
     narrative: "A Japanese supply truck sits idling outside a warehouse, its driver chatting with a guard. The cargo contains ammunition bound for the front lines that could be destroyed with a well-placed fire. The risk is enormous. The reward is just as big."
     options:
@@ -861,7 +861,7 @@ storylets:
         effects:
           set_flag: sabotaged_supplies
           change_trust:
-            ccp.guerilla: 20
+            ccp.guerrilla: 20
             kempeitai.officer: -20
           change_influence:
             ccp: 10
@@ -869,8 +869,8 @@ storylets:
       - text: "Report the truck's location to the underground. Let others take the risk."
         effects:
           change_trust:
-            ccp.guerilla: 5
-          log)event: "You passed intelligence about a Japanese supply truck to the underground."
+            ccp.guerrilla: 5
+          log_event: "You passed intelligence about a Japanese supply truck to the underground."
 
   - id: ccp_distribute_pamphlets
     location_tags: [old_city, school]
@@ -878,11 +878,11 @@ storylets:
     preconditions:
       trust_ranges:
         ccp.courier: [35, 100]
-      game_hour: [17,22]
-      flags_missing: [distributed_pamphlets] 
-    narrative: "A stack of resistance pamphlets sits in a hidden compartment beneath a market stall. The text exposes the Nanjing Massacre in unflinching detail that entails the systematic murder of hundreds of thousands of Chinese civilians by Japanese soldiers. Distributing them is a death sentence. Not distributing them means the truth dies."
+      game_hour: [17, 22]
+      flags_missing: [distributed_pamphlets]
+    narrative: "A stack of resistance pamphlets sits in a hidden compartment beneath a market stall. The text exposes the Nanjing Massacre in unflinching detail — the systematic murder of hundreds of thousands of Chinese civilians by Japanese soldiers. Distributing them is a death sentence. Not distributing them means the truth dies."
     options:
-      - text: "Take the pamphlets and slip them into passerby's hands."
+      - text: "Take the pamphlets and slip them into passersby's hands."
         effects:
           set_flag: distributed_pamphlets
           change_trust:
@@ -919,10 +919,10 @@ storylets:
           log_event: "You intercepted Japanese military orders from an unattended satchel."
           add_item: code_book
       - text: "Note the officer's movements and report to intelligence."
-        effects::
-          change_trust: 
-            gmd.offier: 5
-          log_event: You reported a Japanese officer's movements to GMD intelligence."
+        effects:
+          change_trust:
+            gmd.officer: 5
+          log_event: "You reported a Japanese officer's movements to GMD intelligence."
 
   - id: gmd_smuggle_medicine
     location_tags: [docks, warehouse]
@@ -954,7 +954,7 @@ storylets:
     trigger_chance: 0.3
     preconditions:
       trust_ranges:
-        ccp.organizer: []
+        ccp.organizer: [55, 100]
       game_hour: [0, 5]
     narrative: "Footsteps in the alley. Voices speaking Japanese. The Kempeitai are conducting a midnight sweep going door to door, dragging out anyone without papers. A neighbour's child clings to your leg, trembling. You can hear screams from down the block."
     options:
@@ -971,3 +971,107 @@ storylets:
           change_trust:
             civilian.resident: -10
           log_event: "You stayed silent during a Kempeitai raid."
+
+  - id: gmd_rescue_prisoner
+    location_tags: [hongkou, bund]
+    trigger_chance: 0.3
+    preconditions:
+      trust_ranges:
+        gmd.officer: [50, 100]
+      flags_missing: [rescued_prisoner]
+    narrative: "A GMD operative is being held in a Kempeitai holding cell near the Bund that is scheduled for interrogation and likely execution. A sympathetic guard can be bribed, but the window is narrow and the risk is extreme."
+    options:
+      - text: "Pay the bribe and extract the operative."
+        effects:
+          set_flag: rescued_prisoner
+          change_trust:
+            gmd.officer: 20
+            kempeitai.officer: -20
+          change_influence:
+            gmd: 10
+          log_event: "You rescued a captured GMD operative from Kempeitai custody."
+      - text: "It's too risky. Inform Chungking of the capture."
+        effects:
+          change_trust:
+            gmd.officer: -5
+          log_event: "A GMD operative was captured. You reported the loss."
+
+  - id: ccp_rice_distribution
+    location_tags: [old_city, residential]
+    trigger_chance: 0.5
+    preconditions:
+      trust_ranges:
+        ccp.organizer: [30, 100]
+      game_hour: [5, 9]
+      flags_missing: [distributed_rice]
+    narrative: "A shipment of rice, liberated from a Japanese military warehouse, needs to be distributed to starving families before the Kempeitai realize it's missing. Lines of gaunt mothers clutching emaciated children have already formed."
+    options:
+      - text: "Help distribute the rice to the families."
+        effects:
+          set_flag: distributed_rice
+          change_trust:
+            ccp.organizer: 12
+            civilian.resident: 15
+          change_influence:
+            ccp: 6
+          log_event: "You helped distribute liberated rice to starving families."
+          add_item: rice_parcel
+      - text: "Take a portion for yourself and leave."
+        effects:
+          change_trust:
+            civilian.resident: -15
+            ccp.organizer: -10
+          add_item: rice_parcel
+          log_event: "You took rice meant for starving families."
+
+  - id: gmd_forge_documents
+    location_tags: [commercial, french]
+    trigger_chance: 0.4
+    preconditions:
+      trust_ranges:
+        gmd.spy: [40, 100]
+      flags_missing: [forged_documents]
+    narrative: "A Jewish refugee family needs forged travel papers to escape to Chungking. Without them, they face deportation back to Europe — and worse. The forger needs someone to deliver the materials and collect the finished documents without attracting attention."
+    options:
+      - text: "Deliver the materials and escort the family to safety."
+        effects:
+          set_flag: forged_documents
+          change_trust:
+            gmd.spy: 15
+            civilian.resident: 10
+          change_influence:
+            gmd: 6
+          log_event: "You helped forge travel documents for a refugee family."
+          add_item: japanese_travel_pass
+      - text: "Refuse. It's too dangerous and the family isn't Chinese."
+        effects:
+          change_trust:
+            gmd.spy: -5
+          log_event: "You refused to help forge documents for refugees."
+
+  - id: ccp_student_protest
+    location_tags: [school, bund]
+    trigger_chance: 0.35
+    preconditions:
+      trust_ranges:
+        ccp.courier: [45, 100]
+      game_hour: [10, 16]
+      flags_missing: [student_protest]
+    narrative: "University students are gathering on the Bund for a silent protest against Japanese occupation. They carry no weapons — only handwritten signs demanding freedom and an end to the occupation. The Kempeitai are massing at the end of the street with rifles and bayonets."
+    options:
+      - text: "Join the protest line and stand with the students."
+        effects:
+          set_flag: student_protest
+          change_trust:
+            ccp.courier: 15
+            civilian.resident: 12
+            kempeitai.patrol: -20
+          change_influence:
+            ccp: 8
+          log_event: "You stood with student protesters on the Bund as the Kempeitai closed in."
+      - text: "Warn the students to disperse before the Kempeitai charge."
+        effects:
+          change_trust:
+            ccp.organizer: 5
+            civilian.resident: 5
+          log_event: "You warned students to disperse before a confrontation."
