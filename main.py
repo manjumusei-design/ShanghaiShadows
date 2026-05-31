@@ -7,7 +7,7 @@ from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 import websockets
 
 from server.config import get_setting
-from server.game import GameServer
+from server.game_server import GameServer
 
 
 class ClientHandler(SimpleHTTPRequestHandler):
