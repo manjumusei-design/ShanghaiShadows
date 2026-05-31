@@ -424,7 +424,7 @@ class GameServer:
         )
         context.state.player.inventory.append(item)
         self._log_event(context, "A new newspaper edition reached you at dawn.")
-        await self._post_display(context, "At dawn a newspaper runner slips a fresh edition into your hands.")
+        await self._post_display(context, loc("newspaper.delivery"))
 
     async def _generate_newspaper(self, context: SessionContext) -> Dict[str, object]:
         recent = context.state.player.world_events[-8:] or ["A quiet night passed with only whispers in the lanes."]
