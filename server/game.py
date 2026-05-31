@@ -388,7 +388,7 @@ class GameServer:
         target = context.state.world.npcs.get(tail.target_npc_id)
         if not target:
             context.state.tailing_state = None
-            await self._post_display(context, "Your target has vanished into the city's folds.")
+            await self._post_display(context, loc("cmd_tail.target_vanished"))
             return
         success, _ = self.stealth.tail_check(
             tail,
