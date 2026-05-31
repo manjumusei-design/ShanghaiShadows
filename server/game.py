@@ -1048,8 +1048,12 @@ Respond in character, 1-2 sentences maximum. Keep it period-appropriate, emotion
             "rumour_mill": state.rumour_mill,
             "last_curfew_penalty_day": state.last_curfew_penalty_day,
             "last_newspaper_day": state.last_newspaper_day,
-            "conversation_history": state.conversation_history,
+            "conversation_history": list(state.conversation_history),
             "player_died": player_died" in context.state.player.flags,
+            "event_log": state.event_log,
+            "legacy_book": state.legacy_book,
+            "ccp_influence": state.ccp_influence
+            "gmd_incluence": state.gmd_influence,
         }
         self._save_path(context.slot_name).write_text(json.dumps(payload, indent=2), encoding="utf-8")
 
