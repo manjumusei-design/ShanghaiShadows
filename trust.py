@@ -6,7 +6,8 @@ import yaml
 
 
 FACTION_ROLES: Dict[str, List[str]] = {
-    "resistance": ["courier", "safehouse", "fighter"],
+    "ccp": ["guerilla", "organizer", "courier"],
+    "gmd": ["officer", "spy", "smuggler"],
     "kempeitai": ["informant", "officer", "patrol"],
     "green_gang": ["broker", "enforcer", "smuggler"],
     "french_concession": ["clerks", "police", "merchant"],
@@ -109,3 +110,14 @@ def exchange_gossip(mem_a: List[str], mem_b: List[str], chance: float = 0.2) -> 
         target.append(memory)
         return True
     return False
+
+
+def migrate_resistance_to_ccp_gmd(trust: TrustMap) -> TrustMap:
+    resistance = trust.pop("resistance", {})
+    if resistance:
+        avg = sum(resistance.values()) // max(1, len(resistance))
+    else:
+        avg = 50
+    trust["ccp"] = {role: avg for role in FACTION_ROLES["ccp"]}
+    trust["gmd"] = {role: avg for role in FACTION_ROLES["gmd"]}
+    return trust
