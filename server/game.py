@@ -1060,12 +1060,12 @@ Respond in character, 1-2 sentences maximum. Keep it period-appropriate, emotion
     def _check_death_conditions(self, context: SessionContext) -> tuple[bool, str]:
         player = context.state.player
         if player.health <= 0:
-            return True, "You collapse in the cold alley, too weak to continue. Shanghai claims another victim."
+            return True, loc("death.health")
 
         if player.arrested:
             kempeitai_trust = get_role_trust(player.trust, "kempeitai", None)
             if kempeitai_trust < 25:
-                return True, "The Kempeitai don't believe your story. They drag you to Bridge House Prison. You will not return."
+                return True, loc("death.health")
         return False, ""
     
     async def _generate_obituary(self, context: SessionContext, death_message: str) -> str:
