@@ -751,11 +751,11 @@ Respond in character, 1-2 sentences maximum. Keep it period-appropriate, emotion
             
     async def _cmd_talk_to(self, context: SessionContext, cmd: Command):
         if not cmd.direct_obj:
-            await self._post_display(context, "Talk to whom?")
+            await self._post_display(context, loc("cmd_talk_to.no_target"))
             return
         npc_id = self._resolve_npc(context, cmd.direct_obj)
         if not npc_id:
-            await self._post_display(context, "They aren't here.")
+            await self._post_display(context, loc("cmd_talk_to.not_here"))
             return
         npc = context.state.world.npcs[npc_id]
         line = await self._generate_npc_dialogue(context, npc, f"Hello, {npc.name}.")
