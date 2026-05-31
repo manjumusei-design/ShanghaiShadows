@@ -695,11 +695,11 @@ class GameServer:
 
     async def _cmd_drop(self, context: SessionContext, cmd: Command):
         if not cmd.direct_obj:
-            await self._post_display(context, "Drop what?")
+            await self._post_display(context, loc("cmd_drop.no_target"))
             return
         item = self._find_item_by_name(cmd.direct_obj, context.state.player.inventory)
         if not item:
-            await self._post_display(context, "You don't have that.")
+            await self._post_display(context, loc("cmd_drop.not_held"))
             return
         context.state.player.inventory.remove(item)
         room = self._room(context)
@@ -710,9 +710,9 @@ class GameServer:
     
     async def _cmd_inventory(self, context: SessionContext, cmd: Command):
         if not context.state.player.inventory:
-            await self._post_display(context, "You are empty-handed.")
+            await self._post_display(context, loc("cmd_inventory.empty"))
             return
-        lines = ["You are carrying:"]
+        lines = ["cmd_inventory.header"]
         for item in context.state.player.inventory:
             lines.append(f"- {item.name}")
         await self._post_display(context, "\n".join(lines))
