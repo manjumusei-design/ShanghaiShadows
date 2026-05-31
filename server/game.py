@@ -449,7 +449,7 @@ class GameServer:
             fallback = recent[-4:]
             blocks = []
             for idx, event in enumerate(fallback, start=1):
-                blocks.append(f"Headline {idx}\nOfficials insist order holds after reports that {event.lower()}")
+                blocks.append(f"{loc('newspaper.fallback_prefix')} {idx}\nOfficials insist order holds after reports that {event.lower()}")
             body = "\n\n".join(blocks)
         return {"day": context.state.game_time.day, "body": body}
 
