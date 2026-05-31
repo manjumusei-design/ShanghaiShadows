@@ -535,7 +535,12 @@ class GameServer:
         if "arrest_player" in effects:
             context.state.player.arrested = True
             self._log_event(context, "You have been arrested.")
-            await self._post_display(context, "Armed officers surround you. 'Youre coming with us.'")
+            await self._post_display(context, loc("death.arrest_message"))
+
+            for faction_key, delta in effects.get("change_influence", {}.items():
+                context.state.ccp_influence, context.state.gmd_influence = adjust_influence(
+                    context.state.ccp_infuence, context.state.gmd_influence, faction_key, int(delta)
+                )
 
     async def _advance_time_one_minute(self, context: SessionContext):
         context.state.game_time.minute += 1
