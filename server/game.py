@@ -947,7 +947,7 @@ Respond in character, 1-2 sentences maximum. Keep it period-appropriate, emotion
     async def _cmd_sleep(self, context: SessionContext, cmd: Command):
         room = self._room(context)
         if not room or not room.indoors:
-            await self._post_display(contexxt, "You need shelter to rest safely.")
+            await self._post_display(context, loc("cmd_sleep.no_shelter"))
             return
         hours = 6
         minutes = hours * 60
@@ -967,18 +967,18 @@ Respond in character, 1-2 sentences maximum. Keep it period-appropriate, emotion
 
     async def _cmd_bond(self, context: SessionContext, cmd: Command):
         if not cmd.direct_obj:
-            await self._post_display(context, "Bond with whom?")
+            await self._post_display(context, loc("cmd_bond.no_shelter"))
             return
         npc_id = self._resolve_npc(context, cmd.direct_obj)
         if not npc_id:
-            await self._post_display(context, "They aren't here.")
+            await self._post_display(context, loc("cmd_bond.no_target"))
             return
 
         action = cmd.preposition or cmd.indirect_obj or "share_meal"
         if action == "share_meal":
             food_items = [item for item in context.state.player.inventory if item.food_value > 0]
             if not food_items:
-                await self._post_display(context, "You have no food to share.")
+                await self._post_display(context, loc("cmd_bond.no_food"))
                 return
             food = food_items[0]
             context.state.player.inventory.remove(food)
@@ -988,7 +988,7 @@ Respond in character, 1-2 sentences maximum. Keep it period-appropriate, emotion
 
         elif action == "gift":
             if not cmd.indirect_obj:
-                await self._post_display(context, "Gift what item?")
+                await self._post_display(context, loc("cmd_bond.no_gift"))
                 return
             item = self._find_item_by_name(cmd.indirect_obj, context.state.player.inventory)
             if not item:
@@ -1000,11 +1000,11 @@ Respond in character, 1-2 sentences maximum. Keep it period-appropriate, emotion
             self._log_event(context, f"You gifted {item.name} to {context.state.world.npcs[npc_id].name}.")
             await self._post_display(context, f"You give {item.name}. Their expression softens.")
         else:
-            await self._post_display(context, "Bond actions: SHARE MEAL, GIFT <item>")
+            await self._post_display(context, loc("cmd_bond.usage"))
         await self._maybe_trigger_storylet(context)
 
     async def _cmd_unknown(self, context: SessionContext, cmd: Command):
-        await self._post_display(context, f"I don't understand '{cmd.raw}'. Try HELP.")
+        await self._post_display(context, loc("cmd_unknown.format").format(raw=cmd.raw))
 
     def save_slot(self, context: SessionContext):
         state = context.state
