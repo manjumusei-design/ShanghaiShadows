@@ -1065,7 +1065,7 @@ Respond in character, 1-2 sentences maximum. Keep it period-appropriate, emotion
         if player.arrested:
             kempeitai_trust = get_role_trust(player.trust, "kempeitai", None)
             if kempeitai_trust < 25:
-                return True, loc("death.health")
+                return True, loc("death.arrest")
         return False, ""
     
     async def _generate_obituary(self, context: SessionContext, death_message: str) -> str:
