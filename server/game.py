@@ -651,10 +651,11 @@ class GameServer:
     async def _cmd_look(self, context: SessionContext, cmd: Command):
         room = self._room(context)
         if not room:
-            await self._post_display(context, "You are nowhere.")
+            await self._post_display(context, loc("cmd_go.no_direction"))
             return
         await self._post_display(context, context.state.world.format_room(room.id))
-
+        await context.sessopm.send_completions(self._build_completions(context))
+        
     async def _cmd_go(self, context: SessionContext, cmd: Command):
         direction = cmd.direct_obj
         if not direction:
