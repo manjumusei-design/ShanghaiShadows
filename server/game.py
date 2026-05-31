@@ -659,15 +659,15 @@ class GameServer:
     async def _cmd_go(self, context: SessionContext, cmd: Command):
         direction = cmd.direct_obj
         if not direction:
-            await self._post_display(context, "Go where?")
+            await self._post_display(context, loc("cmd_go.no_direction"))
             return
         room = self._room(context)
         if not room:
-            await self._post_display(context, "You are nowhere.")
+            await self._post_display(context, loc("cmd_go.nowhere"))
             return
         dest = room.exits.get(direction)
         if not dest: 
-            await self._post_display(context, "You can't go that way.")
+            await self._post_display(context, loc("cmd_go.no_exit")))
             return
         context.state.player.current_room = dest
         context.state.player.hidden = False
