@@ -1153,7 +1153,6 @@ Respond as plain text, no JSON formatting."""
         await context.session.websocket.close()
 
     async def _generate_character_background(self, context: SessionContext) -> dict:
-        """Generate new character background based on previous character's legacy."""
         previous_player = context.state.player
 
         high_trust_factions = [f for f, roles in previous_player.trust.items() if any(v > 70 for v in roles.values())]
