@@ -667,7 +667,7 @@ class GameServer:
             return
         dest = room.exits.get(direction)
         if not dest: 
-            await self._post_display(context, loc("cmd_go.no_exit")))
+            await self._post_display(context, loc("cmd_go.no_exit"))
             return
         context.state.player.current_room = dest
         context.state.player.hidden = False
