@@ -784,12 +784,12 @@ Respond in character, 1-2 sentences maximum. Keep it period-appropriate, emotion
 
     async def _cmd_wait(self, context: SessionContext, cmd: Command):
         if not cmd.direct_obj:
-            await self._post_display(context, "Wait how long?")
+            await self._post_display(context, loc("cmd_wait.no_duration"))
             return
         try:
             minutes = int(cmd.direct_obj)
         except ValueError:
-            await self._post_display(context, "You must wait a number of minutes.")
+            await self._post_display(context, loc("cmd_wait.invalid"))
             return
         minutes = max(1, min(minutes, 240))
         for _ in range(minutes):
