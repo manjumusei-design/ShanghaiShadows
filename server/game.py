@@ -597,6 +597,10 @@ class GameServer:
             if context.seconds_since_autosave >=300:
                 self.save_slot(context)
                 context.seconds_since_autosave = 0
+            context.seconds_since_state_broadcast += 1
+            if context.seconds_since_state_broadcast >= STATE_BROADCAST_INTERVAL:
+                await self._broadcast_state(context)
+                context.seconds_since_state_broadcast = 0
 
     async def handle_client(self, websocket):
         session = PlayerSession(websocket)
