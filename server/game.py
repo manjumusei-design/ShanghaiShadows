@@ -677,15 +677,15 @@ class GameServer:
 
     async def _cmd_take(self, context: SessionContext, cmd: Command):
         if not cmd.direct_obj:
-            await self._post_display(context, "Take what?")
+            await self._post_display(context, loc("cmd_take.no_target"))
             return
         room = self._room(context)
         item = self._find_item_by_name(cmd.direct_obj, room.items if room else [])
         if not item:
-            await self._post_display(context, "You don't see that here.")
+            await self._post_display(context, loc("cmd_take.not_here"))
             return
         if not item.takeable:
-            await self._post_display(context, "You can't take that.")
+            await self._post_display(context, loc("cmd_take.not_takeable"))
             return
         room.items.remove(item)
         context.state.player.inventory.append(item)
