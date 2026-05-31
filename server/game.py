@@ -470,10 +470,10 @@ class GameServer:
         try:
             choice = int(text.strip())
         except ValueError:
-            await context.session.send_prompt("Choose 1-" + str(len(active.options)) + ": ")
+            await context.session.send_prompt(loc("storylet.choose").format(max=len(active.options)))
             return
         if choice < 1 or choice > len(active.options):
-            await context.session.send_prompt("Choose 1-" + str(len(active.options)) + ": ")
+            await context.session.send_prompt(loc("storylet.choose").format(max=len(active.options)))
             return
         option = active.options[choice - 1]
         await self._apply_storylet_effects(context, option.effects)
