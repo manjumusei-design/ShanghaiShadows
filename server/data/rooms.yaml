@@ -5,7 +5,7 @@ districts:
     count: 25
     tags: [bund, river, checkpoint]
     indoors_every: 5
-    item_cycle: [ration_card, photograph, newspaper, brass_key]
+    item_cycle: [ration_card, photograph, newsaper, brass_key]
     description_templates:
       - "River mist drifts around bollards and broken reflections while clerks hurry by with their collars turned up."
       - "The embankment smells of coal smoke and wet rope, and every footstep seems to carry farther than it should."
@@ -23,7 +23,7 @@ districts:
       - at: 25
         direction: south
         to: docks_01
-
+  
   - prefix: commercial
     room_prefix: commercial
     title_prefix: "Commercial Street"
@@ -147,7 +147,59 @@ districts:
       - at: 15
         direction: north
         to: hongkou_20
-      
+        
+  - prefix: ccp_base
+    room_prefix: ccp_base
+    title_prefix: "Underground Base"
+    count: 8
+    tags: [ccp, underground, guerilla]
+    indoors_every: 1
+    description_templates:
+      - "A cellar beneath a noodle shop where the walls are lined with maps of Japanese military positions. Each red pin marks an act of sabotage — a bridge damaged, a supply train derailed. The smell of gunpowder mingles with broth from above."
+      - "A hidden printing press churns out resistance newspapers by candlelight. The operators work in silence, their faces lit by the dim glow of type being set. One wrong move and the Kempeitai would burn this place and everyone in it."
+      - "Stacks of rice and dried fish line the walls — supplies for guerrilla fighters hiding in the hills outside the city. A chalkboard lists the names of villages burned by Japanese soldiers last month."
+      - "A radio set crackles in the corner, receiving coded transmissions from comrades in the field. The operator transcribes each message with practiced speed, her hands never shaking despite the death penalty for what she does."
+      - "Wounded fighters rest on straw mats, their bandages stained with blood and mud. A young woman tends to them with what few medical supplies remain, her face grim but unwavering."
+      - "A planning table covered in hand-drawn maps shows the routes of Japanese supply convoys. Red circles mark targets. Someone has written 'For Nanking' in the margin."
+      - "Propaganda leaflets are stacked knee-deep, each one a bullet of truth against the lies of the occupation. They speak of Japanese atrocities such as the massacres, the comfort women, the forced labour camps."
+      - "A narrow tunnel leads deeper underground, its walls reinforced with stolen Japanese timber. At the far end, a heavy door opens onto a weapons cache that reveals rifles and grenades captured from ambushed patrols."
+    special_names:
+      "1": "The Noodle Shop Cellar"
+      "2": "The Secret Printing Press"
+      "3": "Guerrilla Supply Cache"
+      "4": "Radio Communications Room"
+      "5": "Underground Field Hospital"
+      "6": "Operations Planning Room"
+      "7": "Propaganda Workshop"
+      "8": "Weapons Storehouse"
+    connectors:
+      - at: 1
+        direction: north
+        to: hidden_05
 
-
-       
+  - prefix: gmd_office
+    room_prefix: gmd_office
+    title_prefix: "Intelligence Office"
+    count: 7
+    tags: [gmd, military, intelligence]
+    indoors_every: 1
+    description_templates:
+      - "Behind a false wall in a tea merchant's shop, Nationalist intelligence officers decode intercepted Japanese orders. The ink is still wet on reports of another massacre in the countryside. These men carry the weight of a retreating government and the fury of those left behind."
+      - "A codebook lies open on a desk, its pages filled with columns of numbers. Maps of Japanese naval movements in the Huangpu River are pinned to the wall, each annotated with dates and vessel names."
+      - "A filing cabinet overflows with dossiers on Kempeitai officers — their habits, their routes, their weaknesses. Information is the only weapon that works in a city under the boot of the occupier."
+      - "A shortwave radio receives broadcasts from Chungking, the voice of Free China audible above the static. The announcer speaks of resistance and the certainty of victory. It is the only truth left in a city drowning in propaganda."
+      - "Photographs of Japanese war crimes are spread across a table — evidence being compiled for the day of reckoning. Each image is a reminder of why surrender is unthinkable."
+      - "A cramped office where forged documents are produced with meticulous care — travel passes, identity cards, ration books. Each forgery is a small act of defiance against the machinery of occupation."
+      - "A listening post where agents monitor Japanese military communications. The work is tedious and dangerous — discovery means torture and execution — but the intelligence saves lives."
+    special_names:
+      "1": "Tea Shop Back Room"
+      "2": "CodeBreaking Bureau"
+      "3": "Kempeitai Dossiers Office"
+      "4": "Chungking Radio Station"
+      "5" : "War Crimes Archive"
+      "6": "Forgery Workshop"
+      "7": "Signals Intercept Station"
+    connectors:
+      - at: 1
+        direction: south
+        to: french_12
