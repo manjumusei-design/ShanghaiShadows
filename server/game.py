@@ -278,6 +278,12 @@ class GameServer:
     def _log_event(self, context: SessionContext, text: str) -> None:
         context.state.player.world_events.append(text)
         context.state.player.world_events = context.state.player.world_events[-50:]
+        context.state.event_log.append({
+            "day": context.state.game_time.day,
+            "minute": context.state.game_time.minute,
+            "text": text,
+        })
+        context.state.event_log = context.state.event_log[-500:]
 
     def _record_conversation(self, context: SessionContext, npc_id: str, player_input: str, npc_response: str):
         context.state.conversation_history.append({
