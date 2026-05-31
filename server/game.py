@@ -582,7 +582,7 @@ class GameServer:
         if context.state.player.hunger <= LOW_HUNGER_THRESHOLD:
             context.state.player_.health = max(0, context.state.player.health - HUNGER_HEALTH_DAMAGE)
             if context.state.game_time.minute % 30 == 0:
-                asyncio.create_task(self._post_display(context, "Your stomach growls in hunger."))
+                asyncio.create_task(self._post_display(context, loc("hunger.cramps")))
         if context.state.player.hunger > 80 and context.state.game_time.minute % 60 == 20:
             context.state.player.health = min(100, context.state.player.health + 1)
 
