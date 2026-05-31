@@ -1067,9 +1067,9 @@ Respond in character, 1-2 sentences maximum. Keep it period-appropriate, emotion
             if kempeitai_trust < 25:
                 return True, loc("death.arrest")
         return False, ""
-    
+
     async def _trigger_ending(self, context: SessionContext, ending_type: str):
-        newspaper = await generte_liberation_newspaper(self.ai_client, ending_type, context.state.legacy_book)
+        newspaper = await generate_liberation_newspaper(self.ai_client, ending_type, context.state.legacy_book)
         legacy = await compile_legacy_narrative(self.ai_client, context.state.legacy_book)
         if ending_type in ("ccp_uprising", "ccp_uprising_early"):
             headline = loc("victory.ccp_headline")
@@ -1092,7 +1092,6 @@ Respond in character, 1-2 sentences maximum. Keep it period-appropriate, emotion
         self.save_slot(context)
         context.session.running = False
         await context.session.websocket.close()
-
 
     async def _generate_obituary(self, context: SessionContext, death_message: str) -> str:
         player = context.state.player
@@ -1126,6 +1125,15 @@ Respond as plain text, no JSON formatting."""
 
     async def _handle_player_death(self, context: SessionContext, death_message: str):
         obituary = await self._generate_obituary(context, death_message)
+        retrospective = await generate_life_retrospective(
+            self.ai_client, context.state.event_log, context.state.player.name
+        )
+        context.state.legacy_book.append({
+            "character_name": context.state.player.name,
+            "obituary": obituary,
+            "summary": retrospective,
+            "day_of_death": context.state.game_time.day,
+        })
         end_screen = f"""THE END
 
 {death_message}
@@ -1134,9 +1142,10 @@ Respond as plain text, no JSON formatting."""
 {obituary}
 ---
 
-Your legacy in Shanghai will be remembered by those who knew you.
-"""
+{retrospective}
 
+{loc("death.legacy")}
+"""
         await self._post_display(context, end_screen)
         context.state.player.flags.append("player_died")
         self.save_slot(context)
@@ -1160,7 +1169,7 @@ Previous character context:
 - Legacy actions: {legacy_flags if legacy_flags else "nothing remarkable"}
 
 Generate background details:
-1. A name (Chinese or European/Japanese)
+1. A name (Chinese or European)
 2. A brief connection to the previous character
 3. Starting trust bonuses/penalties based on rumors
 4. A personal motivation
@@ -1181,7 +1190,7 @@ Respond as JSON with keys: name, background_connection, trust_adjustments, motiv
             "motivation": "Just trying to survive until the war ends."
         }
 
-    def _apply_inherited_trust(self, context: SessionContext,adjustments: dict) -> TrustMap:
+    def _apply_inherited_trust(self, context: SessionContext, adjustments: dict) -> TrustMap:
         base_trust = default_trust()
 
         for key, delta in adjustments.items():
@@ -1189,6 +1198,12 @@ Respond as JSON with keys: name, background_connection, trust_adjustments, motiv
         return base_trust
 
     async def _initialize_new_character(self, context: SessionContext):
+        skip_days = apply_time_skip(context.state)
+        skip_summary = await generate_time_skip_summary(
+            self.ai_client, skip_days,
+            context.state.ccp_influence, context.state.gmd_influence,
+        )
+
         background = await self._generate_character_background(context)
 
         new_player = PlayerState(
@@ -1208,7 +1223,6 @@ Respond as JSON with keys: name, background_connection, trust_adjustments, motiv
             arrested=False
         )
 
-        old_player = context.state.player
         context.state.player = new_player
         context.state.conversation_history = deque(maxlen=20)
         context.state.storylet_history = []
@@ -1218,13 +1232,15 @@ Respond as JSON with keys: name, background_connection, trust_adjustments, motiv
         context.state.last_curfew_penalty_day = 0
 
         welcome_text = f"""
-              A NEW CHAPTER BEGINS
+              {loc("new_chapter")}
+
+{skip_summary}
 
 You are {new_player.name}, {background['background_connection']}
 
 {background['motivation']}
 
-The city remembers what came before, and now you must find your own path.
+{loc("new_chapter.footer")}
 """
 
         await self._post_display(context, welcome_text)
@@ -1239,7 +1255,7 @@ The city remembers what came before, and now you must find your own path.
             data = json.loads(path.read_text(encoding="utf-8"))
         except Exception:
             return state
-        
+
         player_died = data.get("player_died", False)
         if player_died:
             self._load_world_state_only(state, data)
@@ -1274,11 +1290,17 @@ The city remembers what came before, and now you must find your own path.
                 npc.memory = list(memories)
         state.scheduler.load_from_payload(data.get("scheduler", []))
         state.rumour_mill = dict(data.get("rumour_mill", {}))
+        state.event_log = list(data.get("event_log", []))
+        state.legacy_book = list(data.get("legacy_book", []))
+        state.ccp_influence = int(data.get("ccp_influence", 10))
+        state.gmd_influence = int(data.get("gmd_influence", 15))
 
     def _load_complete_state(self, state: GameState, data: dict):
         self._load_world_state_only(state, data)
 
         player_data = data.get("player", {})
+        if "resistance" in state.player.trust and "ccp" not in state.player.trust:
+            migrate_resistance_to_ccp_gmd(state.player.trust)
         state.player.name = player_data.get("name", state.player.name)
         state.player.current_room = player_data.get("current_room", state.player.current_room)
         state.player.inventory = [_deserialize_item(row) for row in player_data.get("inventory", [])]
