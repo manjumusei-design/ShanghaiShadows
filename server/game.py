@@ -918,20 +918,20 @@ Respond in character, 1-2 sentences maximum. Keep it period-appropriate, emotion
 
     async def _cmd_quit(self, context: SessionContext, cmd: Command):
         self.save_slot(context)
-        await self._post_display(context, "Goodbye.")
+        await self._post_display(context, loc("cmd_quit.goodbye"))
         context.session.running = False
         await context.session.websocket.close()
 
     async def _cmd_stub(self, context: SessionContext, cmd: Command):
-        await self._post_display(context, f"{cmd.verb.upper()} has not been implemented.")
+        await self._post_display(context, loc("cmd_stub.not_implemented").format(verb=cmd.verb.upper()))
 
     async def _def_cmd_eat(self, context: SessionContext, cmd: Command):
         if not cmd.direct_obj:
-            await self._post_display(context, "Eat what?")
+            await self._post_display(context, loc("cmd_eat.no_target"))
             return
         item = self._find_item_by_name(cmd.direct_obj, context.state.player.inventory)
         if not item:
-            await self._post_display(context, "You dont have that.")
+            await self._post_display(context, loc("cmd_eat.not_held"))
             return
         food_value = item.food_value
         morale_restore = item.morale_restore
