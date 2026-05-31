@@ -902,20 +902,18 @@ Respond in character, 1-2 sentences maximum. Keep it period-appropriate, emotion
         await self._post_display(context, item.readable_text)
         
     async def _cmd_journal(self, context: SessionContext, cmd: Command):
-        if not context.state.player.world_events:
-            await self._post_display(context, "Your journal would be blank tonight.")
+        recent = collect_recent_events(context.state.event_log, context.state.game_time, hours=24)
+        if not recent:
+            await self._post_display(context, loc("cmd_journal.blank"))
             return
-        lines = ["Recent memories:"]
-        for event in context.state.player.world_events[-10:]:
-            lines.append(f"- {event}")
-        await self._post_display(context, "\n".join(lines))
+        entry = await generate_journal_entry(self.ai_client, recent, context.state.game_time)
+        header = f"--- Journal Entry, {time_str(context.state.game_time)} ---"
+        await self._post_display(context, f"{header}\n{entry}")
 
     async def _cmd_help(self, context: SessionContext, cmd: Command):
         await self._post_display(
             context,
-            "LOOK, GO <direction>, TAKE <item>, DROP <item>, INVENTORY, READ <item>\n"
-            "TALK TO <npc>, WAIT <minutes>, STATUS, DISGUISE AS <role>, TAIL <npc>, HIDE, PLANT <item>\n"
-            "HELP, QUIT",
+            loc("cmd_help.text")
         )
 
     async def _cmd_quit(self, context: SessionContext, cmd: Command):
