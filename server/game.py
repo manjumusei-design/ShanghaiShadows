@@ -725,13 +725,12 @@ class GameServer:
         trust_score = get_role_trust(context.state.player.trust, npc.faction, npc.role)
         trust_desc = "friendly" if trust_score > 70 else "hostile" if trust_score < 30 else "neutral"
         rel = self._get_relationship(context, npc.id)
-        rel_context = ""
-        if rel["friendship"] > 70:
-            rel_context = "You consider this player a friend."
-        elif rel ["fear"] > 70:
-            rel_context = "You are somewhat afraid of this player."
-        elif rel ["indebtedness"] > 50:
-            rel_context = "You feel indebted to this player."
+        rel_context = (
+            "You consider this player a friend." if rel["friendship"] > 70
+            else "You are somewhat afraid of this player." if rel["fear"] > 70
+            else "You feel indebted to this player." if rel["indebtedness"] > 50
+            else ""
+        )
         prompt = f"""You are {npc.name}, a {npc.role} of the {npc.faction} faction in occupied Shanghai, November 1938.
 Personality: {npc.personality}.
 Awareness level: {npc.awareness}/100.
