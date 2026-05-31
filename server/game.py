@@ -607,8 +607,8 @@ class GameServer:
         client_id = f"{websocket.remote_address}"
         context = SessionContext(session=session)
         self.sessions[client_id] = context
-        await session.send_display("Shanghai Shadows\nEnter save slot codename to continue.\n")
-        await session.send_prompt("slot> ")
+        await session.send_display(loc("greeting"))
+        await session.send_prompt(loc("slot_prompt"))
 
         try:
             async for message in websocket:
@@ -621,8 +621,9 @@ class GameServer:
                     context.state = self.load_slot(context.slot_name)
                     if "awaiting_new_character" in context.state.player.flags:
                         await self._initialize_new_character(context)
-                    await session.send_display(f"Loaded slot '{context.slot_name}'.\n")
+                    await session.send_display(loc("loaded").format(slot=context.slot_name))
                     await self._cmd_look(context, Command(verb="look", raw="lok"))
+                    await context.session.send_completions(self._build_completions(context))
                     await session.send_prompt()
                     continue
 
