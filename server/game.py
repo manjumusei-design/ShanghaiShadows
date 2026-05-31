@@ -890,14 +890,14 @@ Respond in character, 1-2 sentences maximum. Keep it period-appropriate, emotion
 
     async def _cmd_read(self, context: SessionContext, cmd: Command):
         if not cmd.direct_obj:
-            await self._post_display(context, "Read what?")
+            await self._post_display(context, loc("cmd_read.no_target"))
             return
         item = self._find_item_by_name(cmd.direct_obj, context.state.player.inventory)
         if not item:
-            await self._post_display(context, "You don't have that.")
+            await self._post_display(context, loc("cmd_read.not_held"))
             return
         if not item.readable_text:
-            await self._post_display(context, "There is nothing useful written on it.")
+            await self._post_display(context, loc("cmd_read.nothing_written"))
             return
         await self._post_display(context, item.readable_text)
         
