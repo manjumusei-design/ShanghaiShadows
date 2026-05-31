@@ -824,12 +824,12 @@ Respond in character, 1-2 sentences maximum. Keep it period-appropriate, emotion
 
     async def _cmd_disguise_as(self, context: SessionContext, cmd: Command):
         if not cmd.direct_obj:
-            await self._post_display(context, "Disguise as what?")
+            await self._post_display(context, loc("cmd_disguise_as.no_target"))
             return
         query = cmd.direct_obj.lower().replace(" ", "_")
         disguise = self.disguises.get(query)
         if not disguise:
-            await self._post_display(context, "That disguise is not prepared for you.")
+            await self._post_display(context, loc("cmd_disguise_as.not_found"))
             return
         context.state.player.disguise = disguise.id
         self._log_event(context, f"You adopted the disguise of {disguise.name}.")
@@ -837,11 +837,11 @@ Respond in character, 1-2 sentences maximum. Keep it period-appropriate, emotion
 
     async def _cmd_tail(self, context: SessionContext, cmd: Command):
         if not cmd.direct_obj:
-            await self._post_display(context, "Tail whom?")
+            await self._post_display(context, loc("cmd_tail.no_target"))
             return
         npc_id = self._resolve_npc(context, cmd.direct_obj)
         if not npc_id:
-            await self._post_display(context, "They aren't here.")
+            await self._post_display(context, loc("cmd_tail.not_here"))
             return
         context.state.tailing_state = self.stealth.start_tail(npc_id)
         context.state.tailing_state.last_checked_minute = (context.state.game_time.day - 1) * 1440 + context.state.game_time.minute
