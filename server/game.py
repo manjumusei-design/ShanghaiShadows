@@ -936,7 +936,7 @@ Respond in character, 1-2 sentences maximum. Keep it period-appropriate, emotion
         food_value = item.food_value
         morale_restore = item.morale_restore
         if food_value == 0:
-            await self.post_display(context, "That's not food.")
+            await self._post_display(context, loc("cmd_eat.not_food"))
             return
         context.state.player.inventory.remove(item)
         context.state.player.hungry = min(100, context.state.player.hunger + food_value)
