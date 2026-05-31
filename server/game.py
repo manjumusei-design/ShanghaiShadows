@@ -567,6 +567,16 @@ class GameServer:
             asyncio.create_task(self._handle_player_death(context, death_message))
             return
 
+        if context.state.game_time.minute == 0:
+            ending = check_victory_conditions(
+                context.state.game_time.day,
+                context.state.ccp_influence,
+                context.state.gmd_influence,
+            )
+            if ending:
+                asyncio.create_task(self._trigger_ending(context, ending))
+                return
+
     def _process_survival_tick(self, contexxt: SessionContext):
         context.state.player.hunger = max(0, context.state.player.hunger - HUNGER_DECAY_RATE)
         if context.state.player.hunger <= LOW_HUNGER_THRESHOLD:
