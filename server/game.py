@@ -868,11 +868,11 @@ Respond in character, 1-2 sentences maximum. Keep it period-appropriate, emotion
         
     async def _cmd_plant(self, context: SessionContext, cmd: Command):
         if not cmd.direct_obj:
-            await self._post_display(context, "Plant what?")
+            await self._post_display(context, loc("cmd_plant.no_target"))
             return
         item = self._find_item_by_name(cmd.direct_obj, context.state.player.inventory)
         if not item:
-            await self._post_display(context, "You don't have that.")
+            await self._post_display(context, loc("cmd_plant.not_held"))
             return
         target = cmd.indirect_obj or cmd.preposition or ""
         room = self._room(context)
