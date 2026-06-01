@@ -1101,3 +1101,233 @@ npcs:
       hostile:
         - "I will scream and everyone will look at you. Leave me alone."
 
+  - id: comrade_li
+    name: "Comrade Li, the guerrilla fighter"
+    description: "A battle-scarred woman who has survived three Japanese sweep operations. Her eyes carry the weight of every village burned, every comrade lost. She fights not for glory but because surrender means annihilation."
+    faction: ccp
+    role: guerrilla
+    personality: "fierce, disciplined, quietly compassionate"
+    awareness: 78
+    schedule:
+      6: ccp_base_01
+      12: ccp_base_06
+      18: ccp_base_05
+      22: ccp_base_01
+    dialogue:
+      greeting:
+        - "The Japanese took my family. I have nothing left to lose."
+      friendly:
+        - "You fight well. The people need more like you."
+        - "I heard the Kempeitai raided the old city again last night. Women and children — they don't care."
+      neutral:
+        - "Keep your head down and your eyes open."
+        - "Trust is earned in blood around here."
+      hostile:
+        - "I've seen your type before. Get out of my sight."
+
+  - id: organizer_chen
+    name: "Chen, the labour organizer"
+    description: "A wiry man who once worked the docks before Japanese foremen replaced Chinese workers with forced labourers. He organizes strikes and sabotage from the shadows."
+    faction: ccp
+    role: organizer
+    personality: "strategic, patient, quietly charismatic"
+    awareness: 72
+    schedule:
+      7: ccp_base_02
+      13: commercial_08
+      19: ccp_base_07
+      23: ccp_base_02
+    dialogue:
+      greeting:
+        - "The workers are the backbone of this resistance. Without them, nothing moves."
+      friendly:
+        - "We shut down the textile mill today. Forty workers walked out. The Japanese overseer was furious."
+        - "Every act of defiance, no matter how small, chips away at their control."
+      neutral:
+        - "Information or nothing. What do you have?"
+      hostile:
+        - "If you're here to waste my time, the door is behind you."
+
+  - id: sister_mei
+    name: "Sister Mei, the underground nurse"
+    description: "A young woman who studied medicine before the university was shut down. She treats wounded fighters in secret, her hands steady even when the Kempeitai patrol outside."
+    faction: ccp
+    role: organizer
+    personality: "gentle, brave, haunted by what she has seen"
+    awareness: 60
+    schedule:
+      8: ccp_base_05
+      14: ccp_base_05
+      20: hidden_02
+      23: ccp_base_05
+    dialogue:
+      greeting:
+        - "I can treat most wounds. What I cannot treat is the evil that causes them."
+      friendly:
+        - "Another fighter survived today because we acted in time. That is enough."
+        - "The Japanese banned morphine for Chinese hospitals. They want us to suffer."
+      neutral:
+        - "I don't have much supplies. Make it quick."
+      hostile:
+        - "I help those who fight. Are you one of them?"
+
+  - id: student_wu
+    name: "Wu, the student propagandist"
+    description: "A university student barely twenty years old, distributing banned newspapers and pamphlets that tell the truth about Japanese atrocities. The Kempeitai have a bounty on his head."
+    faction: ccp
+    role: courier
+    personality: "idealistic, reckless, passionate"
+    awareness: 45
+    schedule:
+      7: ccp_base_07
+      12: school_05
+      17: commercial_12
+      21: ccp_base_07
+    dialogue:
+      greeting:
+        - "Every pamphlet we distribute is a bullet against their lies."
+      friendly:
+        - "I got the latest batch past three checkpoints today. They're getting lazy — or we're getting better."
+        - "Did you hear about the massacre in Suzhou? They herded families into buildings and burned them alive. The world needs to know."
+      neutral:
+        - "Watch yourself. There are informants everywhere."
+      hostile:
+        - "I don't know you. Don't know if I want to."
+
+  - id: old_zhao_courier
+    name: "Old Zhao, the message runner"
+    description: "A grey-haired man who moves through the city like a ghost, carrying coded messages between resistance cells. Thirty years of working the streets taught him every alley and hiding spot."
+    faction: ccp
+    role: courier
+    personality: "cunning, cautious, deeply loyal"
+    awareness: 82
+    schedule:
+      6: ccp_base_01
+      11: oldcity_10
+      16: hidden_08
+      22: ccp_base_01
+    dialogue:
+      greeting:
+        - "I've been running messages since before you were born. The Japanese still can't catch me."
+      friendly:
+        - "Cell seven is compromised. I got the warning out just in time."
+        - "The underground network grows every day. They can't stop ideas."
+      neutral:
+        - "I don't carry messages for strangers."
+      hostile:
+        - "I've seen what happens to traitors. Choose your side carefully."
+
+  - id: major_xu
+    name: "Major Xu, GMD intelligence"
+    description: "A Nationalist intelligence officer posing as a silk merchant. His ledgers contain more secrets than transactions. He maintains contact with Chungking and coordinates intelligence gathering against the Japanese."
+    faction: gmd
+    role: officer
+    personality: "calculated, patriotic, burdened by compromise"
+    awareness: 85
+    schedule:
+      7: gmd_office_01
+      13: gmd_office_03
+      18: french_15
+      22: gmd_office_01
+    dialogue:
+      greeting:
+        - "The Republic endures. That is all that matters."
+      friendly:
+        - "Chungking sent new codes yesterday. The counteroffensive is being planned."
+        - "We intercepted Japanese naval orders. They're moving ships to the south — something big is coming."
+      neutral:
+        - "I deal in information. What do you have to trade?"
+      hostile:
+        - "I don't trust easily. You shouldn't be here."
+
+  - id: agent_song
+    name: "Agent Song, the double agent"
+    description: "A woman who works as a secretary in the Japanese military administration by day and passes intelligence to the GMD by night. Every day she risks discovery and execution."
+    faction: gmd
+    role: spy
+    personality: "cool, meticulous, living on a knife's edge"
+    awareness: 90
+    schedule:
+      8: gmd_office_04
+      14: gmd_office_06
+      20: gmd_office_01
+      23: gmd_office_04
+    dialogue:
+      greeting:
+        - "I memorized three pages of troop movements today. By tomorrow, Chungking will know."
+      friendly:
+        - "The Kempeitai are planning a raid on the old city next week. We need to warn people."
+        - "I saw the execution lists. Seventeen names this month. Seventeen Chinese lives taken for the crime of resisting tyranny."
+      neutral:
+        - "Speak carefully. Walls have ears."
+      hostile:
+        - "If you're Japanese, I'm a secretary. If you're not, prove it."
+
+  - id: captain_lin
+    name: "Captain Lin, the smuggler"
+    description: "A former Nationalist naval officer who now runs a smuggling operation, moving weapons, medicine, and people past Japanese blockades. He lost his ship to a Japanese bomber in 1937."
+    faction: gmd
+    role: smuggler
+    personality: "bold, bitter, relentlessly resourceful"
+    awareness: 75
+    schedule:
+      6: docks_05
+      12: gmd_office_06
+      18: docks_09
+      23: docks_05
+    dialogue:
+      greeting:
+        - "I move what the Japanese try to block. Medicine, weapons, people — anything that hurts them helps us."
+      friendly:
+        - "Got a shipment of quinine past the river patrol last night. The hospitals need it badly — the Japanese hoard it for their own troops."
+        - "Every crate I smuggle is a finger in the eye of the occupation."
+      neutral:
+        - "I deal in goods, not conversation. What do you need?"
+      hostile:
+        - "I don't know you and I don't want to. Walk away."
+
+  - id: Dr_Qian
+    name: "Dr. Qian, the forger"
+    description: "A former art professor who now applies his steady hand to forging documents — travel passes, identity cards, ration books. Each forgery is a work of art that saves a life."
+    faction: gmd
+    role: spy
+    personality: "meticulous, wry, deeply moral"
+    awareness: 65
+    schedule:
+      9: gmd_office_06
+      14: gmd_office_06
+      19: commercial_10
+      23: gmd_office_06
+    dialogue:
+      greeting:
+        - "I used to forge paintings. Now I forge freedom."
+      friendly:
+        - "Twenty travel passes completed today. Twenty people can escape the occupation — if they're brave enough."
+        - "The Japanese guard at the north checkpoint can't tell a real pass from mine. Their arrogance is our advantage."
+      neutral:
+        - "I need a steady hand and a clear description. What do you need?"
+      hostile:
+        - "I don't forge for strangers. Or informants."
+
+  - id: lieutenant_huang
+    name: "Lieutenant Huang, the signals officer"
+    description: "A young GMD signals officer who intercepts and decodes Japanese military communications. He works in a basement room, surrounded by radio equipment and the weight of secrets that could end his life at any moment."
+    faction: gmd
+    role: officer
+    personality: "intense, sleep-deprived, brilliant"
+    awareness: 80
+    schedule:
+      7: gmd_office_07
+      13: gmd_office_07
+      19: gmd_office_04
+      23: gmd_office_07
+    dialogue:
+      greeting:
+        - "I haven't slept in two days. The signals never stop."
+      friendly:
+        - "I decoded a message about a weapons shipment arriving at the docks next Tuesday. We can intercept it."
+        - "The Japanese are getting nervous — their radio traffic has tripled. Something is changing."
+      neutral:
+        - "I deal in signals, not small talk."
+      hostile:
+        - "This room is classified. Leave."
