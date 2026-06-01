@@ -1060,23 +1060,15 @@ class GameServer:
         return False, ""
 
     async def _trigger_ending(self, context: SessionContext, ending_type: str):
-        newspaper = await generate_liberation_newspaper(self.ai_client, ending_type, context.state.legacy_book)
-        legacy = await compile_legacy_narrative(self.ai_client, context.state.legacy_book)
-        if ending_type in ("ccp_uprising", "ccp_uprising_early"):
-            headline = loc("victory.ccp_headline")
-            body = loc("victory.ccp_body")
-        else:
-            headline = loc("victory.gmd_headline")
-            body = loc("victory.gmd_body")
+        ending_text = generate_liberation_ending(ending_type, context.state.player.name, context.state.legacy_book)
+        legacy = compile_legacy_narrative(context.state.legacy_book)
 
         end_screen = f"""
-  {headline}
+{ending_text}
 
-{body}
----
-{newspaper}
 {legacy}
-  {loc("victory.footer")}
+
+{loc("victory.footer")}
 """
         await self._post_display(context, end_screen)
         context.state.player.flags.append("player_died")
@@ -1084,41 +1076,27 @@ class GameServer:
         context.session.running = False
         await context.session.websocket.close()
 
-    async def _generate_obituary(self, context: SessionContext, death_message: str) -> str:
+    def _generate_obituary(self, context: SessionContext, death_message: str) -> str:
         player = context.state.player
-
-        key_flags = [flag for flag in player.flags if flag.startswith("legacy_")]
+        high_trust_factions = [f for f, roles in player.trust.items() if any(v > 70 for v in roles.values())]
+        cause = "starvation" if player.hunger <= 0 else "illness" if player.health <= 0 else "execution"
+        if player.arrested:
+            cause = "cell"
         key_events = player.world_events[-5:] if player.world_events else ["A quiet life in Shanghai"]
-        cause = "natural causes" if player.health <= 0 else "arrested by authorities"
-
-        prompt = f"""Write a short 1938 Shanghai Times obituary for a person with these characteristics:
-
-Name: {player.name}
-Reputation: Respected among: {[f for f, roles in player.trust.items() if any(v > 70 for v in roles.values())]}
-Key actions: {key_events}
-Cause of death: {cause}
-
-Style requirements:
-- Factual and cold, with subtle propaganda undertones
-- 2-3 sentences maximum
-- Period-appropriate language for 1938 Shanghai
-- Mention their likely impact on the community
-
-Respond as plain text, no JSON formatting."""
-
-        try:
-            result = await self.ai_client.chat_text([{"role": "user", "content": prompt}], timeout_seconds=4.0)
-            if result:
-                return result.strip()
-        except Exception as e:
-            print(f"Obituary generation failed: {e}")
-        return f"{player.name}, a resident of Shanghai, passed away recently. They will be remembered by those who knew them."
+        deed = key_events[-1] if key_events else "small acts of survival"
+        faction = high_trust_factions[0] if high_trust_factions else "civilian"
+        tpl_context = {
+            "name": player.name,
+            "date": f"day {context.state.game_time.day}",
+            "cause": cause,
+            "deed": deed,
+            "faction": faction,
+        }
+        return _select_obituary(tpl_context)
 
     async def _handle_player_death(self, context: SessionContext, death_message: str):
-        obituary = await self._generate_obituary(context, death_message)
-        retrospective = await generate_life_retrospective(
-            self.ai_client, context.state.event_log, context.state.player.name
-        )
+        obituary = self._generate_obituary(context, death_message)
+        retrospective = format_life_retrospective(context.state.event_log, context.state.player.name)
         context.state.legacy_book.append({
             "character_name": context.state.player.name,
             "obituary": obituary,
@@ -1143,43 +1121,6 @@ Respond as plain text, no JSON formatting."""
         context.session.running = False
         await context.session.websocket.close()
 
-    async def _generate_character_background(self, context: SessionContext) -> dict:
-        previous_player = context.state.player
-
-        high_trust_factions = [f for f, roles in previous_player.trust.items() if any(v > 70 for v in roles.values())]
-        low_trust_factions = [f for f, roles in previous_player.trust.items() if any(v < 30 for v in roles.values())]
-        legacy_flags = [flag for flag in previous_player.flags if flag.startswith("legacy_")]
-
-        prompt = f"""Generate a character background for a new person starting in occupied Shanghai, November 1938.
-
-Previous character context:
-- Name: {previous_player.name}
-- Known for helping: {high_trust_factions if high_trust_factions else "no particular faction"}
-- Suspicious to: {low_trust_factions if low_trust_factions else "no particular faction"}
-- Legacy actions: {legacy_flags if legacy_flags else "nothing remarkable"}
-
-Generate background details:
-1. A name (Chinese or European)
-2. A brief connection to the previous character
-3. Starting trust bonuses/penalties based on rumors
-4. A personal motivation
-
-Respond as JSON with keys: name, background_connection, trust_adjustments, motivation"""
-
-        try:
-            result = await self.ai_client.chat_json([{"role": "user", "content": prompt}], timeout_seconds=4.0)
-            if result:
-                return result
-        except Exception as e:
-            print(f"Background generation failed: {e}")
-
-        return {
-            "name": "Chen Wei",
-            "background_connection": "You heard stories about the previous person who lived here.",
-            "trust_adjustments": {},
-            "motivation": "Just trying to survive until the war ends."
-        }
-
     def _apply_inherited_trust(self, context: SessionContext, adjustments: dict) -> TrustMap:
         base_trust = default_trust()
 
@@ -1189,12 +1130,12 @@ Respond as JSON with keys: name, background_connection, trust_adjustments, motiv
 
     async def _initialize_new_character(self, context: SessionContext):
         skip_days = apply_time_skip(context.state)
-        skip_summary = await generate_time_skip_summary(
-            self.ai_client, skip_days,
+        skip_summary = generate_time_skip_summary(
+            skip_days,
             context.state.ccp_influence, context.state.gmd_influence,
         )
 
-        background = await self._generate_character_background(context)
+        background = _generate_background()
 
         new_player = PlayerState(
             name=background.get("name", "Newcomer"),
