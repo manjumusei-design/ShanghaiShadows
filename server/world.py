@@ -1,9 +1,12 @@
 from dataclasses import dataclass, field, replace
+from pathlib import Path
 from typing import Dict, List, Optional
 
 import yaml
 
 from .npc import Npc, load_npcs
+
+CUSTOM_DIR = Path("server/data/custom")
 
 
 @dataclass
@@ -28,7 +31,7 @@ class Room:
     npcs: List[str] = field(default_factory=list)
     indoors: bool = False
     tags: List[str] = field(default_factory=list)
-
+    players: List[str] = field(default_factory=list)
 
 def load_items(path: str) -> Dict[str, Item]:
     with open(path, "r", encoding="utf-8") as f:
@@ -125,12 +128,26 @@ def _load_generated_rooms(data: Dict[str, object], items: Dict[str, Item]) -> Di
     return rooms
 
 
+
+def _merge_custom(base: Dict, custom_path: Path, load_func) -> Dict:
+    if not custom_path.exists():
+        return base
+    base.update(load_func(str(custom_path)))
+    return base
+
+
 class World:
     def __init__(self):
         items = load_items("server/data/items.yaml")
+        if CUSTOM_DIR.exists():
+            items = _merge_custom(items, CUSTOM_DIR / "items.yaml", load_items)
         self.item_catalog: Dict[str, Item] = items
         self.rooms: Dict[str, Room] = load_rooms("server/data/rooms.yaml", items)
+        if CUSTOM_DIR.exists():
+            self.rooms = _merge_custom(self.rooms, CUSTOM_DIR / "rooms.yaml", lambda p: load_rooms(p, items))
         self.npcs: Dict[str, Npc] = load_npcs("server/data/npcs.yaml")
+        if CUSTOM_DIR.exists():
+            self.npcs = _merge_custom(self.npcs, CUSTOM_DIR / "npcs.yaml", load_npcs)
         self.npc_locations: Dict[str, str] = {}
         self._place_npcs()
 
