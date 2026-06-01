@@ -1,6 +1,6 @@
 import random
 from dataclasses import dataclass, field
-from typing import Dict, List   
+from typing import Dict, List, Optional
 import yaml
 
 from .trust import TrustMap, get_role_trust
@@ -41,6 +41,11 @@ def load_npcs(path: str) -> Dict[str, Npc]:
     return npcs
 
 
+def _pick_line(npc: Npc, bucket: str) -> Optional[str]:
+    lines = npc.dialogue.get(bucket, [])
+    return random.choice(lines) if lines else None
+
+
 def get_dialogue(npc: Npc, player_trust: TrustMap) -> str:
     trust_score = get_role_trust(player_trust, npc.faction, npc.role)
     if trust_score > 70:
@@ -52,3 +57,43 @@ def get_dialogue(npc: Npc, player_trust: TrustMap) -> str:
     lines = npc.dialogue.get(key, ["..."])
     return random.choice(lines)
 
+
+def get_contextual_dialogue(npc: Npc, player_trust: TrustMap, context_type: str = "talk") -> str:
+    trust_score = get_role_trust(player_trust, npc.faction, npc.role)
+
+    if context_type == "greeting":
+        line = _pick_line(npc, "greeting")
+        if line:
+            return line
+        
+    if context_type == "farewell":
+        line = _pick_line(npc, "farewell")
+        if line:
+            return line
+    
+    if context_type == "gossip":
+        line = _pick_line(npc, "gossip")
+        if line: 
+            return line
+
+    if trust_score < 30:
+        afraid = _pick_line(npc, "afraid")
+        if afraid:
+            return afraid
+        hostile = _pick_line(npc, "hostile")
+        if hostile:
+            return hostile
+        
+    if trust_score > 70:
+        friendly = _pick_line(npc, "friendly")
+        if friendly:
+            return friendly
+        
+    if context_type == "ask":
+        for bucket in ("gossip", "neutral", "greeting"):
+            line = _pick_line( npc, bucket)
+            if line:
+                return line
+            
+    line = _pick_line(npc, "neutral") or _pick_line(npc, "greeting")
+    return line or "..."
