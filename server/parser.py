@@ -62,6 +62,8 @@ KNOWN_VERBS = {
     "status",
     "tail",
     "bond",
+    "say",
+    "attack",
 }
 
 
