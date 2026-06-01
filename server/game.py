@@ -8,18 +8,17 @@ from typing import Awaitable, Callable, Dict, List, Optional
 
 import yaml
 
-from .ai_client import AIClient
 from .config import get_setting, load_dotenv
-from .journal import collect_recent_events, generate_journal_entry, generate_life_retrospective
+from .journal import collect_recent_events, format_journal, format_life_retrospective
 from .locales import get as loc
 from .locales import load_locale
-from .npc import Npc, get_dialogue
+from .npc import Npc, get_contextual_dialogue
 from .parser import Command, parse
 from .stealth import Disguise, StealthSystem, TailingState
 from .storylets import ActiveStorylet, StoryletManager, load_storylets
 from .time_system import EventScheduler, GameTime, time_str
 from .trust import (TrustMap, apply_trust_delta, change_trust, default_trust, exchange_gossip, get_role_trust, load_trust_rules, migrate_resistance_to_ccp_gmd, summarize_faction_trust,)
-from .victory import (check_victory_conditions, compile_legacy_narrative, compute_progress, generate_liberation_newspaper, generate_time_skip_summary, adjust_influence, apply_time_skip,)
+from .victory import (check_victory_conditions, compile_legacy_narrative, compute_progress, generate_liberation_ending, generate_time_skip_summary, adjust_influence, apply_time_skip,)
 from .world import Item, World
 
 
@@ -27,11 +26,75 @@ EVENTS_PATH = "server/data/events.yaml"
 TRUST_RULES_PATH = "server/data/trust_rules.yaml"
 DISGUISES_PATH = "server/data/disguises.yaml"
 STORYLETS_PATH = "server/data/storylets.yaml"
+ORBITUARY_PATH = "server/data/obituary_templates.yaml"
+BACKGROUNDS_PATH = "server/data/character/backgrounds.yaml"
 SAVES_DIR = Path("server/data/saves")
 HUNGER_DECAY_RATE = 0.5
 HUNGER_HEALTH_DAMAGE = 2
 LOW_HUNGER_THRESHOLD = 20
 STATE_BROADCAST_INTERVAL = 5
+
+
+def _load_yaml(path: str) -> dict:
+    p = Path(path)
+    if not p.exists():
+        return {}
+    with open(p, "r", encoding="utf-8") as f:
+        return yaml.safe_load(f) or {}
+
+
+def _select_obituary(context: dict) -> str:
+    templates = _load_yaml(OBITUARY_PATH).get("templates", [])
+    best, best_score = None, -1
+    for t in templates:
+        cond = t.get("condition", "default")
+        if cond == "default":
+            if best_score < 0:
+                best, best_score = t, 0
+            continue
+        score = 0
+        match = True
+        for key, value in cond.items():
+            actual = context.get(key)
+            if actual is None:
+                match = False
+                break
+            if actual == value:
+                score += 1
+            elif isinstance(actual, str) and isinstance(value, str) and actual.lower() == value.lower():
+                score += 1
+            else:
+                match = False
+                break
+        if match and score > best_score:
+            best, best_score = t, score
+    if best:
+        return best["text"].format(**context)
+    return "{name} died on {date}. The city endures.".format(**context)
+
+
+def _generate_background() -> dict:
+    data = _load_yaml(BACKGROUNDS_PATH)
+    import random as _rng
+    gender = _rng.choice(["male", "female"])
+    names = data.get("names", {}).get(gender, data.get("names", {}_.get("male", ["Newcomer"]))
+    foreign_chance = data.get("names", {}).get("foreign", [])
+    if foreign_chance and rng.random() < 0.1:
+        names = foreign_chance
+    name = _rng.choice(names)
+    background = _rng.choice(data.get("backgrounds", ["You wake up in Shanghai with nothing."]))
+    connection = _rng.choice(data.get("connections", ["You found a room and a key."]))
+    motivation = _rng.choice(data.get("motivations", ["Survive until the war ends."]))
+    adjustment_key = _rng.choice(list(data.get("trust_adjustments", {"neutral": {}}).keys()))
+    adjustments = data.get("trust_adjustments", {}).get(adjustment_key, {})
+    return {
+        "name": name,
+        "background_connection": connection,
+        "trust_adjustments": adjustments,
+        "motivation": motivation,
+        "background": background,
+    }
+
 
 @dataclass
 class PlayerState:
@@ -158,7 +221,6 @@ class GameServer:
         load_dotenv()
         load_locale(get_setting("Locale", "en"))
         SAVES_DIR.mkdir(parents=True, exist_ok=True)
-        self.ai_client = AIClient()
         self.disguises = load_disguises(DISGUISES_PATH)
         self.stealth = StealthSystem(self.disguises)
         storylets = load_storylets(STORYLETS_PATH)
@@ -409,50 +471,8 @@ class GameServer:
             await self._post_display(context, f"You shadow {target.name} and keep them in sight.")
 
     async def _check_newspaper(self, context: SessionContext):
-        if context.state.game_time.minute != 360:
-            return
-        if context.state.last_newspaper_day == context.state.game_time.day:
-            return
-        context.state.last_newspaper_day = context.state.game_time.day
-        newspaper = await self._generate_newspaper(context)
-        context.state.player.newspapers.append(newspaper)
-        item = Item(
-            id=f"newspaper_day_{context.state.game_time.day}",
-            name=f"Shanghai Times, Day {context.state.game_time.day}",
-            description="A folded sheet of fresh newsprint, still smelling faintly of ink.",
-            readable_text=newspaper["body"],
-        )
-        context.state.player.inventory.append(item)
-        self._log_event(context, "A new newspaper edition reached you at dawn.")
-        await self._post_display(context, loc("newspaper.delivery"))
-
-    async def _generate_newspaper(self, context: SessionContext) -> Dict[str, object]:
-        recent = context.state.player.world_events[-8:] or ["A quiet night passed with only whispers in the lanes."]
-        prompt = (
-            "You are the editor of the Shanghai Times in occupied Shanghai, November 1938. "
-            "Write four propaganda-tinged headlines with one-sentence summaries. "
-            "Respond as strict JSON with key 'headlines', where each headline has 'title' and 'summary'. "
-            f"Player timeline events: {recent}"
-        )
-        result = await self.ai_client.chat_json(
-            [{"role": "user", "content": prompt}],
-            timeout_seconds=4.0,
-        )
-        if result and isinstance(result.get("headlines"), list):
-            lines = []
-            for row in result["headlines"][:4]:
-                title = str(row.get("title", "Late Edition")).strip()
-                summary = str(row.get("summary", "")).strip()
-                lines.append(f"{title}\n{summary}")
-            body = "\n\n".join(lines)
-        else:
-            fallback = recent[-4:]
-            blocks = []
-            for idx, event in enumerate(fallback, start=1):
-                blocks.append(f"{loc('newspaper.fallback_prefix')} {idx}\nOfficials insist order holds after reports that {event.lower()}")
-            body = "\n\n".join(blocks)
-        return {"day": context.state.game_time.day, "body": body}
-
+        pass
+        
     async def _maybe_trigger_storylet(self, context: SessionContext):
         active = self.storylet_manager.maybe_trigger(context.state)
         if not active:
@@ -717,6 +737,9 @@ class GameServer:
             lines.append(f"- {item.name}")
         await self._post_display(context, "\n".join(lines))
     
+    def _get_npc_dialogue(self, context: SessionContext, npc: Npc, context_type: str = "talk") -> str:
+        return get_contexual_dialogue(npc, context.state.player.trust, context_type)
+
     async def _generate_npc_dialogue(self, context: SessionContext, npc: Npc, player_input: str) -> str:
         room = self._room(context)
         memory_context = ""
