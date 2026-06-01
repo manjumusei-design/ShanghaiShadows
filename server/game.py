@@ -739,38 +739,6 @@ class GameServer:
     
     def _get_npc_dialogue(self, context: SessionContext, npc: Npc, context_type: str = "talk") -> str:
         return get_contexual_dialogue(npc, context.state.player.trust, context_type)
-
-    async def _generate_npc_dialogue(self, context: SessionContext, npc: Npc, player_input: str) -> str:
-        room = self._room(context)
-        memory_context = ""
-        if npc.memory:
-            memory_context = "Recent memories: " + "; ".join(npc.memory[-3:])
-        trust_score = get_role_trust(context.state.player.trust, npc.faction, npc.role)
-        trust_desc = "friendly" if trust_score > 70 else "hostile" if trust_score < 30 else "neutral"
-        rel = self._get_relationship(context, npc.id)
-        rel_context = (
-            "You consider this player a friend." if rel["friendship"] > 70
-            else "You are somewhat afraid of this player." if rel["fear"] > 70
-            else "You feel indebted to this player." if rel["indebtedness"] > 50
-            else ""
-        )
-        prompt = f"""You are {npc.name}, a {npc.role} of the {npc.faction} faction in occupied Shanghai, November 1938.
-Personality: {npc.personality}.
-Awareness level: {npc.awareness}/100.
-Relationship with player: {trust_desc} (trust: {trust_score}/100).
-{memory_context}
-{rel_context}
-Current location: {room.title if rooom else "somewhere in Shanghai"}.
-The player says: "{player_input}"
-Respond in character, 1-2 sentences maximum. Keep it period-appropriate, emotionally authentic, and consistent with your faction alignment. Do not break character or acknowledge being an AI. """
-
-        try:
-            result = await self.ai_client.chat_text([{"role": "user", "content": prompt}], timeout_seconds=3.0)
-            if result:
-                return result.strip()
-        except Exception as e:
-            print(f" AI dialogue generation fail: {e}")
-        return get_dialogue(npc, context.state.player.trust)
             
     async def _cmd_talk_to(self, context: SessionContext, cmd: Command):
         if not cmd.direct_obj:
@@ -781,7 +749,7 @@ Respond in character, 1-2 sentences maximum. Keep it period-appropriate, emotion
             await self._post_display(context, loc("cmd_talk_to.not_here"))
             return
         npc = context.state.world.npcs[npc_id]
-        line = await self._generate_npc_dialogue(context, npc, f"Hello, {npc.name}.")
+        line = self._get_npc_dialogue(context, npc, "greeting")
         await self._post_display(context, f'{npc.name} says, "{line}"')
         self._record_conversation(context, npc_id, f"Hello, {npc.name}.", line)
         self._apply_action_trust(context, f"talk_to_{npc.faction}.{npc.role}", self._room_npcs(context))
