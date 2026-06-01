@@ -47,12 +47,12 @@ class AIClient:
     async def chat_text(
             self,
             messages: List[Dict[str, str]],
-            timeout_seconds: float = 4.0,
+            timeout_seconds: float = 4.0,xx``
     ) -> Optional[str]:
         payload = await self.chat(messages, timeout_seconds=timeout_seconds)
         if not payload:
             return None
-        try:
+        try:    
             return payload["choices"][0]["message"]["content"]  # probs have to change in the future
         except (KeyError, IndexError, TypeError):
             return None
