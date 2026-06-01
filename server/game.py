@@ -898,7 +898,7 @@ class GameServer:
             await self._post_display(context, loc("cmd_journal.blank"))
             return
         entry = await generate_journal_entry(self.ai_client, recent, context.state.game_time)
-        header = f"--- Journal Entry, {time_str(context.state.game_time)} ---"
+        header = f"""Journal Entry, {time_str(context.state.game_time)}"""
         await self._post_display(context, f"{header}\n{entry}")
 
     async def _cmd_help(self, context: SessionContext, cmd: Command):
