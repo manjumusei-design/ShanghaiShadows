@@ -766,7 +766,7 @@ class GameServer:
             return
         npc = context.state.world.npcs[npc_id]
         topic = cmd.indirect_obj
-        line = await self._generate_npc_dialogue(context, npc, f"Tell me about {topic}.")
+        line = self._get_npc_dialogue(context, npc, "ask")
         await self._post_display(context, f'{npc.name} says, "{line}"')
         self._record_conversation(context, npc_id, f"Tell me about {topic}.", line)
         self._apply_action_trust(context, f"ask_about_{npc.faction}.{npc.role}", self._room_npcs(context))
