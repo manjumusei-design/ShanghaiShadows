@@ -24,8 +24,7 @@ disguises:
     description: "The tattered clothes and weary expression tell a story of loss and hardship. Wearing this disguise will allow you to evoke sympathy and avoid scrutiny, but be prepared to endure the hardships that come with it," 
 
   - id: courier
-    name: "a resistance courier"
-    apparent__faction: "resistance"
+    name: "an underground courier"
+    apparent__faction: "ccp"
     bonus: 14
-    description: "The nondescript clothing and satchel full of messages make you a valuable asset to the resistance, but also a target for the Japanese. Wearing this disguise will allow you to move more freely within resistance circles, but be careful not to get caught with incriminating evidence."
-    
+    description: "The nondescript clothing and satchel full of messages make you a valuable asset to the underground, but also a target for the Kempeitai. Wearing this disguise will allow you to move more freely within resistance circles, but be careful not to get caught with incriminating evidence."
