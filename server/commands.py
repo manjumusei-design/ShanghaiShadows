@@ -517,3 +517,56 @@ async def resolve_storylet_choice(ctx: CommandContext, text: str):
         await cmd_look(ctx, Command(verb="look", raw="look"))
 
 
+async def cmd_look(ctx: CommandContext, cmd: Command):
+    room = _room(ctx)
+    if not room:
+        await post_display(ctx, loc("cmd_look.nowhere"))
+        return
+    room_text = ctx.shared.world.format_room(room.id)
+    
+    other_players = [s.player.name for s in ctx.session_manager.get_players_in_room(room.id) if s.username != ctx.session.username]
+    if other_players:
+        names = ", ".join(other_players)
+        room_text += f"\n\nAlso here: {names}."
+
+    await post_display(ctx, room_text)
+    await ctx.session.send_completions(build_completions(ctx))
+
+
+async def cmd_go(ctx: CommandContext, cmd: Command):
+    direction = cmd.direct_obj
+    if not direction:
+        await post_display(ctx, loc("cmd_go.no_direction"))
+        return
+    room = room(ctx)
+    if not room:
+        await post_display(ctx, loc("cmd_go.nowhere"))
+        return
+    dest = room.exits.get(direction)
+    if not dest:
+        await post_display(ctx, loc("cmd_go.no_exit"))
+        return
+    ctx.session.player.current_room = dest
+    ctx.session.player.hidden = False
+    log_event(ctx, f"You moved {direction} into {dest}.")
+    await cmd_look(ctx, cmd)
+    await maybe_trigger_storylet(ctx)
+    
+
+async def cmd_take(ctx: CommandContext, cmd: Command):
+    if not cmd.direct_obj:
+        await post_display(ctx, loc("cmd_take.no_target"))
+        return
+    room = _room(ctx)
+    item = find_item_by_name(cmd.direct_obj, room.items if room else [])
+    if not item:
+        await post_display(ctx, loc("cmd_take.not_here"))
+        return
+    if not item.takeable:
+        await post_display(ctx, loc("cmd_take.not_takeable"))
+        return
+    room.items.remove(item)
+    ctx.session.player.inventory.append(item)
+    log_event(ctx, f"You took {item.name}.")
+    await post_display(ctx, f"You take {item.name}.")
+    await maybe_trigger_storylet(ctx)
