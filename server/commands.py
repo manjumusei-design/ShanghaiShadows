@@ -159,4 +159,361 @@ async def broadcast_state(ctx: CommandContext):
     })
 
 
-async def broadcast_to_room
+async def broadcast_to_room(ctx: CommandContext, text: str, exclude_username: str = ""):
+    room_id = ctx.session.player.current_room
+    for session in ctx.session_manager.get_players_in_room(room_id):
+        if session.username != exclude_username:
+            await session.send_display(text)
+
+
+def build_completions(ctx: CommandContext) -> List[str]:
+    from .session_manager import build_command_registry
+    verbs = [v for v in build_command_registry().keys() if v not in ("unknown", "stub")]
+    room = _room(ctx)
+    if room:
+        verbs.extend(room.exits.keys())
+        for npc_id in room.npcs:
+            npc = ctx.shared.world.npcs.get
+            if npc:
+                verbs.append(npc.name.lower())
+    return verbs
+
+
+def _get_npc_dialogue(ctx: CommandContext, npc: Npc, context_type: str = "talk") -> str:
+    return get_contexual+dialogue(npc, ctx.session.player.trust, context_type)
+
+
+def _select_obituary(context: dict) -> str:
+    templates = _load_yaml(OBITUARY_PATH).get("templates", [])
+    best, best_score  = None, -1
+    for t in templates:
+        cond = t.get("condition", "default")
+        if cond == "default" or cond == {} or cond is None:
+            score = 0
+        elif isinstance(cond, dict):
+            score = 0
+            for key, value in cond.items():
+                actual = context.get(key)
+                if actual is None:
+                    if value is True:
+                        continue
+                    score = -1
+                    break
+                if actual == value:
+                    score += 1
+                elif isinstance(actual, str) and isinstance(value, str) and actual.lower() == value.lower():
+                    score += 1
+                else:
+                    score = -1
+                    break
+            if score == -1:
+                continue
+        else:
+            score = -1
+        if score > best_score:
+            best, best_score = t, score
+    if best:
+        return best["text"].format(**context)
+    return "{name} passed in occupied Shanghai. The city endures."
+
+
+def _generate_background() -> dict:
+    backgrounds = _load_yaml(BACKGROUNDS_PATH)
+    names = backgrounds.get("names", {})
+    backgrounds_list = backgrounds.get("backgrounds", [])
+    connections = backgrounds.get("connections", [])
+    motivations = backgrounds.get("motivations", [])
+    trust_presets = backgrounds.get("trust_presets", {})
+
+    import random
+    gender = random.choice(["male", "female", "neutral"])
+    name_lists = names.get(gender, ["Chen Wei"])
+    name = random.choice(name_lists)
+
+    background = random.choice(backgrounds_list) if backgrounds_list else "A survivor of the occupation."
+    connection = random.choice(connections) if connections else "You know someone in the resistance."
+    motivation = random.choice(motivations) if motivations else "You want to see Shanghai free."
+
+    trust_preset = random.choice(list(trust_presets.keys())) if trust_presets else "neutral"
+    trust_adjustments = trust_presets.get(trust_preset, {})
+
+    return {
+        "name": name,
+        "background": background,
+        "background_connection": connection,
+        "motivation": motivation,
+        "trust_adjustments": trust_adjustments,
+    }
+
+
+def _apply_inherited_trust(ctx: CommandContext, adjustments: dict) -> TrustMap:
+    base_trust = default_trust()
+    for key, delta in adjustments.items():
+        change_trust(base_trust, key, int(delta))
+    return base_trust
+
+
+def _generate_obituary(ctx: CommandContext, death_message: str) -> str: #This function was AI generated
+    player = ctx.session.player
+    high_trust_factions = [f for f, roles in player.trust.items() if any(v > 70 for v in roles.values())]
+    cause = "starvation" if player.hunger <= 0 else "illness" if player.health <= 0 else "execution"
+    if player.arrested:
+        cause = "cell"
+    key_events = player.world_events[-5] if player.world_events else ["A quiet life in Shanghai"]
+    deed = key_events[-1] if key_events else "small acts of survival"
+    faction = high_trust_factions[0] if high_trust_factions else "civilian"
+    tpl_context = {
+        "name": player.name,
+        "date": f"day {ctx.shared.game_time.day}",
+        "cause": cause,
+        "deed": deed,
+        "faction": faction,
+    }
+    return _select_obituary(tpl_context)
+
+
+async def handle_player_death(ctx: CommandContext, death_message: str):
+    from .save_manager import save_player
+    obituary = _generate_obituary(ctx, death_message)
+    retrospective = format_life_retrospective(ctx.shared.event_log, ctx.session.player.name)
+    ctx.shared.legacy_book.append({
+        "character_name": ctx.session.player.name,
+        "obituary": obituary,
+        "summary": retrospective,
+        "day_of_death": ctx.shared.game_time.day,
+    })
+    end_screen = f"""THE END
+
+{death_message}
+
+---
+{obituary}
+---
+
+{retrospective}
+
+{loc("death.legacy")}
+"""
+    await post_display(ctx, end_screen)
+    ctx.session.player.flags.append("player_died")
+    save_player(ctx.session.player)
+    ctx.session.running = False
+    try:
+        await ctx.session.websocket.close()
+    except Exception:
+        pass
+
+
+async def initialize_new_character(ctx: CommandContext):
+    from .save_maanager import save_player, save_world_state
+    skip_days = apply_time_skip(ctx.shared)
+    skip_summary = generate_time_skip_summary(
+        skip_days,
+        ctx.shared.ccp_influence, ctx.shared.gmd_infleunce,
+    )
+
+    background = _generate_background()
+
+    new_trust = _apply_inherited_trust(ctx, background.get("trust_adjustments", {}))
+
+    ctx.session.player.name = background.get("name", "Newcomer")
+    ctx.session.player.current_room = "bund_dawn"
+    ctx.session.player.inventory = []
+    ctx.session.player.trust = new_trust
+    ctx.session.player.disguise = ""
+    ctx.session.player.stealth_skill = 55
+    ctx.session.player.hidden = False
+    ctx.session.player.flags = []
+    ctx.session.player.world_events = []
+    ctx.session.player.newspapers = []
+    ctx.session.player.health = 100
+    ctx.session.player.hunger = 100
+    ctx.session.player.morale = 80
+    ctx.session.player.arrested = False
+    ctx.session.player.relationships = {}
+    ctx.session.player.storylet_history = []
+    ctx.session.player.active_storylet = None
+    ctx.session.player.tailing_state = None
+    ctx.session.player.planted_evidence = []
+    ctx.session.player.last_curfew_penalty_day = 0
+    ctx.session.player.conversation_history = deque(maxlen=CONVERSATION_HISTORY_MAXLEN)
+
+    save_world_state(ctx.shared)
+
+    welcome_text = f"""
+{loc("new_chapter")}
+
+{skip_summary}
+You are {ctx.session.player.name}, {background['background_connection']}
+
+{background['motivation']}
+
+{loc("new_chapter.footer")}
+"""
+    
+    await post_display(ctx, welcome_text)
+    await cmd_look(ctx, Command(verb="look", raw="look"))
+
+
+async def trigger_ending(ctx: CommandContext, ending_type: str): #Ai generated function that I tweaked for the ending trigger
+    from .save_manager import save_player, save_world_state
+    ending_text = generate_liberation_ending(ending_type, ctx.session.player.name, ctx.shared.legacy_book)
+    legacy = compile_legacy_narrative(ctx.shared.legacy_book)
+
+    end_screen = f"""
+{ending_text}
+
+{legacy}
+
+{loc("victory.footer")}
+"""
+    await post_display(ctx, end_screen)
+    ctx.session.player.flags.append("player_died")
+    save_player(ctx.session.player)
+    save_world_state(ctx.shared)
+    ctx.session.running = False
+    try:
+        await ctx.session.websocket.close()
+    except Exception:
+        pass
+
+
+def check_health_conditions(ctx: CommandContext) -> tuple[bool, str]:
+    player = ctx.session.player
+    if player.health <= 0:
+        return True, loc("death.health")
+    
+    if player.arrested:
+        kempeitai_trust = get_role_trust(player.trust, "kenpeitai", None)
+        if kempeitai_trust < 25:
+            return True, loc("death_health")
+    return False, ""
+
+
+def _effects_as_list(val):
+    if isinstance(val, list):
+        return val
+    return [val] if val else []
+
+
+def _apply_effect_flags(player: PlayerData, effects: Dict[str, object]) -> None:
+    for flag in _effects_as_list(effects.get("set_flags")):
+        if flag and flag not in player.flags:
+            player.flags.append(str(flag))
+    for flag in _effects_as_list(effects.get("clear_flag")):
+        if flag in player.flags:
+            player.flags.remove(flag)
+
+
+def _apply_effect_trust(player: PlayerData, effects: Dict[str, object]) -> None:
+    for trust_key, delta in effects.get("change_trust", {}).item():
+        change_trust(player.trust, trust_key, int(delta))
+
+
+def _apply_effect_items(player: PlayerData, world: World, effects: Dict[str, object]) -> None:
+    for item_id in _effects_as_list(effects.get("add_item")):
+        if item_id:
+            item = world.clone_item(str(item_id))
+            if item:
+                player.inventory.append(item)
+    for item_id in _effects_as_list(effects.get("remove_item")):
+        if item_id:
+            item = find_item_by_name(str(item_id), player.inventory)
+            if item:
+                player.inventory.remove(item)
+
+
+def _apply_effect_events(ctx: CommandContext, effects: Dict[str, object]) -> None:
+    for flag_event in _effects_as_list(effects.get("log_event")):
+        if flag_event:
+            log_event(ctx, str(flag_event))
+
+
+def _apply_effect_npcs(world: World, effects: Dict[str, object]) -> None:
+    for key in ("move_npc", "spawn_npc"):
+        for npc_id, room_id in effects.get(key, {}).items():
+            if npc_id in world.npcs and room_id in world.rooms:
+                world.place_npc(npc_id, room_id)
+
+
+async def _apply_effect_specials(ctx: CommandContext, effects: Dict[str, object]) -> bool:
+    if "kill_player" in effects:
+        death_reason = effects.get("death_reason", "You have met your end in Shanghai.")
+        asyncio.create_task(handle_player_death(ctx, death_reason))
+        return True
+    
+    if "arrest_player" in effects:
+        ctx.session.player.arrested = True
+        log_event(ctx, "You have been arrested.")
+        await post_display(ctx, loc("death.arrest_message"))
+
+    return False
+
+
+def _apply_effect_influence(shared: SharedWorldState, effects: Dict[str, object]) -> None:
+    for faction_key, delta in effects.get("change_influence", {}).items():
+        shared.ccp_influence, shared.gmd_influence = adjust_influence(
+            shared.ccp_influence, shared.gmd_infleunce, faction_key, int(delta)
+        )
+
+
+async def apply_storylet_effects(ctx: CommandContext, effects: Dict[str, object]):
+    player = ctx.session.player
+    shared = ctx.shared
+    world = shared.world
+
+    _apply_effect_flags(player, effects)
+    _apply_effect_trust(player, effects)
+    _apply_effect_items(player, world, effects)
+    _apply_effect_events(ctx, effects)
+    _apply_effect_npcs(world, effects)
+
+    if await _apply_effect_specials(ctx, effects):
+        return
+    
+    _apply_effect_influence(shared, effects)
+
+
+async def maybe_trigger_storylet(ctx: CommandContext):
+    active = ctx.storylet_manager.maybe_trigger(ctx.shared)
+    if not active:
+        return
+    ctx.session.player.active_storylet = active
+    lines = [active.narrative]
+    for idx, option in enumerate(active.options, start=1):
+        lines.append(f"{idx}. {option.text}")
+    await post_display(ctx, "\n".join(lines))
+
+
+async def resolve_storylet_choice(ctx: CommandContext, text: str):
+    active = ctx.session.player.active_storylet
+    if not active:
+        return
+    try:
+        choice = int(text.strip())
+    except ValueError:
+        await ctx.session.send_prompt(loc("storylet.choose").format(max=len(active.options)))
+        return
+    if choice < 1 or choice > len(active.options):
+        await ctx.session.send_prompt(loc("storylet.choose").format(max=len(active.options)))
+        return
+    option = active.options[choice - 1]
+    await apply_storylet_effects(ctx, option.effects)
+    ctx.session.player.storylet_history.append(active.storylet_id)
+    followup = option.followup_storylet
+    ctx.session.player.active_storylet = None
+    if followup and followup in ctx.storylet_manager.storylets:
+        storylet = ctx.storylet_manager.storylets[followup]
+        ctx.session.player.active_storylet = ActiveStorylet(
+            storylet_id=storylet.id,
+            narrative=storylet.narrative,
+            options=storylet.options,
+        )
+        lines = [storylet.narrative]
+        for idx, followup_option in enumerate(storylet.options, start=1):
+            lines.append(f"{idx}. {followup_option.text}")
+        await post_display(ctx, "\n".join(lines))
+    else:
+        await cmd_look(ctx, Command(verb="look", raw="look"))
+
+
