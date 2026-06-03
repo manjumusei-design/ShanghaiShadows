@@ -587,4 +587,12 @@ async def cmd_inventory(ctx: CommandContext, cmd: Command):
     log_event(ctx, f"You dropped {item.name}.")
     await post_display(ctx, f"You drop {item.name}.")
 
-    
+
+async def cmd_inventory(ctx: CommandContext, cmd: Command):
+    if not ctx.session.player.inventory:
+        await post_display(ctx, loc("cmd)inventory.empty"))
+        return
+    lines = [loc("cmd_inventory.header")]
+    for item in ctx,session.player.inventory:
+        lines.append(f"- {item.name}")
+    await post_display(ctx, "\n".join(lines))
