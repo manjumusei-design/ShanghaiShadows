@@ -786,3 +786,26 @@ async def cmd_quit(ctx: CommandContext, cmd: Command):
         pass
 
 
+async def cmd_stu(ctx: CommandContext, cmd: Command):
+    await post_display(ctx, loc("cmd_stub.not_implemented").format(verb=cmd.verb.upper()))
+
+
+async def cmd_eat(ctx: CommandContext, cmd: Command):
+    if not cmd.direct_obj:
+        await post_display(ctx, loc("cmd_eat.no_target"))
+        return
+    item = find_item_by_name(cmd.direct_obj, ctx.session.player.inventory)
+    if not item:
+        await post_display(ctx, loc("cmd_eat.not_held"))
+        return
+    food_value = item.food_value
+    morale_restore = item.morale_restore
+    if food_value == 0:
+        await post_display(ctx, loc("cmd_eat.not_food"))
+        return
+    ctx.session.player.inventory.remove(item)
+    ctx.session.player.hunger = min(100, ctx.session.player.hunger + food_value)
+    ctx.session.player.morale = min(100, ctx.session.player.morale + morale_restore)
+    log_event(ctx, f"You ate {item.name}.")
+    await post_display(ctx, f"You eat {item.name}. It settles your stomach.")
+    
