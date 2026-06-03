@@ -914,3 +914,41 @@ async def cmd_give(ctx: CommandContext, cmd: Command):
     log_event(ctx, f"You gave {item.name} to {target_session.player.name}.")
     await post_display(ctx, f"You give {item.name} to {target_session.player.name}.")
     await target_session.send_display(f"{ctx.session.player.name} hands you {item.name}.")
+
+
+async def cmd_attack(ctx: CommandContext, cmd: Command): #This is the dice system for now, to be implemented with the pokemon one in the future
+    parts = cmd.raw.split()
+    if len(parts) < 2:
+        await post_display(ctx, "Attack whom?")
+        return
+
+    target_name = parts[1]
+    target_session = None
+    for session in ctx.session_manager.get_players_in_room(ctx.session.player.current_room):
+        if session.username == target_name or session.player.name.lower() == target_name.lower():
+            target_session = session
+            break
+
+    if not target_session:
+        await post_display(ctx, f"{target_name} is not here.")
+        return
+
+    attack_roll = random.randint(1, 20)
+    defend_roll = random.randint(1, 20)
+    damage = random.randint(5, 15) if attack_roll > defend_roll else 0
+    counter_damage = random.randint(3, 10) if attack_roll <= defend_roll else 0
+
+    if damage > 0:
+        target_session.player.health = max(0, target_session.player.health - damage)
+        await broadcast_to_room(ctx, f"{ctx.session.player.name} attacks {target_session.player.name} for {damage} damage!")
+        if target_session.player.health <= 0:
+            await handle_player_death(ctx, f"You killed {target_session.player.name}.")
+    else:
+        await post_display(ctx, f"You attack {target_session.player.name} but miss!")
+
+    if counter_damage > 0:
+        ctx.session.player.health = max(0, ctx.session.player.health - counter_damage)
+        await post_display(ctx, f"{target_session.player.name} counters for {counter_damage} damage!")
+        if ctx.session.player.health <= 0:
+            death_msg = f"You were killed by {target_session.player.name}."
+            await handle_player_death(ctx, death_msg)
