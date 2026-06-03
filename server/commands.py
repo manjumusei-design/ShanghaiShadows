@@ -952,3 +952,71 @@ async def cmd_attack(ctx: CommandContext, cmd: Command): #This is the dice syste
         if ctx.session.player.health <= 0:
             death_msg = f"You were killed by {target_session.player.name}."
             await handle_player_death(ctx, death_msg)
+
+
+async def advance_time_one_minute(ctx: CommandContext):
+    ctx.shared.game_time.minute += 1
+    if ctx.shared.game_time.minute >= 1440:
+        ctx.shared.game_time.minute = 0
+        ctx.shared.game_time.day += 1
+    ctx.shared.scheduler.process(
+        ctx.shared.game_time,
+        lambda msg: asyncio.create_task(post_display(ctx, msg)),
+    )
+    move_npcs_if_hour_changed(ctx)
+    process_gossip(ctx)
+    await check_planted_evidence(ctx)
+    await process_tailing(ctx)
+    await check_curfew_penalty(ctx)
+    if ctx.shared.game_time.minute % 15 == 0:
+        await maybe_trigger_storylet(ctx)
+    process_survival_tick(ctx)
+
+    is_dead, death_message = check_death_conditions(ctx)
+    if is_dead:
+        asyncio.create_task(handle_player_death(ctx, death_message))
+        return
+
+    if ctx.shared.game_time.minute == 0:
+        ending = check_victory_conditions(
+            ctx.shared.game_time.day,
+            ctx.shared.ccp_influence,
+            ctx.shared.gmd_influence,
+        )
+        if ending:
+            asyncio.create_task(trigger_ending(ctx, ending))
+            return
+
+
+def move_npcs_if_hour_changed(ctx: CommandContext):
+    if ctx.shared.game_time.minute % 60 != 0:
+        return
+    hour = ctx.shared.game_time.minute // 60
+    for npc_id, npc in ctx.shared.world.npcs.items():
+        room_id = npc.schedule.get(hour)
+        if room_id and room_id in ctx.shared.world.rooms:
+            old_room_id = ctx.shared.world.npc_locations.get(npc_id)
+            if old_room_id:
+                old_room = ctx.shared.world.rooms.get(old_room_id)
+                if old_room and npc_id in old_room.npcs:
+                    old_room.npcs.remove(npc_id)
+            if npc_id not in ctx.shared.world.rooms.get(room_id, []).npccs:
+                ctx.shared.world.rooms[room_id].npcs.append(npc_id)
+            ctx.shared.world.npc_locations[npc_id] = room_id
+
+
+def process_gossip(ctx: CommandContext):
+    for room in ctx.shared.world.rooms.values():
+        npc_ids = room.npcs
+        if len(npc_ids) < 2:
+            continue
+        for i in range(len(npc_ids) - 1):
+            a = ctx.shared.world.npcs.get(npc_ids[i])
+            b = ctx.shared.world.npcs.get(npc_ids[i + 1])
+            if not a or not b:
+                continue
+            if exchange_gossip(a.memory, b.memory, chance=0.25):
+                rumor = b.memory[-1] if b.memory else ""
+                if rumor:
+                    ctx.shared.rumour_mill.setdefault(b.faction, []).append(rumor)
+                    ctx.shared.rumour_mill[b.faction] = ctx.shared.rumour_mill[b.faction][-12:]
