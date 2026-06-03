@@ -723,4 +723,25 @@ async def cmd_hide(ctx: CommandContext, cmd: Command):
         log_event(ctx, "You failed to hide cleanly.")
         await post_display(ctx, "You try to hide, but too many eyes still know where you stand.")
 
-        
+
+async def cmd_plant(ctx: CommandContext, cmd: Command):
+    if not cmd.direct_obj:
+        await post_display(ctx, loc("cmd_plant.no_target"))
+        return
+    item = find_item_by_name(cmd.direct_obj, ctx.session.player.inventory)
+    if not item:
+        await post_display(ctx, loc("cmd_plant.not_held"))
+        return
+    target = cmd.indirect_obj or cmd.preposition or ""
+    room = _room(ctx)
+    ctx.session.player.inventory.remove(item)
+    ctx.session.player.planted_evidence.append(
+        {
+            "room_id": room.id if room else ctx.session.player.current_room,
+            "item_id": item.id,
+            "item_name": item.name,
+            "target": target,
+        }
+    )
+    log_event(ctx, f"You planted {item.name} for {target or 'whoever finds it'}.")
+    await post_display(ctx, f"You leave {item.name} where someone else will one day pay for noticing it.")
