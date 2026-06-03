@@ -631,3 +631,19 @@ async def cmd_ask_about(ctx: CommandContext, cmd: Command):
     apply_action_trust(ctx, f"ask_about_{npc.faction}.{npc.role}", room_npcs(ctx))
     log_event(ctx, f"You asked {npc.name} about {topic}.")
     await maybe_trigger_storylet(ctx)
+
+
+async def cmd_wait(ctx: CommandContext, cmd: Command):
+    if not cmd.direct_obj:
+        await post_display(ctx, loc("cmd_wait.no_duration"))
+        return
+    try:
+        minutes = int(cmd.direct_obj)
+    except ValueError:
+        await post_display(ctx, loc("cmd_wait.invalid"))
+        return
+    minutes = max(1, min(minutes, 240))
+    for _ in range(minutes):
+        await advance_time_one_minute(ctx)
+    log_event(ctx, f"You waited {minutes} minutes.")
+    await post_display(ctx, f"You wait {minutes} minutes. It is now {time_str(ctx.shared.game_time)}.")
