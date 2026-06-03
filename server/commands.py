@@ -832,4 +832,24 @@ async def cmd_rest(ctx: CommandContext, cmd: Command):
         await advance_time_one_minute(ctx)
     await post_display(ctx, "You rest quietly for fifteen minutes, catching your breath.")
 
-    
+
+async def cmd_bond(ctx: CommandContext, cmd: Command):
+    if not cmd.direct_obj:
+        await post_display(ctx, loc("cmd_bond.no_target"))
+        return
+    npc_id = resolve_npc(ctx, cmd.direct_obj)
+    if not npc_id:
+        await post_display(ctx, loc("cmd_bond.not_here"))
+        return
+
+    action = cmd.preposition or cmd.indirect_obj or "share_meal"
+    if action == "share_meal":
+        food_items = [item for item in ctx.session.player.inventory if item.food_value > 0]
+        if not food_items:
+            await post_display(ctx, loc("cmd_bond.no_food"))
+            return
+        food = food_items[0]
+        ctx.session.player.inventory.remove(food)
+        _modify_relationship(ctx, npc_id, {"friendship": 15, "indebtedness": 5})
+        log_event(ctx, f"You shared a meal with {ctx.shared.world.npcs[npc_id].name}.")
+        await post_display(ctx, f"You share {food.name}. They seem grateful for the company.")
