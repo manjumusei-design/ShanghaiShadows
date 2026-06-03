@@ -596,3 +596,22 @@ async def cmd_inventory(ctx: CommandContext, cmd: Command):
     for item in ctx,session.player.inventory:
         lines.append(f"- {item.name}")
     await post_display(ctx, "\n".join(lines))
+
+
+async def cmd_talk_to(ctx: CommandContext, cmd: Command):
+    if not cmd.direct_obj:
+        await post_display(ctx, loc("cmd_talk_to.no_target"))
+        return
+    npc_id = resolve_npc(ctx, cmd.direct_obj)
+    if not npc_id:
+        await post_display(ctx, loc("cmd_talk_to.not_here"))
+        return
+    npc = ctx.shared.world.npcs[npc_id]
+    line = _get_npc_dialogue(ctx, npc, "greeting")
+    await post_display(ctx, f'{npc.name} says, "{line}"')
+    record_conversation(ctx, npc_id, f"Hello, {npc.name}.", line)
+    apply_action_trust(ctx, f"talk_to_{npc.faction}.{npc.role}", room_npcs(ctx))
+    log_event(ctx, f"You spoke with {npc.name}.")
+    await maybe_trigger_storylet(ctx)
+
+
