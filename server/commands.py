@@ -887,7 +887,30 @@ async def cmd_whisper(ctx: CommandContext, cmd: Command):
     await post_display(ctx, f"You whisper to {target_session.player.name}: {message}")
 
 
+async def cmd_give(ctx: CommandContext, cmd: Command):
+    parts = cmd.raw.split()
+    if len(parts) < 4 or "to" not in parts:
+        await post_display(ctx, "Give what to whom?")
+        return
+    to_index = parts.index("to")
+    item_name = parts[1]
+    target_name = parts[to_index + 1] if to_index + 1 < len(parts) else ""
 
+    item = find_item_by_name(item_name, ctx.session.player.inventory)
+    if not item:
+        await post_display(ctx, f"You don't have {item_name}.")
+        return
+    target_session = None
+    for session in ctx.session_manager.get_players_in_room(ctx.session.player.current_room):
+        if session.username == target_name or session.player.name.lower() == target_name.lower():
+            target_session = session
+            break
 
-
-    
+    if not target_session:
+        await post_display(ctx, f"{target_name} is not here.")
+        return
+    ctx.session.player.inventory.remove(item)
+    target_session.player.inventory.append(item)
+    log_event(ctx, f"You gave {item.name} to {target_session.player.name}.")
+    await post_display(ctx, f"You give {item.name} to {target_session.player.name}.")
+    await target_session.send_display(f"{ctx.session.player.name} hands you {item.name}.")
