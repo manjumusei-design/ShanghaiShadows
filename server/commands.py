@@ -668,3 +668,59 @@ def _get_relationship(ctx: CommandContext, npc_id: str) -> Dict[str, int]:
     if npc_id not in ctx.session.player.relationships:
         ctx.session.player.relationships[npc_id] = {"friendship": 0, "fear": 0, "indebtedness": 0}
     return ctx.session.player.relationships[npc_id]
+
+
+def _modify_relationship(ctx: CommandContext, npc_id: str, changes: Dict[str, int]):
+    rel = _get_relationship(ctx, npc_id)
+    for key, delta in changes.items():
+        if key in rel:
+            rel[key] = max(0, min(100, rel[key] + delta))
+
+    
+async def cmd_disguise_as(ctx: CommandContext, cmd: Command):
+    if not cmd.direct_obj:
+        await post_display(ctx, loc("cmd_disguise_as.no_target"))
+        return
+    query = cmd.direct_obj.lower().replace(" ", "_")
+    disguise = ctx.disguises.get(query)
+    if not disguise:
+        await post_display(ctx, loc("cmd_disguise_as.not_found"))
+        return
+    ctx.session.player.disguise = disguise.id
+    log_event(ctx, f"You adopted the disguise of {disguise.name}.")
+    await post_display(ctx, f"You settle into the role of {disguise.name}. {disguise.description}")
+
+
+async def cmd_tail(ctx: CommandContext, cmd: Command):
+    if not cmd.direct_obj:
+        await post_display(ctx, loc("cmd_tail.no_target"))
+        return
+    npc_id = resolve_npc(ctx, cmd.direct_obj)
+    if not npc_id:
+        await post_display(ctx, loc("cmd_tail.not_here"))
+        return
+    ctx.session.player.tailing_state = ctx.stealth.start_tail(npc_id)
+    ctx.session.player.tailing_state.last_checked_minute = (ctx.shared.game_time.day - 1) * 1440 + ctx.shared.game_time.minute
+    target = ctx.shared.world.npcs[npc_id]
+    log_event(ctx, f"You began tailing {target.name}.")
+    await post_display(ctx, f"You fall in behind {target.name}, and try not to be remembered.")
+
+
+async def cmd_hide(ctx: CommandContext, cmd: Command):
+    room = _room(ctx)
+    observers = [ctx.shared.world.npcs[npc_id] for npc_id in room.npcs] if room else []
+    success, _ = ctx.stealth.hide_check(
+        ctx.session.player.stealth_skill,
+        disguise_bonus(ctx),
+        room.indoors if room else False,
+        observers,
+    )
+    ctx.session.player.hidden = success
+    if success:
+        log_event(ctx, "You found a place to hide.")
+        await post_display(ctx, "You slip into shadow and become part of the room's silence.")
+    else:
+        log_event(ctx, "You failed to hide cleanly.")
+        await post_display(ctx, "You try to hide, but too many eyes still know where you stand.")
+
+        
