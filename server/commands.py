@@ -745,3 +745,27 @@ async def cmd_plant(ctx: CommandContext, cmd: Command):
     )
     log_event(ctx, f"You planted {item.name} for {target or 'whoever finds it'}.")
     await post_display(ctx, f"You leave {item.name} where someone else will one day pay for noticing it.")
+
+
+async def cmd_read(ctx: CommandContext, cmd: Command):
+    if not cmd.direct_obj:
+        await post_display(ctx, loc("cmd_read.no_target"))
+        return
+    item = find_item_by_name(cmd.direct_obj, ctx.session.player.inventory)
+    if not item:
+        await post_display(ctx, loc("cmd_read.not_held"))
+        return
+    if not item.readable_text:
+        await post_display(ctx, loc("cmd_read.nothing_written"))
+        return
+    await post_display(ctx, item.readable_text)
+    
+
+async def cmd_journal(ctx: CommandContext, cmd: Command):
+    recent = collect_recent_events(ctx.shared.event_log, ctx.shared.game_time, hours=24)
+    if not recent:
+        await post_display(ctx, loc("cmd_journal.blank"))
+        return
+    entry = format_journal(ctx.shared.event_log, ctx.shared.game_time)
+    header = f"--- Journal Entry, {time_str(ctx.shared.game_time)} ---"
+    await post_display(ctx, f"{header}\n{entry}")
