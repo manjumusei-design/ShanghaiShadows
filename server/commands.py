@@ -1020,3 +1020,123 @@ def process_gossip(ctx: CommandContext):
                 if rumor:
                     ctx.shared.rumour_mill.setdefault(b.faction, []).append(rumor)
                     ctx.shared.rumour_mill[b.faction] = ctx.shared.rumour_mill[b.faction][-12:]
+
+
+async def check_planted_evidence(ctx: CommandContext):
+    if not ctx.session.player.planted_evidence:
+        return
+    remaining = []
+    for planted in ctx.session.player.planted_evidence:
+        room = ctx.shared.world.get_room(str(planted["room_id"]))
+        target = str(planted.get("target", "")).lower()
+        triggered = False
+        if room:
+            for npc_id in room.npcs:
+                npc = ctx.shared.world.npcs.get(npc_id)
+                if not npc:
+                    continue
+                if not target or target in npc.faction.lower() or target in npc.role.lower() or target in npc.name.lower():
+                    event_text = f"Your planted {planted['item_name']} in {room.title} has stirred suspicion."
+                    log_event(ctx, event_text)
+                    ctx.shared.rumour_mill.setdefault(npc.faction, []).append(event_text)
+                    await post_display(ctx, event_text)
+                    triggered = True
+                    break
+        if not triggered:
+            remaining.append(planted)
+    ctx.session.player.planted_evidence = remaining
+
+
+async def process_tailing(ctx: CommandContext):
+    tail = ctx.session.player.tailing_state
+    if not tail:
+        return
+    current_total = (ctx.shared.game_time.day - 1) * 1440 + ctx.shared.game_time.minute
+    if current_total - tail.last_checked_minute < 5:
+        return
+    tail.last_checked_minute = current_total
+    tail.elapsed_minutes += 5
+    target = ctx.shared.world.npcs.get(tail.target_npc_id)
+    if not target:
+        ctx.session.player.tailing_state = None
+        await post_display(ctx, loc("cmd_tail.target_vanished"))
+        return
+    success, _ = ctx.stealth.tail_check(
+        tail,
+        target,
+        ctx.session.player.stealth_skill,
+        disguise_bonus(ctx),
+        ctx.session.player.hidden,
+    )
+    if not success and tail.distance <= 0:
+        ctx.session.player.tailing_state = None
+        log_event(ctx, f"{target.name} spotted you while you were tailing them.")
+        await post_display(ctx, f"{target.name} glances over a shoulder, slows, and knows exactly what you are doing.")
+        return
+    target_room = ctx.shared.world.npc_locations.get(target.id)
+    if success and target_room and ctx.session.player.current_room != target_room:
+        ctx.session.player.current_room = target_room
+        ctx.session.player.hidden = False
+        await post_display(ctx, f"You shadow {target.name} and keep them in sight.")
+
+
+async def check_curfew_penalty(ctx: CommandContext):
+    if ctx.shared.game_time.minute < CURFEW_MINUTE:
+        return
+    if ctx.session.player.last_curfew_penalty_day == ctx.shared.game_time.day:
+        return
+    room = _room(ctx)
+    if room and not room.indoors:
+        apply_action_trust(ctx, "out_after_curfew", room.npcs)
+        ctx.session.player.last_curfew_penalty_day = ctx.shared.game_time.day
+        log_event(ctx, "You were seen outside after curfew.")
+        await post_display(ctx, loc("curfew.warning"))
+
+
+def process_survival_tick(ctx: CommandContext):
+    ctx.session.player.hunger = max(0, ctx.session.player.hunger - HUNGER_DECAY_RATE)
+    if ctx.session.player.hunger <= LOW_HUNGER_THRESHOLD:
+        ctx.session.player.health = max(0, ctx.session.player.health - HUNGER_HEALTH_DAMAGE)
+        if ctx.shared.game_time.minute % 30 == 0:
+            asyncio.create_task(post_display(ctx, loc("hunger.cramps")))
+    if ctx.session.player.hunger > 80 and ctx.shared.game_time.minute % 60 == 0:
+        ctx.session.player.health = min(100, ctx.session.player.health + 1)
+
+
+_COMMAND_REGISTRY = None
+
+
+def build_command_registry() -> Dict[str, Callable]:
+    global _COMMAND_REGISTRY
+    if _COMMAND_REGISTRY is None:
+        _COMMAND_REGISTRY = {
+            "look": cmd_look,
+            "go": cmd_go,
+            "take": cmd_take,
+            "drop": cmd_drop,
+            "inventory": cmd_inventory,
+            "talk to": cmd_talk_to,
+            "ask about": cmd_ask_about,
+            "wait": cmd_wait,
+            "help": cmd_help,
+            "quit": cmd_quit,
+            "status": cmd_status,
+            "disguise as": cmd_disguise_as,
+            "tail": cmd_tail,
+            "hide": cmd_hide,
+            "plant": cmd_plant,
+            "read": cmd_read,
+            "journal": cmd_journal,
+            "ask": cmd_stub,
+            "whisper": cmd_whisper,
+            "give": cmd_give,
+            "use": cmd_stub,
+            "eat": cmd_eat,
+            "sleep": cmd_sleep,
+            "rest": cmd_rest,
+            "bond": cmd_bond,
+            "say": cmd_say,
+            "attack": cmd_attack,
+            "unknown": cmd_stub,
+        }
+    return _COMMAND_REGISTRY
