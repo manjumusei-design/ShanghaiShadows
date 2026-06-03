@@ -116,3 +116,63 @@ items:
     takeable: true
     food_value: 12
     morale_restore: 8
+
+  - id: ccp_pamphlet
+    name: "a banned resistance pamphlet"
+    description: "A folded sheet of rice paper, printed with crude ink. The text describes Japanese atrocities in Nanjing — the massacres, the looting, the systematic terror inflicted on civilians."
+    takeable: true
+    readable_text: "PEOPLE OF SHANGHAI! The Japanese imperialists murder our families, steal our land, and enslave our workers. In Nanjing they slaughtered hundreds of thousands. Women, children, the elderly — none were spared. But we will not bow. The resistance grows. Every act of defiance brings liberation closer. Distribute this paper. Tell the truth. The people's strength is in their numbers and their anger."
+
+  - id: code_book
+    name: "a leather-bound code book"
+    description: "A small book with worn leather covers, filled with columns of numbers and characters. It is the key to encoding and decoding underground messages."
+    takeable: true
+    readable_text: "The pages contain cipher tables — each number corresponds to a character, each column to a day of the month. Without the matching key, the messages are gibberish. With it, they are a lifeline."
+
+  - id: smuggled_pistol
+    name: "a Mauser C96 pistol"
+    description: "A battered but functional pistol, its serial numbers filed off. The wooden stock is carved with a small five-pointed star — the mark of the underground."
+    takeable: true
+
+  - id: japanese_travel_pass
+    name: "a forged Japanese travel pass"
+    description: "An official-looking document stamped with the puppet government's seal. It grants passage through all checkpoints in the Greater Shanghai area. The forgery is so precise even Japanese officers have trouble distinguishing it."
+    takeable: true
+
+  - id: medical_kit
+    name: "a field medical kit"
+    description: "A cloth roll containing bandages, a bottle of iodine, a needle and thread for sutures, and a small bottle of precious quinine pills stolen from a Japanese military pharmacy."
+    takeable: true
+    food_value: 0
+    morale_restore: 5
+
+  - id: quinine_bottle
+    name: "a bottle of quinine pills"
+    description: "A small brown bottle containing quinine — worth more than gold in occupied Shanghai where malaria spreads through the starving population while the Japanese hoard medicine for their own troops."
+    takeable: true
+    food_value: 0
+    morale_restore: 10
+
+  - id: resistance_map
+    name: "a hand-drawn operations map"
+    description: "A map of Shanghai drawn on the back of a tea shop menu. Red marks show Japanese patrol routes, blue marks indicate underground safe houses, and circled areas mark targets for future operations."
+    takeable: true
+    readable_text: "The map shows Japanese patrol routes through the International Settlement with precise timing. Three supply convoy routes are marked with dates. A note in the corner reads: 'The weapons shipment arrives Tuesday. Be ready.'"
+
+  - id: kempeitai_uniform
+    name: "a stolen Kempeitai uniform"
+    description: "A military police uniform taken from a Kempeitai officer who will not be needing it again. It still smells of tobacco and cruelty."
+    takeable: true
+
+  - id: rice_parcel
+    name: "a parcel of smuggled rice"
+    description: "A cloth-wrapped parcel of white rice, enough to feed a family for a week. Rice is a luxury under occupation — the Japanese seize the harvest and leave Chinese civilians to starve."
+    takeable: true
+    food_value: 40
+    morale_restore: 15
+
+  - id: chungking_broadcast
+    name: "a transcription of a Chungking radio broadcast"
+    description: "A typed sheet containing the latest broadcast from Free China's radio station in Chungking. The announcer speaks of resistance, unity, and the certainty that the occupation will end."
+    takeable: true
+    readable_text: "VOICE OF FREE CHINA — To our brothers and sisters in occupied Shanghai: You are not forgotten. Your suffering is seen. Your resistance is felt. The Japanese war machine bleeds from a thousand cuts inflicted by your courage. Hold fast. Liberation comes. The people's will cannot be broken."
