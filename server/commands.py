@@ -647,3 +647,24 @@ async def cmd_wait(ctx: CommandContext, cmd: Command):
         await advance_time_one_minute(ctx)
     log_event(ctx, f"You waited {minutes} minutes.")
     await post_display(ctx, f"You wait {minutes} minutes. It is now {time_str(ctx.shared.game_time)}.")
+
+
+async def cmd_status(ctx: CommandContext, cmd: Command):
+    disguise = ctx.disguise.get(ctx.session.player.disguise)
+    lines = [time_str(ctx.shared.game_time)]
+    lines.append(f"Health: {ctx.session.player.health}/100")
+    lines.append(f"Hunger: {ctx.session.player.hunger}/100")
+    lines.append(f"Morale: {ctx.session.player.morale}/100")
+    lines.append(f"Disguise: {disguise.name if disguise else 'none'}")
+    lines.append(f"Stealth skill: {ctx.session.player.stealth_skill}")
+    lines.append("Trust:")
+    lines.extend(summary_trust_lines(ctx))
+    if ctx.session.player.flags:
+        lines.append("Flags: " + ", ".join(sorted(ctx.session.player.flags)))
+    await post_display(ctx, "\n".join(lines))
+
+
+def _get_relationship(ctx: CommandContext, npc_id: str) -> Dict[str, int]:
+    if npc_id not in ctx.session.player.relationships:
+        ctx.session.player.relationships[npc_id] = {"friendship": 0, "fear": 0, "indebtedness": 0}
+    return ctx.session.player.relationships[npc_id]
