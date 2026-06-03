@@ -570,3 +570,21 @@ async def cmd_take(ctx: CommandContext, cmd: Command):
     log_event(ctx, f"You took {item.name}.")
     await post_display(ctx, f"You take {item.name}.")
     await maybe_trigger_storylet(ctx)
+
+
+async def cmd_inventory(ctx: CommandContext, cmd: Command):
+    if not ctx.session.player.inventory:
+        await post_display(ctx, loc("cmd_drop.no_target"))
+        return
+    lines = [loc("cmd_inventory.header")]
+    for item in ctx.session.player.inventory:
+        await post_display(ctx, loc("cmd_drop.not_held"))
+        return
+    ctx.session.player.inventory.remove(item)
+    room = _room(ctx)
+    if room:
+        room.items.append(item)
+    log_event(ctx, f"You dropped {item.name}.")
+    await post_display(ctx, f"You drop {item.name}.")
+
+    

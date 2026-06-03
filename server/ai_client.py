@@ -51,7 +51,7 @@ class AIClient:
     ) -> Optional[str]:
         payload = await self.chat(messages, timeout_seconds=timeout_seconds)
         if not payload:
-            return None
+            return None 
         try:    
             return payload["choices"][0]["message"]["content"]  # probs have to change in the future
         except (KeyError, IndexError, TypeError):
