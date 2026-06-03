@@ -767,5 +767,5 @@ async def cmd_journal(ctx: CommandContext, cmd: Command):
         await post_display(ctx, loc("cmd_journal.blank"))
         return
     entry = format_journal(ctx.shared.event_log, ctx.shared.game_time)
-    header = f"--- Journal Entry, {time_str(ctx.shared.game_time)} ---"
+    header = f"Journal Entry, {time_str(ctx.shared.game_time)}"
     await post_display(ctx, f"{header}\n{entry}")
