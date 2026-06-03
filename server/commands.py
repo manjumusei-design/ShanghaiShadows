@@ -615,3 +615,19 @@ async def cmd_talk_to(ctx: CommandContext, cmd: Command):
     await maybe_trigger_storylet(ctx)
 
 
+async def cmd_ask_about(ctx: CommandContext, cmd: Command):
+    if not cmd.direct_obj or not cmd.indirect_obj:
+        await post_display(ctx, loc("cmd_ask_about.no_target"))
+        return
+    npc_id = resolve_npc(ctx, cmd.direct_obj)
+    if not npc_id:
+        await post_display(ctx, loc("cmd_ask_about.not_here"))
+        return
+    npc = ctx.shared.world.npcs[npc_id]
+    topic = cmd.indirect_obj
+    line = _get_npc_dialogue(ctx, npc, "ask")
+    await post_display(ctx, f'{npc.name} says, "{line}"')
+    record_conversation(ctx, npc_id, f"Tell me about {topic}.", line)
+    apply_action_trust(ctx, f"ask_about_{npc.faction}.{npc.role}", room_npcs(ctx))
+    log_event(ctx, f"You asked {npc.name} about {topic}.")
+    await maybe_trigger_storylet(ctx)
