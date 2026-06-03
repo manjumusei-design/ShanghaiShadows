@@ -769,3 +769,20 @@ async def cmd_journal(ctx: CommandContext, cmd: Command):
     entry = format_journal(ctx.shared.event_log, ctx.shared.game_time)
     header = f"Journal Entry, {time_str(ctx.shared.game_time)}"
     await post_display(ctx, f"{header}\n{entry}")
+
+
+async def cmd_help(ctx: CommandContext, cmd: Command):
+    await post_display(ctx, loc("cmd_help.text"))
+
+
+async def cmd_quit(ctx: CommandContext, cmd: Command):
+    from .save_manager import save_player
+    save_player(ctx.session.player)
+    await post_display(ctx, loc("cmd_quit.goodbye"))
+    ctx.session.running = False
+    try:
+        await ctx.session.websocket.close()
+    except Exception:
+        pass
+
+
