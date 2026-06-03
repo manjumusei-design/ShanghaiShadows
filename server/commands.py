@@ -853,3 +853,41 @@ async def cmd_bond(ctx: CommandContext, cmd: Command):
         _modify_relationship(ctx, npc_id, {"friendship": 15, "indebtedness": 5})
         log_event(ctx, f"You shared a meal with {ctx.shared.world.npcs[npc_id].name}.")
         await post_display(ctx, f"You share {food.name}. They seem grateful for the company.")
+
+
+async def cmd_say(ctx: CommandContext, cmd: Command):
+    message = cmd.raw[4:] if cmd.raw.startswith("say ") else ""
+    if not message:
+        await post_display(ctx, "Say what?")
+        return
+    await broadcast_to_room(ctx, f"{ctx.session.player.name} says: {message}", exclude_username=ctx.session.username)
+    await post_display(ctx, f"You say: {message}")
+
+
+async def cmd_whisper(ctx: CommandContext, cmd: Command):
+    parts = cmd.raw.split()
+    if len(parts) < 3:
+        await post_display(ctx, "Whisper to whom?")
+        return
+    
+    target_name = parts[1]
+    message = " ".join(parts[2:]) if len(parts) > 2 else ""
+
+    target_session = None
+    for session in ctx.session_manager.get_players_in_room(ctx.session.player.current_room):
+        if session.username == target_name or session.player.name.lower() == target_name.lower():
+            target_session = session
+            break
+        
+    if not target_session:
+        await post_display(ctx, f"{target_name} is not here.")
+        return
+    
+    await target_session.send_display(f"{ctx.session.player.name} whispers: {message}")
+    await post_display(ctx, f"You whisper to {target_session.player.name}: {message}")
+
+
+
+
+
+    
