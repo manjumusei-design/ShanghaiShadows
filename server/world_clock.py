@@ -247,3 +247,105 @@ class WorldClock:
                     for idx, option in enumerate(active.options, start=1):
                         lines.append(f"{idx}. {option.text}")
                     asyncio.create_task(session.send_display("\n".join(lines)))
+
+    def _process_survival_all_sessions(self):
+        HUNGER_DECAY_RATE = 0.5
+        HUNGER_HEALTH_DAMAGE = 2
+        LOW_HUNGER_THRESHOLD = 20
+
+        for session in self.session_manager.sessions.values():
+            session.player.hunger = max(0, session.player.hunger - HUNGER_DECAY_RATE)
+            if session.player.hunger <= LOW_HUNGER_THRESHOLD:
+                session.player.health = max(0, session.player.health - HUNGER_HEALTH_DAMAGE)
+                if self.shared.game_time.minute % 30 == 0:
+                    from .locales import get as loc
+                    asyncio.create_task(session.send_display(loc("hunger.cramps")))
+            if session.player.hunger > 80 and self.shared.game_time.minute % 60 == 0:
+                session.player.health = min(100, session.player.health + 1)
+
+    async def _check_death_and_victory(self):
+        from .victory import check_victory_conditions
+        from .trust import get_role_trust
+        from .locales import get as loc
+
+        for session in self.session_manager.sessions.values():
+            is_dead = False
+            death_message = ""
+
+            if session.player.health <= 0:
+                is_dead = True
+                death_message = loc("death.health")
+            elif session.player.arrested:
+                kempeitai_trust = get_role_trust(session.player.trust, "kempeitai", None)
+                if kempeitai_trust < 25:
+                    is_dead = True
+                    death_message = loc("death.arrest")
+
+            if is_dead:
+                from .commands import _generate_obituary, format_life_retrospective
+                obituary = _generate_obituary(session.player, death_message)
+                retrospective = format_life_retrospective(self.shared.event_log, session.player.name)
+                self.shared.legacy_book.append({
+                    "character_name": session.player.name,
+                    "obituary": obituary,
+                    "summary": retrospective,
+                    "day_of_death": self.shared.game_time.day,
+                })
+                end_screen = f"""THE END
+
+{death_message}
+
+---
+{obituary}
+---
+
+{retrospective}
+
+{loc("death.legacy")}
+"""
+                asyncio.create_task(session.send_display(end_screen))
+                session.player.flags.append("player_died")
+                from .save_manager import save_player
+                save_player(session.player)
+                session.running = False
+                try:
+                    await session.websocket.close()
+                except Exception:
+                    pass
+
+            if self.shared.game_time.minute == 0:
+                ending = check_victory_conditions(
+                    self.shared.game_time.day,
+                    self.shared.ccp_influence,
+                    self.shared.gmd_influence,
+                )
+                if ending:
+                    from .commands import trigger_ending
+                    from .save_manager import save_player, save_world_state
+                    from .victory import generate_liberation_ending, compile_legacy_narrative
+                    ending_text = generate_liberation_ending(ending, session.player.name, self.shared.legacy_book)
+                    legacy = compile_legacy_narrative(self.shared.legacy_book)
+
+                    end_screen = f"""
+{ending_text}
+
+{legacy}
+
+{loc("victory.footer")}
+"""
+                    asyncio.create_task(session.send_display(end_screen))
+                    session.player.flags.append("player_died")
+                    save_player(session.player)
+                    save_world_state(self.shared)
+                    session.running = False
+                    try:
+                        await session.websocket.close()
+                    except Exception:
+                        pass
+
+    async def _broadcast_display(self, text: str):
+        for session in self.session_manager.sessions.values():
+            try:
+                await session.send_display(text)
+            except Exception:
+                pass
