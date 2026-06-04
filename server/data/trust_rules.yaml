@@ -1,20 +1,20 @@
 rules:
-  - action: "talk_to_resistance.courier"
+  - action: "talk_to_ccp.courier"
     deltas:
-      resistance.courier: 10
+      ccp.courier: 10
       kempeitai.informant: -5
     visible: true
 
-  - action: "talk_to_resistance.safehouse"
+  - action: "talk_to_ccp.organizer"
     deltas:
-      resistance.safehouse: 8
+      ccp.organizer: 8
       kempeitai.officer: -3
     visible: true
 
   - action: "talk_to_kempeitai.officer"
     deltas:
       kempeitai.officer: 8
-      resistance.courier: -10
+      ccp.courier: -10
       civilian.resident: -4
     visible: true
 
@@ -35,4 +35,3 @@ rules:
       civilian.worker: -8
       kempeitai.patrol: 6
     visible: true
-    dfd
