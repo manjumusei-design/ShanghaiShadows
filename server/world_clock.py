@@ -169,3 +169,69 @@ class WorldClock:
             if session.player.tailing_state:
                 await self._process_tailing_for_session(session)
 
+    async def _process_tailing_for_session(self, session: Session):
+        tail = session.player.tailing_state
+        current_total = (self.shared.game_time.day - 1) * 1440 + self.shared.game_time.minute
+        if current_total - tail.last_checked_minute < 5:
+            return
+        tail.last_checked_minute = current_total
+        tail.elapsed_minutes += 5
+        target = self.shared.world.npcs.get(tail.target_npc_id)
+        if not target:
+            session.player.tailing_state = None
+            from .locales import get as loc
+            asyncio.create_task(session.send_display(loc("cmd_tail.target_vanished")))
+            return
+        success, _ = self.stealth.tail_check(
+            tail,
+            target,
+            session.player.stealth_skill,
+            self._disguise_bonus_for_session(session),
+            session.player.hidden,
+        )
+        if not success and tail.distance <= 0:
+            session.player.tailing_state = None
+            session.player.world_events.append(f"{target.name} spotted you while you were tailing them.")
+            session.player.world_events = session.player.world_events[-50:]
+            asyncio.create_task(session.send_display(f"{target.name} glances over a shoulder, slows, and knows exactly what you are doing."))
+            return
+        target_room = self.shared.world.npc_locations.get(target.id)
+        if success and target_room and session.player.current_room != target_room:
+            session.player.current_room = target_room
+            session.player.hidden = False
+            asyncio.create_task(session.send_display(f"You shadow {target.name} and keep them in sight."))
+
+    def _disguise_bonus_for_session(self, session: Session) -> int:
+        disguise = self.disguises.get(session.player.disguise)
+        return disguise.bonus if disguise else 0
+    
+    async def _check_curfew_all_sessions(self):
+        if self.shared.game_time.minute < CURFEW_MINUTE:
+            return
+        for session in self.session_manager.sessions.values():
+            if session.player.last_curfew_penalty_day != self.shared.game_time.day:
+                room = self.shared.world.get_room(session.player.current_room)
+                if room and not room.indoors:
+                    from .commands import CommandContext
+                    from .trust import apply_trust_delta
+                    rule = self.shared.trust_rules.get("out_after_curfew")
+                    if rule:
+                        apply_trust_delta(session.player.trust, rule)
+                        if getattr(rule, "visible", False):
+                            for npc_id in room.npcs:
+                                npc = self.shared.world.npcs.get(npc_id)
+                                if npc:
+                                    memory = f"Observed player action: out_after_curfew"
+                                    if memory not in npc.memory:
+                                        npc.memory.append(memory)
+                    session.player.last_curfew_penalty_day = self.shared.game_time.day
+                    session.player.world_events.append("You were seen outside after curfew.")
+                    session.player.world_events = session.player.world_events[-WORLD_EVENTS_MAXLEN:]
+                    self.shared.event_log.append({
+                        "day": self.shared.game_time.day,
+                        "minute": self.shared.game_time.minute,
+                        "text": "You were seen outside after curfew.",
+                    })
+                    self.shared.event_log = self.shared.event_log[-EVENT_LOG_MAXLEN:]
+                    from .locales import get as loc
+                    asyncio.create_task(session.send_display(loc("curfew.warning")))
