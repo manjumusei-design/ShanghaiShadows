@@ -13,7 +13,7 @@ storylets:
         effects:
           set_flag: helped_courier
           change_trust:
-            resistance.courier: 15
+            ccp.courier: 15
             civilian.resident: 8
           add_item: bloodied_message
           log_event: "You hid a wounded courier from the patrols."
@@ -82,7 +82,7 @@ storylets:
         effects:
           set_flag: answered_night_knock
           change_trust:
-            resistance.safehouse: 8
+            ccp.safehouse: 8
           add_item: coded_ledger
           log_event: "A covert visitor left you a coded ledger."
       - text: "Stay silent and let them go."
@@ -172,7 +172,7 @@ storylets:
           add_item: temple_talisman
           change_trust:
             civilian.resident: 6
-            resistance.safehouse: 3
+            ccp.organizer: 3
           log_event: "You found a hidden prayer note in a shrine."
       - text: "Leave it untouched."
         effects:
@@ -207,7 +207,7 @@ storylets:
     trigger_chance: 0.55
     preconditions:
       trust_ranges:
-        resistance.safehouse: [45, 100]
+        ccp.organizer: [45, 100]
       flags_missing: [entered_smoked_window]
     narrative: "One safehouse window is smoked black from within. Someone opens it a finger-width when you pass."
     options:
@@ -215,14 +215,14 @@ storylets:
         effects:
           set_flag: entered_smoked_window
           change_trust:
-            resistance.safehouse: 12
+            ccp.organizer: 12
           log_event: "A safehouse finally let you inside."
       - text: "Keep your silence and move on."
         effects:
-          set_flag: entered_smoked_window
+          set_flag: skipped_smoked_window
           change_trust:
-            resistance.safehouse: -3
-          log_event: "You passed by a possible safehouse without making contact."
+            ccp.organizer: -3
+          log_event: "You passed a possible safehouse without making contact."
 
   - id: contraband_offer
     location_tags: [market]
@@ -279,7 +279,7 @@ storylets:
             set_flag: met_checkpoint_beggar
             change_trust:
               civilian.vendor: 5
-              resistance.courier: 4
+              ccp.courier: 4
             log_event: "A beggar near a checkpoint passed you a useful warning"
         - text: "Ignore the signal."
           effects:
@@ -344,7 +344,7 @@ storylets:
               set_flag: found_ruined_flyer
               change_trust:
                 civilian.resident: 4
-                resistance.safehouse: 4
+                ccp.organizer: 4
               log_Event: "You uncovered a child's drawing behind a propaganda flyer."
           - text: "Leave the wall untouched"
             effects:
@@ -366,7 +366,7 @@ storylets:
           set_flag: heard_attic_choir
           change_trust:
             civilian.resident: 6
-            resistance.safehouse: 5
+            ccp.organizer: 5
           log_event: "You found hidden voices in a church attic."
       - text: "Leave before the song ends."
         effects:
@@ -408,14 +408,14 @@ storylets:
         effects:
           set_flag: dropped_ledger_copy
           change_trust:
-            resistance.courier: 8
+            ccp.courier: 8
             green_gang.smuggler: -4
           log_event: "You quietly passed on a page from the coded ledger."
       - text: "Keep the ledger intact."
         effects:
           set_flag: dropped_ledger_copy
           change_trust:
-            resistance.courier: -2
+            ccp.courier: -2
           log_event: "You kept the coded ledger to yourself."
 
   - id: bombed_shopfront
@@ -430,7 +430,7 @@ storylets:
           set_flag: saw_bombed_shopfront
           change_trust:
             civilian.vendor: -3
-            resistance.fighter: 2
+            ccp.guerilla: 2
           log_event: "You helped board up a bombed shopfront."
       - text: "Ask who did it."
         effects: 
@@ -452,7 +452,7 @@ storylets:
         effects:
           set_flag: heard_ferry_whistle
           change_trust:
-            resistance.courier: 5
+            ccp.courier: 5
           log_event: "You memorized a coded ferry whistle at dawn."
       - text: "Dismiss it as river business."
         effects:
@@ -496,7 +496,7 @@ storylets:
           set_flag: found_patrol_map
           add_item: patrol_route
           change_trust:
-            resistance.courier: 10
+            ccp.courier: 10
           log_event: "You copied a patrol route from an unattended office."
       - text: "Leave before someone returns."
         effects: 
@@ -540,7 +540,7 @@ storylets:
           remove_item: contraband_morphine
           change_trust:
             civilian.worker: 10
-            resistance.safehouse: 6
+            ccp.organizer: 6
           log_event: "You gave contraband morphine to a backroom surgeon."
       - text: "Keep it for later."
         effects:
@@ -560,7 +560,7 @@ storylets:
         effects:
           set_flag: met_pressman
           change_trust:
-            resistance.safehouse: 7
+            ccp.organizer: 7
             civilian.vendor: 3
           log_event: "A pressman hinted at midnight printing runs."
       - text: "Comment on the machine instead."
@@ -582,13 +582,13 @@ storylets:
         effects:
           set_flag: saw_rooftop_signal
           change_trust:
-            resistance.fighter: 6
+            ccp.guerilla: 6
           log_event: "You memorized a lantern code from the rooftops."
       - text: "Wave back."
         effects:
           set_flag: saw_rooftop_signal
           change_trust:
-            resistance.fighter: 2
+            ccp.guerilla: 2
             kempeitai.patrol: 3
           log_event: "You answered a rooftop lantern signal and risked being seen."
 
@@ -667,7 +667,7 @@ storylets:
       effects:
         set_flag: compared_manifests
         change_trist:
-          resistance.courier: 6
+          ccp.courier: 6
           british.dockmaster: 4
         log_event: "A porter linked your dock manifest to a vanished rail shipment."
     - text: "Fold the paper away."
@@ -733,7 +733,7 @@ storylets:
         effect:
           set_flag: noticed_print_ash
           change_trust:
-            resistance.courier: 5
+            ccp.courier: 5
         log_event: "You shadowed a messenger carrying printshop ash on his hands."
       - text: "Memorize his face and let him go."
         effect:
