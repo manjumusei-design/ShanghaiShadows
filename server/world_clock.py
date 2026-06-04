@@ -235,3 +235,15 @@ class WorldClock:
                     self.shared.event_log = self.shared.event_log[-EVENT_LOG_MAXLEN:]
                     from .locales import get as loc
                     asyncio.create_task(session.send_display(loc("curfew.warning")))
+
+    async def _check_storylets(self):
+        for session in self.session_manager.sessions.values():
+            if not session.player.active_storylet:
+                from .commands import CommandContext
+                active = self.storylet_manager.maybe_trigger_for_player(session.player, self.shared)
+                if active:
+                    session.player.active_storylet = active
+                    lines = [active.narrative]
+                    for idx, option in enumerate(active.options, start=1):
+                        lines.append(f"{idx}. {option.text}")
+                    asyncio.create_task(session.send_display("\n".join(lines)))
