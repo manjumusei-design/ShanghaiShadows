@@ -652,8 +652,7 @@ async def cmd_wait(ctx: CommandContext, cmd: Command):
         await post_display(ctx, loc("cmd_wait.invalid"))
         return
     minutes = max(1, min(minutes, 240))
-    for _ in range(minutes):
-        await advance_time_one_minute(ctx)
+    await _advance_time_manual(ctx, minutes)
     log_event(ctx, f"You waited {minutes} minutes.")
     await post_display(ctx, f"You wait {minutes} minutes. It is now {time_str(ctx.shared.game_time)}.")
 
