@@ -828,16 +828,14 @@ async def cmd_sleep(ctx: CommandContext, cmd: Command):
     ctx.session.player.health = min(100, ctx.session.player.health + 10)
     ctx.session.player.morale = min(100, ctx.session.player.morale + 15)
     ctx.session.player.hunger = max(0, ctx.session.player.hunger - 20)
-    for _ in range(minutes):
-        await advance_time_one_minute(ctx)
+    await _advance_time_manual(ctx, minutes)
     log_event(ctx, "You slept for several hours.")
     await post_display(ctx, f"You sleep for {hours} hours and wake refreshed. It is now {time_str(ctx.shared.game_time)}.")
 
 
 async def cmd_rest(ctx: CommandContext, cmd: Command):
     ctx.session.player.morale = min(100, ctx.session.player.morale + 5)
-    for _ in range(15):
-        await advance_time_one_minute(ctx)
+    await _advance_time_manual(ctx, 15)
     await post_display(ctx, "You rest quietly for fifteen minutes, catching your breath.")
 
 
