@@ -1,0 +1,93 @@
+templates:
+  - id: kempeitai_execution
+    condition:
+      cause: execution
+      faction: kempeitai
+    text: "{name} was taken from their cell at the Bridge House on {date}. The Kempeitai announced the execution in a three-line notice. No family claimed the body. Neighbours remember them carrying packages at odd hours."
+
+  - id: tribunal_execution
+    condition:
+      cause: execution
+    text: "A military tribunal sentenced {name} to death on {date}. The Shanghai Times printed the verdict on page six, between a fabric advertisement and the weather report. {name} was known for {deed}. No one from the court spoke at the burial."
+
+  - id: starvation
+    condition:
+      cause: starvation
+    text: "{name} was found in a room on Fuzhou Road on {date}. The landlord said the rent had been unpaid for three weeks. Rice ration cards were found on the table, all expired. {name} was forty kilograms at the end."
+
+  - id: illness
+    condition:
+      cause: illness
+    text: "{name} died of fever on {date}. No doctor came. The occupation authority had requisitioned the hospital on Bubbling Well Road for military use. {name} was remembered by neighbours for {deed}."
+
+  - id: raid_casualty
+    condition:
+      cause: raid
+    text: "A Kempeitai raid on the district killed {name} on {date}. The official report listed 'resisting arrest.' Witnesses said there was no warning. {name} had been seen distributing leaflets the week before."
+
+  - id: betrayer
+    condition:
+      cause: betrayal
+    text: "{name} was found in an alley off Rue Wagner on {date}. The wound was clean. Those who knew them said they had been passing information to both sides. A note in their pocket read: 'I only wanted to survive.'"
+
+  - id: heroic_sacrifice
+    condition:
+      cause: sacrifice
+    text: "{name} died on {date} so that others could escape. The details remain unclear. What is known: a safe house was raided, and {name} held the door. Three people left through the back. None of them forgot."
+
+  - id: disappeared
+    condition:
+      cause: disappeared
+    text: "{name} was last seen on {date}, near the Bund. No body was found. No arrest record exists. Their room was cleared by the landlord within the month. A neighbour kept a photograph for years, unsure why."
+
+  - id: died_in_cell
+    condition:
+      cause: cell
+    text: "{name} died in custody on {date}. The Kempeitai recorded 'heart failure.' The body showed bruises on the wrists and ribs. A guard told a translator that {name} never gave a single name. The translator told no one else."
+
+  - id: mob_killing
+    condition:
+      cause: mob
+    text: "A crowd beat {name} to death on {date}, accusing them of collaboration. Whether the accusation was true was never established. The Green Gang denied involvement. The police did not investigate. {name} was thirty-two."
+
+  - id: accidental_death
+    condition:
+      cause: accident
+    text: "{name} fell from a third-floor window on Yuyuan Road on {date}. The building housed a printing press that operated after curfew. The authorities ruled it accidental. The press was shut down the following morning."
+
+  - id: suicide
+    condition:
+      cause: suicide
+    text: "{name} was found in their room on {date}. A bottle of laudanum stood on the table beside a letter that no one read aloud. Friends said the occupation had taken everything else. {name} had been known for {deed}."
+
+  - id: courier_death
+    condition:
+      cause: mission
+    text: "{name} was shot near the checkpoint at Garden Bridge on {date}. The satchel they carried was never found. The garrison reported a 'suspected smuggler.' Those in the network knew {name} by a different name."
+
+  - id: underground_fighter
+    condition:
+      cause: combat
+      faction: ccp
+    text: "{name} fell during a skirmish in the Hongkou district on {date}. The Japanese press called it a 'bandit cleanup.' Comrades carried the body through the sewers before dawn. A red star was carved into the wall where {name} last stood."
+
+  - id: nationalist_soldier
+    condition:
+      cause: combat
+      faction: gmd
+    text: "{name} died in a gunfight on the western edge of the city on {date}. The Republic flag was found folded in their coat. A letter to family in Chongqing was never posted. {name} had crossed three lines to reach Shanghai."
+
+  - id: civilian_bystander
+    condition:
+      cause: crossfire
+    text: "{name} was caught in crossfire on Nanjing Road on {date}. They were carrying a bag of rice. The soldiers on both sides did not stop. The rice spilled across the pavement. A child picked up what she could carry."
+
+  - id: informer_killed
+    condition:
+      cause: execution
+      trust_kempeitai_high: true
+    text: "{name} was executed by resistance fighters on {date}. They had been an informer for the Kempeitai for nine months. The neighborhood knew. No one was surprised. No one mourned. A small notice appeared in the Shanghai Times three days later."
+
+  - id: quiet_death
+    condition: default
+    text: "{name} died on {date}. The cause was listed as {cause}. They had lived in Shanghai through the worst of the occupation. Those who remembered them spoke of {deed}. The city does not pause. The city endures."
