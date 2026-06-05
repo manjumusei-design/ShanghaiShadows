@@ -31,7 +31,7 @@ async def start_websocket_server(host: str = "127.0.0.1", port: int = 8765):
     asyncio.create_task(game.tick_loop())
     stop = asyncio.Future()
 
-    async with websockets.serve(game.handle_client, host, port):
+    async with websockets.serve(game.session_manager.handle_client, host, port):
         print(f"Game server listening on ws://{host}:{port}/")
         print("Open browser at http://{}:{}/".format(host, 8080))
         print("Press Ctrl+C to stop.\n")
