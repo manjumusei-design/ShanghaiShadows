@@ -42,7 +42,7 @@ class GameServer:
     def _create_shared_world(self) -> SharedWorldState:
         world = World()
         from .time_system import EventScheduler, GameTime
-        from .game import EVENTS_PATH, TRUST_RULES_PATH
+        from .constants import EVENTS_PATH, TRUST_RULES_PATH
         from .trust import load_trust_rules
         from .game_world import SharedWorldState
 
