@@ -35,8 +35,8 @@ items:
   - id: forged_pass
     name: "a forged transit pass"
     description: "Convincing enough at a distance, fatal up close."
-    takable: true
-    readable_text: "Meet after curfew at the silent kiln. Bring no one."
+    takeable: true
+    readable_text: "Faded stamps and a photograph that doesn't quite match the bearer. Valid for three more days -- maybe."
 
   - id: silk_scarf
     name: "a silk scarf"
