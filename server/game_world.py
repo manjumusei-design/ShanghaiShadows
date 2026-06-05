@@ -8,14 +8,15 @@ from .stealth import Disguise
 from .time_system import EventScheduler, GameTime
 from .trust import TrustMap, get_role_trust
 from .world import World
+from .constants import (
+    EVENTS_PATH,
+    TRUST_RULES_PATH,
+    DISGUISES_PATH,
+    STORYLETS_PATH,
+    STATE_BROADCAST_INTERVAL,
+)
 
-
-EVENTS_PATH = "server/data/events.yaml"
-TRUST_RULES_PATH = "server/data/trust_rules.yaml"
-DISGUISES_PATH = "server/data/disguises.yaml"
-STORYLETS_PATH = "server/data/storylets.yaml"
 SAVES_DIR = Path("server/data/saves")
-STATE_BROADCAST_INTERVAL = 5
 
 
 def load_disguises(path: str) -> Dict[str, Disguise]:
@@ -54,7 +55,7 @@ class SharedWorldState:
 
 
 def serialize_world_state(state: SharedWorldState) -> Dict[str, object]:
-    from .game import _serialize_item
+    from .serialization import serialize_item as _serialize_item
 
     room_items = {
         room_id: [_serialize_item(item) for item in room.items]
@@ -80,7 +81,7 @@ def serialize_world_state(state: SharedWorldState) -> Dict[str, object]:
 
 
 def deserialize_world_state(data: Dict[str, object], world: World) -> SharedWorldState:
-    from .game import _deserialize_item
+    from .serialization import deserialize_item as _deserialize_item
 
     game_time = GameTime(
         day=int(data.get("time", {}).get("day", 1)),
