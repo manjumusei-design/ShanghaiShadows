@@ -357,7 +357,7 @@ You are {ctx.session.player.name}, {background['background_connection']}
 
 async def trigger_ending(ctx: CommandContext, ending_type: str): #Ai generated function that I tweaked for the ending trigger
     from .save_manager import save_player, save_world_state
-    ending_text = generate_liberation_ending(ending_type, ctx.session.player.name, ctx.shared.legacy_book)
+    ending_text = generate_liberation_ending(ending_type, ctx.session.player.name, ctx.shared.legacy_book, ctx.shared.ccp_influence, ctx.shared.gmd_influence)
     legacy = compile_legacy_narrative(ctx.shared.legacy_book)
 
     end_screen = f"""
@@ -631,6 +631,15 @@ async def cmd_ask_about(ctx: CommandContext, cmd: Command):
     apply_action_trust(ctx, f"ask_about_{npc.faction}.{npc.role}", room_npcs(ctx))
     log_event(ctx, f"You asked {npc.name} about {topic}.")
     await maybe_trigger_storylet(ctx)
+
+
+async def _advance_time_manual(ctx: CommandContext, minutes: int):
+    ctx.session.manually_advancing = True
+    try:
+        for _ in range(minutes):
+            await advance_time_one_minute(ctx)
+    finally:
+        ctx.session.manually_advancing = False
 
 
 async def cmd_wait(ctx: CommandContext, cmd: Command):

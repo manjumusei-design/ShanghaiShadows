@@ -256,15 +256,3 @@ async def run_all_tests():
             print(f"Failed {name}: ERROR - {e}")
             results.append((name, False))
         await asyncio.sleep(2)
-
-    print("Overall")
-    for name, result in results:
-        status = "PASS" if result else "FAIL"
-        print(f"{status}: {name}")
-
-    passed = sum(1 for _, r in results if r)
-    total = len(results)
-    print("Total: {passed}/{total} tests passed")
-
-if __name__ == "__main__":
-    asyncio.run(run_all_tests())
