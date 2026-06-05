@@ -36,7 +36,12 @@ cmd_bond.no_food: "You have no food to share."
 cmd_bond.no_gift: "Gift what item?"
 cmd_bond.usage: "Bond actions: SHARE MEAL, GIFT <item>"
 cmd_unknown.format: "I don't understand '{raw}'. Try HELP."
-cmd_help.text: "LOOK, GO <direction>, TAKE <item>, DROP <item>, INVENTORY, READ <item>\nTALK TO <npc>, WAIT <minutes>, STATUS, DISGUISE AS <role>, TAIL <npc>, HIDE, PLANT <item>\nHELP, QUIT"
+cmd_help.text: "MOVEMENT: LOOK, GO <direction>, WAIT <minutes>
+INTERACTION: TALK TO <npc>, ASK <npc> ABOUT <topic>, SAY <message>, WHISPER <target> <message>, GIVE <item> TO <target>, BOND WITH <npc> USING <action>
+COVERT: DISGUISE AS <role>, TAIL <npc>, HIDE, PLANT <item>
+SURVIVAL: EAT <item>, SLEEP, REST, INVENTORY, JOURNAL, STATUS
+COMBAT: ATTACK <target>
+SYSTEM: HELP, QUIT"
 cmd_look.nowhere: "You are nowhere."
 cmd_stub.not_implemented: "{verb} has not been implemented."
 death.health: "You collapse in the cold alley, too weak to continue. The city claims another life."
