@@ -1006,7 +1006,7 @@ def move_npcs_if_hour_changed(ctx: CommandContext):
                 old_room = ctx.shared.world.rooms.get(old_room_id)
                 if old_room and npc_id in old_room.npcs:
                     old_room.npcs.remove(npc_id)
-            if npc_id not in ctx.shared.world.rooms.get(room_id, []).npccs:
+            if npc_id not in ctx.shared.world.rooms.get(room_id, []).npcs:
                 ctx.shared.world.rooms[room_id].npcs.append(npc_id)
             ctx.shared.world.npc_locations[npc_id] = room_id
 
