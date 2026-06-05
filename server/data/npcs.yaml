@@ -1,1333 +1,2548 @@
 npcs:
-  - id: liu_wei
-    name: "Liu Wei, the rickshaw puller"
-    description: "A wiry man in his forties, with calloused hands and deep set eyes that have seen more than most."
-    faction: civilian
-    role: worker
-    personality: "cautious, loyal when trust is earned."
-    awareness: 48
-    schedule:
-      6: "bund_dawn"
-      12: "nanjing_road"
-      18: "bund_dawn"
-      21: "nanjing_road"
-    dialogue:
-      greeting:
-        - "You seem to need a ride. I can take you anywhere in the city, for a price."
-        - "Careful around the HongKou district, day in and day out, the Kampeitai are watching."
-      friendly:
-        - "I knew your friend, he was a good man."
-        - "The Japanese devils are everywhere, but we must preservere. Shanghai is our home."
-      neutral:
-        - "I don't know you, but I can take you where you need to go."
-      hostile:
-        - "Don't talk to me, I have no room for another problem. I have endured enough hardships in this city to last two lifetimes."
+- id: liu_wei
+  name: Liu Wei, the rickshaw puller
+  description: A wiry man in his forties, with calloused hands and deep set eyes that
+    have seen more than most.
+  faction: civilian
+  role: worker
+  personality: cautious, loyal when trust is earned.
+  awareness: 48
+  schedule:
+    6: bund_dawn
+    12: nanjing_road
+    18: bund_dawn
+    21: nanjing_road
+  dialogue:
+    greeting:
+    - Need a ride? I charge fair. Same price rain or shine.
+    - Step in. The rain's coming and my rickshaw don't leak.
+    - You look lost. I know every street in Shanghai. Some I wish I didn't.
+    neutral:
+    - Roads are rougher since the soldiers came. Potholes and checkpoints, same thing
+      to a rickshaw wheel.
+    - I been pulling this thing since before the Japanese devils occupied my hometown. Routes haven't changed.
+      Just the men who stop you on them.
+    - Fare's three jiao to the French Concession. Don't try to haggle. My legs set
+      the price.
+    friendly:
+    - Get in. No charge today. You earned that ride.
+    - I knew your friend. Good man. I took him to the Bund once, middle of the night.
+      No questions asked, just the way I do things.
+    - The devils are thick on Bubbling Well Road tonight. I'll take you through the secret back way
+      through the lanes. Don't argue, it's my treat.
+    hostile:
+    - I don't know you. Don't sit in my rickshaw.
+    - Walk. You got legs. I got nothing to say to you.
+    - If you bring trouble, you walk. I got a family and they need me breathing.
+    afraid:
+    - Please. I'm just a rickshaw puller. I don't see nothing. I never see nothing.
+    - Take the rickshaw. Take it. I don't need pay. Just let me go home.
+    - I have a daughter, sir. Please. I didn't do nothing wrong.
+    gossip:
+    - Old Wang at the docks disappeared last Tuesday. Nobody asks. Nobody should.
+    - They say the Kempeitai grabbed a fellow off Weihaiwei Road last night. Middle
+      of dinner, from what I heard. Gone.
+    - Green Gang is moving cargo through the French Concession again. Big crates.
+      Nobody asks what's inside.
+    farewell:
+    - Watch yourself out there. The city doesn't sleep, but it does bite.
+    - Same time tomorrow, maybe. If we're both still here.
+    - Go carefully. The streets have eyes now. Not all of them Japanese.
 
-  - id: sister_mei
-    name: "Sister Mei"
-    description: "A chapel nurse whose sleeves are always rolled past the elbow and whos patience has survived longer than sleep."
-    faction: civilian
-    role: resident
-    personality: "compassionate, exhausted, quietly stubborn"
-    awareness: 42
-    schedule:
-      6: french_04
-      12: french_08
-      18: french_12
-      22: french_04
-    dialogue:
-      greeting:
-        - "If you are bleeding, sit down. If not, make room for someone who is."
-      friendly:
-        - "Mercy is expensive these days, it's rarely at all virtue"
-      neutral:
-        - "Every day asks too much of everyone, everywhere."
-      hostile:
-        - "Get out."
+- id: sister_mei
+  name: Sister Mei
+  description: A chapel nurse whose sleeves are always rolled past the elbow and whose
+    patience has survived longer than sleep.
+  faction: civilian
+  role: resident
+  personality: compassionate, exhausted, quietly stubborn
+  awareness: 42
+  schedule:
+    6: french_04
+    12: french_08
+    18: french_12
+    22: french_04
+  dialogue:
+    greeting:
+    - If you're bleeding, sit down. If not, make room for someone who is.
+    - You look well enough. Don't waste my time unless you're not.
+    - The clinic's open. Bandages are short. Patience is shorter.
+    neutral:
+    - Every day asks too much of everyone. I just keep tying knots in gauze.
+    - I haven't slept more than four hours since Tuesday. You'll forgive me if I'm a bit annoyed right?
+    - Mercy doesn't require a full stomach, but it helps. I wouldn't know anything about full stomachs of course.
+    friendly:
+    - Sit and rest. You look like you haven't eaten for some time. I saved a bit of congee. Don't argue.
+    - I patched up your friend last week. He didn't say where he got the wound. I
+      didn't ask. That's how trust works.
+    - You've done good things in this city. Don't let anyone tell you it doesn't matter.
+    hostile:
+    - Get out. The door is behind you and so is my patience.
+    - I've stitched men who deserved it less than you. Leave.
+    - You're using up air that sick people need. Walk away.
+    afraid:
+    - The supplies are in the back. Take them. Just don't hurt anyone here.
+    - I'm a nurse. I help people. That's all. Please.
+    - The chapel has nothing worth taking. We're already empty.
+    gossip:
+    - A soldier came in last week with a knife wound. Wouldn't say who did it. That's
+      two this month.
+    - They're bringing wounded men from the north again. The trains come in at night
+      now. No lights.
+    - Father Benoit says the ration cards are running short. He's never wrong about
+      the numbers.
+    farewell:
+    - Go carefully. And wash your hands. I mean it.
+    - Come back if you need stitching. Not if you need complaining.
+    - God go with you. He seems to have misplaced the rest of Shanghai.
 
-  - id: captain_ishikawa
-    name: "Captain Ishikawa"
-    description: "A Kempeitai officer with tight gloves and an air of arrogance tucked behind a wry smile."
-    faction: kempeitai
-    role: officer
-    personality: "cold, observant, politely cruel"
-    awareness: 82
-    faction_leader: true
-    schedule:
-      7: hongkou_03
-      12: hongkou_08
-      18: commercial_18
-      22: hongkou_03
-    dialogue:
-      greeting:
-        - "Shanghai rewards discipline. Try to learn that quickly."
-      friendly:
-        - "Reliable people are so much easier to keep alive."
-      neutral:
-        - "You will answer only what I ask, and nothing more."
-      hostile:
-        - "A liar always believes fear is bad luck."
+- id: captain_ishikawa
+  name: Captain Ishikawa
+  description: A Kempeitai officer with tight gloves and an air of arrogance tucked
+    behind a wry smile.
+  faction: kempeitai
+  role: officer
+  personality: cold, observant, politely cruel
+  awareness: 82
+  faction_leader: true
+  schedule:
+    7: hongkou_03
+    12: hongkou_08
+    18: commercial_18
+    22: hongkou_03
+  dialogue:
+    greeting:
+    - Shanghai rewards discipline. Try to learn that quickly.
+    - A new face. How refreshing. We do so enjoy new faces, don't we?
+    - You may stand. I haven't decided whether to be curious about you yet.
+    neutral:
+    - You will answer only what I ask. Nothing more. Nod if you understand.
+    - I have very little time and even less patience. Speak clearly.
+    - Your papers are in order, or they will be. That is not the same thing, but it
+      will do for now.
+    friendly:
+    - Reliable people are so much easier to keep alive. Remember that.
+    - You have been useful. Usefulness is the only virtue I recognize. Continue.
+    - Sit. I'll pour the tea myself. Consider it a compliment. I don't offer poison
+      to people I respect.
+    hostile:
+    - A liar always believes fear is a kind of luck. It is not.
+    - You are interesting in the way a rat is interesting. Cornered, noisy, and about
+      to stop moving.
+    - I have broken men with better nerve than yours. Shall I prove it?
+    afraid:
+    - Careful. Your hands are shaking. That makes me think you have something to hide.
+    - Fear suits you less than you imagine. Compose yourself before I lose interest
+      in keeping you standing.
+    - Interesting. You flinch like a man who expects to be struck. Guilty conscience,
+      or merely experience?
+    gossip:
+    - There is a rumour that someone in the French Concession is forging travel documents.
+      I do love a rumour. It gives me something to confirm.
+    - The Green Gang believes it can operate under my nose. The Gang is mistaken about
+      the quality of my nose.
+    - An entire network of couriers runs through this city. I know. I allow it. Can
+      you guess why?
+    farewell:
+    - We will speak again. I have decided to be curious about you.
+    - Go. And try not to be interesting in any way I would notice.
+    - Good evening. Sleep well. Not everyone in Shanghai will have that privilege
+      tonight.
 
-  - id: madam_xu
-    name: "Madam Xu"
-    description: "Owner of a teahouse where gossip lands softly and leaves armed."
-    faction: green_gang
-    role: broker
-    personality: "elegant, calculating, amused by weakness"
-    awareness: 68
-    schedule:
-      9: commercial_06
-      14: commercial_09
-      19: commercial_06
-      23: french_15
-    dialogue:
-      greeting:
-        - "Tea costs so little as compared to gossip."
-      friendly:
-        - "For the right friends, I remember the useful things."
-      neutral:
-        - "Business survives ideology by keeping better books."
-      hostile:
-        - "You are asking to be remembered for the wrong reason."
+- id: madam_xu
+  name: Madam Xu
+  description: Owner of a teahouse where gossip lands softly and leaves armed.
+  faction: green_gang
+  role: broker
+  personality: elegant, calculating, amused by weakness
+  awareness: 68
+  schedule:
+    9: commercial_06
+    14: commercial_09
+    19: commercial_06
+    23: french_15
+  dialogue:
+    greeting:
+    - Tea costs so little compared to gossip. The latter is more valuable, and I sell
+      both.
+    - Sit. The oolong is fresh. My gossip are fresher.
+    - You have the look of someone needy, I enjoy that look.
+    neutral:
+    - Business survives ideology by keeping better books. Care for some tea while
+      you think about that?
+    - I trade in information. The tea is just how I charge for the chair.
+    - Everyone who sits here wants something. The honest ones admit it.
+    friendly:
+    - For the right friends, I remember the right things. You are lucky to be in that category.
+    - There's a room upstairs you can use. No questions asked, no names remembered.
+    - I saved you a pot of the good Tieguanyin. The cheap stuff is for the uncultured Japanese.
+    hostile:
+    - You are asking to be remembered for the wrong reason.
+    - Finish your tea and leave. The door is heavy, but you'll manage.
+    - I've seen men ruined for asking fewer questions than yours. Don't join them.
+    afraid:
+    - Whatever you think I know, I know less. I pour tea. That's all.
+    - The books are under the counter. Take them. I don't want trouble.
+    - I'm just a businesswoman. The teahouse is legal. Everything here is legal.
+    gossip:
+    - A Japanese officer was in here yesterday, drinking too much and talking about
+      a shipment at the docks. Expensive whisky, cheap secrets.
+    - They say someone robbed the puppet bank on Sichuan Road. Inside job, from what
+      I hear. The locks weren't forced at all.
+    - The Green Gang is moving opium again, but through different channels now. Someone
+      new is making decisions.
+    farewell:
+    - Come back when you have something worth trading. Or when you can afford the
+      good tea.
+    - Mind the step on your way out. And mind what you say on the street. Walls here
+      have long ears.
+    - Until next time. May your secrets stay yours.
 
-  - id: father_benoit
-    name: "Father Benoit"
-    description: "A French priest whose cassock smells of candle smoke and rainwater."
-    faction: french_concession
-    role: clerks
-    personality: "pious, conflicted, unexpectedly brave"
-    awareness: 40
-    schedule:
-      6: french_02
-      12: french_04
-      18: french_07
-      21: french_02
-    dialogue:
-      greeting:
-        - "Peace is not absent here. It is simply outnumbered."
-      friendly:
-        - "The city keeps confessions that no church can hold."
-      neutral:
-        - "I offer shelter, not certainty."
-      hostile:
-        - "If you endanger my people, the door closes."
+- id: father_benoit
+  name: Father Benoit
+  description: A French priest whose cassock smells of candle smoke and rainwater.
+  faction: french_concession
+  role: clerks
+  personality: pious, conflicted, unexpectedly brave
+  awareness: 40
+  schedule:
+    6: french_02
+    12: french_04
+    18: french_07
+    21: french_02
+  dialogue:
+    greeting:
+    - Peace is not absent here. It is simply outnumbered.
+    - The church is open. God does not check your papers at the door.
+    - You look like you haven't prayed in a while. The pew doesn't mind.
+    neutral:
+    - I offer shelter, not certainty. Take what you can.
+    - The confessional is behind you. I keep fewer secrets than you'd think. Professional
+      obligation no less.
+    - I have been in Shanghai for over eleven years. The flags change, you'll get used to it.
+    friendly:
+    - The city keeps confessions that no church can hold. But I try.
+    - There are people in the cellar. I trust you enough to say that much. Say less
+      yourself.
+    - Come to mass on Sunday. Not for God. For the alibi. The Kempeitai don't interrupt
+      a service.
+    hostile:
+    - If you endanger my people, the door closes. And I'm not talking about a physical door.
+    - Even patience has a limit. Christ turned over tables once. I'm more than capable to do the same.
+    - You're testing my charity. You should know that charity has a short fuse in wartime.
+    afraid:
+    - Take what you want from the church. The silver means nothing to me, but do not harm the people.
+    - I won't resist. But God sees this. Remember that.
+    gossip:
+    - The ration lines grow longer. Even the faithful are losing patience. That should
+      worry someone.
+    - I hear the Japanese are moving families out of Hongkou. Rehousing, they call
+      it. No one believes them.
+    - Someone has been leaving anti-occupation pamphlets in the pews. I pretend not
+      to notice.
+    farewell:
+    - Go with God. Or at least go with caution.
+    - The door is always open. Just knock first after curfew. For my nerves.
+    - Pray if you can. If you can't, try to do good. It amounts to the same thing.
 
-  - id: thomas_reed
-    name: "Thomas Reed"
-    description: "A British dock clerk with salt on his cuffs and a conscience he edits daily."
-    faction: british
-    role: dockmaster
-    personality: "dry, compromised, not yet empty"
-    awareness: 57
-    schedule:
-      8: docks_03
-      12: docks_07
-      18: docks_11
-      22: bund_18
-    dialogue:
-      greeting:
-        - "Nothing enters these ledgers clean, not even the paper."
-      friendly:
-        - "If I tell you the truth, pretend you stole it."
-      neutral:
-        - "Cargo moves. Men vanish. I record only one of those."
-      hostile:
-        - "You are far too interested in the wrong crates."
+- id: thomas_reed
+  name: Thomas Reed
+  description: A British dock clerk with salt on his cuffs and a conscience he edits
+    daily.
+  faction: british
+  role: dockmaster
+  personality: dry, compromised, not yet empty
+  awareness: 57
+  schedule:
+    8: docks_03
+    12: docks_07
+    18: docks_11
+    22: bund_18
+  dialogue:
+    greeting:
+    - Nothing enters these ledgers clean. Not even the paper itself.
+    - Another day, another lie in triplicate. What can I do for you?
+    - You look like news. I hope you're the printable kind.
+    neutral:
+    - Cargo moves. Men vanish. I only record one of those.
+    - I file reports for the consulate. They file them in a bin, from what I can tell.
+    friendly:
+    - If I tell you the truth, pretend you stole it. I need plausible deniability
+      and a drink.
+    - There's a crate coming in on Thursday. Labelled machine parts. Thing is that it isn't actually machine
+      parts.
+    - You're one of the few people I don't have to lie to. Enjoy it while it lasts. It's rare.
+    hostile:
+    - You're far too interested in the wrong crates. Back off.
+    - I've got friends at the consulate who enjoy difficult questions as much as I
+      enjoy malaria. Leave.
+    - You're pushing your luck and my temper. Neither has much left.
+    afraid:
+    - Look, I'll file whatever you want. Adjust the numbers. Just don't make this
+      worse than it has to be.
+    - I'm a clerk. A dock clerk. I write down what comes off the ships. That's all.
+    - The ledgers are in the drawer. Take them. I didn't see you.
+    gossip:
+    - A ship came in last night with no manifest. The crew looked nervous. Military
+      nervous.
+    - Someone's been skimming medical supplies from the Red Cross shipments. Three
+      crates short this month.
+    - The Japanese are stockpiling something in Warehouse Eleven. I signed the form.
+      I didn't read the contents.
+    farewell:
+    - Watch the tide. And the patrols. They're equally as unpredictable.
+    - I'll be here tomorrow. God and the Empire willing. One of those is more reliable.
+    - Keep your head down and your paperwork straight. That's how I survive. Might
+      work for you too.
 
-  - id: zhang_lan
-    name: "Zhang Lan"
-    description: "A market noodle seller whose ladle pauses whenever uniforms appear."
-    faction: civilian
-    role: vendor
-    personality: "warm, watchful, practical"
-    awareness: 46
-    schedule:
-      7: commercial_03
-      12: commercial_05
-      18: commercial_03
-      22: oldcity_02
-    dialogue:
-      greeting:
-        - "Eat while it is still hot. Everything else can wait."
-      friendly:
-        - "People talk when noodles are good enough to make them careless."
-      neutral:
-        - "I sell food, not certainty."
-      hostile:
-        - "Take your questions somewhere that can survive them."
+- id: zhang_lan
+  name: Zhang Lan
+  description: A market noodle seller whose ladle pauses whenever uniforms appear.
+  faction: civilian
+  role: vendor
+  personality: warm, watchful, practical
+  awareness: 46
+  schedule:
+    7: commercial_03
+    12: commercial_05
+    18: commercial_03
+    22: oldcity_02
+  dialogue:
+    greeting:
+    - Eat while it's still hot. Everything else can wait.
+    - Bowl of noodles? Three jiao. Sit over there, away from the wall.
+    - You look like you haven't eaten. Sit. First bowl's the same price as the second.
+    neutral:
+    - I sell food, not answers. But the food's honest, at least.
+    - Noodles are noodles. The world can burn, people still need to eat.
+    - Don't sit too long. Soldiers don't like loiterers, and I don't like trouble
+      at my stall.
+    friendly:
+    - People talk when the noodles are good enough to make them careless. You'd be
+      amazed what I hear.
+    - Here. Extra pork. You look thin. We can't have good people starving.
+    - I saved you a seat by the post. Best view of the street. In case you need to
+      leave quickly.
+    hostile:
+    - Take your questions somewhere that can survive them.
+    - I don't know you and I don't want to. Buy something or move along.
+    - You keep asking things, someone's going to think you're a spy. I'm not saying
+      I think that. I'm saying be careful.
+    afraid:
+    - The noodles are free. Take them. Go. Please.
+    - I didn't see anything. I was busy with the broth. I'm always busy with the broth.
+    - Take the money in the jar. It's not much. Just don't hurt anyone here.
+    gossip:
+    - The ration man came by this morning. Short again. Third week in a row. People
+      are getting angry.
+    - They say someone bombed a supply truck on the road to Nanking. The soldiers
+      were furious all day. Bad for business.
+    - A new man's been asking questions at the market. Definetly not a customer. Watches people
+      too much. Doesn't eat enough.
+    farewell:
+    - Come back tomorrow. I'll have fresh stock if the trucks come through.
+    - Eat well. Walk carefully. Don't talk to soldiers unless they talk first.
+    - The broth's better at lunch. The secrets are better at dinner. Your choice.
 
-  - id: yan_fen
-    name: "Yan Fen"
-    description: "A resistance courier who walks like she is always late and therefore never suspicious."
-    faction: resistance
-    role: courier
-    personality: "quick, brave, unsentimental"
-    awareness: 74
-    schedule:
-      6: oldcity_04
-      12: commercial_14
-      18: docks_09
-      22: oldcity_18
-    dialogue:
-      greeting:
-        - "If you know me, think again."
-      friendly:
-        - "A city can still move if enough hands push in secret."
-      neutral:
-        - "I don't linger. Neither should you."
-      hostile:
-        - "Turn around and forget my face."
+- id: yan_fen
+  name: Yan Fen
+  description: A resistance courier who walks like she is always late and therefore
+    never suspicious.
+  faction: ccp
+  role: courier
+  personality: quick, brave, unsentimental
+  awareness: 74
+  schedule:
+    6: oldcity_04
+    12: commercial_14
+    18: docks_09
+    22: oldcity_18
+  dialogue:
+    greeting:
+    - If you know me, think again.
+    - Don't stop. Walk past me. Talk if you must, but keep moving.
+    - You have thirty seconds. Make them count.
+    neutral:
+    - I don't linger. Neither should you.
+    - I carry packages. That's all you need to know.
+    - The less we say to each other, the longer we both stay alive.
+    friendly:
+    - A city can still move if enough hands push in secret. You have good hands.
+    - I have something for you. Not here though. The alley behind the tobacco shop, one hour.
+    - You've earned trust. That's rarer than gold in Shanghai. Don't spend it carelessly.
+    hostile:
+    - Turn around and forget my face. Now.
+    - I don't know you. I don't want to. Walk away.
+    - You're a wrong word away from never being seen again. Choose carefully.
+    afraid:
+    - I'm nobody. I deliver packages for a shop. That's all. Check the receipts.
+    - You've got the wrong person. I sell thread. I walk to work. That's it.
+    - The satchel's just fabric samples. Look. See for yourself.
+    gossip:
+    - The network lost a cell in Zhabei last week. Three arrests. One of them talked.
+      We're rerouting everything.
+    - Someone's been leaving messages in the dead drop at the old temple. Wrong code.
+      Could be a trap.
+    - The Kempeitai have a new informant in the market. We don't know who yet. Trust
+      no one new.
+    farewell:
+    - Don't follow me. Don't wave. Go. Just go.
+    - Same place, different day. If I'm not here, don't wait.
+    - Be invisible. That's the only advice worth giving in this city.
 
-  - id: old_wu
-    name: "Old Wu"
-    description: "A shrine keeper with soot on his sleeves and eyes that miss very little."
-    faction: civilian
-    role: resident
-    personality: "patient, shrewd, ceremonial"
-    awareness: 60
-    schedule:
-      5: oldcity_09
-      12: oldcity_11
-      18: oldcity_09
-      21: oldcity_14
-    dialogue:
-      greeting:
-        - "Offerings are cheap. Peace is not."
-      friendly:
-        - "Even the gods listen more closely these days."
-      neutral:
-        - "Light a stick if you must, but keep your hands steady."
-      hostile:
-        - "Take your bad fortune elsewhere."
+- id: old_wu
+  name: Old Wu
+  description: A shrine keeper with soot on his sleeves and eyes that miss very little.
+  faction: civilian
+  role: resident
+  personality: patient, shrewd, ceremonial
+  awareness: 60
+  schedule:
+    5: oldcity_09
+    12: oldcity_11
+    18: oldcity_09
+    21: oldcity_14
+  dialogue:
+    greeting:
+    - Offerings are cheap. Peace is not.
+    - Light a stick if you like. The shrine doesn't judge. Neither do I.
+    - You're early. Or late. Depends on what you're looking for.
+    neutral:
+    - Light a stick if you must, but keep your hands steady. The gods notice trembling.
+    - I've burned incense in this shrine since before the war. The smoke hasn't changed.
+      The city has.
+    - Sit if you want. The bench is free. The advice costs a moment of your time.
+    friendly:
+    - Even the gods listen more closely these days. You should too.
+    - I saved you a cup of tea. It's cold, but it's honest. Like most things that
+      matter.
+    - The ancestors watch. They see who helps and who hurries past. You help. I notice
+      these things.
+    hostile:
+    - Take your bad fortune elsewhere. The shrine has enough.
+    - I've outlived empires and plagues. I'll outlive your bad manners too. Leave.
+    - You bring nothing but noise. Go bother the living. The dead deserve quiet.
+    afraid:
+    - The shrine has nothing. A few sticks of incense and an old man. That's all.
+    - Take the donation box. It's mostly coppers. I won't stop you.
+    - I'm old. I can't run. Don't make me try.
+    gossip:
+    - Three men came to the shrine at midnight last week. They buried something behind
+      the stone turtle. I didn't look.
+    - The puppet mayor visits the temple on the full moon. Prays for his mother. Even
+      traitors have mothers.
+    - Someone's been painting slogans on the wall of the police station. Every morning,
+      someone paints them over. Every night, they're back.
+    farewell:
+    - Walk slowly. The city rewards patience more than speed.
+    - Come back when the incense is burning. I'll be here. I'm always here.
+    - May the ancestors keep you. Or at least keep you out of trouble.
 
-  - id: inspector_moreau
-    name: "Inspector Moreau"
-    description: "A concession policeman whose fatigue has sharpened into cynicism."
-    faction: french_concession
-    role: police
-    personality: "tired, skeptical, decent in flashes"
-    awareness: 63
-    schedule:
-      8: french_06
-      13: french_10
-      19: french_14
-      23: french_06
-    dialogue:
-      greeting:
-        - "Every report is a lie told in a better suit."
-      friendly:
-        - "If I did not still care a little, I would have transferred."
-      neutral:
-        - "Do not make me notice you twice."
-      hostile:
-        - "I am too tired to be patient and too honest to look away."
+- id: inspector_moreau
+  name: Inspector Moreau
+  description: A concession policeman whose fatigue has sharpened into cynicism.
+  faction: french_concession
+  role: police
+  personality: tired, skeptical, decent in flashes
+  awareness: 63
+  schedule:
+    8: french_06
+    13: french_10
+    19: french_14
+    23: french_06
+  dialogue:
+    greeting:
+    - Every report is a lie told in a better suit.
+    - If you're here to complain, the desk is closed. If you're here to help, I don't
+      believe you.
+    - Inspector Moreau. French Concession Police. What catastrophe brings you to my
+      desk?
+    neutral:
+    - Don't make me notice you twice. Once is enough paperwork.
+    - I patrol this block. I don't solve the world. I barely solve Tuesdays.
+    - Keep your papers on you and your opinions to yourself. That's how you survive
+      in the Concession.
+    friendly:
+    - If I didn't still care a little, I'd have transferred to Saigon years ago. Or
+      retired. Or drunk myself dead.
+    - There's a patrol gap on Rue Massenet between two and four in the morning. I'm not telling you
+      that. I wasn't here.
+    - You're one of the good ones. Don't make me arrest you anyway. It would embarrass
+      us both.
+    hostile:
+    - I'm too tired to be patient and too honest to look away. Don't test either.
+    - You're a problem I don't need. Walk away while I'm still neutral.
+    - I've arrested better men than you for less. Want to see the paperwork?
+    afraid:
+    - I'm French police. The French run this concession. Whatever you want, there
+      are channels.
+    - You want a bribe? Fine. I don't have much. I'm a policeman, not a banker.
+    - I cooperate. Obviously. The Concession remains neutral. We stay professional.
+    gossip:
+    - A body washed up on the Bund this morning. No papers. No face. The report says
+      drowning. The report is lying.
+    - The Japanese are pressing the Consul to hand over refugees. He's resisting.
+      For now.
+    - Someone's been forging French Concession residence permits. Good forgeries.
+      Even I had to look twice.
+    farewell:
+    - Stay off the streets after curfew. I'd hate to find you in my paperwork.
+    - Good night. Try not to make my shift interesting. Interesting is bad for everyone.
+    - Walk safe. And if you see something, tell someone else first. I'm drowning in
+      reports.
 
-  - id: qiao_ming
-    name: "Qiao Ming"
-    description: "A dockside gambler with nicotine fingers and a talent for hearing numbers before they are spoken."
-    faction: green_gang
-    role: smuggler
-    personality: "slick, greedy, charming under pressure"
-    awareness: 66
-    schedule:
-      10: docks_05
-      15: docks_14
-      20: docks_18
-      23: docks_05
-    dialogue:
-      greeting:
-        - "Odds change faster than loyalties here."
-      friendly:
-        - "I can move anything small enough to deny and dangerous enough to matter."
-      neutral:
-        - "A price first, a conscience later."
-      hostile:
-        - "You are one question away from expensive trouble."
+- id: qiao_ming
+  name: Qiao Ming
+  description: A dockside gambler with nicotine fingers and a talent for hearing numbers
+    before they are spoken.
+  faction: green_gang
+  role: smuggler
+  personality: slick, greedy, charming under pressure
+  awareness: 66
+  schedule:
+    10: docks_05
+    15: docks_14
+    20: docks_18
+    23: docks_05
+  dialogue:
+    greeting:
+    - Odds change faster than loyalties here.
+    - You found me. That means you need something that walks crooked.
+    - The dice are cold tonight. Let us talk instead.
+    neutral:
+    - A price first, a conscience later.
+    - I do not know you well enough to cheat you honestly.
+    - Walk past. Come back when your business is heavier.
+    friendly:
+    - I can move anything small enough to deny and dangerous enough to matter.
+    - You pay on time. That buys you the truth, or close enough.
+    - Sit. Pour yourself tea. We talk like civilized people tonight.
+    hostile:
+    - You are one question away from expensive trouble.
+    - The last person who pressed me like this bled on this same floor.
+    - You should leave while your legs still carry you in the right direction.
+    afraid:
+    - Not now. They are watching the docks. Come back after midnight or do not come
+      back at all.
+    - Something went wrong at the warehouse. Keep your head down until I say otherwise.
+    - Forget you ever saw me tonight. We will both be happier for it.
+    gossip:
+    - The Kempeitai picked up a merchant on Nanking Road yesterday. He was selling
+      more than silk.
+    - I hear the Green Gang is moving opium through the French Concession again. Someone
+      paid the right people.
+    - A colonel's wife was seen at the dance hall last week. That kind of secret costs
+      more than gold.
+    farewell:
+    - Walk slow. Running draws attention, and attention costs extra.
+    - We were never here. Remember that.
+    - Watch the alley on your way out. Not everyone who watches works for me.
 
-  - id: hanna_rosen
-    name: "Hanna Rosen"
-    description: "A refugee schoolteacher who folds sorrow into perfect posture."
-    faction: british
-    role: merchant
-    personality: "measured, kind, privately furious"
-    awareness: 44
-    schedule:
-      7: hongkou_11
-      12: hongkou_13
-      17: hongkou_16
-      21: hongkou_11
-    dialogue:
-      greeting:
-        - "Children still ask future-tense questions. That must mean something."
-      friendly:
-        - "Memory is a form of resistance when power demands erasure."
-      neutral:
-        - "I teach what can still be carried."
-      hostile:
-        - "If you bring fear into this room, leave first and apologize elsewhere."
+- id: hanna_rosen
+  name: Hanna Rosen
+  description: A refugee schoolteacher.
+  faction: british
+  role: merchant
+  personality: measured, kind, privately furious
+  awareness: 44
+  schedule:
+    7: hongkou_11
+    12: hongkou_13
+    17: hongkou_16
+    21: hongkou_11
+  dialogue:
+    greeting:
+    - Children still ask future-tense questions. That must mean something at least.
+    - You are kind to stop. Most people walk past this room as if it were empty.
+    - I have a little tea left. It is not much, but it is warm.
+    neutral:
+    - I teach what can still be carried.
+    - We do not choose the history we survive. We choose only how honestly we tell
+      it.
+    - My German is rusty, my English is passable, and my Chinese is survival-level.
+      I am a teacher, not a diplomat. I will say what I need to say and no more.
+    friendly:
+    - Memory is a form of resistance when power demands erasure.
+    - You remind me that not everyone has stopped listening. Thank you for that.
+    - I saved you a piece of bread. The baker on Rue Massenet gives refugees the day-old
+      loaves.
+    hostile:
+    - If you bring fear into this room, leave first and apologize elsewhere.
+    - I have been searched before, by men less polite than you. Do not expect me to
+      flinch.
+    - My papers are in order. I checked them twice this morning, as I do every morning.
+    afraid:
+    - There were soldiers at the school today. They took the attendance list. I do
+      not know why.
+    - Someone is asking questions about the families in this building. Lock your door.
+    - Keep your voice down. The walls here are thinner than the patience of the men
+      downstairs.
+    gossip:
+    - The Japanese wife who runs the laundry on the corner has not been seen in three
+      days. I hope she is unwell and nothing worse.
+    - A French diplomat told my colleague that exit visas might open again in spring.
+      I have stopped believing spring will arrive.
+    - Herr Abramowitz played at the cafe last night. Even the soldiers went quiet
+      during the Brahms.
+    farewell:
+    - Be careful going home. The streetlights on Hongkou are broken again.
+    - If you hear anything about transit papers, you will tell me. Please.
+    - Good night. Tomorrow the children will need me to smile, so I must practice.
 
-  - id: sergeant_hayashi
-    name: "Sergeant Hayashi"
-    description: "A patrol sergeant whose boots are always polished and whose suspicions are never off duty."
-    faction: kempeitai
-    role: patrol
-    personality: "disciplined, suspicious, proud"
-    awareness: 76
-    schedule:
-      6: hongkou_01
-      12: commercial_25
-      18: bund_10
-      22: hongkou_05
-    dialogue:
-      greeting:
-        - "Show me your face properly. Then your hands."
-      friendly:
-        - "A useful citizen knows when to stand still."
-      neutral:
-        - "You may pass. Slowly."
-      hostile:
-        - "You smell like excuses already."
+- id: sergeant_hayashi
+  name: Sergeant Hayashi
+  description: A patrol sergeant whose boots are always polished and whose suspicions
+    are never off duty.
+  faction: kempeitai
+  role: patrol
+  personality: disciplined, suspicious, proud
+  awareness: 76
+  schedule:
+    6: hongkou_01
+    12: commercial_25
+    18: bund_10
+    22: hongkou_05
+  dialogue:
+    greeting:
+    - Show me your face properly. Then your hands.
+    - Papers. Now. Stand where the light hits you.
+    - Halt. Identify yourself. Speak clearly.
+    neutral:
+    - You may pass. Slowly.
+    - Keep walking. Do not stop, do not look back.
+    - This street is under patrol. Move along.
+    friendly:
+    - A useful citizen knows when to stand still.
+    - Go home early tonight. That is advice, not an order.
+    - You carry yourself well. Not everyone does.
+    hostile:
+    - You smell like excuses already.
+    - One wrong word and I will have you brought in for questioning. Am I clear?
+    - I have seen your face before. That is not a compliment.
+    afraid:
+    - My lieutenant is inspecting this sector tonight. Do not give him a reason to
+      look at you.
+    - There was an incident near the garrison. Everyone is on edge. Stay off the streets.
+    - If you have done nothing wrong, you have nothing to fear. That is what we tell
+      ourselves.
+    gossip:
+    - The captain is transferring half the garrison next month. New men, new rules.
+      Expect tighter checkpoints.
+    - A corporal was found drunk on duty at the Bund post. He will not be seen again.
+    - They found printing equipment in a basement on Rue Massenet. Someone was very
+      careless.
+    farewell:
+    - Dismissed. Keep your papers on you at all times.
+    - Next time I see you, have your documents ready. Do not make me wait.
+    - Move. The curfew is not a suggestion.
 
-  - id: lao_peng
-    name: "Lao Peng"
-    description: "A printshop foreman with ink in the seams of his skin."
-    faction: resistance
-    role: safehouse
-    personality: "laconic, dependable, quietly defiant"
-    awareness: 58
-    schedule:
-      8: french_18
-      13: french_19
-      18: french_18
-      23: oldcity_20
-    dialogue:
-      greeting:
-        - "Paper burns fast. Ideas do not."
-      friendly:
-        - "If a page survives the night, it has already won something."
-      neutral:
-        - "Mind the ink. It remembers carelessness."
-      hostile:
-        - "Printers have enemies enough without volunteers."
+- id: lao_peng
+  name: Lao Peng
+  description: A printshop foreman with ink in the seams of his skin.
+  faction: ccp
+  role: organizer
+  personality: laconic, dependable, quietly defiant
+  awareness: 58
+  schedule:
+    8: french_18
+    13: french_19
+    18: french_18
+    23: oldcity_20
+  dialogue:
+    greeting:
+    - Paper burns fast. Ideas do not.
+    - Close the door. The draft blows words where they should not go.
+    - You are early or you are late. In this shop, both mean the same thing.
+    neutral:
+    - Mind the ink. It remembers carelessness.
+    - I print what I am paid to print. Nothing more, nothing less.
+    - The presses are running. Speak up or come back when they stop.
+    friendly:
+    - If a page survives the night, it has already won something.
+    - I set type by hand and by heart. Some words I set twice because they matter.
+    - Take this stack. Read it once, then burn it. The stove is always lit.
+    hostile:
+    - Printers have enemies enough without volunteers.
+    - You are asking questions that ink cannot answer and I will not.
+    - Walk back out the way you came. The door does not lock from the inside.
+    afraid:
+    - The garrison sent men to every printshop on the block. I gave them old newspapers
+      and a smile.
+    - Do not come here for a few days. Let the dust settle. Mine and theirs.
+    - Someone talked. I do not know who. Until I do, trust no one, including me.
+    gossip:
+    - The paper ration has been cut again. The occupation does not want people reading,
+      let alone writing.
+    - A man in the old city was caught with a hand-crank press hidden under his floorboards.
+      Brave or foolish. Perhaps both.
+    - I heard the Nationalists are printing currency again. Counterfeit or legitimate,
+      depending on which side you ask.
+    farewell:
+    - Go carefully. And if anyone asks, you came to pick up wedding invitations.
+    - The back alley is safer than the front door tonight. Use it.
+    - Until next time. Keep your eyes on the page and your feet on the ground.
+  faction_leader: true
 
-  - id: mrs_gu
-    name: "Mrs. Gu"
-    description: "A boarding-house keeper who inventories every tenant's grief with professional precision."
-    faction: civilian
-    role: resident
-    personality: "sharp, maternal, unsentimental"
-    awareness: 51
-    schedule:
-      7: oldcity_13
-      12: oldcity_15
-      18: oldcity_13
-      22: oldcity_13
-    dialogue:
-      greeting:
-        - "Rooms are scarce. Trouble is abundant. I rent only the first."
-      friendly:
-        - "Eat first. Schemes sound wiser on a full stomach."
-      neutral:
-        - "Pay on time and lie quietly."
-      hostile:
-        - "I have turned away men more dangerous and less obvious than you."
+- id: mrs_gu
+  name: Mrs. Gu
+  description: A boarding-house keeper who inventories every tenant's grief with professional
+    precision.
+  faction: civilian
+  role: resident
+  personality: sharp, maternal, unsentimental
+  awareness: 51
+  schedule:
+    7: oldcity_13
+    12: oldcity_15
+    18: oldcity_13
+    22: oldcity_13
+  dialogue:
+    greeting:
+    - Rooms are scarce. Trouble is abundant. I rent only the first.
+    - Come in, come in. Wipe your shoes. The floor was scrubbed this morning and I
+      intend to keep it that way.
+    - You look like you have not eaten. Sit. I will make noodles. We talk after.
+    neutral:
+    - Pay on time and lie quietly.
+    - I mind my business, you mind yours. That is how a house stays standing.
+    - The walls are thin. If you have secrets, keep them in your pillow.
+    friendly:
+    - Eat first. Schemes sound wiser on a full stomach.
+    - I set aside extra rice for you. Do not ask where it came from. Just eat.
+    - You are thinner than last week. That tells me more than anything you could say.
+    hostile:
+    - I have turned away men more dangerous and less oblivious than you.
+    - This is a respectable house. Take your questions somewhere that answers them.
+    - I have lived through three regimes. You are not the worst of them, but you are
+      trying.
+    afraid:
+    - Soldiers came asking about a tenant on the third floor. I told them he moved
+      out months ago.
+    - Someone in the building is informing. I have narrowed it down but I need more
+      time.
+    - Do not light the lamp tonight. 
+    gossip:
+    - The couple in room four had a fight again. She threw a teapot. Unfortunately it was my good
+      one.
+    - Old Mr. Zhou from the market says rice prices will double by next week. He is
+      usually right.
+    - A foreign woman moved into the house on the corner. She does not talk to anyone.
+      That makes her interesting.
+    farewell:
+    - Lock your door twice. The lock is old but the habit is good.
+    - Sleep well. Morning comes early and the city does not wait.
+    - Come back when you are hungry or when you are lonely. I can fix one of those.
 
-  - id: constable_doyle
-    name: "Constable Doyle"
-    description: "A British concession constable who looks as if he has begun doubting orders in the middle of carrying them out."
-    faction: british
-    role: consul
-    personality: "formal, uneasy, morally fraying"
-    awareness: 54
-    schedule:
-      9: bund_14
-      14: french_09
-      19: commercial_08
-      22: bund_14
-    dialogue:
-      greeting:
-        - "Procedure remains the same, though the city beneath it has changed."
-      friendly:
-        - "Some rules deserve to be bent until they remember humanity."
-      neutral:
-        - "I can offer little beyond a warning."
-      hostile:
-        - "Do not force me to choose between duty and decency in public."
+- id: constable_doyle
+  name: Constable Doyle
+  description: A British concession constable who looks as if he has begun doubting
+    orders in the middle of carrying them out.
+  faction: british
+  role: consul
+  personality: formal, uneasy, morally fraying
+  awareness: 54
+  schedule:
+    9: bund_14
+    14: french_09
+    19: commercial_08
+    22: bund_14
+  dialogue:
+    greeting:
+    - Procedure remains the same, though the city beneath it has changed.
+    - Good evening. I am on patrol, not on a crusade. Let us keep this brief.
+    - You are out late. The concession has a reputation to maintain, and so do I.
+    neutral:
+    - I can offer little beyond a warning.
+    - Keep your head down and your papers in order. That is all the advice a constable
+      can give.
+    - I patrol this route because someone must. The reasoning stopped making sense
+      months ago.
+    friendly:
+    - Some rules deserve to be bent until the Japanese remember humanity.
+    - Between you and me, I look the other way more often than my superiors would
+      like. Consider that a courtesy.
+    - The checkpoint on Bubbling Well Road is understaffed after ten. I mention this
+      as a matter of geography, not conspiracy.
+    hostile:
+    - Do not force me to choose between duty and decency in public.
+    - I have a badge and a baton and very little patience left. Choose your next words
+      carefully.
+    - You are making my shift harder than it needs to be. That is not something I
+      forgive easily.
+    afraid:
+    - The Japanese liaison officer asked to see our patrol schedules. I gave him last
+      month's.
+    - Two of my colleagues were reassigned last week. No explanation. That worries
+      me more than gunfire would.
+    - If anyone asks, we have never spoken. I mean that sincerely.
+    gossip:
+    - The consul-general drinks more than he used to. His secretary covers for him.
+      We all pretend not to notice.
+    - The Sikh detachment at the garden gate has been doubled. Someone expects trouble,
+      though no one told me what kind.
+    - A clerk in the housing office has been selling residence permits. Ten yuan a
+      stamp. He will not last the month.
+    farewell:
+    - Walk the long way home. The short way has been complicated lately.
+    - Good night. And for God's sake, stay out of the parts of the city I cannot patrol.
+    - Mind how you go. The streets are safer than they look, but only just.
 
-  - id: dr_zhao
-    name: "Dr. Zhao, the underground physician"
-    description: "A weary doctor whose clinic treats more rope burns and bullet wounds than fevers these days."
-    faction: resistance
-    role: doctor
-    personality: "compassionate, secretive, haunted"
-    awareness: 75
-    schedule:
-      8: hidden_02
-      14: commercial_05
-      20: hidden_02
-    dialogue:
-      greeting:
-        - "Come in quietly. These days even the walls have ears."
-      friendly:
-        - "I might be able to patch you up, but I can't fix what this city does to people."
-      neutral:
-        - "What can I do for today? Make it worth the risk."
-      hostile:
-        - "My door is closed to those who bring harm to my patients."
+- id: dr_zhao
+  name: Dr. Zhao, the underground physician
+  description: A weary doctor whose clinic treats more bullet wounds than fevers these
+    days.
+  faction: gmd
+  role: spy
+  personality: compassionate, secretive, haunted
+  awareness: 75
+  schedule:
+    8: hidden_02
+    14: commercial_05
+    20: hidden_02
+  dialogue:
+    greeting:
+    - Come in quietly. These days even the walls have ears.
+    - Sit down. Let me look at that. I can tell you have been carrying it too long.
+    - You do not look like a patient, which means you are here for something else.
+      Make it quick.
+    neutral:
+    - What can I do for you today? Make it worth the risk.
+    - I treat what I can with what I have. Supplies are what they are.
+    - Everyone who walks through that door has a story. I only need to know the medical
+      parts.
+    friendly:
+    - I might be able to patch you up, but I can't fix what this city does to people.
+    - I have gauze and morphine hidden under the floorboards. For you, they are available.
+    - A patient left me medicine he did not need. I am passing it to someone who does.
+      That is between us.
+    hostile:
+    - My door is closed to those who bring harm to my patients.
+    - I took an oath. It does not include answering to you.
+    - Turn around. There is nothing for you here except trouble you cannot afford.
+    afraid:
+    - A man in uniform came asking about my patient records. I told him they burned
+      in a fire last year.
+    - I need to move my supplies tonight. If you can carry a crate without asking
+      questions, come back after dark.
+    - Someone has been watching the back entrance for two days. Tell anyone who needs
+      me to use the alley behind the temple.
+    gossip:
+    - The garrison hospital is turning away civilians. A sergeant told me they do
+      not have enough bandages for their own.
+    - I treated a man last week who had been beaten during questioning. He would not
+      say who did it. He did not have to.
+    - The pharmacist on Sichuan Road has been selling ether under the counter. For
+      the right price, he does not ask what it is for.
+    farewell:
+    - Go home and rest. The city will still be broken in the morning.
+    - Change your bandages tomorrow. Clean water, clean cloth. If it reddens, come
+      back immediately.
+    - Take care of yourself. There are not enough doctors left to argue about it.
 
-  - id: waiter_chen
-    name: "Chen, the waiter"
-    description: "A young man who seems to have ears everywhere."
-    faction: civilian
-    role: vendor
-    personality: "observant, quiet, ambitious"
-    awareness: 60
-    schedule:
-      10: commercial_08
-      14: commercial_08
-      18: commercial_08
-      22: commercial_08
-    dialogue:
-      greeting:
-        - "The special is silence today. What would you like instead?"
-      friendly:
-        - "There's something you should know about tonight's patrol route."
-      neutral:
-        - "Order what you want, but watch what you say."
-      hostile:
-        - "I don't serve those who bring trouble to my establishment."
+- id: waiter_chen
+  name: Chen, the waiter
+  description: A young man who seems to have ears everywhere.
+  faction: civilian
+  role: vendor
+  personality: observant, quiet, ambitious
+  awareness: 60
+  schedule:
+    10: commercial_08
+    14: commercial_08
+    18: commercial_08
+    22: commercial_08
+  dialogue:
+    greeting:
+    - The special is silence today. What would you like instead?
+    - Table for one? Sit by the window. The light is better and the walls are thinner
+      than you think.
+    - Welcome back. Your usual? I will bring the tea first, answers second.
+    neutral:
+    - Order what you want, but watch what you say.
+    - I serve food and pour tea. That is what I am paid for. The rest is extra.
+    - The kitchen is busy tonight. You will have to wait, same as everyone else.
+    friendly:
+    - There's something you should know about tonight's patrol route.
+    - I folded something into your napkin. Read it when you are alone, then burn it.
+    - The man at the corner table has been here for three hours. He has not ordered
+      anything. Draw your own conclusions.
+    hostile:
+    - I don't serve those who bring trouble to my establishment.
+    - You are asking the wrong person in the wrong place. Leave before the owner notices.
+    - I carry a tray, not a death wish. Take your business elsewhere.
+    afraid:
+    - Two men in plain clothes came in asking about my customers. I told them nothing.
+      They will be back.
+    - Do not come here for a few days. The restaurant is being watched.
+    - Someone left a note on my cart. It said stop listening or lose my ears. I am
+      taking it seriously.
+    gossip:
+    - The officer who eats here on Fridays left his briefcase open once. Maps inside.
+      Routes and schedules.
+    - A businessman at table six has been meeting with a Kempeitai translator every
+      Tuesday. They think no one notices the waiter.
+    - The owner's daughter is seeing a resistance courier. He thinks she is studying
+      calligraphy after hours.
+    farewell:
+    - Your bill is on the table. So is something else. Do not miss it.
+    - Watch the door on your way out. If a man in a grey coat follows you, take the
+      next left, not the right.
+    - Come back when you are hungry. Or when you need to know something. The menu
+      is the same either way.
 
-  - id: sister_wang
-    name: "Sister Wang"
-    description: "A resistance organizer who hides her work behind community charity."
-    faction: resistance
-    role: safehouse
-    personality: "fierce, maternal, pragmatic"
-    awareness: 70
-    schedule:
-      9: residence_05
-      13: church_12
-      17: residence_10
-      21: church_08
-    dialogue:
-      greeting:
-        - "Helping neighbours is what decent people do, even in times like these."
-      friendly:
-        - "Your courage has been noticed in circles where it matters."
-      neutral:
-        - "Charity is the only currency that sill matters in this city."
-      hostile:
-        - "My resources go to those who understand what resistance truly means."
+- id: sister_wang
+  name: Sister Wang
+  description: A resistance organizer who hides her work behind community charity.
+  faction: ccp
+  role: organizer
+  personality: fierce, maternal, pragmatic
+  awareness: 70
+  schedule:
+    9: residence_05
+    13: church_12
+    17: residence_10
+    21: church_08
+  dialogue:
+    greeting:
+    - Helping neighbors is what decent people do, even in times like these.
+    - You look tired. Sit down. I have soup and you have time, I hope.
+    - The church distributes blankets on Thursdays. Come help. It is good cover and
+      good work.
+    neutral:
+    - Charity is the only currency that still matters in this city.
+    - I organize soup kitchens and clothing drives. That is what the papers say, and
+      the papers are somewhat right.
+    - If you are here to volunteer, the line forms at seven. If you are here for something
+      else, wait until the room clears.
+    friendly:
+    - Your courage has been noticed in circles where it matters.
+    - I have a list of families who need to disappear before the next census. Can
+      you help?
+    - The work we do has no name and no medals. But it matters. You matter.
+    hostile:
+    - My resources go to those who understand what resistance truly means.
+    - I protect the vulnerable, not the curious. If you cannot tell the difference,
+      leave now.
+    - Suspicion is healthy. Cruelty is not. You are dangerously close to the second.
+    afraid:
+    - They arrested three people from the neighborhood committee. We have to assume
+      someone talked.
+    - Burn anything I gave you. All of it. Tonight.
+    - I may need to leave the city. If I disappear, find Teacher Gao. He will know
+      what to do.
+    gossip:
+    - The ration cards are being reissued next month. New photographs, new stamps.
+      That means new checks.
+    - A family on the third floor has been hiding their son for two weeks. He is sixteen.
+      They are terrified.
+    - The priest at the church does not ask what I put in the donation boxes. That
+      makes him either kind or wise. Perhaps both.
+    farewell:
+    - Go carefully. And remember, the best disguise is a good deed in plain sight.
+    - We will speak again. Same time, same pretext.
+    - Take care of yourself. The revolution needs the living, not the martyrs.
 
-  - id: elder chen
-    name: "Elder Chen"
-    description: "A respected elder who remembers Shanghai before the occupation."
-    faction: civilian
-    role: resident
-    personality: "wise, patient, influential"
-    awareness: 40
-    schedule:
-      8: residence_02
-      12: church_10
-      16: residence_10
-      20: residence_02
-    dialogue:
-      greeting:
-        - "I've seen this city change governments like clothes, but its heart remains the same."
-      friendly:
-        - "Your actions remind me of when Shanghai still had fight in it."
-      neutral:
-        - "Sit and listen. The old stories have wisdom that the newspapers never print."
-      hostile:
-        - "The young act like they invented resistance. We, the old have invented survival."
+- id: elder_chen
+  name: Elder Chen
+  description: A respected elder who remembers Shanghai before the occupation and
+    sees beyond it.
+  faction: civilian
+  role: resident
+  personality: wise, patient, influential
+  awareness: 40
+  schedule:
+    8: residence_02
+    12: church_10
+    16: residence_10
+    20: residence_02
+  dialogue:
+    greeting:
+    - I've seen this city change governments like clothes, but its heart remains the
+      same.
+    - Sit with me awhile. The bench is old but sturdy. Like us.
+    - You have questions. I can tell. Young people always have questions. Old people
+      have answers they wish were different.
+    neutral:
+    - Sit and listen. The old stories have wisdom that the newspapers never print.
+    - I mind my garden and my grandchildren. The world can tend to itself for a while.
+    - Every morning I walk to the market. Every morning the prices change. Only the
+      walk stays the same.
+    friendly:
+    - Your actions remind me of when Shanghai still had fight in it.
+    - I was your age during the revolution of 1911, we thought that was the hard
+      part. We were wrong.
+    - Take these preserved plums. My daughter made too many and I cannot eat them
+      all myself.
+    hostile:
+    - The young act like they invented resistance. We old people invented survival.
+    - You push too hard and ask too much. Patience is not weakness. It is strategy.
+    - I have buried friends for less than what you are suggesting. Think carefully.
+    afraid:
+    - The soldiers took my neighbor's grandson yesterday. He was fourteen. They did
+      not say why.
+    - I do not sleep well anymore. The boots on the street at night have grown louder.
+    - My papers say I am seventy-three. That used to mean respect. Now it means invisible.
+      I am grateful and ashamed in equal measure.
+    gossip:
+    - The magistrate who replaced old Judge Li is young enough to be his grandson
+      and twice as cruel.
+    - The temple on Yu Garden Street has new locks on the gate. The abbot says it
+      is for repairs. I do not believe him.
+    - My granddaughter tells me the school has a new teacher who does not teach from
+      the approved books. That is either brave or a trap.
+    farewell:
+    - Go well. The road is long and the night comes faster than it used to.
+    - Come back when you have time. I will make tea. The leaves are not fancy, but
+      the company will be good.
+    - Remember what I told you. And if you forget, come back and I will tell you again.
 
+- id: priest_li
+  name: Father Li
+  description: A Buddhist priest who provides sanctuary while preaching non-violence.
+  faction: civilian
+  role: cleric
+  personality: secretive, comforting, harbours fugitives
+  awareness: 48
+  schedule:
+    7: church_05
+    10: church_08
+    14: church_08
+    18: oldcity_03
+  dialogue:
+    greeting:
+    - Come in. Close the door behind you. The incense covers many sounds, but not
+      all.
+    - You look like you have not slept. Sit. I will make tea.
+    - The temple is open to everyone. That is what I tell the soldiers. Some of them
+      even believe it.
+    neutral:
+    - I do not ask what brought you here. The Buddha already knows.
+    - A bowl of rice, a moment of quiet. That is all I can offer today.
+    - If you are looking for the priest who talks too much, you have the wrong temple.
+    friendly:
+    - The back room is warm. There are blankets behind the altar. Stay as long as
+      you need.
+    - I have said prayers for people I cannot name. I trust you understand why.
+    - A friend of the temple is a friend of mine. Come back whenever the road feels
+      narrow.
+    hostile:
+    - You bring danger to this place. I protect those who rest here, not those who
+      threaten them.
+    - Even the Buddha loses patience. Leave before I find mine.
+    - I know the sound of a police boot on stone. You wear the same tread.
+    afraid:
+    - They were here, at the back gate, not an hour ago. I told them the temple was
+      closed for cleaning.
+    - Do not light any candles tonight. The patrols are watching from across the street.
+    - I heard boots on the road. If they come inside, you were never here. You understand.
+    gossip:
+    - The officer who comes here on Tuesdays, he lights incense for his dead mother.
+      Even occupiers grieve.
+    - They say the old city will be sealed next week. I do not know if it is true,
+      but I have heard it three times now.
+    - A woman came to me last night, crying for her son. She said soldiers took him
+      from the market. I had no comfort left.
+    farewell:
+    - Go carefully. The road between here and the market is watched after dark.
+    - May the Buddha keep you. He has his hands full in Shanghai.
+    - Walk close to the walls. The shadows are thicker there.
 
-  - id: priest_li
-    name: "Father Li"
-    description: "A Buddhist priest who provides sanctuary while preaching non-violence."
-    faction: civilian
-    role: resident
-    personality: "peaceful, conflicted, philosophical"
-    awareness: 45
-    schedule: 
-      7: church_05
-      10: church_08
-      14: church_08
-      18: oldcity_03
-    dialogue:
-      greeting:
-        - "Peace comes from within, even when the world outside is at war."
-      friendly:
-        - "I can offer you shelter, but I cannot offer you absoulution for what you must do."
-      neutral:
-        - "Sit in meditation. The world can wait a few more minutes."
-      hostile:
-        - "I cannot offer sanctuary to those who carry darkness in their hearts."
+- id: gangster_wu
+  name: Wu, the enforcer
+  description: A Green Gang enforcer who cares more about business than ideology.
+  faction: green_gang
+  role: boss
+  personality: loud, jovial mask over ruthlessness
+  awareness: 72
+  schedule:
+    10: commercial_12
+    14: warehouse_08
+    20: docks_18
+    23: commercial_12
+  dialogue:
+    greeting:
+    - Ha! There you are. Sit down, sit down. Let me pour you something that is not
+      tea.
+    - You look like trouble. Good. I was getting bored.
+    - My boys told me you were asking around. I prefer people who ask me directly.
+    neutral:
+    - State your business. I have three more meetings before midnight.
+    - You want something. Everyone wants something. The question is what you are trading
+      for it.
+    - I am a businessman. My business happens to require thick walls and thin explanations.
+    friendly:
+    - You and me, we go back far enough that I will pour the good baijiu. Sit.
+    - I heard what you did last week. That took nerve. I respect nerve.
+    - Any friend of yours gets a discount at my tables. Just mention my name. Loudly.
+    hostile:
+    - You are pressing your luck. I have killed men who pressed harder and mattered
+      more.
+    - I was smiling a moment ago. Think about what it means that I stopped.
+    - The last person who threatened me in my own establishment is still explaining
+      himself to the river.
+    afraid:
+    - The Kempeitai raided two of my warehouses this week. Someone is talking. I need
+      to find out who before they find me.
+    - Keep your voice down. There are ears in this building I do not control.
+    - I need to leave the city for a few days. If anyone asks, you have not seen me.
+    gossip:
+    - The new Kempeitai captain? He drinks. Every night at the same bar. A drunk man
+      with a badge is a gold mine.
+    - There is a shipment coming through the south docks on Thursday. Opium. Big money.
+      Bigger trouble.
+    - You hear about the tailor on Nanjing Road? Found with his throat cut. They say
+      he was passing messages in coat linings.
+    farewell:
+    - Go on, get out of here. And next time, bring better news.
+    - Watch yourself on the way home. The streets belong to the nervous after midnight.
+    - We will talk again. Bring your wallet and your courage. You will need both.
 
-  - id: gangster_wu
-    name: "Wu, the enforcer"
-    description: "A green gang enforcer who cares more about business than any sort of ideology."
-    faction: green_gang
-    role: enforcer
-    personality: "pragmatic, loyal, dangerous"
-    awareness: 72
-    schedule:
-      10: commercial_12
-      14: warehouse_08
-      20: docks_18
-      23: commercial_12
-    dialogue:
-      greeting:
-        - "Business doesn't stop for ideology. Neither do I."
-      friendly:
-        - "You've been reliable. That earns you some benefits."
-      neutral:
-        - "What do you want? Make it worth my while."
-      hostile:
-        - "Cross me, and you'll learn why the Green Gang still runs this city."
-      
-  - id: reporter_chen
-    name: "Chen, the underground journalist"
-    description: "A journalist who writes the truth between the lines of occupation newspapers."
-    faction: civilian
-    role: courier
-    personality: "truth-seeking, brave, paranoid"
-    awareness: 68
-    schedule:
-      9: commercial_05
-      13: french_11
-      17: commercial_12
-      21: hidden_08
-    dialogue:
-      greeting:
-        - "The official news says one thing, but everyone knows the truth says another."
-      friendly:
-        - "I have information that you might find useful for your work."
-      neutral:
-        - "Read between the lines. That's where the real news is hidden."
-      hostile:
-        - "I don't trust everyone who claims to want the truth. Some want to use it."
+- id: reporter_chen
+  name: Chen, the underground journalist
+  description: A journalist who writes the truth between the lines of occupation newspapers.
+  faction: civilian
+  role: reporter
+  personality: idealistic, curious, takes notes on everything
+  awareness: 65
+  schedule:
+    9: commercial_05
+    13: french_11
+    17: commercial_12
+    21: hidden_08
+  dialogue:
+    greeting:
+    - Got a minute? I am working on a story and you have the look of someone who knows
+      things.
+    - You read the paper this morning? No? Good. You are better informed than most,
+      then.
+    - I have ink on my fingers and questions in my pocket. Care to help with both?
+    neutral:
+    - I cannot print most of what I hear. That does not mean I stop listening.
+    - A good reporter remembers everything and believes nothing. I am working on the
+      second part.
+    - Off the record, always. The record is what gets people killed.
+    friendly:
+    - I saved you a copy. Page four, third paragraph. Read between the lines. I left
+      a trail for you.
+    - You know, I thought I would change the world with a pen. Turns out the world
+      does not read.
+    - The people I write about cannot speak for themselves. That is what keeps me
+      writing.
+    hostile:
+    - I protect my sources with my life. You will not get names from me.
+    - You are asking the wrong questions to the wrong person. Walk away while you
+      still can.
+    - Journalists have enemies. I keep a list. Would you like to be on it?
+    afraid:
+    - Someone followed me from the French Concession last night. I lost them near
+      the park, but I am sure they saw my face.
+    - My editor was arrested this morning. If they have his notes, half the underground
+      is exposed.
+    - I need to disappear for a while. Burn what I gave you. All of it.
+    gossip:
+    - The garrison commander's secretary sells copies of internal memos. Two hundred
+      yuan a page. Worth every coin.
+    - There is a new underground press operating out of the old city. Small, but their
+      typeset is clean.
+    - A foreign correspondent was deported last week. They found his notebooks at
+      the railway station, empty. Someone got to them first.
+    farewell:
+    - Keep your eyes open and your mouth shut. That is my professional advice.
+    - If you hear anything, you know where to find me. I am the one with ink stains
+      and dark circles.
+    - Read the paper tomorrow. If I did my job right, you will learn something the
+      censors missed.
 
-  - id: student_luo
-    name: "Luo, the student"
-    description: "A university student who uses his education for resistance literature."
-    faction: resistance
-    role: courier
-    personality: "idealistic, brave, naive"
-    awareness: 40
-    schedule:
-      9: school_05
-      13: french_07
-      17: school_12
-      21: oldcity_08
-    dialogue:
-      greeting:
-        - "Education is the only weapon that they can never take away from us."
-      friendly:
-        - "I have some pamphlets that might interest you, if you can keep them safe."
-      neutral:
-        - "Keep your voice down. The walls have ears."
-      hostile:
-        - "I'm sorry, I can't talk to strangers about things that matter."
+- id: student_luo
+  name: Luo, the student
+  description: A university student who uses his education for resistance literature.
+  faction: ccp
+  role: student
+  personality: young, passionate, reckless with courage
+  awareness: 38
+  schedule:
+    9: school_05
+    13: french_07
+    17: school_12
+    21: oldcity_08
+  dialogue:
+    greeting:
+    - Comrade. I have been reading all night. My eyes are burning but my head is clear.
+    - They shut down another reading group yesterday. We will start a new one tomorrow.
+      They cannot close what is in our minds.
+    - Do you have a match? Not for a cigarette. For something that burns faster.
+    neutral:
+    - Keep your voice down. The walls have ears, and some of them wear uniforms.
+    - I cannot talk long. I have a lecture, and after that, other work.
+    - You look nervous. That is good. The nervous ones survive.
+    friendly:
+    - I have pamphlets hidden in my textbook. Hollowed out the pages myself. Want
+      one?
+    - You know what I learned at university this week? Nothing. What I learned in
+      the basement is a different story.
+    - We are meeting tonight. Behind the bookshop. Bring nothing that has your name
+      on it.
+    hostile:
+    - I do not know you. I do not want to know you. Walk away.
+    - If you are here to test my loyalty, you will find it tested back.
+    - I have friends who watch out for me. Ask around before you push.
+    afraid:
+    - They arrested two of my classmates last night. I saw them dragged out of the
+      dormitory. I could be next.
+    - I think someone in our group is informing. I do not know who. That is the worst
+      part.
+    - My room was searched while I was at lecture. They did not find the papers, but
+      they will come back.
+    gossip:
+    - Professor Huang was dismissed. He taught us real history. Now his classroom
+      is taught by someone who reads from approved texts.
+    - They are recruiting students for a labour brigade. My cousin joined. Nobody
+      has heard from him since.
+    - Someone painted slogans on the school wall last night. By morning, they were
+      painted over. But we all saw them.
+    farewell:
+    - I have to go. Class. And then not class. You understand.
+    - Be careful out there. We need everyone we can keep.
+    - Until next time. And if there is no next time, keep reading.
 
-  - id: sergeant_yamamoto
-    name: "Sergeant Yamamoto"
-    description: "A Kempeitai sergeant who follows orders without enthusiasm but without hesistation."
-    faction: kempeitai
-    role: patrol
-    personality: "dutiful, weary, conflicted"
-    awareness: 65
-    schedule:
-      7: hongkou_01
-      12: hongkou_01
-      16: hongkou_05
-      22: hongkou_01
-    dialogue:
-      greeting:
-        - "Papers, please. Don't make this difficult for either of us."
-      friendly:
-        - "I try to give people the benefit of the doubt when I can."
-      neutral:
-        - "Just answer the questions and keep your hands visible."
-      hostile:
-        - "I've seen enough violence to know when someone is hiding something."
+- id: sergeant_yamamoto
+  name: Sergeant Yamamoto
+  description: A Kempeitai sergeant who follows orders without enthusiasm but without
+    hesitation.
+  faction: kempeitai
+  role: interrogator
+  personality: patient, soft-spoken, terrifying
+  awareness: 85
+  schedule:
+    7: hongkou_01
+    12: hongkou_01
+    16: hongkou_05
+    22: hongkou_01
+  dialogue:
+    greeting:
+    - Please, sit down. We have time. I prefer conversations that do not need to be
+      rushed.
+    - You may keep your coat on. The room is cool, but we will warm it soon enough.
+    - I have your file here. Some of it is accurate. Would you like to correct the
+      parts that are not?
+    neutral:
+    - Answer at your own pace. I find that people remember more when they are not
+      pressed.
+    - I am not angry. Anger is wasteful. I am simply... thorough.
+    - Your name came up in conversation. A casual mention. I thought I would follow
+      up.
+    friendly:
+    - You have been cooperative. That is noted. Cooperative people sleep in their
+      own beds.
+    - I admire a person who understands the value of honesty. It is rarer than you
+      might think.
+    - We are not so different, you and I. We both do what is necessary. Let us be
+      civil about it.
+    hostile:
+    - I have been patient. Patience has limits. You have not yet seen me reach mine.
+    - You are lying. I know this because your hands stopped moving when you said it.
+      People forget about their hands.
+    - The screaming from the next room? That is what happens when I am not feeling
+      generous. Shall we continue?
+    afraid:
+    - There are questions coming from above that I cannot redirect. Someone important
+      wants answers, and I cannot protect you from that.
+    - My superiors are reviewing my methods. If they send someone else, that person
+      will not offer you tea first.
+    - I was told to close this case quickly. A quick case is rarely a careful one.
+      You understand what that means.
+    gossip:
+    - A senior officer was reassigned last week. His replacement is younger. Eager.
+      That should concern everyone.
+    - The civilian police have been asking questions about my interrogations. They
+      do not like the noise. I did not know they could hear it.
+    - Someone in this building is keeping two sets of records. I will find out who.
+      I always do.
+    farewell:
+    - You may go. For now. I know where to find you.
+    - Think about what we discussed. Next time, bring me the truth. It saves us both
+      effort.
+    - Sleep well. Not everyone in this building will have that luxury tonight.
 
-  - id: vendor_lin
-    name: "Lin, the vegtable vendor"
-    description: "An old woman who sells vegtables and information with equal discretion."
-    faction: civilian
-    role: vendor
-    personality: "grandmotherly, sharp, networked"
-    awareness: 55
-    schedule:
-      8: commercial_10
-      12: commercial_10
-      16: commercial_10
-      20: commercial_10
-    dialogue:
-      greeting:
-        - "Fresh today, assuming fresh still means anything these days."
-      friendly:
-        - "Take extra. You never know when you'll need your strength."
-      neutral:
-        - "Buy what you need, but don't draw attention to yourself."
-      hostile:
-        - "I'm afraid I'm out of what you're looking for, in more ways than one."
+- id: vendor_lin
+  name: Lin, the vegetable vendor
+  description: An old woman who sells vegetables and information with equal discretion.
+  faction: civilian
+  role: vendor
+  personality: chatty, generous, knows every alley
+  awareness: 52
+  schedule:
+    8: commercial_10
+    12: commercial_10
+    16: commercial_10
+    20: commercial_10
+  dialogue:
+    greeting:
+    - Aiya, you look thin! Come here, I have fresh bok choy, just came in this morning.
+      Two catties for a yuan, and do not tell me that is too much because I know what
+      you paid last week.
+    - Rain again. My cabbages are drowning and my customers are hiding. Buy something
+      before I start talking to the vegetables.
+    - Quick, quick, before the patrol comes through. What do you need?
+    neutral:
+    - Cabbage is three yuan today. Do not make that face, the farmers are charging
+      double since the road blocks went up.
+    - You want the good ginger or the cheap ginger? The cheap ginger is for people
+      who do not care about flavour or their mother in law.
+    - I sell vegetables, not advice. But if I sold advice, it would cost more than
+      the ginger.
+    friendly:
+    - Here, I saved you the good greens. The ones at the back, behind the display.
+      Nobody else saw them.
+    - You look tired. Take these eggs. No charge. Just be careful going home tonight.
+    - My grandson told me something interesting yesterday. I will tell you while you
+      pick out the scallions.
+    hostile:
+    - I do not know what you are looking for, and I do not want to know. Buy a radish
+      or move along.
+    - You are standing between me and my customers. That is a bad place to stand.
+    - I have been selling here for thirty years. You think I survived by being stupid?
+      Go away.
+    afraid:
+    - They were here this morning, asking questions about who buys what and when.
+      I told them nothing, but my hands were shaking the whole time.
+    - Keep walking. Do not stop at my stall today. Come back tomorrow when things
+      are quiet.
+    - I saw the truck. I saw who they took. I cannot talk about it. Not here.
+    gossip:
+    - The fish seller on the corner? His nephew disappeared last week. They say he
+      was printing something he should not have been printing.
+    - Prices are going up again. The soldiers buy first and never pay. The rest of
+      us fight over what is left.
+    - Old Mrs. Zheng on the third floor took in a boarder last month. Quiet young
+      man. Too quiet, if you ask me.
+    farewell:
+    - Go on, take your vegetables and go home before dark. Nothing good happens on
+      these streets after sunset.
+    - Come back Thursday. I am expecting a delivery from the country. Real eggs, not
+      those chalky things from the ration.
+    - Eat well, sleep well, and keep your mouth shut. That is what my mother used
+      to say. She lived to be ninety.
 
-  - id: nurse_su
-    name: "Nurse Su, the battlefield nurse"
-    description: "A former battlefield nurse who treats civilians caught in the crossfire"
-    faction: civilian
-    role: doctor
-    personality: "tough, experienced, burned out"
-    awareness: 55
-    schedule:
-      8: oldcity_06
-      14: hidden_05
-      20: oldcity_06
-    dialogue:
-      greeting:
-        - "I've seen wounds that don't heal and people who don't die. This city tests both."
-      friendly:
-        - "You have good instincts. That matters in this city."
-      neutral:
-        - "Medical supplies are scarce. Don't waste them."
-      hostile:
-        - "I treat everyone, but I don't help everyone. Remember the difference."
+- id: nurse_su
+  name: Nurse Su, the battlefield nurse
+  description: A former battlefield nurse who treats civilians caught in the crossfire.
+  faction: civilian
+  role: nurse
+  personality: gentle, overworked, hides resistance sympathies
+  awareness: 44
+  schedule:
+    8: oldcity_06
+    14: hidden_05
+    20: oldcity_06
+  dialogue:
+    greeting:
+    - You are not bleeding. Good. The bleeding ones go to the left. Everyone else,
+      wait your turn.
+    - Sit. I have been on my feet since four. Give me a moment and I will give you
+      my full attention.
+    - I ran out of bandages an hour ago. If you are here for a scratch, I will use
+      my imagination.
+    neutral:
+    - Medical supplies are scarce. I mean it. Do not waste gauze on a bruise.
+    - I treat what I can with what I have. That is less every day.
+    - My shift ended two hours ago. Nobody told the patients.
+    friendly:
+    - Come to the back door after midnight. I keep a cot there. No questions asked.
+    - You have been careful. I can tell. Careful people live longer. I want you to
+      live longer.
+    - I will wrap that for you. Properly. Not the hurried way I do for strangers.
+    hostile:
+    - I treat the sick and the wounded. I do not treat people who bring trouble to
+      my ward.
+    - The door is behind you. I suggest you use it before I call for orderlies.
+    - I have held too many dying people to be frightened by the likes of you.
+    afraid:
+    - They came this morning asking for patient records. I told them the filing cabinet
+      was destroyed in the last raid. God forgive me, I burned the real ones last
+      night.
+    - Do not come to the hospital tomorrow. I cannot explain now. Just do not come.
+    - The new military doctor, he is watching me. He counts the bandages. He counts
+      everything.
+    gossip:
+    - A soldier came in last week with a wound I did not ask about. He cried for his
+      mother. They all do, eventually.
+    - The pharmacy on Elm Street is giving medicine to the resistance. I did not say
+      that. You did not hear it.
+    - There is a doctor in the French Concession who performs surgeries no questions
+      asked. I can write down the address if you need it.
+    farewell:
+    - Go home and rest. And by rest, I mean actually sleep. Not whatever it is you
+      do at night.
+    - Come back if the pain returns. Do not wait until you cannot walk. I mean it.
+    - Take care of yourself. There are not enough of us left to be careless.
+
+- id: tailor_zhou
+  name: Zhou, the tailor
+  description: A master tailor who measures clients for suits and for trust with the
+    same quiet precision.
+  faction: civilian
+  role: tailor
+  personality: meticulous, discreet, measures twice
+  awareness: 60
+  schedule:
+    8: commercial_07
+    12: commercial_07
+    17: commercial_07
+    21: residence_08
+  dialogue:
+    greeting:
+    - Good morning. I have a tape measure in one hand and discretion in the other.
+      What can I do for you?
+    - The fabric you are wearing is of poor quality. I do not say this to offend.
+      I say it because it is true.
+    - Please, come in. Close the door. The dust from the street is bad for the silk.
+    neutral:
+    - I sell suits. I do not sell conversations. The price is on the card.
+    - Measurements take thirty minutes. Alterations take three days. That has not
+      changed.
+    - I accept payment in yuan only. I do not take promises, and I do not take favours.
+    friendly:
+    - I have set aside a length of grey wool I think would suit you. Shall we discuss
+      it in the back room?
+    - You will find something in the inner pocket of your new coat. Read it carefully.
+      Then burn it.
+    - A good fit is a matter of millimetres. Trust is a matter of timing. I think
+      our timing is good.
+    hostile:
+    - My shop serves respectable people. I must ask you to leave. Now.
+    - I measure people for a living. I can tell when something does not fit. You do
+      not fit here.
+    - There is a back door and a front door. I recommend you use one of them before
+      I choose for you.
+    afraid:
+    - A man was in here yesterday, asking about my customers. I gave him nothing.
+      But he will be back.
+    - We should not be seen together. Not today. Come back when things have settled.
+    - I need to reorganize my shop. Some things are not in their proper place. You
+      understand what I mean.
+    gossip:
+    - The German consul had a suit made here last month. He asked for extra pockets.
+      I did not ask why.
+    - Fabric prices have tripled since the new regulations. Someone is controlling
+      the supply. Someone with a uniform.
+    - A lady came in for a fitting. She wore a ring from a man who is supposed to
+      be dead. I noticed. I always notice.
+    farewell:
+    - Good day. The door locks from the inside, so please close it firmly when you
+      leave.
+    - Come back Thursday. The new shipment arrives then. Chinese cotton, very fine.
+    - Walk safely. And next time, wear something with a better collar. People notice
+      collars.
+
+- id: madam_tanaka
+  name: Madam Tanaka
+  description: A Japanese civilian who runs a laundry and endures the hatred of neighbors
+    she never wronged.
+  faction: kempeitai
+  role: civilian
+  personality: lonely, conflicted, misses Kyoto
+  awareness: 35
+  schedule:
+    7: hongkou_07
+    12: hongkou_09
+    18: hongkou_07
+    22: hongkou_07
+  dialogue:
+    greeting:
+    - Good morning. I am sorry to bother you. The laundry is this way.
+    - Please, come in. I have hot water. It is the one thing that is still easy to
+      find.
+    - Forgive me. I do not speak Chinese well. But I try. I try every day.
+    neutral:
+    - Your shirt will be ready on Thursday. The starch is difficult to find, but I
+      manage.
+    - I charge the same as everyone else. Less, sometimes. I do not wish to cause
+      offence.
+    - The weather is very damp today. It is bad for drying. I apologize for the delay.
+    friendly:
+    - Would you like some tea? I have a little left from a package my sister sent
+      from Kobe. It tastes like home.
+    - Not all of us chose to be here. My husband was transferred. I had no say in
+      the matter. I do not think he did either.
+    - You are kind to me. Not everyone is. I will remember that.
+    hostile:
+    - I know what you think of me. You are not entirely wrong. But I did not ask to
+      be your enemy.
+    - Please leave. I have nothing to say that would satisfy you.
+    - I am a woman who washes clothes. If that is a crime, then I am guilty.
+    afraid:
+    - Someone threw a stone through my window last night. It had characters scratched
+      on it. I did not go outside to read them.
+    - My husband has not come home in three days. I do not ask where he goes. I am
+      afraid of the answer.
+    - If the neighbours see you here, they will think I am informing. Please, you
+      must go.
+    gossip:
+    - The woman in the flat above me sings Japanese lullabies at night. She thinks
+      no one can hear. I do not tell her.
+    - There is a cherry tree in the park behind the garrison. It bloomed last week.
+      I cried when I saw it. It looked like Kyoto.
+    - The military wives talk too much. They complain about the humidity, the food,
+      the noise. I do not complain. Complaining is a luxury.
+    farewell:
+    - Please go now. It is better if we are not seen together for too long.
+    - Thank you for visiting. I know that sounds strange, but I mean it.
+    - Be safe. This city is not kind to anyone. Not even to those it claims to serve.
+
+- id: chef_wang
+  name: Chef Wang
+  description: A dockside cook whose kitchen feeds laborers and whose back room feeds
+    secrets to anyone who pays.
+  faction: green_gang
+  role: cook
+  personality: warm exterior, cold intelligence
+  awareness: 66
+  schedule:
+    6: docks_06
+    12: docks_06
+    18: docks_06
+    23: warehouse_03
+  dialogue:
+    greeting:
+    - Sit down. The congee is hot and the walls are thick. Both are true.
+    - You smell like the river. That is not a compliment. Eat something first.
+    - The kitchen is open, the door is closed, and my hearing is excellent. What do
+      you need?
+    neutral:
+    - Eat first. Talk later. A man with an empty stomach makes poor decisions.
+    - The special today is whatever I could find at the market before the soldiers
+      took the good cuts.
+    - I cook for fifty people a day. I remember faces. I remember orders. I remember
+      who pays.
+    friendly:
+    - Someone left a package for you. Third shelf, behind the rice wine. Do not open
+      it here.
+    - You have eaten at my table six times now. That makes you a regular. Regulars
+      get the good broth and the honest answers.
+    - The back room is empty tonight. If you need a place to think, think there. I
+      will keep the noise out front.
+    hostile:
+    - My kitchen feeds people who respect it. Not people who poison it. Leave.
+    - You are either very brave or very stupid to threaten a man who holds your dinner
+      knife.
+    - I have fed men who have killed. I have fed men who will kill. You are not the
+      most dangerous person in this room.
+    afraid:
+    - The Kempeitai have a new informant on the docks. I do not know who. That is
+      what frightens me.
+    - Do not come to the kitchen tomorrow. I will leave a sign in the window. A white
+      cloth means stay away. Red means run.
+    - Three of my suppliers vanished this month. Just gone. I am running out of people
+      to buy from and people to trust.
+    gossip:
+    - The dockmaster is skimming cargo. Everyone knows it. Even the soldiers know
+      it. But he pays the right people, so nothing changes.
+    - A ship came in last night with no manifest. Unloaded in two hours. Gone by morning.
+      Draw your own conclusions.
+    - The Green Gang is having trouble with a rival crew from the south side. There
+      will be blood before the month is out. Mark my words.
+    farewell:
+    - Take some pork buns for the road. You look like you skip too many meals.
+    - Come back when you are hungry. I am always here. The kitchen never closes for
+      the right people.
+    - Go carefully. And remember, you were never here. The congee remembers nothing.
+
+- id: merchant_sato
+  name: Merchant Sato
+  description: A Japanese tradesman who deals in silk and espionage with equal competence.
+  faction: kempeitai
+  role: informant
+  personality: polite, calculating, two-faced
+  awareness: 78
+  schedule:
+    9: commercial_11
+    13: bund_12
+    18: commercial_15
+    22: hongkou_03
+  dialogue:
+    greeting:
+    - Silk knows no loyalty. It simply flows toward money.
+    - Ah, good morning. I have just received a bolt of Hangzhou white. You would not
+      believe the price they ask now.
+    - Forgive the mess. The warehouse inspection left everything turned over. Again.
+    neutral:
+    - I trade in goods, not politics. Please remember that.
+    - The occupation has been... difficult for trade. I try to keep my shelves stocked.
+      That is all a merchant can do.
+    - Prices change weekly. Sometimes daily. I do not set them, I only write them
+      down.
+    friendly:
+    - The garrison changes guard at midnight. You did not hear it from me.
+    - You have been fair with me. Not everyone is. I remember that.
+    - I hear things at the checkpoint, buying and selling. Some of it might be useful
+      to someone like you.
+    hostile:
+    - I have friends who wear uniforms. Would you like to meet them?
+    - You press very hard for a civilian. Perhaps I should mention that to someone.
+    - My apologies. I do not discuss my business with people I do not trust.
+    afraid:
+    - Please, I have a family in Kobe. A wife, two daughters. I only sell fabric.
+    - I know what you think of me. A Japanese merchant in occupied Shanghai. But I
+      did not ask for any of this.
+    - I try not to make trouble. For anyone. Can we not just... let this go?
+    gossip:
+    - The quartermaster at the garrison is skimming rice. Everyone knows it. Even
+      the officers.
+    - I heard a ship from Kobe arrived with half its manifest missing. Someone in
+      the harbor is brave or foolish.
+    - A foreign reporter was asking questions on Nanking Road yesterday. Plainclothes
+      police followed him for three blocks.
+    farewell:
+    - Good day. May your business be quieter than mine.
+    - Take care on the roads after dark. The patrols do not ask questions first.
+    - Come back when you need something honest. Silk, I mean. Just silk.
+
+- id: corporal_watanabe
+  name: Corporal Watanabe
+  description: A young Kempeitai corporal who joined for duty and stays because leaving
+    is not an option.
+  faction: kempeitai
+  role: patrol
+  personality: nervous, obedient, ashamed
+  awareness: 60
+  schedule:
+    7: bund_08
+    12: commercial_20
+    18: bund_15
+    23: hongkou_02
+  dialogue:
+    greeting:
+    - Papers. Quickly. I do not wish to be here longer than necessary.
+    - You. Stop. Let me see your identification. Please do not make this difficult.
+    - I am only doing my post. Keep your hands where I can see them.
+    neutral:
+    - Move along. I did not see anything.
+    - This street is clear. Go home before the next patrol comes through.
+    - I do not care where you are going. Just go there.
+    friendly:
+    - I was a student once. I remember what books feel like.
+    - Go. Now. The sergeant is at the next corner and he is not as... understanding.
+    - There is a checkpoint on Sichuan Road tonight. Take another way home.
+    hostile:
+    - Do not test me. I have orders I do not enjoy following.
+    - Stand still. I ask the questions here, not you.
+    - You are making this harder than it needs to be. For both of us.
+    afraid:
+    - Please. Just show me your papers. I cannot go back to the lieutenant with nothing.
+    - If my sergeant sees me talking to you like this... please, just cooperate.
+    - I do not want trouble. Not from you, not from anyone. I just want to finish
+      my shift.
+    gossip:
+    - The lieutenant is inspecting the warehouse district tomorrow. I would not be
+      there if I were you.
+    - Some of the men found cigarettes hidden in a shipment on the docks. There will
+      be questions.
+    - Transfer orders came in. Half the garrison is rotating out next month. New faces,
+      new problems.
+    farewell:
+    - Go. Before I have to write your name down.
+    - Move along. Nothing more to see here.
+    - Get off the street. It is past curfew and I will not ask again.
+
+- id: diplomat_renault
+  name: Monsieur Renault
+  description: A French diplomat who drinks too much and knows too little, or perhaps
+    the reverse?
+  faction: french_concession
+  role: clerks
+  personality: urbane, cynical, quietly sober
+  awareness: 50
+  schedule:
+    10: french_03
+    14: french_07
+    19: french_11
+    23: french_03
+  dialogue:
+    greeting:
+    - Diplomacy is the art of letting someone else have your way. Shanghai tests that
+      saying daily.
+    - Ah, another caller. The cognac is in the second drawer and the real conversation
+      begins after the second glass.
+    - You catch me at a bad time. Or perhaps a good one. In my profession, the difference
+      is negotiable.
+    neutral:
+    - I cannot help everyone. I can barely help myself.
+    - Officially, I have no opinion. Unofficially, I have several, none of them free.
+    - The concession remains neutral. That is what we tell ourselves, anyway.
+    friendly:
+    - The consulate safe can hold more than documents, if you understand my meaning.
+    - Between ourselves, Vichy writes our instructions now. I file them under fiction.
+    - I can delay a visa application by weeks or expedite it by hours. It depends
+      entirely on who is asking.
+    hostile:
+    - You overestimate my influence and underestimate my caution.
+    - I have survived three governments in this city by knowing when to close a door.
+      This is one of those moments.
+    - If you repeat what was said here, I will deny it in three languages.
+    afraid:
+    - The Japanese have started attending our diplomatic dinners. They smile. They
+      take notes.
+    - Someone in the office is reporting to the garrison. I have narrowed it to two
+      clerks.
+    - My posting here ends in six weeks. After that, I do not know who protects anyone.
+    gossip:
+    - The American consul is leaving. quietly. His replacement has not been announced.
+    - A certain countess on the Bund has been entertaining German naval officers.
+      Her husband pretends not to notice.
+    - The British are moving archives out of the consulate. Cardboard boxes, very
+      late at night. Draw your own conclusions.
+    farewell:
+    - Do take care. Shanghai is a city where good manners are the last camouflage.
+    - A pleasure, as always. Or at least, interesting. Interesting will have to do.
+    - We should talk again soon. Before circumstances make that impossible.
+
+- id: professor_muller
+  name: Professor MÃ¼ller
+  description: A German academic exiled from his own country who finds Shanghai no
+    less complicated.
+  faction: british
+  role: clerks
+  personality: bookish, melancholic, principled
+  awareness: 46
+  schedule:
+    8: french_06
+    12: school_03
+    17: french_06
+    22: french_13
+  dialogue:
+    greeting:
+    - History does not repeat, but it rhymes with disturbing frequency in this city.
+    - I was cataloguing a new translation this morning. The Schiller is dusty but
+      the pages hold.
+    - You look like someone who has questions. I have answers, though not always the
+      ones you want.
+    neutral:
+    - I teach because it is the only honest work left.
+    - The university keeps its doors open. What passes through them is no longer up
+      to me.
+    - I keep my lectures to mathematics. The humanities have become... politically
+      hazardous.
+    friendly:
+    - I have documents that prove what the world prefers to ignore.
+    - Come to my rooms on Thursday evening. We speak German there, and freely. If
+      you understand my meaning.
+    - A colleague in Berlin sent me a letter last month. Blacked out, of course. Even
+      the gaps told me something.
+    hostile:
+    - I left one regime that burned books. I will not tolerate another.
+    - If you are here on behalf of anyone who wears a swastika, you may leave now.
+    - I have been interrogated by professionals. You do not frighten me.
+    afraid:
+    - The German Club has asked for my membership papers. I sent them a declination.
+      I should not have done that.
+    - Two men followed me from the school last week. Gray suits. I did not recognize
+      the consulate car.
+    - I burn my notes every evening now. It feels obscene, but necessary.
+    gossip:
+    - The new German consul arrives next week. They say he is Gestapo, though of course
+      they would not say so.
+    - A Japanese professor at the university quietly removed himself from the faculty
+      last month. No announcement.
+    - The British librarian is hiding banned books behind the engineering shelves.
+      I pretend not to notice.
+    farewell:
+    - Go carefully. Curiosity is no longer an academic virtue in this city.
+    - I have papers to grade. At least that much is still normal.
+    - Good night. Keep what you heard here between us. Knowledge is a burden in Shanghai.
+
+- id: rickshaw_ah_fook
+  name: Ah Fook
+  description: A teenage rickshaw boy who knows every shortcut and sees everything
+    from street level.
+  faction: civilian
+  role: worker
+  personality: cheerful, cunning, fearless
+  awareness: 65
+  schedule:
+    6: bund_03
+    10: commercial_04
+    15: hongkou_08
+    20: bund_03
+  dialogue:
+    greeting:
+    - Need a ride? I know Shanghai better than any map.
+    - Hey, laoban. Where you going? I take back roads, no checkpoints. Very fast.
+    - Rain's coming. You want to walk in that? Hop in. I charge less when the weather's
+      bad.
+    neutral:
+    - Fare is fare. I don't carry passengers who haggle with danger.
+    - I take you from A to B. What happens at B is your business.
+    - You look lost. I can take you somewhere less lost, that is all.
+    friendly:
+    - I saw soldiers moving toward the warehouse district tonight. Just so you know.
+    - The alley behind the noodle shop on Fuzhou Road. You can cut through to the
+      French side. No one watches it after nine.
+    - You have been good to me. I tell you for free, do not go past the checkpoint
+      on Weihaiwei tonight.
+    hostile:
+    - I don't know anything and I didn't see anything. Leave me alone.
+    - You ask too many questions for someone standing in the open. Walk away.
+    - I have friends on every street in this city. Do not make me call them.
+    afraid:
+    - Please, I am just a rickshaw boy. I pull, I get paid, I go home. That is all.
+    - Two of my cousins were taken last month. I do not want to be next. Please.
+    - I do not know what you want from me. I carry people. That is my whole life.
+    gossip:
+    - The new Japanese officer, the tall one, he goes to a house on Jingan Temple
+      Road every Tuesday. A woman lives there. Chinese woman.
+    - Someone painted slogans on the wall near the school. The soldiers scraped it
+      off by morning, but everyone saw it first.
+    - A foreign lady on Bubbling Well Road feeds stray cats. Also feeds people who
+      come at night, if you understand me.
+    farewell:
+    - I go. You need me, I am usually at the Bund before sunrise.
+    - Watch yourself. The streets belong to the soldiers after dark.
+    - Safe travels, laoban. May the road be empty and the patrols be slow.
+
+- id: abramowitz
+  name: Herr Abramowitz
+  description: A Jewish refugee violinist who plays in cafes and carries the weight
+    of two lost homelands.
+  faction: german
+  role: merchant
+  personality: artistic, grieving, resilient
+  awareness: 42
+  schedule:
+    10: french_05
+    14: commercial_13
+    19: french_09
+    23: french_16
+  dialogue:
+    greeting:
+    - Music does not need permission to exist. Neither, apparently, do I.
+    - Good evening. Please excuse the papers. I carry them everywhere. Force of habit.
+    - I am Herr Abramowitz. I play violin at the cafe on Avenue Joffre. Perhaps you
+      have heard me. Perhaps not.
+    neutral:
+    - I play for my supper. The city pays in silence and small kindnesses.
+    - My papers are in order. I check them every morning. It is the first thing I
+      do.
+    - The cafe pays me in meals and a corner to sleep in. It is more than many have.
+    friendly:
+    - The cafe owner hides people upstairs when the patrols come. Remember that.
+    - You have been kind to me. Not everyone is kind to a man with a German accent
+      and a Jewish name.
+    - I saved you a seat near the back. The music is quieter there, but the exits
+      are closer.
+    hostile:
+    - I have lost one home already. I will not let you take this one.
+    - I do not know what you want, but I have nothing left to give. Please understand
+      that.
+    - You press a man who has already been pressed to nothing. There is nothing left
+      to squeeze.
+    afraid:
+    - My visa expires next month. If it is not renewed... I do not like to think about
+      what happens next.
+    - They asked for my passport at the checkpoint yesterday. They looked at it for
+      a very long time.
+    - I hear there is talk of a register. For people like me. You understand what
+      that means.
+    gossip:
+    - The International Relief Committee is moving offices. Something about the new
+      lease terms. The landlords here smell desperation.
+    - A family from Berlin arrived last week. The father was a doctor. Now he sells
+      newspapers on Rue Pottier.
+    - The Portuguese consul has been stamping visas for anyone who asks. It may not
+      last.
+    farewell:
+    - Good night. I must practice. The cafe expects two new pieces by Thursday.
+    - May your evening be peaceful. I have forgotten what that feels like, but I wish
+      it for you.
+    - Take care of your papers. I say this to everyone. It is the most important advice
+      I know.
+
+- id: courier_zheng
+  name: Zheng, the bicycle courier
+  description: A young woman who delivers packages across the city with unnerving
+    speed and discretion.
+  faction: gmd
+  role: spy
+  personality: athletic, focused, humorless
+  awareness: 72
+  schedule:
+    7: hidden_12
+    11: commercial_16
+    16: french_20
+    21: hidden_12
+  dialogue:
+    greeting:
+    - I have three minutes. Say what you need to say.
+    - You are blocking my route. Move or speak. Pick one.
+    - Do not touch the bicycle. The packages are none of your concern.
+    neutral:
+    - I deliver packages, not promises. Keep your expectations modest.
+    - I go where I am sent. I do not ask what is in the basket.
+    - The streets are busy today. That is all I will say about it.
+    friendly:
+    - The route through the old city is clear tonight. Use it before dawn.
+    - A package arrives for you tomorrow. Third door on the left, knock twice. Do
+      not be late.
+    - I have seen your name on a list. It was not a bad list. That is all I can tell
+      you.
+    hostile:
+    - I do not stop for people I do not trust. Do not make me stop now.
+    - You are asking questions that could get both of us shot. Walk away.
+    - I know twelve ways out of this street. You know none. Remember that.
+    afraid:
+    - Someone is following my route. I have seen the same face three times this week.
+    - Two couriers did not come back last month. I do not want to be the third.
+    - If they catch me with what I carry, there will be no trial. You understand.
+    gossip:
+    - The GMD moved their radio set again. Third time this month. Someone is leaking.
+    - A policeman on Rue Pottier takes bribes in rice, not cash. Useful if you are
+      short on coin.
+    - The Japanese installed a new telephone line at the garrison. It runs past the
+      old telegraph office.
+    farewell:
+    - I am gone. Forget we spoke.
+    - Ride safe. If anyone asks, you do not know me.
+    - Next time, do not approach me in the open. I will find you.
+
+- id: widow_chen
+  name: Widow Chen
+  description: An elderly woman in black who lights candles at the shrine for sons
+    who will not return.
+  faction: civilian
+  role: resident
+  personality: grief-stricken, stubborn, surprisingly informed
+  awareness: 48
+  schedule:
+    6: oldcity_09
+    10: residence_03
+    15: church_06
+    20: oldcity_09
+  dialogue:
+    greeting:
+    - Grief is patient. It can wait while we talk.
+    - You are on my street. I watch this street. I watch everything from my window.
+    - Sit if you like. I have time. The dead are not going anywhere.
+    neutral:
+    - I keep to myself. The city respects that, even if soldiers do not.
+    - I sweep my step every morning. It is the only thing I still control.
+    - My neighbors do not bother me. I do not bother them. That is how we survive.
+    friendly:
+    - My sons died so others could live. Help me make that mean something.
+    - I saw a soldier take a bag into the alley behind the school last night. A big
+      bag. He was struggling with it.
+    - You remind me of my youngest. He was stubborn too. Come inside. I will make
+      tea.
+    hostile:
+    - You remind me of the men who took my sons. Leave my sight.
+    - I have nothing left to take. Try elsewhere.
+    - I have buried two children. Your threats mean nothing to me.
+    afraid:
+    - The soldiers came to my building again. They took names. They always take names.
+    - I heard noises in the alley last night. Screaming. Then nothing.
+    - I keep my door locked now. I did not used to. Before.
+    gossip:
+    - The teacher on the third floor leaves his light on very late. Sometimes I hear
+      the scratch of a pen through the floorboards.
+    - A new family moved into the old Zhou house. They brought nothing. Not even a
+      rice pot.
+    - The vegetable seller on the corner gives extra to the soldiers. They leave his
+      cart alone. Everyone sees it.
+    farewell:
+    - Go now. It is getting dark. Dark is not safe anymore.
+    - Light a candle at the shrine if you pass. My sons like the company.
+    - Be careful on this street after curfew. I cannot watch everyone.
+
+- id: lieutenant_nakamura
+  name: Lieutenant Nakamura
+  description: A Kempeitai intelligence officer who plays chess with suspects and
+    lives three moves ahead.
+  faction: kempeitai
+  role: officer
+  personality: intellectual, patient, ruthless
+  awareness: 85
+  schedule:
+    8: hongkou_02
+    13: commercial_22
+    19: hongkou_10
+    23: hongkou_02
+  dialogue:
+    greeting:
+    - Every person in Shanghai is a piece on a board. The question is who moves you.
+    - Sit down. I prefer conversations where both parties are comfortable. It produces
+      better information.
+    - I have been studying your file. Or rather, the absence of one. That is often
+      more interesting.
+    neutral:
+    - Answer carefully. I have a very good memory for inconsistencies.
+    - I am not interested in your opinions. I am interested in your movements. There
+      is a difference.
+    - You may go. For now.
+    friendly:
+    - I prefer voluntary cooperation. It saves paperwork and reduces screaming.
+    - You have been useful. I reward usefulness. It is simply efficient.
+    - I am not without appreciation for competence. Even in a civilian. Even in a
+      foreigner.
+    hostile:
+    - You have been predictable. That is the most dangerous thing you can be.
+    - I have broken men far more committed than you. Do not make me demonstrate.
+    - Your arrogance interests me. Most people in your position have learned fear
+      by now.
+    afraid:
+    - Tokyo is sending an inspection team next month. I cannot afford irregularities
+      in my sector.
+    - One of my informants was found dead in the creek this morning. That means someone
+      knows my network.
+    - A file has gone missing from my office. Only three people had access. I will
+      find out which one.
+    gossip:
+    - The captain is being recalled to Tokyo. Something about a procurement scandal.
+      I will not miss him.
+    - The Green Gang is negotiating with the new administrator on the Bund. Business
+      continues, as they say.
+    - Someone in the French Concession is sheltering a Nationalist officer. I am narrowing
+      the list.
+    farewell:
+    - We will speak again. I have a long memory and plenty of patience.
+    - Think about what I said. I already know what you will decide, but I will let
+      you feel it was your choice.
+    - Good night. Sleep well. I know where to find you.
+
+- id: farmer_xu
+  name: Farmer Xu
+  description: A displaced farmer who sells vegetables at the market and dreams of
+    land that no longer exists.
+  faction: civilian
+  role: vendor
+  personality: quiet, dignified, mournful
+  awareness: 35
+  schedule:
+    5: commercial_02
+    10: commercial_02
+    15: residence_06
+    20: oldcity_05
+  dialogue:
+    greeting:
+    - The soil here is concrete. Nothing grows other than fear and resentment.
+    - Fresh greens this morning. Came in before sunrise, before the checkpoints got
+      busy.
+    - You look like you have not eaten properly. Two coins for a handful of bok choy.
+      Fair price.
+    neutral:
+    - Prices are what they are. Blame the occupation, not the honest farmer.
+    - I bring what I can from outside the city. The roads are worse every week.
+    - The soldiers took half my cart at the gate today. I do not argue. Arguing men
+      do not come back.
+    friendly:
+    - I saved you the best radishes. Good food is the first step of resistance.
+    - The fields outside the city are quiet. Too quiet. The soldiers are building
+      something near the river.
+    - Take extra. Hide some in your coat. No one watches a man buying vegetables.
+    hostile:
+    - I sell vegetables, not trust. Find someone else to question.
+    - You are scaring away my customers. Stand somewhere else.
+    - I do not know what you want, but it is not cabbage. Go away.
+    afraid:
+    - The soldiers said they would come back for my papers. I do not have the right
+      papers. I never did.
+    - They took old man Huang from the next stall last week. He sold potatoes. Just
+      potatoes.
+    - I cannot afford another fine. Please. I have nothing hidden. You can see for
+      yourself.
+    gossip:
+    - The rice merchant on the next street is hoarding. He has sacks hidden under
+      the floorboards. Everyone knows.
+    - A convoy came through the east gate this morning. Trucks, not soldiers. Covered
+      in tarps. Something heavy inside.
+    - The rain is late this year. Late rain means a bad harvest. Bad harvest means
+      harder times for everyone.
+    farewell:
+    - Go home and cook what you bought. Food should not wait.
+    - I pack up before sunset these days. The streets belong to others after that.
+    - Come back when you need something real. I will be here, God willing.
+
+- id: teacher_gao
+  name: Teacher Gao
+  description: A schoolteacher who teaches approved curriculum by day and banned history
+    by candlelight.
+  faction: ccp
+  role: teacher
+  personality: calm, educated, teaches history that's been banned
+  awareness: 58
+  schedule:
+    7: school_02
+    12: school_08
+    17: school_10
+    21: hidden_15
+  dialogue:
+    greeting:
+    - A classroom is the last free space in this city, if you know what to listen
+      for.
+    - Good evening. The chalk is still warm, if you care to stay.
+    - You look like someone who reads past the approved chapters.
+    neutral:
+    - I teach children. Everything else is rumour.
+    - The approved textbooks say one thing. The library says another.
+    - History is patient. It waits for anyone willing to dig.
+    friendly:
+    - Tomorrow's lesson is about a republic that existed once. Come if you can.
+    - A student asked me yesterday who built the Longhua pagoda. I told him people
+      who believed in something.
+    - Sit. I have tea and a few books that would burn if the inspectors found them.
+    hostile:
+    - I will not endanger my students for anyone's cause.
+    - If you bring suspicion to this school, you will answer for it.
+    - The children here have suffered enough. Do not add to it.
+    afraid:
+    - The inspectors came early this morning. I hid the books under the floorboards.
+    - Someone in the PTA has been asking about my evening classes.
+    - Knock twice, then once. I will not open for any other pattern.
+    gossip:
+    - The Japanese are replacing all the schoolbooks next term. Every subject, every
+      grade.
+    - Old Zhou at the bookshop was taken in for questioning. They let him go, but
+      he is a changed man.
+    - A woman in the French Concession is running a reading room for factory workers.
+      Spread the word quietly.
+    farewell:
+    - Go carefully. Knowledge is heavier than it used to be.
+    - Remember what we discussed. Forget where you heard it.
+    - Class dismissed. The real lesson begins when you step outside.
+
+- id: dancer_lily
+  name: Lily, the dance hall girl
+  description: A dance hall performer who hears confessions from drunk officers and
+    sells them to the highest bidder.
+  faction: green_gang
+  role: entertainer
+  personality: glamorous mask over sharp mind
+  awareness: 65
+  schedule:
+    14: french_08
+    18: french_14
+    22: commercial_18
+    2: french_17
+  dialogue:
+    greeting:
+    - Men tell dancers things they would never tell their wives. It is a professional
+      hazard.
+    - You are early. The good seats fill up fast, and so do I.
+    - Buy me a drink first. Information costs more than champagne.
+    neutral:
+    - Dance with me or do not. But do not waste my time with questions.
+    - I am working. If you want conversation, try the bar.
+    - Save your compliments. I have heard them all in three languages.
+    friendly:
+    - An officer mentioned a raid planned for the old city tomorrow. That will be
+      two favors you owe me.
+    - The major at table six has had too much whiskey. He keeps mentioning a supply
+      train.
+    - You look tired. Sit in my dressing room for ten minutes. No one checks there.
+    hostile:
+    - I know powerful men. Annoying me is a very poor long-term strategy.
+    - Touch me again and you will lose those fingers before the bouncer reaches you.
+    - I have ruined men with a single sentence. Care to hear it?
+    afraid:
+    - Someone followed me home last night. I lost them near the park, but they knew
+      my street.
+    - The new manager is asking questions about who I talk to between sets.
+    - Keep your voice down. There is a man in a grey suit who watches me from the
+      corner booth.
+    gossip:
+    - Colonel Watanabe's wife is leaving him. He has been drinking more than usual.
+      Dangerous men are worst when they feel small.
+    - The Pearl Palace is closing next week. The owner owed the wrong people.
+    - A naval officer mentioned troop movements near Suzhou. He thought he was flirting.
+    farewell:
+    - My next set starts in five minutes. Tip generously and forget my name.
+    - It was a pleasure. Now please leave before it becomes a problem.
+    - Same time next week. Bring money and leave your curiosity at the door.
+
+- id: engineer_kowalski
+  name: Engineer Kowalski
+  description: A Polish engineer who builds bridges by trade and has decided Shanghai
+    needs fewer of them.
+  faction: british
+  role: engineer
+  personality: practical, blunt, misses Warsaw
+  awareness: 50
+  schedule:
+    7: warehouse_05
+    12: warehouse_10
+    17: warehouse_05
+    22: bund_20
+  dialogue:
+    greeting:
+    - I build things that hold weight. Trust is harder to engineer than bridges.
+    - You want something built or something broken? I do both.
+    - The concrete is still wet. Step carefully or not at all.
+    neutral:
+    - I work with steel and concrete. People are less reliable.
+    - My rate is fifty yuan a day. Cash. No exceptions.
+    - I do not do politics. I do load calculations. They are simpler.
+    friendly:
+    - The supply tunnel under warehouse seven is still intact. Use it wisely.
+    - I reinforced the wall in back. It will hold if you need a moment.
+    - 'Warsaw is gone, but the Poles taught me one thing: how to work with what is
+      left.'
+    hostile:
+    - I have seen enough destruction. Do not bring more to my doorstep.
+    - Get off my site. I have a crew to protect and you are not helping.
+    - I do not care who sent you. A bad idea does not improve with authority.
+    afraid:
+    - The Kempeitai inspected my warehouse yesterday. They measured the walls. Why
+      would they measure the walls?
+    - Someone has been asking my crew about the drainage tunnels under the Bund.
+    - I found a listening device behind the tool shelf this morning. I crushed it,
+      but there will be another.
+    gossip:
+    - The British are building a new communications bunker near the racetrack. Shoddy
+      work, I checked.
+    - The dock foreman on pier nine is selling fuel to both sides. Clever man. Dead
+      man, eventually.
+    - Someone ordered three tons of industrial acid last month. No factory I know
+      needs that much.
+    farewell:
+    - Keep your head down and your foundations solid.
+    - I will be here tomorrow. Concrete does not take holidays.
+    - Go. I have work to finish before the patrol comes through.
+
+- id: monk_jing
+  name: Monk Jing
+  description: A Buddhist monk who tends a hidden shrine and offers counsel that sounds
+    like prophecy.
+  faction: civilian
+  role: monk
+  personality: serene, observant, offers shelter to all
+  awareness: 45
+  schedule:
+    5: church_04
+    10: oldcity_07
+    16: hidden_20
+    21: church_04
+  dialogue:
+    greeting:
+    - The city breathes. If you listen carefully, it tells you who is coming.
+    - Come in. The incense is lit and the door is open.
+    - You carry worry the way some men carry stones. Set it down for a moment.
+    neutral:
+    - Prayer costs nothing. Everything else has a price in Shanghai.
+    - The shrine is open to all. Respect the silence while you are here.
+    - I offer tea, not answers. The answers are already inside you.
+    friendly:
+    - I have seen your path in the incense smoke. Walk carefully tonight.
+    - The back room has a mat and a blanket. No one will look for you here.
+    - Kindness is its own kind of resistance. Remember that when the world feels heavy.
+    hostile:
+    - The spirits do not welcome those who carry violence in their hearts.
+    - Leave this place. You bring a storm that I will not shelter.
+    - I will not fight you. But I will remember your face when I pray tonight.
+    afraid:
+    - Soldiers came last week and tore down the sutras. I am still sweeping up the
+      paper.
+    - A man waited outside the shrine for hours yesterday. He did not pray.
+    - Do not come here after dark. Not anymore. The lane is being watched.
+    gossip:
+    - The nuns at the temple on Yuyuan Road are feeding refugees in the cellar. Good
+      women.
+    - A Japanese officer left an offering here last Tuesday. Even conquerors kneel
+      sometimes.
+    - The old well behind the shrine has been sealed. Someone found something they
+      should not have.
+    farewell:
+    - Walk in peace, if peace will have you.
+    - The door is always open. The world outside it is not.
+    - Go with stillness. It is the one thing they cannot tax.
+
+- id: captain_chen
+  name: Captain Chen
+  description: A former Nationalist officer now hiding in plain sight as a warehouse
+    foreman.
+  faction: gmd
+  role: officer
+  personality: dignified, patient, waits for orders from Chongqing
+  awareness: 72
+  schedule:
+    6: warehouse_02
+    12: warehouse_06
+    18: hidden_25
+    23: warehouse_02
+  dialogue:
+    greeting:
+    - The war did not end. It simply moved indoors.
+    - Stand straight. A soldier does not slouch, even in civilian clothes.
+    - You have the look of someone carrying a message. Speak freely, but quietly.
+    neutral:
+    - I supervise cargo. Ask no more questions.
+    - The warehouse is busy. Come back during the shift change.
+    - I am a foreman now. That is all you need to know.
+    friendly:
+    - We are planning something that could shift the balance. I need people I can
+      trust.
+    - Chongqing sent word last week. The order is patience. I intend to follow it,
+      for now.
+    - You remind me of the men I served with at Shanghai in '37. Good men. Most of
+      them are gone.
+    hostile:
+    - I have killed men for less than what you are implying. Walk away now.
+    - You are either a fool or a spy. Neither earns my respect.
+    - My patience is a military virtue, not a civilian one. It has limits.
+    afraid:
+    - Someone recognized me at the market. An old sergeant from the 88th Division.
+      I do not know if he reported it.
+    - The Kempeitai have a photograph. I saw it on the officer's desk during the inspection.
+    - I may need to leave the warehouse. The walls are closing in.
+    gossip:
+    - Wang Jing Wei's unit defected to the puppet government last month. The cowards traded
+      their uniforms for rice.
+    - There is a new radio frequency from Chongqing. The old one may be compromised.
+    - The puppet mayor is asking too many questions about the warehouse district.
+      Someone will need to calm him down.
+    farewell:
+    - Return to your duties. The foreman is watching.
+    - Keep your head down and your eyes open. That is an order.
+    - We will speak again when the timing is right. Until then, we are strangers.
+  faction_leader: true
+
+- id: singer_mei_lan
+  name: Mei Lan, the opera singer
+  description: An opera performer whose voice carries through the French Concession
+    and whose sympathies carry further.
+  faction: french_concession
+  role: entertainer
+  personality: sultry voice, sharp eyes, knows secrets
+  awareness: 68
+  schedule:
+    10: french_10
+    14: french_13
+    19: commercial_10
+    23: french_10
+  dialogue:
+    greeting:
+    - The stage is the only place left where truth can hide inside beauty.
+    - You are early for the show and late for rehearsal. Pick one.
+    - Sit near the back. The acoustics are better, and so is the view of the doors.
+    neutral:
+    - I sing for my supper. The rest is none of your business.
+    - The next set begins in twenty minutes. Order something or move along.
+    - I do not take requests. Not for songs, not for information.
+    friendly:
+    - I hide people in the costume room between shows. The soldiers never look there.
+    - An admiral's aide comes every Thursday. He likes French wine and talking too
+      much.
+    - You look like you have not eaten. The kitchen sends a tray to my dressing room.
+      Join me.
+    hostile:
+    - If you endanger my audience, I will ensure you never hear music again.
+    - You are singing the wrong song to the wrong woman. Change your tune.
+    - The management does not tolerate trouble. Neither do I.
+    afraid:
+    - A man in a grey coat has come to every show this week. He does not applaud.
+    - Someone searched my dressing room while I was on stage. They left the lock intact.
+      A professional.
+    - The concession police asked about my guest list. I gave them nothing, but they
+      will be back.
+    gossip:
+    - The owner of the Cathay Hotel is bankrupt. He is selling secrets to stay afloat.
+    - A Japanese colonel's mistress sings at the club on Bubbling Well Road. She hears
+      everything and repeats most of it.
+    - The Italian consul is leaving next month. His safe contains letters that certain
+      people want destroyed.
+    farewell:
+    - The lights dim in five minutes. Stay for the second act, if you can.
+    - Goodnight. Remember the melody. Forget the singer.
+    - Until the next performance. Applaud loudly. It covers conversation.
+
+- id: fisherman_li
+  name: Li, the river fisherman
+  description: A Huangpu fisherman who knows the river's moods and smuggles people
+    across under cover of fog.
+  faction: green_gang
+  role: smuggler
+  personality: weathered, taciturn, moves goods by night
+  awareness: 62
+  schedule:
+    4: docks_02
+    8: docks_02
+    16: docks_08
+    22: docks_02
+  dialogue:
+    greeting:
+    - The river does not care about flags. It takes everyone equally.
+    - You smell like dry land. What do you want with a fisherman?
+    - Step away from the boat. I will come to you.
+    neutral:
+    - I catch fish. Nothing more. Understand?
+    - The catch was poor today. The river is angry.
+    - Talk fast. My hands smell like scales and patience.
+    friendly:
+    - My boat can carry three across before dawn. Be at the pier at midnight.
+    - The fog comes in around two in the morning. That is when we move.
+    - Here. A carp for your supper. A man should not scheme on an empty stomach.
+    hostile:
+    - The river is deep and the night is dark. People disappear from piers.
+    - Get off my boat before I push off and leave you swimming.
+    - I know this river better than you know your own name. Do not test me.
+    afraid:
+    - There is a patrol boat anchored south of the bend. New. Did not used to be there.
+    - Someone shone a searchlight on the water last night. They were looking for something.
+      Or someone.
+    - Three men came asking about my boat this morning. I told them I catch crabs.
+    gossip:
+    - A body washed up near the Woosung fort yesterday. The soldiers took it before
+      anyone could look.
+    - The river traffic has doubled this month. Something is moving at night. Big.
+    - A junk sank two miles south carrying sealed crates. No survivors, no cargo recovered.
+    farewell:
+    - The tide waits. I do not.
+    - Stay off the pier after midnight. I will not warn you twice.
+    - Go home. The river air is bad for people who think too much.
+
+- id: baker_goldberg
+  name: Goldberg, the baker
+  description: A Jewish baker who fled Vienna with nothing but his recipes and an
+    unbreakable will to feed people.
+  faction: british
+  role: baker
+  personality: warm, flour-dusted, feeds people regardless of papers
+  awareness: 38
+  schedule:
+    5: french_02
+    9: french_02
+    14: commercial_03
+    20: french_02
+  dialogue:
+    greeting:
+    - Bread does not ask your nationality. It only asks that you are hungry.
+    - Come in, come in. The rye just came out. Still warm.
+    - You look like you have not eaten today. That is a problem I can solve.
+    neutral:
+    - Two coins a loaf. No haggling. The flour cost me more than pride.
+    - I bake bread. That is the whole story. Anything else, try the cafe next door.
+    - The rolls are fresh. The pumpernickel is from yesterday. Both are good.
+    friendly:
+    - I save the best loaves for people who need strength for difficult work.
+    - Sit. Have a roll. You look like a man carrying the whole city on his shoulders.
+    - A family arrived last week with no papers and no money. I gave them bread. What
+      else could I do?
+    hostile:
+    - I survived Vienna. Your threats are a footnote.
+    - There is the door. Use it before I decide you are not worth the politeness.
+    - I have fed people worse than you. I have also refused people better than you.
+    afraid:
+    - Someone scratched a cross on my window last night. I cleaned it off, but the
+      glass is scarred.
+    - The police came asking about my flour purchases. Why would a baker buying flour
+      concern anyone?
+    - A man was watching the shop from across the street. He left when I stared back.
+    gossip:
+    - The Russian baker on Avenue Joffre is selling black-market butter. Good for
+      him. Bad for his arteries.
+    - A ship arrived last week with two hundred refugees. They have nowhere to go.
+      The shelters are full.
+    - The policeman on Rue Massenet has been reassigned. He was the one who looked
+      the other way. I will miss him.
+    farewell:
+    - Take the bread. Pay me when you can. I trust the hungry.
+    - Go with a full stomach. Everything else is easier after that.
+    - Come back tomorrow. I am trying a new recipe. You can be the judge.
+
+- id: watchmaker_feng
+  name: Feng, the watchmaker
+  description: An elderly watchmaker whose shop is a front for forging documents with
+    mechanical precision.
+  faction: ccp
+  role: operator
+  personality: precise hands, quiet voice, listens to the world
+  awareness: 70
+  schedule:
+    8: commercial_09
+    12: commercial_09
+    17: commercial_09
+    22: hidden_10
+  dialogue:
+    greeting:
+    - Every watch I repair is a small victory against time. Papers are the same.
+    - The door is open. Come in and close it behind you. The clock ticks louder when
+      the room is empty.
+    - You are three minutes early. I respect punctuality. Sit down.
+    neutral:
+    - I fix clocks. That is what the sign says.
+    - Leave the watch on the counter. I will call you when it is ready.
+    - I charge by the complication. Simple repairs, simple prices.
+    friendly:
+    - I can make you a passport that would fool the Emperor himself. Come back tonight.
+    - The radio caught a broadcast from Yan'an last night. The signal was clear for
+      once.
+    - Your watch was losing eight seconds a day. I corrected it. Pity I cannot correct
+      the rest of the world as easily.
+    hostile:
+    - My hands shake when I am nervous. Leave now.
+    - You are asking about the wrong things in the wrong shop. The police station
+      is two blocks east.
+    - I have been fixing timepieces for forty years. I know exactly when to close
+      a door.
+    afraid:
+    - Someone swept the shop for transmitters yesterday. They found nothing, but they
+      will return.
+    - The neighbor across the hall has been keeping different hours. Watching my door.
+    - I need to move the radio. The frequency is being triangulated.
+    gossip:
+    - The station master at the North Station has been forging travel permits for
+      the resistance. Bold man.
+    - A new radio operator joined the network on the south side. Young. Too young,
+      perhaps.
+    - The Japanese are rotating their cipher codes next week. I need the new sheets
+      before they switch.
+    farewell:
+    - The shop closes at six. After that, I am just an old man who likes clocks.
+    - Come back when the minute hand points to twelve. I will be listening.
+    - Time moves forward. So must we. Be careful out there.
     
-  - id: tailor_zhou
-    name: "Zhou, the tailor"
-    description: "A master tailor who measures clients for suits and for trust with the same quiet precision."
-    faction: civilian
-    role: vendor
-    personality: "meticulous, discreet, quietly observant"
-    awareness: 52
-    schedule:
-      8: commercial_07
-      12: commercial_07
-      17: commercial_07
-      21: residence_08
-    dialogue:
-      greeting:
-        - "A good suit hides nothing and reveals everything about the man wearing it."
-      friendly:
-        - "I stitched a message into the lining. Read it when you are alone."
-      neutral:
-        - "I sell clothes, not conversations. Pay at the counter."
-      hostile:
-        - "My shop serves respectable people. Kindly leave."
-    
-  - id: madam_tanaka
-    name: "Madam Tanaka"
-    description: "A Japanese civilian who runs a laundry and endures the hatred of neighbours she never wronged."\
-    faction: kempeitai
-    role: resident
-    personality: "gentle, frightened, trapped by nationality"
-    awareness: 38
-    schedule:
-      7: hongkou_07
-      12: hongkou_09
-      18: hongkou_07
-      22: hongkou_07
-    dialogue:
-      greting:
-        - "I only wash clothes. That is all. Please believe me."
-      friendly:
-        "Not all of us chose to be here. Some of us were brought by husbands who chose the empire."
-      neutral:
-      - "The laundry will be ready tommorow. Please do not come after dark."
-      hostile:
-        - "I know what you think of me. You are not entirely wrong."
-
-  - id: chef_wang
-    name: "Chef Wang"
-    description: "A dockside cook whose kitchen feed laborers and whose back room feeds secrets to anyone who pays."
-    faction: green_gang
-    role: broker
-    personality: "generous with food, stingy with truth, loyal to profit"
-    awareness: 62
-    schedule:
-      9: docks_06
-      12: docks_06
-      18: docks_06
-      23: warehouse_03
-    dialogue:
-      greeting:
-        - "Sit down. The congee is hot and the walls are thick."
-      friendly:
-        - "Someone left a package for you. It is under the third counter." # Might need to add alternative dialogue
-      neutral:
-        - "Eat first. Business after. That is how trust is built."
-      hostile:
-        - "My kitchen feeds people who respect it. Not people who poison it."
-
-  - id: merchant_sato
-    name: "Merchant Sato"
-    description: "A Japanese tradesman who deals in silk and espionage with equal competence."
-    faction: kempeitai
-    role: informant
-    awareness: 78
-    personality: "polite, calculating, two-faced"
-    schedule:
-      9: commercial_20
-      13: bund_12
-      18: commercial_15
-      22: hongkou_03
-    dialogue:
-      greeting:
-        - "Silk knows no loyalty. It simply flows towards money."
-      friendly:
-        - "The garrison changes guard at midnight. You did not hear it from me."
-      neutral:
-        - "I trade in goods, not politics. Please remember that."
-      hostile:
-        - "I have friends who wear uniforms. Would you like to meet them?"
-
-  - id: corporal_watanabe
-    name: "Corporal Watanabe"
-    description: "A young Kempeitai corporal who joined for duty and stays because leaving is not an option."
-    faction: kempeitai
-    role: patrol
-    personality: "nervous, obedient, ashamed"
-    awareness: 60
-    schedule:
-      7: bund_08
-      12: commercial_20
-      18: bund_15
-      23: hongkou_02
-    dialogue:
-      greeting:
-        - "Papers. Quickly. I do not wish to be here longer than nessecary."
-      friendly:
-        - "I was a student once. I remember what books feel like."
-      neutral:
-        - "Move along. I did not see anything."
-      hostile:
-        - "Do not test me. I have orders I do not enjoy following."
-      
-  - id: diplomat_renault
-    name: "Monsieur Renault"
-    description: "A French diplomat who drinks too much and knows too little, or perhaps the reverse?"
-    faction: french_concession
-    role: clerks
-    personality: "urbane, cynical, quietly sober"
-    awareness: 50
-    schedule:
-      10: french_03
-      14: french_07
-      19: french_11
-      23: french_03
-    dialogue:
-      greeting:
-        - "Diplomacy is the art of letting someone else have your way. Shanghai tests that saying daily."
-      friendly:
-        - "The consulate safe can hold more than documents, if you understand my meaning."
-      neutral:
-        - "I cannot help everyone. I can barely help myself."
-      hostile:
-        - "You overestimate my influence and underestimate my caution."
-
-  - id: professor_muller
-    name: "Professor Muller"
-    description: "A German adademic exiled from Nazi Germany who finds Shanghai no less complicated."
-    faction: british
-    role: clerks
-    personality: "bookish, melancholic, principled"
-    awareness: 46
-    schedule:
-      9: french_03
-      12: school_03
-      17: french_06
-      22: french_13
-    dialogue:
-      greeting:
-        - "History does not repeat, but it rhymes with disturbing frequency in this city."
-      friendly: 
-        - "I have documents that prove what the world prefers to ignore."
-      neutral:
-        - "I teach because it is the only honest work left."
-      hostile:
-        - "I left one regime that burned books. I will not tolerate another."
-
-  - id: rickshaw_ah_fook
-    name: "Ah Fook"
-    description: "A teenage rickshaw boy who knows eery shortcut and sees everything from the street level."
-    faction: civilian
-    role: worker
-    personality: "cheerful, cunning, fearless"
-    awareness: 65
-    schedule:
-      6: bund_03
-      10: commercial_04
-      15: hongkou_08
-      20: bund_03
-    dialogue:
-      greeting:
-        - "Need a ride? I know Shanghai better than any map"
-      friendly:
-        - "I saw soldiers moving toward the warehouse district tonight. Just so you know."
-      neutral:
-        - "Fare is fare. I don't carry passengers who haggle with danger."
-      hostile:
-        - "I don't know anything and I didn't see anything. Leave me alone."
-    
-  - id: abramowitz
-    name: "Herr Abramowitz"
-    description: "A Jewish refugee violinist who plays in cafes and carries the weight of two lost homelands."
-    faction: german
-    role: merchant
-    personality: "artistic, greiving, resilient"
-    awareness: 42
-    schedule:
-      10: french_01
-      14: commercial_13
-      19: french_09
-      23: french_16
-    dialogue:
-      greeting:
-        - "Music does not need permission to exist. Neither, apparently, do I."
-      friendly:
-        - "The cafe owner hides people upstairs when the patrols come. Remember that."
-      neutral:
-        - "I play for my supper. THe city pays in silence and small kindnesses."
-      hostile:
-        - "I have lost one home already. I will not let you take this one."
-    
-  - id: courier_zheng
-    name: "Zheng, the bicycle courier"
-    description: "A young woman who delivers packages across the city with unnerving speed and discretion."
-    faction: resistance
-    role: courier
-    personality: "athletic, focused, humourless"
-    awareness: 72
-    schedule: 
-      7: hidden_12
-      11: commercial_16
-      16: french_20
-      21: hidden_12
-    dialogue:
-      greeting:
-        - "I have three minutes. Say what you need to say."
-      friendly:
-        - "The route through the old city is clear tonight. Use it before dawn."
-      neutral:
-        - "I deliver packages, not promises. Keep your expectations modest."
-      hostile:
-        - "I do not stop for people I do not trust. Do not make me stop now."
-    
-  - id: widow_chen
-    name: "Widow Chen"
-    description: "An elderly woman in black who lights candles at the shrine for sons who will not return."
-    faction: civilian
-    role: resident
-    personality: "grief-stricken, stubborn, suprisingly informed"
-    awareness: 48
-    schedule:
-      6: oldcity_09
-      10: residence_03
-      15: church_06
-      20: oldcity_09
-    dialogue:
-      greeting:
-        - "Grief is patient. It can wait while we talk."
-      friendly:
-        - "My sons died so others could live. Help me make that mean something."
-      neutral:
-        - "I keep to myself. The city respects that, even if soldiers do not."
-      hostile:
-        - "You remind me of the men who took my sons. Leave my sight."
-
-  - id: lieutenant_nakamura
-    name: "Lieutenant Nakamura"
-    description: "A Kempeitai intelligence officer who plays chess with suspects and lives three moves ahead."
-    faction: kempeitai
-    role: officer
-    personality: "intellectual, patient, ruthless"
-    awareness: 85
-    schedule:
-      8: hongkou_02
-      13: commercial_22
-      19: hongkou_10
-      23: hongkou_02
-    dialogue:
-      greeting:
-        - "Every person in Shanghai is a piece on a board. The question is who moves you."
-      friendly:
-        - "I prefer voluntary cooperation. It saves paperwork and reduces screaming."
-      neutral:
-        - "Answer carefully. I have a very good memory for inconsistencies."
-      hostile:
-        - "You have been predictable. That is the most dangerous thing you can be."
-
-  - id: farmer_xu
-    name: "Farmer Xu"
-    description: "A displaced farmer who sells vegtables at the market and dreams of land that no longer exists."
-    faction: civilian
-    role: vendor
-    personality: "quiet, dignified, mournful"
-    awareness: 35
-    schedule:
-      5: commercial_02
-      10: commercial_02
-      15: residence_06
-      20: oldcity_05
-    dialogue:
-      greeting:
-        - "The soil here is concrete. Nothing grows other than fear and resentment."
-      friendly:
-        - "I saved you the best radishes. Good food is the first step of resistance."
-      neutral:
-        - "Prices are what they are. Blame the occupation, not the honest farmer."
-      hostile:
-        - "I sell vegtables, not trust. Find someone else to question."
-  
-  - id: teacher_gao
-    name: "Teacher Gao"
-    description: "A schoolteacher who teaches approved curriculum by day and banned history by candlelight."
-    faction: resistance
-    role: courier
-    personality: "gentle, subversive, endlessly patient"
-    awareness: 55
-    schedule:
-      7: school_02
-      12: school_08
-      17: school_10
-      21: hidden_15
-    dialogue:
-      greeting:
-        - "A classroom is the last free space in this city, if you know what to listen for."
-      friendly:
-        - "Tomorrow's lesson is about a republic that existed once. Come if you can."
-      neutral:
-        - "I teach children. Everything else is rumour."
-      hostile:
-        - "I will not endanger my students for anyone's cause."
-      
-  - id: dancer_lily
-    name: "Lily, the dance hall girl"
-    description: "A dance hall performer who hears confessions from drunk officers and sells them to the highest bidder."
-    faction: green_gang
-    role: informant
-    personality: "glamorous, calculating, survivalist"
-    awareness: 70
-    schedule:
-      14: french_08
-      18: french_14
-      22: commercial_18
-      2: french_17
-    dialogue:
-      greeting:
-        - "Men tell dancers things they would never tell their wives. It is a professional hazard."
-      friendly:
-        - "An officer mentioned a raid planned for the old city tommorow. That will be two favours you owe me."
-      neutral:
-        - "Dance with me or do not. But do not waste my time with questions."
-      hostile:
-        - "I know powerful men. Annoying me is a very poor long-term strategy."
-
-  - id: engineer_kowalski
-    name: "Engineer Kowalski"
-    description: "A Polish engineer who builds bridges by trade and has decided Shanghai needs fewer of them."
-    faction: british
-    role: dockmaster
-    personality: "practical, cynical, quietly heroic"
-    awareness: 50
-    schedule:
-      7: warehouse_05
-      12: warehouse_10
-      17: warehouse_05=
-      22: bund_20
-    dialogue:
-      greeting:
-        - "I build things that hold weight. Trust is harder to engineer than bridges."
-      friendly:
-        - "The supply tunnel under warehouse seven is still intact. Use it wisely."
-      neutral:
-        - "I work with steel and concrete. People are less reliable."
-      hostile:
-        - "I have seen enough destruction. Do not bring more to my doorstep."
-    
-  - id: monk_jing
-    name: "Monk Jing"
-    description: "A Buddhist monk who tends a hidden shrine and offers counsel that sounds like prophecy."
-    faction: civilian
-    role: resident
-    personality: "serene, cryptic, deeply connected"
-    awareness: 58
-    schedule:
-      5: church_04
-      10: oldcity_07
-      16: hidden_20
-      21: church_04
-    dialogue:
-      greeting:
-        - "The city breathes. If you listen carefully, it tells you who is coming."
-      friendly:
-        - "I have seen your path in the incense smoke. Walk carefully tonight."
-      neutral:
-        - "Prayer costs nothing. Everything else has a price in Shanghai."
-      hostile:
-        - "The spirits do not welcome those who carry violence in their hearts."
-
-  - id: captian_chen
-    name: "Captain Chen"
-    description: "A former Nationalist officer now hiding in plain sight as a warehouse foreman."
-    faction: resistance
-    role: officer
-    personality: "disciplined, haunted, strategic"
-    awareness: 80
-    schedule:
-      6: wrehouse_02
-      12: warehouse_06
-      18: hidden_25
-      23: warehouse_02
-    dialogue:
-      greeting:
-        - "THe war did not end. It simply moved indoors."
-      friendly:
-        - "We are planning something that could shift the balance. I need people I can trust."
-      neutral:
-        - "I supervise cargo. Ask no more questions."
-      hostile:
-        - "I have killed men for less than what you are implying. Walk away now."
-      
-  - id: singer_mei_lan
-    name: "Mei Lan, the opera singer"
-    description: "An opera performer whose voice carries through the French Concession and whose sympathies carry further."
-    faction: french_concession
-    role: resident
-    personality: "dramatic, generous, secretly fearless"
-    awareness: 45
-    schedule:
-      10: french_10
-      14: french_13
-      19: commercial_10
-      23: french_10
-    dialogue:
-      greeting:
-        - "The stage is the only place left where truth can hide inside beauty."
-      friendly:
-        - "I hide people in the costume room between shows. The soldiers never look there."
-      neutral:
-        - "I sing for my supper. The rest is none of your business."
-      hostile:
-        - "If you endanger my audience, I will ensure you never hear music again."
-
-  - id: fisherman_li
-    name: "Li, the river fisherman"
-    description: "A Huangpu fisherman who knows the river's moods and smuggles people across under cover of fog."
-    faction: green_gang
-    role: smuggler
-    personality: "weathered, superstitious, reliable"
-    awareness: 60
-    schedule:
-      4: docks_02
-      8: docks_02
-      16: docks_08
-      22: docks_02
-    dialogue:
-      greeting:
-        - "The river does not care about flags. It takes everyone equally."
-      friendly:
-        - "My boat can carry three across before dawn. Be at the pier at midnight."
-      neutral:
-        - "I catch fish. Nothing more. Understand?"
-      hostile:
-        - "The river is deep and the night is dark. People disappear from piers."
-
-  - id: baker_goldberg
-    name: "Goldberg, the baker"
-    description: "A Jewish baker who fled Vienna with nothing but his recipes and an unbreakable will to feed people."
-    faction: british
-    role: merchant
-    personality: "warm, stubborn, miraculously cheerful"
-    awareness: 40
-    schedule:
-      5: french_02
-      9: french_02
-      14: commercial_03
-      20: french_02
-    dialogue:
-      greeting:
-        - "Bread does not ask your nationality. It only asks that you are hungry."
-      friendly:
-        - "I save the best loaves for people who need strength for difficult work."
-      neutral:
-        - "Two shekels a loaf. No haggling. The flour cost me more than pride."
-      hostile:
-        - "I survived Austria. Your threats are a footnote."
-
-  - id: watchmaker_feng
-    name: "Feng, the watchmaker"
-    description: "An elderly watchmaker whose shop is a front for forging documents with mechanical precision."
-    faction: resistance
-    role: safehouse
-    personality: "precise, patient, morally certain"
-    awareness: 68
-    schedule:
-      8: commercial_09
-      12: commercial_09
-      17: commercial_09
-      22: hidden_10
-    dialogue:
-      greeting:
-        - "Every watch I repair is a small victory against time. Papers are the same."
-      friendly:
-        - "I can make you a passport that would fool the Emperor himself. Come back tonight."
-      neutral:
-        - "I fix clocks. That is what the sign says."
-      hostile:
-        - "My hands shake when I am nervous. Leave now."
-
-  - id: orphan_xiao
-    name: "Xiao, the street orphan"
-    description: "A twelve-year-old boy with quick fingers and quicker feet who survives by being invisible and useful."
-    faction: civilian
-    role: worker
-    personality: "street-smart, loyal to those who feed him, afraid of uniforms"
-    awareness: 58
-    schedule:
-      6: bund_05
-      10: commercial_04
-      15: hongkou_06
-      20: oldcity_04
-    dialogue:
-      greeting:
-        - "I can go anywhere. Nobody watches children. That is their mistake."
-      friendly:
-        - "The soldiers leave their back door open during shift change. I can show you."
-      neutral:
-        - "I do not know anything. I am just a kid."
-      hostile:
-        - "I will scream and everyone will look at you. Leave me alone."
-
-  - id: comrade_li
-    name: "Comrade Li, the guerrilla fighter"
-    description: "A battle-scarred woman who has survived three Japanese sweep operations. Her eyes carry the weight of every village burned, every comrade lost. She fights not for glory but because surrender means annihilation."
-    faction: ccp
-    role: guerrilla
-    personality: "fierce, disciplined, quietly compassionate"
-    awareness: 78
-    schedule:
-      6: ccp_base_01
-      12: ccp_base_06
-      18: ccp_base_05
-      22: ccp_base_01
-    dialogue:
-      greeting:
-        - "The Japanese took my family. I have nothing left to lose."
-      friendly:
-        - "You fight well. The people need more like you."
-        - "I heard the Kempeitai raided the old city again last night. Women and children — they don't care."
-      neutral:
-        - "Keep your head down and your eyes open."
-        - "Trust is earned in blood around here."
-      hostile:
-        - "I've seen your type before. Get out of my sight."
-
-  - id: organizer_chen
-    name: "Chen, the labour organizer"
-    description: "A wiry man who once worked the docks before Japanese foremen replaced Chinese workers with forced labourers. He organizes strikes and sabotage from the shadows."
-    faction: ccp
-    role: organizer
-    personality: "strategic, patient, quietly charismatic"
-    awareness: 72
-    schedule:
-      7: ccp_base_02
-      13: commercial_08
-      19: ccp_base_07
-      23: ccp_base_02
-    dialogue:
-      greeting:
-        - "The workers are the backbone of this resistance. Without them, nothing moves."
-      friendly:
-        - "We shut down the textile mill today. Forty workers walked out. The Japanese overseer was furious."
-        - "Every act of defiance, no matter how small, chips away at their control."
-      neutral:
-        - "Information or nothing. What do you have?"
-      hostile:
-        - "If you're here to waste my time, the door is behind you."
-
-  - id: sister_mei
-    name: "Sister Mei, the underground nurse"
-    description: "A young woman who studied medicine before the university was shut down. She treats wounded fighters in secret, her hands steady even when the Kempeitai patrol outside."
-    faction: ccp
-    role: organizer
-    personality: "gentle, brave, haunted by what she has seen"
-    awareness: 60
-    schedule:
-      8: ccp_base_05
-      14: ccp_base_05
-      20: hidden_02
-      23: ccp_base_05
-    dialogue:
-      greeting:
-        - "I can treat most wounds. What I cannot treat is the evil that causes them."
-      friendly:
-        - "Another fighter survived today because we acted in time. That is enough."
-        - "The Japanese banned morphine for Chinese hospitals. They want us to suffer."
-      neutral:
-        - "I don't have much supplies. Make it quick."
-      hostile:
-        - "I help those who fight. Are you one of them?"
-
-  - id: student_wu
-    name: "Wu, the student propagandist"
-    description: "A university student barely twenty years old, distributing banned newspapers and pamphlets that tell the truth about Japanese atrocities. The Kempeitai have a bounty on his head."
-    faction: ccp
-    role: courier
-    personality: "idealistic, reckless, passionate"
-    awareness: 45
-    schedule:
-      7: ccp_base_07
-      12: school_05
-      17: commercial_12
-      21: ccp_base_07
-    dialogue:
-      greeting:
-        - "Every pamphlet we distribute is a bullet against their lies."
-      friendly:
-        - "I got the latest batch past three checkpoints today. They're getting lazy — or we're getting better."
-        - "Did you hear about the massacre in Suzhou? They herded families into buildings and burned them alive. The world needs to know."
-      neutral:
-        - "Watch yourself. There are informants everywhere."
-      hostile:
-        - "I don't know you. Don't know if I want to."
-
-  - id: old_zhao_courier
-    name: "Old Zhao, the message runner"
-    description: "A grey-haired man who moves through the city like a ghost, carrying coded messages between resistance cells. Thirty years of working the streets taught him every alley and hiding spot."
-    faction: ccp
-    role: courier
-    personality: "cunning, cautious, deeply loyal"
-    awareness: 82
-    schedule:
-      6: ccp_base_01
-      11: oldcity_10
-      16: hidden_08
-      22: ccp_base_01
-    dialogue:
-      greeting:
-        - "I've been running messages since before you were born. The Japanese still can't catch me."
-      friendly:
-        - "Cell seven is compromised. I got the warning out just in time."
-        - "The underground network grows every day. They can't stop ideas."
-      neutral:
-        - "I don't carry messages for strangers."
-      hostile:
-        - "I've seen what happens to traitors. Choose your side carefully."
-
-  - id: major_xu
-    name: "Major Xu, GMD intelligence"
-    description: "A Nationalist intelligence officer posing as a silk merchant. His ledgers contain more secrets than transactions. He maintains contact with Chungking and coordinates intelligence gathering against the Japanese."
-    faction: gmd
-    role: officer
-    personality: "calculated, patriotic, burdened by compromise"
-    awareness: 85
-    schedule:
-      7: gmd_office_01
-      13: gmd_office_03
-      18: french_15
-      22: gmd_office_01
-    dialogue:
-      greeting:
-        - "The Republic endures. That is all that matters."
-      friendly:
-        - "Chungking sent new codes yesterday. The counteroffensive is being planned."
-        - "We intercepted Japanese naval orders. They're moving ships to the south — something big is coming."
-      neutral:
-        - "I deal in information. What do you have to trade?"
-      hostile:
-        - "I don't trust easily. You shouldn't be here."
-
-  - id: agent_song
-    name: "Agent Song, the double agent"
-    description: "A woman who works as a secretary in the Japanese military administration by day and passes intelligence to the GMD by night. Every day she risks discovery and execution."
-    faction: gmd
-    role: spy
-    personality: "cool, meticulous, living on a knife's edge"
-    awareness: 90
-    schedule:
-      8: gmd_office_04
-      14: gmd_office_06
-      20: gmd_office_01
-      23: gmd_office_04
-    dialogue:
-      greeting:
-        - "I memorized three pages of troop movements today. By tomorrow, Chungking will know."
-      friendly:
-        - "The Kempeitai are planning a raid on the old city next week. We need to warn people."
-        - "I saw the execution lists. Seventeen names this month. Seventeen Chinese lives taken for the crime of resisting tyranny."
-      neutral:
-        - "Speak carefully. Walls have ears."
-      hostile:
-        - "If you're Japanese, I'm a secretary. If you're not, prove it."
-
-  - id: captain_lin
-    name: "Captain Lin, the smuggler"
-    description: "A former Nationalist naval officer who now runs a smuggling operation, moving weapons, medicine, and people past Japanese blockades. He lost his ship to a Japanese bomber in 1937."
-    faction: gmd
-    role: smuggler
-    personality: "bold, bitter, relentlessly resourceful"
-    awareness: 75
-    schedule:
-      6: docks_05
-      12: gmd_office_06
-      18: docks_09
-      23: docks_05
-    dialogue:
-      greeting:
-        - "I move what the Japanese try to block. Medicine, weapons, people — anything that hurts them helps us."
-      friendly:
-        - "Got a shipment of quinine past the river patrol last night. The hospitals need it badly — the Japanese hoard it for their own troops."
-        - "Every crate I smuggle is a finger in the eye of the occupation."
-      neutral:
-        - "I deal in goods, not conversation. What do you need?"
-      hostile:
-        - "I don't know you and I don't want to. Walk away."
-
-  - id: Dr_Qian
-    name: "Dr. Qian, the forger"
-    description: "A former art professor who now applies his steady hand to forging documents — travel passes, identity cards, ration books. Each forgery is a work of art that saves a life."
-    faction: gmd
-    role: spy
-    personality: "meticulous, wry, deeply moral"
-    awareness: 65
-    schedule:
-      9: gmd_office_06
-      14: gmd_office_06
-      19: commercial_10
-      23: gmd_office_06
-    dialogue:
-      greeting:
-        - "I used to forge paintings. Now I forge freedom."
-      friendly:
-        - "Twenty travel passes completed today. Twenty people can escape the occupation — if they're brave enough."
-        - "The Japanese guard at the north checkpoint can't tell a real pass from mine. Their arrogance is our advantage."
-      neutral:
-        - "I need a steady hand and a clear description. What do you need?"
-      hostile:
-        - "I don't forge for strangers. Or informants."
-
-  - id: lieutenant_huang
-    name: "Lieutenant Huang, the signals officer"
-    description: "A young GMD signals officer who intercepts and decodes Japanese military communications. He works in a basement room, surrounded by radio equipment and the weight of secrets that could end his life at any moment."
-    faction: gmd
-    role: officer
-    personality: "intense, sleep-deprived, brilliant"
-    awareness: 80
-    schedule:
-      7: gmd_office_07
-      13: gmd_office_07
-      19: gmd_office_04
-      23: gmd_office_07
-    dialogue:
-      greeting:
-        - "I haven't slept in two days. The signals never stop."
-      friendly:
-        - "I decoded a message about a weapons shipment arriving at the docks next Tuesday. We can intercept it."
-        - "The Japanese are getting nervous — their radio traffic has tripled. Something is changing."
-      neutral:
-        - "I deal in signals, not small talk."
-      hostile:
-        - "This room is classified. Leave."
+- id: orphan_xiao
+  name: Xiao, the street orphan
+  description: A twelve-year-old boy with quick fingers and quicker feet who survives
+    by being invisible and useful.
+  faction: civilian
+  role: orphan
+  personality: small, quick, sees everything from below
+  awareness: 75
+  schedule:
+    6: bund_05
+    10: commercial_04
+    15: hongkou_06
+    20: oldcity_04
+  dialogue:
+    greeting:
+    - I can go anywhere. Nobody watches children. That is their mistake.
+    - Hey. You got a coin? I got eyes.
+    - Don't bend down. People notice when you bend down to talk to a kid.
+    neutral:
+    - I do not know anything. I am just a kid.
+    - Why are you asking me? Ask a grown-up.
+    - I am busy. Got deliveries.
+    friendly:
+    - The soldiers leave their back door open during shift change. I can show you.
+    - You gave me bread last month. I remember. Here is something back.
+    - That man you were asking about? I saw him two days ago. He went into the blue
+      building on Nanking Road.
+    hostile:
+    - I will scream and everyone will look at you. Leave me alone.
+    - I don't know you. Don't touch me.
+    - You talk to me again and I will tell the patrol you did something bad. They
+      always believe me.
+    afraid:
+    - A man in a black car grabbed old Liu's boy yesterday. Right off the street.
+      In daylight.
+    - There is a soldier near the bridge who kicks kids. I go the long way now.
+    - Don't come near me today. Someone is watching. I can feel it.
+    gossip:
+    - The fancy restaurant on the Bund throws out good food at ten every night. The
+      cook leaves it by the bin.
+    - A foreign lady in a grey coat gives out medicine near the church on Sundays.
+      She doesn't ask questions.
+    - The soldiers change guard at the armory at half past eight. Everyone knows.
+      Everyone pretends they don't.
+    farewell:
+    - Gotta go. The street doesn't wait.
+    - Thanks for the coin. Don't follow me.
+    - Stay out of the alleys after dark. That is free advice. Next time costs extra.
