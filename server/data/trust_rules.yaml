@@ -35,3 +35,91 @@ rules:
       civilian.worker: -8
       kempeitai.patrol: 6
     visible: true
+
+  - action: "talk_to_gmd.officer"
+    deltas:
+      gmd.officer: 8
+      ccp.organizer: -3
+      kempeitai.informant: 2
+    visible: true
+
+  - action: "talk_to_gmd.spy"
+    deltas:
+      gmd.spy: 10
+      ccp.courier: -8
+      green_gang.smuggler: 3
+    visible: true
+
+  - action: "talk_to_british.dockmaster"
+    deltas:
+      british.dockmaster: 6
+      civilian.worker: 2
+      kempeitai.patrol: -2
+    visible: false
+
+  - action: "talk_to_british.consul"
+    deltas:
+      british.consul: 8
+      gmd.officer: 3
+      ccp.organizer: -2
+    visible: true
+
+  - action: "talk_to_french_concession.merchant"
+    deltas:
+      french_concession.merchant: 6
+      civilian.vendor: 2
+    visible: false
+
+  - action: "talk_to_french_concession.police"
+    deltas:
+      french_concession.police: 5
+      kempeitai.patrol: 3
+      civilian.resident: -2
+    visible: true
+
+  - action: "disguise_caught"
+    deltas:
+      kempeitai.patrol: 10
+      civilian.resident: -8
+      ccp.courier: -5
+      gmd.officer: -3
+    visible: true
+
+  - action: "hide_success"
+    deltas:
+      civilian.resident: 2
+      kempeitai.patrol: -1
+    visible: false
+
+  - action: "hide_failure"
+    deltas:
+      kempeitai.patrol: 5
+      civilian.resident: -3
+    visible: true
+
+  - action: "plant_evidence_found"
+    deltas:
+      kempeitai.officer: 8
+      civilian.resident: -5
+      ccp.organizer: -8
+    visible: true
+
+  - action: "tail_caught"
+    deltas:
+      kempeitai.officer: 6
+      ccp.courier: -10
+      civilian.worker: -3
+    visible: true
+
+  - action: "eat_in_public"
+    deltas:
+      civilian.resident: 2
+      civilian.worker: 1
+      morale: 2
+    visible: false
+
+  - action: "bond_with_npc"
+    deltas:
+      "{target_faction}": 5
+      civilian.resident: 2
+    visible: false
