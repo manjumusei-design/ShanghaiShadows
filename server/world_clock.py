@@ -2,7 +2,14 @@ import asyncio
 import random
 from typing import TYPE_CHECKING
 
-from .constants import CURFEW_MINUTE, EVENT_LOG_MAXLEN, WORLD_EVENTS_MAXLEN
+from .constants import (
+    CURFEW_MINUTE,
+    EVENT_LOG_MAXLEN,
+    WORLD_EVENTS_MAXLEN,
+    HUNGER_DECAY_RATE,
+    HUNGER_HEALTH_DAMAGE,
+    LOW_HUNGER_THRESHOLD,
+)
 from .commands import (
     apply_action_trust,
     advance_time_one_minute,
@@ -34,13 +41,12 @@ class WorldClock:
         self.disguises = disguises
         self.stealth = stealth
         self.storylet_manager = storylet_manager
-        self.manually_advancing = False
 
     async def tick(self):
         if not self.session_manager.sessions:
             return
         
-        if self.manually_advancing:
+        if any(s.manually_advancing for s in self.session_manager.sessions.values()):
             return
         
         self._advance_time_one_minute()
@@ -249,10 +255,6 @@ class WorldClock:
                     asyncio.create_task(session.send_display("\n".join(lines)))
 
     def _process_survival_all_sessions(self):
-        HUNGER_DECAY_RATE = 0.5
-        HUNGER_HEALTH_DAMAGE = 2
-        LOW_HUNGER_THRESHOLD = 20
-
         for session in self.session_manager.sessions.values():
             session.player.hunger = max(0, session.player.hunger - HUNGER_DECAY_RATE)
             if session.player.hunger <= LOW_HUNGER_THRESHOLD:
@@ -323,7 +325,7 @@ class WorldClock:
                     from .commands import trigger_ending
                     from .save_manager import save_player, save_world_state
                     from .victory import generate_liberation_ending, compile_legacy_narrative
-                    ending_text = generate_liberation_ending(ending, session.player.name, self.shared.legacy_book)
+                    ending_text = generate_liberation_ending(ending, session.player.name, self.shared.legacy_book, self.shared.ccp_influence, self.shared.gmd_influence)
                     legacy = compile_legacy_narrative(self.shared.legacy_book)
 
                     end_screen = f"""
