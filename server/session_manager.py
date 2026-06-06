@@ -19,7 +19,7 @@ from .game_world import SharedWorldState
 
 if TYPE_CHECKING:
     from .commands import CommandContext
-    
+
 
 class SessionManager:
     def __init__(self, shared: SharedWorldState, disguises, stealth, storylet_manager):
@@ -38,7 +38,7 @@ class SessionManager:
             except Exception:
                 pass
             return
-        
+
         self.sessions[session.username] = session
 
         room = self.shared.world.get_room(session.player.current_room)
@@ -162,12 +162,12 @@ class SessionManager:
         await websocket.send(f'{{"type":"display","payload":"Use \\"help\\" for commands, \\"look\\" to see your surroundings."}}')
 
         return session
-    
+
     def _create_new_player(self, username: str):
         from .player_data import PlayerData
         from .trust import default_trust
         from .commands import _generate_background, _apply_inherited_trust
-        
+
         background = _generate_background()
 
         player = PlayerData()
@@ -196,7 +196,7 @@ class SessionManager:
 
         save_player(player)
         return player
-    
+
     def _make_context(self, session: Session) -> CommandContext:
         from .commands import CommandContext
         room = self.shared.world.get_room(session.player.current_room)
@@ -209,23 +209,23 @@ class SessionManager:
             storylet_manager=self.storylet_manager,
             room=room,
         )
-    
-    async def send_room_players(self, session: Session):
+
+    async def _send_room_players(self, session: Session):
         room = self.shared.world.get_room(session.player.current_room)
         if not room:
             return
-        
+
         players = [s.player.name for s in self.get_players_in_room(room.id) if s.username != session.username]
         await session.send_room_players(players)
 
     def get_players_in_room(self, room_id: str) -> List[Session]:
         return [s for s in self.sessions.values() if s.player.current_room == room_id]
-    
+
     async def broadcast_to_room(self, room_id: str, message: str, exclude_username: str = ""):
         for session in self.get_players_in_room(room_id):
             if session.username != exclude_username:
                 try:
-                    await session.send_display
+                    await session.send_display(message)
                 except Exception:
                     pass
 
@@ -249,7 +249,7 @@ class SessionManager:
                 is_dead, death_message = check_death_conditions(self._make_context(session))
                 if is_dead:
                     await handle_player_death(self._make_context(session), death_message)
-                    
+
         session.running = False
         try:
             await session.websocket.close()
@@ -258,5 +258,3 @@ class SessionManager:
 
     def get_session_by_username(self, username: str) -> Session:
         return self.sessions.get(username)
-    
-
