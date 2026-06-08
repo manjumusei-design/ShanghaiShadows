@@ -187,9 +187,40 @@ def _spend_money(player: PlayerData, fabi_amount: int):
         player.money_fabi += silver_needed * 10 - remainder
 
 
-def _check_money(player: PlayerData, fabi_cost: int) -> bool:
-    total_fabi = player.money_fabi + player.money_silver * 10
-    return total_fabi >= fabi_cost
+def _earn_money(player: PlayerData, fabi_amount: int):
+    player.money_fabi += fabi_amount
+    silver_to_add = player.money_fabi // 10
+    player.money_fabi %= 10
+    player.money_silver += silver_to_add
+
+
+def _pickpocket_roll(player_stealth: int, target_perception: int) -> tuple:
+    chance = 30 + (player_stealth - target_perception)
+    chance = max(5, min(90, chance))
+    if random.randint(1, 100) <= chance:
+        return True, random.randint(1, PICKPOCKET_BASE)
+    return False, 0
+
+
+async def _handle_mission_objectives(ctx: CommandContext, event_type: str, target_id: str):
+    mm = ctx.shared.mission_manager
+    if not mm:
+        return
+    completed = mm.update_objectives(ctx.session.player, event_type, target_id)
+    for mid in completed:
+        mission = mm.complete(ctx.session.player, mid)
+        if mission:
+            await _award_mission_rewards(ctx, mission)
+
+
+def _degrade_and_notify_weapon(ctx: CommandContext, weapon, attack_succeeded: bool):
+    if weapon:
+        broken = degrade_weapon(weapon, attack_succeeded)
+        if broken:
+            await post_display(ctx, loc("combat.weapon_broken").format(name=weapon.name))
+            if weapon in ctx.session.player.inventory:
+                ctx.session.player.inventory.remove(weapon)
+
 
 def build_completions(ctx: CommandContext) -> List[str]:
     from .session_manager import build_command_registry
