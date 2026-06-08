@@ -172,6 +172,10 @@ async def broadcast_to_room(ctx: CommandContext, text: str, exclude_username: st
 
 
 def _check_money(player: PlayerData, fabi_cost: int) -> bool:
+    total_fabi = player.money_fabi + player.money_silver * 10
+    return total_fabo >= fabi_cost
+
+def _check_money(player: PlayerData, fabi_cost: int) -> bool:
     total_fabo = player.money_fabi + player.money_silver * 10
     return total_fabi >= fabi_cost
 
