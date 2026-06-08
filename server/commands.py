@@ -175,6 +175,18 @@ def _check_money(player: PlayerData, fabi_cost: int) -> bool:
     total_fabi = player.money_fabi + player.money_silver * 10
     return total_fabo >= fabi_cost
 
+
+def _spend_money(player: PlayerData, fabi_amount: int):
+    if player.money_fabi >= fabi_amount:
+        player.money_fabi -= fabi_amount
+    else:
+        remainder = fabi_amount - player.money_fabi
+        player.money_fabi = 0
+        silver_needed = (remainder + 9) // 10
+        player.money_silver = max(0, player.money_silver - silver_needed)
+        player.money_fabi += silver_needed * 10 - remainder
+
+        
 def _check_money(player: PlayerData, fabi_cost: int) -> bool:
     total_fabo = player.money_fabi + player.money_silver * 10
     return total_fabi >= fabi_cost
