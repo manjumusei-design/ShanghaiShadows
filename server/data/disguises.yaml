@@ -3,28 +3,58 @@ disguises:
     name: "a Japanese officer"
     apparent_faction: "kempeitai"
     bonus: 18
-    description: "The cut of the coat and the arrogance it demands is unmistakable. The insignia of the puppet government is sewn onto the collar, while the cap bears the rising sun emblem. Wearing this disguise will allow you to move more freely in areas controlled by the Japanese, but be careful not to draw too much attention."
+    description: "The cut of the coat and the arrogance it demands is unmistakable. The insignia of the puppet government is sewn onto the collar, and the cap bears the rising sun emblem. Wearing this disguise will allow you to move more freely in areas controlled by the Japanese, but be careful not to draw too much attention."
 
   - id: coolie
     name: "a dock coolie"
     apparent_faction: "civilian"
     bonus: 10
-    description: "Bent shoulders and lowered eyes make you easier to overlook. The coarse fabric of the tunic and trousers is stained with grime ansd sweat. Wearing this disguise will allow you to blend in with the working class."
+    description: "Bent shoulders and lowered eyes make you easier to overlook. The coarse fabric of the tunic and trousers is stained with the grime and sweat. Wearing this disguise will allow you to blend in with the working class."
 
   - id: priest
     name: "a tired priest"
     apparent_faction: "civilian"
-    bonus: 8
-    description: "Piety buys a little distance. The simple robes and worn sandals are a huble disguise, but the air of resignation and quiet dignity may help you avoid suspicion in certian circles."
+    bonus: 12
+    description: "Piety buys a little distance. The simple robes and worn sandals are a humble disguise, but the air of resignation and quiet dignity may help you avoid suspicion in certain circles."
 
   - id: refugee
     name: "a displaced refugee"
     apparent_faction: "civilian"
     bonus: 8
-    description: "The tattered clothes and weary expression tell a story of loss and hardship. Wearing this disguise will allow you to evoke sympathy and avoid scrutiny, but be prepared to endure the hardships that come with it," 
+    description: "The tattered clothes and weary expression tell a story of loss and hardship. Wearing this disguise will allow you to evoke sympathy and avoid scrutiny, but be prepared to endure the hardships and discrimination that come with it."
 
   - id: courier
-    name: "an underground courier"
-    apparent__faction: "ccp"
+    name: "a underground courier"
+    apparent_faction: "ccp"
     bonus: 14
     description: "The nondescript clothing and satchel full of messages make you a valuable asset to the underground, but also a target for the Kempeitai. Wearing this disguise will allow you to move more freely within resistance circles, but be careful not to get caught with incriminating evidence."
+
+  - id: street_vendor
+    name: "a street vendor"
+    apparent_faction: "civilian"
+    bonus: 9
+    description: "A simple cart and a basket of goods give you a reason to be anywhere. The worn apron and calloused hands suggest honest work, even as your eyes scan the crowd for something more valuable."
+
+  - id: gmd_officer
+    name: "a Nationalist officer"
+    apparent_faction: "gmd"
+    bonus: 16
+    description: "The uniform is worn but well-maintained, bearing the insignia of a white sun with a background of a blue sky that represents the government that fled to ChongQing. Wearing this disguise grants some authority in certain circles, but the Kempeitai view you with suspicion."
+
+  - id: green_gang_thug
+    name: "a Green Gang enforcer"
+    apparent_faction: "green_gang"
+    bonus: 12
+    description: "The Green Gang runs Shanghai's underworld, and this disguise marks you as one of theirs. The swagger and the threat in your eyes clear a path through the crowds."
+
+  - id: dock_worker
+    name: "a dock worker"
+    apparent_faction: "civilian"
+    bonus: 7
+    description: "Stained clothes and strong hands suggest honest labor at the docks. This disguise helps you blend in with the working masses, though it offers little protection from scrutiny."
+
+  - id: journalist
+    name: "a foreign journalist"
+    apparent_faction: "british"
+    bonus: 11
+    description: "A press pass in the breast pocket and a notebook in hand give you a reason to ask questions. The authorities tolerate foreign journalists up to a point, but push too far and you'll find yourself expelled or worse."
