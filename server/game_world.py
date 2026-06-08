@@ -81,6 +81,9 @@ def serialize_world_state(state: SharedWorldState) -> Dict[str, object]:
         "legacy_book": state.legacy_book,
         "ccp_influence": state.ccp_influence,
         "gmd_influence": state.gmd_influence,
+        "archived_journals": state.archived_journals,
+        "server_cycle": state.server_cycle,
+        "weather": state.weather,
     }
     return payload
 
