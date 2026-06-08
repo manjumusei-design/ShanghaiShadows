@@ -127,6 +127,9 @@ def deserialize_world_state(data: Dict[str, object], world: World) -> SharedWorl
     legacy_book = list(data.get("legacy_book", []))
     ccp_influence = int(data.get("ccp_influence", 10))
     gmd_influence = int(data.get("gmd_influence", 15))
+    archived_journals = dict(data.get("archived_journals", {}))
+    server_cycle = int(data.get("server_cycle", 1))
+    weather = str(data.get("weather", "clear"))
 
     return SharedWorldState(
         world=world,
@@ -137,6 +140,9 @@ def deserialize_world_state(data: Dict[str, object], world: World) -> SharedWorl
         event_log=event_log,
         legacy_book=legacy_book,
         rumour_mill=rumour_mill,
+        archived_journals=archived_journals,
+        server_cycle=server_cycle,
+        weather=weather,
     )
 
 
