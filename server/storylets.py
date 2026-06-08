@@ -102,4 +102,4 @@ class StoryletManager:
         for storylet in eligible:
             if random.random() < storylet.trigger_chance:
                 return ActiveStorylet(storylet_id=storylet.id,narrative=storylet.narrative,options=storylet.options,)
-            return None
+        return None
