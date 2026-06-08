@@ -5,6 +5,7 @@ from typing import Dict, List, Optional
 import yaml
 
 from .npc import Npc, load_npcs
+from .data_utils import filter_to_dataclass
 
 CUSTOM_DIR = Path("server/data/custom")
 
@@ -19,6 +20,30 @@ class Item:
     planted_on: str = ""
     food_value: int = 0
     morale_restore: int = 0
+    courage_bonus: int = 0
+    defense_value: int = 0
+    durability: int = -1 
+    max_durability: int = -1
+    mods: List[str] = field(default_factory=list)
+    concealed: bool = False
+    is_weapon: bool = False
+    is_armour: bool = False
+    is_container: bool = False
+    container_items: List = field(default_factory=list)
+    locked: bool = False
+    key_id: str = ""
+    is_note: bool = False
+    note_text: str = ""
+    is_map: bool = False
+    map_districts: List[str] = field(default_factory=list)
+    is_money: bool = False
+    money_amount: int = 0
+    money_currency: str = ""
+    is_key: bool = False
+    opens_container: str = ""
+    is_mod: bool = False
+    mod_type: str = ""
+    mod_bonus: int = 0
 
 
 @dataclass
@@ -32,6 +57,13 @@ class Room:
     indoors: bool = False
     tags: List[str] = field(default_factory=list)
     players: List[str] = field(default_factory=list)
+    hiding_spots: bool = False
+    hidden_exits: Dict[str, str] = field(default_factory=dict)
+    safe_room: bool = False
+    trishaw_stand: bool = False
+    nurse_available: bool = False
+    nurse_hours: List[int] = field(default_factory=list)
+
 
 def load_items(path: str) -> Dict[str, Item]:
     with open(path, "r", encoding="utf-8") as f:
@@ -39,15 +71,7 @@ def load_items(path: str) -> Dict[str, Item]:
 
     items: Dict[str, Item] = {}
     for item_data in data.get("items", []):
-        item = Item(
-            id=item_data["id"],
-            name=item_data["name"],
-            description=item_data["description"],
-            takeable=item_data.get("takeable", True),
-            readable_text=item_data.get("readable_text", ""),
-            food_value=int(item_data.get("food_value", 0)),
-            morale_restore=int(item_data.get("morale_restore", 0)),
-        )
+        item = Item(**filter_to_dataclass(item_data, Item))
         items[item.id] = item
     return items
 
@@ -58,8 +82,7 @@ def load_rooms(path: str, items: Dict[str, Item]) -> Dict[str, Room]:
 
     if "districts" in data:
         return _load_generated_rooms(data, items)
-    
-    
+
     rooms: Dict[str, Room] = {}
     for room_id, fields in data.items():
         room_items = []
@@ -67,17 +90,10 @@ def load_rooms(path: str, items: Dict[str, Item]) -> Dict[str, Room]:
             if item_id in items:
                 room_items.append(replace(items[item_id]))
 
-        rooms[room_id] = Room(
-            id=fields["id"],
-            title=fields["title"],
-            description=fields["description"],
-            exits=fields.get("exits", {}),
-            items=room_items,
-            npcs=[],
-            npcs=fields.get("npcs", []),
-            indoors=fields.get("indoors", False),
-        )
+        filtered_data = filter_to_dataclass(fields, Room, overrides={"items": room_items, "npcs": []})
+        rooms[room_id] = Room(**filtered_data)
     return rooms
+
 
 def _load_generated_rooms(data: Dict[str, object], items: Dict[str, Item]) -> Dict[str, Room]:
     rooms: Dict[str, Room] = {}
