@@ -35,7 +35,18 @@ class PlayerData:
     last_curfew_pentaly_day: int = 0
     last_newspaper_day: int = 0
     conversation_history: deque = field(default_factory=lambda: deque(maxlen=CONVERSATION_HISTORY_MAXLEN))
-
+    courage: int = 50
+    perception: int = 30
+    money_fabi: int = 0
+    money_silver: int = 0
+    map_revealed: List[str] = field(default_factory=list)
+    maps_purchased: List[str] = field(default_factory=list)
+    worn_armour_id: str = ""
+    active_missions: List[dict] = field(default_factory=list)
+    completed_missions: List[str] = field(default_factory=list)
+    abandoned_missions: List[str] = field(default_factory=list)
+    visited_rooms: List[str] = field(default_factory=list)
+    
 
 def serialize_player(player: PlayerData) -> Dict[str, object]:
     payload = {
