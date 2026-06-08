@@ -1,4 +1,36 @@
-events: 
+events:
+  - trigger_time: 60
+    event_id: dawn_broadcast
+    recurring: true
+    description: "The crackle of a propaganda radio broadcast announces the start of another day under occupation."
+    actions:
+      - type: message_to_player
+        text: "A radio crackles somewhere nearby. 'Another day of cooperation. Another day of order.' The voice is tired."
+
+  - trigger_time: 420
+    event_id: morning_market
+    recurring: true
+    description: "The morning market stirs to life. Ration queues form at the distribution points."
+    actions:
+      - type: message_to_player
+        text: "The market wakes up. Vendors call out prices that change by the hour. A ration queue stretches down the alley."
+
+  - trigger_time: 720
+    event_id: midday_patrol
+    recurring: true
+    description: "Kempeitai patrols sweep through Hongkou, checking papers and searching faces."
+    actions:
+      - type: message_to_player
+        text: "Boots on cobblestones. A patrol sweeps through Hongkou, stopping anyone who looks like they don't belong."
+
+  - trigger_time: 900
+    event_id: afternoon_rumors
+    recurring: true
+    description: "Gossip spreads through the teahouses and street corners. News travels fast when it's dangerous."
+    actions:
+      - type: message_to_player
+        text: "Whispers in a teahouse. A vendor shares a rumor he heard from a dockworker. Information is the true currency."
+
   - trigger_time: 1200
     event_id: curfew_warning
     recurring: true
@@ -6,3 +38,35 @@ events:
     actions:
       - type: message_to_player
         text: "A distant siren reminds you that curfew is near. The streets will soon become dangerous."
+
+  - trigger_time: 1380
+    event_id: night_raids
+    recurring: true
+    description: "Kempeitai raiding parties search buildings randomly, looking for resistance activity."
+    actions:
+      - type: message_to_player
+        text: "Shouting in the distance. A raid somewhere in the district. Heavy boots on stairs. Then silence."
+
+  - trigger_time: 0
+    event_id: midnight_silence
+    recurring: true
+    description: "The city falls silent at midnight. Only the patrols remain visible."
+    actions:
+      - type: message_to_player
+        text: "Midnight. The city holds its breath. Even the crickets seem to know when to be quiet."
+
+  - trigger_time: 360
+    event_id: resistance_leaflet
+    recurring: true
+    description: "Resistance leaflets appear overnight, plastered on walls and stuffed under doors."
+    actions:
+      - type: message_to_player
+        text: "A freshly pasted flyer catches your eye. The ink is still wet. Someone was busy while you slept."
+
+  - trigger_time: 1080
+    event_id: dusk_fall
+    recurring: true
+    description: "Sunset brings a different kind of danger. The shadows lengthen, and so do the patrols."
+    actions:
+      - type: message_to_player
+        text: "The sun sets behind the skyline. The city takes on a different character in the twilight. Danger grows with the dark."
