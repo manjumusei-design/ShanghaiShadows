@@ -9,7 +9,7 @@ from .world import World
 from .config import get_setting
 
 
-WORLD_SAVE_PATH = Path("server/data/save/world_state.json")
+WORLD_SAVE_PATH = Path("server/data/saves/world_state.json")
 PLAYERS_SAVE_DIR = Path("server/data/saves/players")
 SAVES_DIR = Path("server/data/saves")
 
@@ -31,7 +31,7 @@ def load_world_state(world: World = None) -> Optional[SharedWorldState]:
     _ensure_dirs()
     if not WORLD_SAVE_PATH.exists():
         return None
-    
+
     try:
         data = json.loads(WORLD_SAVE_PATH.read_text(encoding="utf-8"))
     except Exception:
@@ -46,7 +46,7 @@ def save_player(player: PlayerData) -> None:
     _ensure_dirs()
     if not player.username:
         return
-    
+
     data = serialize_player(player)
     player_path = PLAYERS_SAVE_DIR / f"{player.username}.json"
     tmp_path = player_path.with_suffix(".json.tmp")
@@ -60,19 +60,19 @@ def load_player(username: str, storylet_manager=None) -> Optional[PlayerData]:
 
     if not player_path.exists():
         return None
-    
+
     try:
         data = json.loads(player_path.read_text(encoding="utf-8"))
     except Exception:
         return None
-    
+
     return deserialize_player(data, storylet_manager)
 
 
 def legacy_save_exists(slot_name: str) -> bool:
     _ensure_dirs()
     legacy_path = SAVES_DIR / f"{slot_name}.json"
-
+    return legacy_path.exists()
 
 
 def migrate_legacy_save(slot_name: str, shared: SharedWorldState, storylet_manager=None) -> Optional[PlayerData]:
@@ -85,12 +85,12 @@ def migrate_legacy_save(slot_name: str, shared: SharedWorldState, storylet_manag
     legacy_path = SAVES_DIR / f"{slot_name}.json"
     if not legacy_path.exists():
         return None
-    
+
     try:
         data = json.loads(legacy_path.read_text(encoding="utf-8"))
     except Exception:
         return None
-    
+
     player_died = data.get("player_died", False)
 
     saved_time = data.get("time", {})
@@ -104,22 +104,21 @@ def migrate_legacy_save(slot_name: str, shared: SharedWorldState, storylet_manag
         shared.game_time.minute = saved_minute
 
         room_items = data.get("room_items")
-        if isinstance(room_item, dict):
+        npc_locations = data.get("npc_locations")
+        if isinstance(room_items, dict) or isinstance(npc_locations, dict):
             for room in shared.world.rooms.values():
                 room.items = []
-            for room_id, rows in room_items.items():
-                room = shared.world.get_room(room_id)
-                if room:
-                    room.items = [_deserialize_item(row) for row in rows]
-        
-        npc_locations = data.get("npc_locations")
-        if isinstance(npc_locations, dict):
-            for room in shared.world.rooms.values():
                 room.npcs = []
             shared.world.npc_locations = {}
-            for npc_id, room_id in npc_locations.items():
-                if npc_id in shared.world.npcs and room_id in shared.world.rooms:
-                    shared.world.place_npc(npc_id, room_id)
+            if isinstance(room_items, dict):
+                for room_id, rows in room_items.items():
+                    room = shared.world.rooms.get(room_id)
+                    if room:
+                        room.items = [_deserialize_item(row) for row in rows]
+            if isinstance(npc_locations, dict):
+                for npc_id, room_id in npc_locations.items():
+                    if npc_id in shared.world.npcs and room_id in shared.world.rooms:
+                        shared.world.place_npc(npc_id, room_id)
 
         for npc_id, memories in data.get("npc_memory", {}).items():
             npc = shared.world.npcs.get(npc_id)
@@ -147,7 +146,7 @@ def migrate_legacy_save(slot_name: str, shared: SharedWorldState, storylet_manag
     player.stealth_skill = int(player_data.get("stealth_skill", 55))
     player.hidden = bool(player_data.get("hidden", False))
     player.flags = list(player_data.get("flags", []))
-    player.world_events = list(player_data.get("health", []))
+    player.world_events = list(player_data.get("world_events", []))
     player.newspapers = list(player_data.get("newspapers", []))
     player.health = int(player_data.get("health", 100))
     player.hunger = int(player_data.get("hunger", 100))
@@ -165,7 +164,7 @@ def migrate_legacy_save(slot_name: str, shared: SharedWorldState, storylet_manag
         if storylet_id and storylet_id in storylet_manager.storylets:
             storylet = storylet_manager.storylets[storylet_id]
             player.active_storylet = ActiveStorylet(
-                storylet_id  = storylet.id,
+                storylet_id=storylet.id,
                 narrative=storylet.narrative,
                 options=storylet.options,
             )
@@ -180,3 +179,11 @@ def migrate_legacy_save(slot_name: str, shared: SharedWorldState, storylet_manag
         )
 
     return player
+
+
+def archive_journal_on_death(player_name: str, shared: SharedWorldState) -> None:
+    shared.archived_journals[player_name] = shared.event_log[-100:]
+
+
+def get_archived_journal(character_name: str, shared: SharedWorldState) -> list:
+    return shared.archived_journals.get(character_name, [])
