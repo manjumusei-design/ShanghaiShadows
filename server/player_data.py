@@ -46,7 +46,7 @@ class PlayerData:
     completed_missions: List[str] = field(default_factory=list)
     abandoned_missions: List[str] = field(default_factory=list)
     visited_rooms: List[str] = field(default_factory=list)
-    
+
 
 def serialize_player(player: PlayerData) -> Dict[str, object]:
     payload = {
@@ -78,6 +78,17 @@ def serialize_player(player: PlayerData) -> Dict[str, object]:
         "last_curfew_penalty_day": player.last_curfew_penalty_day,
         "last_newspaper_day": player.last_newspaper_day,
         "conversation_history": list(player.conversation_history),
+        "courage": player.courage,
+        "perception": player.perception,
+        "money_fabi": player.money_fabi,
+        "money_silver": player.money_silver,
+        "map_revealed": player.map_revealed,
+        "maps_purchased": player.maps_purchased,
+        "worn_armour_id": player.worn_armour_id,
+        "active_missions": player.active_missions,
+        "completed_missions": player.completed_missions,
+        "abandoned_missions": player.abandoned_missions,
+        "visited_rooms": player.visited_rooms,
     }
     return payload
 
@@ -106,6 +117,17 @@ def deserialize_player(data: Dict[str, object], storylet_manager=None) -> Player
     player.last_curfew_penalty_day = int(data.get("last_curfew_penalty_day", 0))
     player.last_newspaper_day = int(data.get("last_newspaper_day", 0))
     player.conversation_history = deque(data.get("conversation_history", []), maxlen=CONVERSATION_HISTORY_MAXLEN)
+    player.courage = int(data.get("courage", 50))
+    player.perception = int(data.get("perception", 30))
+    player.money_fabi = int(data.get("money_fabi", 0))
+    player.money_silver = int(data.get("money_silver", 0))
+    player.map_revealed = list(data.get("map_revealed", []))
+    player.maps_purchased = list(data.get("maps_purchased", []))
+    player.worn_armour_id = str(data.get("worn_armour_id", ""))
+    player.active_missions = list(data.get("active_missions", []))
+    player.completed_missions = list(data.get("completed_missions", []))
+    player.abandoned_missions = list(data.get("abandoned_missions", []))
+    player.visited_rooms = list(data.get("visited_rooms", []))
 
     if storylet_manager:
         storylet_id = data.get("active_storylet", "")
