@@ -186,9 +186,9 @@ def _spend_money(player: PlayerData, fabi_amount: int):
         player.money_silver = max(0, player.money_silver - silver_needed)
         player.money_fabi += silver_needed * 10 - remainder
 
-        
+
 def _check_money(player: PlayerData, fabi_cost: int) -> bool:
-    total_fabo = player.money_fabi + player.money_silver * 10
+    total_fabi = player.money_fabi + player.money_silver * 10
     return total_fabi >= fabi_cost
 
 def build_completions(ctx: CommandContext) -> List[str]:
