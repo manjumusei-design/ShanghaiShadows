@@ -20,13 +20,16 @@ from .storylets import ActiveStorylet, StoryletManager, load_storylets
 from .time_system import EventScheduler, GameTime, time_str
 from .trust import (TrustMap, apply_trust_delta, change_trust, default_trust, exchange_gossip, get_role_trust, load_trust_rules, migrate_resistance_to_ccp_gmd, summarize_faction_trust,)
 from .victory import (check_victory_conditions, compile_legacy_narrative, compute_progress, generate_liberation_ending, generate_time_skip_summary, adjust_influence, apply_time_skip,)
-from .world import Item, World
+from .world import Item, World, replace
 from .game_world import SharedWorldState
+from .combat import resolve_attack, degrade_weapon, degrade_armour
 from .constants import (
     EVENTS_PATH, TRUST_RULES_PATH, DISGUISES_PATH, STORYLETS_PATH,
     OBITUARY_PATH, BACKGROUNDS_PATH, CURFEW_MINUTE, STATE_BROADCAST_INTERVAL,
     EVENT_LOG_MAXLEN, WORLD_EVENTS_MAXLEN, CONVERSATION_HISTORY_MAXLEN,
     HUNGER_DECAY_RATE, HUNGER_HEALTH_DAMAGE, LOW_HUNGER_THRESHOLD,
+    RICE_BOWL_COST, BAOZI_COST, TEA_COST, PICKPOCKET_BASE,
+    MISSION_FABI_RANGE, NURSE_COST, NURSE_HEAL,
 )
 
 if TYPE_CHECKING:
@@ -156,6 +159,8 @@ async def broadcast_state(ctx: CommandContext):
         "progress_percent": compute_progress(state.game_time.day),
         "ccp_influence": state.ccp_influence,
         "gmd_influence": state.game_influence,
+        "money_fabi": ctx.session.player.money_fabi,
+        "money_silver": ctx.session.player.money_silver,
     })
 
 
@@ -165,6 +170,10 @@ async def broadcast_to_room(ctx: CommandContext, text: str, exclude_username: st
         if session.username != exclude_username:
             await session.send_display(text)
 
+
+def _check_money(player: PlayerData, fabi_cost: int) -> bool:
+    total_fabo = player.money_fabi + player.money_silver * 10
+    return total_fabi >= fabi_cost
 
 def build_completions(ctx: CommandContext) -> List[str]:
     from .session_manager import build_command_registry
