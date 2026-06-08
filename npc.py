@@ -4,6 +4,7 @@ from typing import Dict, List, Optional
 import yaml
 
 from .trust import TrustMap, get_role_trust
+from .dataclass_utils import filter_to_dataclass
 
 
 @dataclass
@@ -16,9 +17,13 @@ class Npc:
     personality: str
     awareness: int
     faction_leader: bool
-    schedule: Dict[int, str] 
+    schedule: Dict[int, str]
     dialogue: Dict[str, List[str]]
     memory: List[str] = field(default_factory=list)
+    authority: int = 50
+    courage: int = 50
+    perception: int = 50
+    is_historical_figure: bool = False
 
 
 def load_npcs(path: str) -> Dict[str, Npc]:
@@ -26,18 +31,9 @@ def load_npcs(path: str) -> Dict[str, Npc]:
         data = yaml.safe_load(f)
     npcs = {}
     for npc_data in data.get("npcs", []):
-        npcs[npc_data["id"]] = Npc(
-            id=npc_data["id"],
-            name=npc_data["name"],
-            description=npc_data["description"],
-            faction=npc_data["faction"],
-            role=npc_data.get("role", "resident"),
-            personality=npc_data.get("personality", "guarded"),
-            awareness=int(npc_data.get("awareness", 50)),
-            faction_leader=bool(npc_data.get("faction_leader", False)),
-            schedule={int(hour): room_id for hour, room_id in npc_data.get("schedule", {}).items()},
-            dialogue=npc_data.get("dialogue", {}),
-        )
+        schedule = {int(hour): room_id for hour, room_id in npc_data.get("schedule", {}).items()}
+        filtered_data = filter_to_dataclass(npc_data, Npc, exclude={"schedule"}, overrides={"schedule": schedule})
+        npcs[npc_data["id"]] = Npc(**filtered_data)
     return npcs
 
 
@@ -65,15 +61,15 @@ def get_contextual_dialogue(npc: Npc, player_trust: TrustMap, context_type: str 
         line = _pick_line(npc, "greeting")
         if line:
             return line
-        
+
     if context_type == "farewell":
         line = _pick_line(npc, "farewell")
         if line:
             return line
-    
+
     if context_type == "gossip":
         line = _pick_line(npc, "gossip")
-        if line: 
+        if line:
             return line
 
     if trust_score < 30:
@@ -83,17 +79,17 @@ def get_contextual_dialogue(npc: Npc, player_trust: TrustMap, context_type: str 
         hostile = _pick_line(npc, "hostile")
         if hostile:
             return hostile
-        
+
     if trust_score > 70:
         friendly = _pick_line(npc, "friendly")
         if friendly:
             return friendly
-        
+
     if context_type == "ask":
         for bucket in ("gossip", "neutral", "greeting"):
-            line = _pick_line( npc, bucket)
+            line = _pick_line(npc, bucket)
             if line:
                 return line
-            
+
     line = _pick_line(npc, "neutral") or _pick_line(npc, "greeting")
     return line or "..."
