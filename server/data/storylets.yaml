@@ -126,7 +126,7 @@ storylets:
         effects:
           set_flag: survived_patrol_glance
           change_trust:
-            kempetai.officer: 5
+            kempeitai.officer: 5
           log_event: "You stood firm under a patrol sergeant's scrutiny."
       - text: "Lower your eyes and apologize."
         effects:
@@ -272,8 +272,8 @@ storylets:
     trigger_chance: 0.4
     preconditions:
       flags_missing: [met_checkpoint_beggar]
-      narrative: "A beggar sitting just outside the checkpoint taps the curb twice with a tin cup, then looks at your shoes instead of your face."
-      options:
+    narrative: "A beggar sitting just outside the checkpoint taps the curb twice with a tin cup, then looks at your shoes instead of your face."
+    options:
         - text: "Leave a coin and listen."
           effects:
             set_flag: met_checkpoint_beggar
@@ -291,24 +291,24 @@ storylets:
   - id: river_smell
     location_tags: [bund]
     trigger_chance: 0.35
-    precondonditions:
+    preconditions:
       game_hour: [4, 7]
       flags_missing: [morning_river_smell]
-      narrative: "The river smells of rain, coal and something metallic enough to taste. Dawn arrives slowly over ships that do not belong here."
-      options:
-        - text: "Stay and watch the barges."
-          effects:
-            set_flag: morning_river_smell
-            change_trust:
-              british.merchant: 3
-              civilian.worker: 2
-            log_event: "You watched contraband barges move at dawn on the river."
-        - text: "Turn inland before the patrols finish changing shifts."
-          effects:
-            set_flag: morning_river_smell
-            change_trust:
-              kempeitai.patrol: -2
-            log_event: "You left the Bund before the patrols settled into the morning."
+    narrative: "The river smells of rain, coal and something metallic enough to taste. Dawn arrives slowly over ships that do not belong here."
+    options:
+      - text: "Stay and watch the barges."
+        effects:
+          set_flag: morning_river_smell
+          change_trust:
+            british.merchant: 3
+            civilian.worker: 2
+          log_event: "You watched contraband barges move at dawn on the river."
+      - text: "Turn inland before the patrols finish changing shifts."
+        effects:
+          set_flag: morning_river_smell
+          change_trust:
+            kempeitai.patrol: -2
+          log_event: "You left the Bund before the patrols settled into the morning."
 
   - id: borrowed_prayer
     location_tags: [residence]
@@ -332,26 +332,26 @@ storylets:
             civilian.resident: -6
           log_event: "You refused to lend a talisman to a frightened neighbour."
 
-      - id: ruined_flyer
-        location_tags: [school, old_city]
-        trigger_chance: 0.4
-        preconditions:
-          flags_missing: [found_ruined_flyer]
-        narrative: "Rain has pasted a propaganda flyer to the wall so badly that only a child's drawing shows beneath the torn corner."
-        options:
-          - text: "Peel it away carefully."
-            effets:
-              set_flag: found_ruined_flyer
-              change_trust:
-                civilian.resident: 4
-                ccp.organizer: 4
-              log_Event: "You uncovered a child's drawing behind a propaganda flyer."
-          - text: "Leave the wall untouched"
-            effects:
-              set_flag: found_ruined_flyer
-              change_trust:
-                civilian.resident: 1
-              log_event: "You left a ruined flyer clinging to a wall."
+  - id: ruined_flyer
+    location_tags: [school, old_city]
+    trigger_chance: 0.4
+    preconditions:
+      flags_missing: [found_ruined_flyer]
+    narrative: "Rain has pasted a propaganda flyer to the wall so badly that only a child's drawing shows beneath the torn corner."
+    options:
+      - text: "Peel it away carefully."
+        effects:
+          set_flag: found_ruined_flyer
+          change_trust:
+            civilian.resident: 4
+            ccp.organizer: 4
+          log_event: "You uncovered a child's drawing behind a propaganda flyer."
+      - text: "Leave the wall untouched."
+        effects:
+          set_flag: found_ruined_flyer
+          change_trust:
+            civilian.resident: 1
+          log_event: "You left a ruined flyer clinging to a wall."
 
   - id: choir_attic
     location_tags: [church, attic]
@@ -399,7 +399,7 @@ storylets:
   - id: ledger_drop
     location_tags: [teahouse]
     trigger_chance: 0.35
-    preconditionos:
+    preconditions:
       inventory_has: [coded_ledger]
       flags_missing: [dropped_ledger_copy]
     narrative: "A man at the back table folds his napkin with absurd care, and says without looking up, 'Some numbers deserve to travel farther than their owners.'"
@@ -461,28 +461,28 @@ storylets:
             civilian.worker: 1
           log_event: "You ignored the strange call and response on the river."
 
-      - id: hidden_cash_offer
-        location_tags: [gambling]
-        trigger_chance: 0.4
-        preconditions:
-          inventory_has: [hidden_cash]
-          flags_missing: [resolved_cash_offer]
-        narrative: "A bookmaker offers to double your money if you are willing to bet on who survives tommorow's raid."
-        options:
-          - text: "Walk away in disgust."
-            effects:
-              set_flag: resolved_cash_offer
-              change_trust:
-                civilian.resident: 6
-                green_gang.broker: -6
-              log_event: "You refused to bet on the lives of your fellow citizens."
-          - text: "Take the wager."
-            effects:
-              set_flag: resolved_cash_offer
-              change_trust:
-                green_gang.broker: 10
-                civilian.resident: -10
-              log_event: "You gambled on the outcome of a raid."
+  - id: hidden_cash_offer
+    location_tags: [gambling]
+    trigger_chance: 0.4
+    preconditions:
+      inventory_has: [hidden_cash]
+      flags_missing: [resolved_cash_offer]
+    narrative: "A bookmaker offers to double your money if you are willing to bet on who survives tommorow's raid."
+    options:
+      - text: "Walk away in disgust."
+        effects:
+          set_flag: resolved_cash_offer
+          change_trust:
+            civilian.resident: 6
+            green_gang.broker: -6
+          log_event: "You refused to bet on the lives of your fellow citizens."
+      - text: "Take the wager."
+        effects:
+          set_flag: resolved_cash_offer
+          change_trust:
+            green_gang.broker: 10
+            civilian.resident: -10
+          log_event: "You gambled on the outcome of a raid."
 
   - id: patrol_map
     location_tags: [office, checkpoint]
@@ -666,7 +666,7 @@ storylets:
     - text: "Ask where it went." 
       effects:
         set_flag: compared_manifests
-        change_trist:
+        change_trust:
           ccp.courier: 6
           british.dockmaster: 4
         log_event: "A porter linked your dock manifest to a vanished rail shipment."
@@ -727,16 +727,16 @@ storylets:
     trigger_chance: 0.3
     preconditions:
       flags_missing: [noticed_print_ash]
-    narrative: "The messenger who brushes past you has a printer's"
+    narrative: "The messenger who brushes past you has a printer's dust under his fingernails and ink stains on his cuffs. He does not look like a man who delivers messages for ordinary people."
     options:
       - text: "Follow him for about a block."
-        effect:
+        effects:
           set_flag: noticed_print_ash
           change_trust:
             ccp.courier: 5
         log_event: "You shadowed a messenger carrying printshop ash on his hands."
       - text: "Memorize his face and let him go."
-        effect:
+        effects:
           set_flag: noticed_print_ash
           change_trust:
             civilian.vendor: 2
