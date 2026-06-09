@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional
 import random
+import time 
 
 import yaml
 
@@ -21,6 +22,8 @@ class Storylet:
     narrative: str
     preconditions: Dict[str, object]
     options: List[StoryletOption]
+    scope: str = "player"
+    resolution: str= "first_choice"
 
 
 @dataclass
@@ -28,6 +31,9 @@ class ActiveStorylet:
     storylet_id: str
     narrative: str
     options: List[StoryletOption]
+    triggered_at: float = field(default_factory=time.time)
+    resolved: bool = False
+    room_id: str = ""
 
 
 def load_storylets(path: str) -> Dict[str, Storylet]:
@@ -50,6 +56,8 @@ def load_storylets(path: str) -> Dict[str, Storylet]:
                 )
                 for opt in row.get("options", [])
             ],
+            scope=row.get("scope", "player"),
+            resolution=row.get("resolution", "first_choice:"),
         )
     return storylets
 
@@ -59,7 +67,7 @@ class StoryletManager:
         self.storylets = storylets
 
     def _eligible(self, storylet: Storylet, state) -> bool:
-        if state.active_storylet:
+        if storylet.scope == "player" and player.active_storylet:
             return False
         if storylet.id in state.storylet_history:
             return False
@@ -70,6 +78,12 @@ class StoryletManager:
             return False
         if storylet.location_tags and not set(storylet.location_tags).intersection(room.tags):
             return False
+        
+        if storylet.scope == "room":
+            if room.id in shared.active_room_storylets:
+                existing = shared.active_room_storylets[room.id]
+                if not existing.get("resolved", True):
+                    return False
         
         pre = storylet.preconditions
         for flag in pre.get("flags_required", []):
