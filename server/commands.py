@@ -1225,3 +1225,62 @@ async def cmd_unequip(ctx: CommandContext, cmd: Command):
         await post_display(ctx, loc("cmd_unequip.success").format(name=armour.name))
     else:
         await post_display(ctx, loc("cmd_unequip.not_found"))
+
+
+async def cmd_heal(ctx: CommandContext, cmd: Command):
+    room = _room(ctx)
+    if not room or not room.nurse_available:
+        await post_display(ctx, loc("cmd_heal.not_available"))
+        return
+
+    hour = ctx.shared.game_time.minute // 60
+    if room.nurse_hours and hour not in room.nurse_hours:
+        await post_display(ctx, loc("cmd_heal.wrong_hours"))
+        return
+
+    if not _check_money(ctx.session.player, NURSE_COST):
+        await post_display(ctx, loc("cmd_heal.no_money").format(cost=NURSE_COST))
+        return
+
+    _spend_money(ctx.session.player, NURSE_COST)
+    ctx.session.player.health = min(100, ctx.session.player.health + NURSE_HEAL)
+    log_event(ctx, f"You were treated by a nurse for {NURSE_COST} fabi.")
+    await post_display(ctx, loc("cmd_heal.success").format(heal=NURSE_HEAL))
+
+
+async def _award_mission_rewards(ctx: CommandContext, mission):
+    if not mission:
+        return
+    reward = mission.rewards
+    player = ctx.session.player
+    if reward.money_fabi > 0:
+        _earn_money(player, reward.money_fabi)
+    if reward.money_silver > 0:
+        player.money_silver += reward.money_silver
+    if reward.health_restore > 0:
+        player.health = min(100, player.health + reward.health_restore)
+    if reward.morale_restore > 0:
+        player.morale = min(100, player.morale + reward.morale_restore)
+    for trust_key, delta in reward.trust.items():
+        change_trust(player.trust, trust_key, delta)
+    if reward.add_flag:
+        player.flags.append(reward.add_flag)
+    if reward.add_item:
+        item = ctx.shared.world.clone_item(reward.add_item)
+        if item:
+            player.inventory.append(item)
+    reward_lines = []
+    if reward.money_fabi > 0:
+        reward_lines.append(f"+{reward.money_fabi} fabi")
+    if reward.money_silver > 0:
+        reward_lines.append(f"+{reward.money_silver} silver")
+    if reward.health_restore > 0:
+        reward_lines.append(f"+{reward.health_restore} health")
+    if reward.morale_restore > 0:
+        reward_lines.append(f"+{reward.morale_restore} morale")
+    if reward.trust:
+        reward_lines.append("trust improved")
+    reward_text = ", ".join(reward_lines) if reward_lines else "nothing tangible"
+
+    log_event(ctx, f"Mission complete: {mission.title}")
+    await post_display(ctx, f"Mission complete: {mission.title}\nRewards: {reward_text}")
