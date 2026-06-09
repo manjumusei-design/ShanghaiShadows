@@ -213,13 +213,29 @@ async def _handle_mission_objectives(ctx: CommandContext, event_type: str, targe
             await _award_mission_rewards(ctx, mission)
 
 
-def _degrade_and_notify_weapon(ctx: CommandContext, weapon, attack_succeeded: bool):
+async def _degrade_and_notify_weapon(ctx: CommandContext, weapon, attack_succeeded: bool):
     if weapon:
         broken = degrade_weapon(weapon, attack_succeeded)
         if broken:
             await post_display(ctx, loc("combat.weapon_broken").format(name=weapon.name))
             if weapon in ctx.session.player.inventory:
                 ctx.session.player.inventory.remove(weapon)
+
+
+def _find_container(ctx: CommandContext, name: str) -> Optional[Item]:
+    room = _room(ctx)
+    if not room:
+        return None
+    item = find_item_by_name(name, room.items + ctx.session.player.inventory)
+    if item and item.is_container:
+        return item
+    return None
+
+def _has_key_for_container(player: PlayerData, container: Item) -> bool:
+    if not container.key_id:
+        return False
+    return any(i.key_id == container.key_id for i in player.inventory)
+
 
 
 def build_completions(ctx: CommandContext) -> List[str]:
@@ -1350,6 +1366,145 @@ async def cmd_missions(ctx: CommandContext, cmd: Command):
             lines.append(f"  [{mission.id}] {mission.title}")
             lines.extend(obj_lines)
         await post_display(ctx, "\n".join(lines))
+
+
+async def cmd_search(ctx: CommandContext, cmd: Command):
+    room = _room(ctx)
+    if not room:
+        return
+    
+    found_hidden = False
+    if room.hidden_exits:
+        for direction, dest_room_id in room.hidden_exits.items():
+            if direction in room.exits:
+                continue
+            difficulty = 50
+            if ctx.session.player.perception >= difficulty:
+                room.exits[direction] = dest_room_id
+                await post_display(ctx, f"You discover a hidden passage leading {direction}.")
+                found_hidden = True
+            else:
+                await post_display(ctx, f"You sense something to the {direction} but can't find it.")
+
+    if room.hiding_spots and not ctx.session.player.hidden:
+        await post_display(ctx, "This room has hiding spots. You could HIDE here.")
+
+    if not found_hidden and not room.hiding_spots:
+        await post_display(ctx, "You search the room but find nothing of interest.")
+
+
+async def cmd_examine(ctx: CommandContext, cmd: Command):
+    if not cmd.direct_obj:
+        await post_display(ctx, "Examine what?")
+        return
+
+    room = _room(ctx)
+    if not room:
+        return
+
+    item = find_item_by_name(cmd.direct_obj, room.items if room else [])
+    if item:
+        lines = [f"You examine {item.name}."]
+        if item.is_weapon:
+            lines.append(f"Weapon - Courage bonus: {item.courage_bonus}")
+            lines.append(f"Durability: {item.durability}/{item.max_durability if item.max_durability > 0 else '∞'}")
+            if item.mods:
+                lines.append(f"Mods: {', '.join(item.mods)}")
+        elif item.is_armour:
+            lines.append(f"Armour - Defense: {item.defense_value}")
+            lines.append(f"Durability: {item.durability}/{item.max_durability if item.max_durability > 0 else '∞'}")
+        elif item.is_container:
+            lines.append(f"Container - {'Locked' if item.locked else 'Unlocked'}")
+            if item.container_items:
+                lines.append("Contents:")
+                for ci in item.container_items:
+                    lines.append(f"  - {ci.name}")
+        elif item.is_map:
+            if item.map_districts:
+                lines.append(f"Map showing: {', '.join(item.map_districts)}")
+        elif item.is_note:
+            lines.append(f"Note: {item.note_text}")
+        elif item.is_key:
+            if item.opens_container:
+                lines.append(f"Key that opens: {item.opens_container}")
+        await post_display(ctx, "\n".join(lines))
+        return
+    
+    npc_id = resolve_npc(ctx, cmd.direct_obj)
+    if npc_id:
+        npc = ctx.shared.world.npcs.get(npc_id)
+        if npc:
+            lines = [f"You observe {npc.name}."]
+            lines.append(f"Faction: {npc.faction}")
+            lines.append(f"Role: {npc.role}")
+            if ctx.session.player.perception >= npc.courage:
+                lines.append(f"Authority: {npc.authority}")
+            else:
+                lines.append("You can't assess their authority.")
+            await post_display(ctx, "\n".join(lines))
+            return
+
+    await post_display(ctx, f"You don't see that here.")
+
+
+async def cmd_map(ctx: CommandContext, cmd: Command):
+    visited = set(ctx.session.player.map_revealed)
+    if not visited:
+        await post_display(ctx, "You haven't explored enough to draw a map.")
+        return
+    
+    current_room = ctx.shared.world.get_room(ctx.session.player.current_room)
+    if not current_room:
+        return
+    
+    lines = ["Visited areas:"]
+    for room_id in sorted(visited):
+        room = ctx.shared.world.get_room(room_id)
+        if room:
+            marker = "HERE" if room_id == ctx.session.player.current_room else ""
+            lines.append(f"- {room.title}{marker}")
+
+    if ctx.session.player.maps_purchased:
+        lines.append("\nPurchased maps:")
+        for district in ctx.session.player.maps_purchased:
+            lines.append(f"- {district}")
+
+    await post_display(ctx, "\n".join(lines))
+
+
+async def cmd_open(ctx: CommandContext, cmd: Command):
+    if not cmd.direct_obj:
+        await post_display(ctx, "Open what?")
+        return
+    
+    item = _find_container(ctx, cmd.direct_obj)
+    if not item:
+        await post_display(ctx, "That's not a container lmao.")
+        return
+
+    if item.locked:
+        await post_display(ctx, "It's locked.")
+        return
+    
+    await post_display(ctx, f"You open {item.name}.")
+    if item.container_items:
+        contents = ", ".join(ci.name for ci in item.container_items)
+        await post_display(ctx, f"Inside: {contents}")
+    else:
+        await post_display(ctx, "It's empty.")
+
+
+async def cmd_close(ctx: CommandContext, cmd: Command):
+    if not cmd.direct_obj:
+        await post_display(ctx, "Close what?")
+        return
+    
+    item = _find_container(ctx, cmd.direct_obj)
+    if not item:
+        await post_display(ctx, "That's not a container lmao.")
+        return
+
+    await post_display(ctx, f"You close {item.name}.")
 
 
 async def advance_time_one_minute(ctx: CommandContext):
