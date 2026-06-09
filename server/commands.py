@@ -1038,3 +1038,37 @@ async def _attack_npc(ctx: CommandContext, npc_id: str):
     if not npc:
         await post_display(ctx, loc("cmd_attack.not_here").format(name=npc_id))
         return
+    
+    player = ctx.session.player
+    weapon = _get_equipped_weapon(player)
+    armour = await _get_worn_armour(player)
+    result = resolve_attack(
+        attacker_courage=player.courage,
+        attacker_weapon=weapon,
+        target_authority=npc.authority,
+        target_armour=None,
+        attacker_hidden=player.hidden,
+    )
+
+    for msg in result.messages:
+        await post_display(ctx, msg)
+
+    room = _room(ctx)
+    if result.won:
+        log_event(ctx, f"You eliminated {npc.name}.")
+        apply_action_trust(ctx, f"kill_{npc.faction}.{npc.role}", room_npcs(ctx))
+        if room and npc_id in room.npcs:
+            room.npcs.remove(npc_id)
+        await _handle_mission_objectives(ctx, "kill_npc", npc_id)
+        await _degrade_and_notify_weapon(ctx, weapon, True)
+    else:
+        if result.attacker_damaged > 0:
+            player.health = max(0, player.health - result.attacker_damaged)
+        await _degrade_and_notify_weapon(ctx, weapon, False)
+
+    if not result.silent:
+        player.hidden = False
+        await broadcast_to_room(ctx, f"{player.name} attacks {npc.name}!", exclude_username=ctx.session.username)
+        is_dead, death_msg = check_death_conditions(ctx)
+        if is_dead:
+            await handle_player_death(ctx, death_msg)
