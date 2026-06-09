@@ -1194,3 +1194,34 @@ async def cmd_pickpocket(ctx: CommandContext, cmd: Command):
         ctx.session.player.hidden = False
         await post_display(ctx, loc("cmd_pickpocket.caught").format(name=npc.name))
         await broadcast_to_room(ctx, f"{ctx.session.player.name} is caught pickpocketing {npc.name}!")
+
+
+async def cmd_equip(ctx: CommandContext, cmd: Command):
+    if not cmd.direct_obj:
+        await post_display(ctx, loc("cmd_equip.no_target"))
+        return
+    item = find_item_by_name(cmd.direct_obj, ctx.session.player.inventory)
+    if not item:
+        await post_display(ctx, loc("cmd_equip.not_held"))
+        return
+
+    if item.is_armour:
+        ctx.session.player.worn_armour_id = item.id
+        await post_display(ctx, loc("cmd_equip.armour").format(name=item.name, defense=item.defense_value))
+    elif item.is_weapon:
+        await post_display(ctx, loc("cmd_equip.weapon_ready").format(name=item.name))
+    else:
+        await post_display(ctx, loc("cmd_equip.not_equipable"))
+
+
+async def cmd_unequip(ctx: CommandContext, cmd: Command):
+    if not ctx.session.player.worn_armour_id:
+        await post_display(ctx, loc("cmd_unequip.nothing"))
+        return
+
+    armour = await _get_worn_armour(ctx.session.player)
+    ctx.session.player.worn_armour_id = ""
+    if armour:
+        await post_display(ctx, loc("cmd_unequip.success").format(name=armour.name))
+    else:
+        await post_display(ctx, loc("cmd_unequip.not_found"))
