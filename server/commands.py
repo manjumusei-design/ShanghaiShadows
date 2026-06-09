@@ -1479,7 +1479,7 @@ async def cmd_open(ctx: CommandContext, cmd: Command):
     
     item = _find_container(ctx, cmd.direct_obj)
     if not item:
-        await post_display(ctx, "That's not a container lmao.")
+        await post_display(ctx, "That's not a container.")
         return
 
     if item.locked:
@@ -1501,11 +1501,55 @@ async def cmd_close(ctx: CommandContext, cmd: Command):
     
     item = _find_container(ctx, cmd.direct_obj)
     if not item:
-        await post_display(ctx, "That's not a container lmao.")
+        await post_display(ctx, "That's not a container.")
         return
 
     await post_display(ctx, f"You close {item.name}.")
 
+
+async def cmd_lock(ctx: CommandContext, cmd: Command):
+    if not cmd.direct_obj:
+        await post_display(ctx, "Lock what?")
+        return
+    
+    item = _find_container(ctx, cmd.direct_obj)
+    if not item:
+        await post_display(ctx, "That's not a container.")
+        return
+    
+    if not item.key_id:
+        await post_display(ctx, "This container doesn't havbe a lock.")
+        return
+    
+    if not _has_key_for_container(ctx.session.player, item):
+        await post_display(ctx, "You don't have the key.")
+        return
+    
+    item.locked = True
+    await post_display(ctx, f"You lock {item.name}.")
+
+
+async def cmd_unlock(ctx: CommandContext, cmd: Command):
+    if not cmd.direct_obj:
+        await post_display(ctx, "Unlock what?")
+        return
+
+    item = _find_container(ctx, cmd.direct_obj)
+    if not item:
+        await post_display(ctx, "That's not a container.")
+        return
+
+    if not item.key_id:
+        await post_display(ctx, "This container doesn't have a lock.")
+        return
+
+    if not _has_key_for_container(ctx.session.player, item):
+        await post_display(ctx, "You don't have the key.")
+        return
+
+    item.locked = False
+    await post_display(ctx, f"You unlock {item.name}.")
+    
 
 async def advance_time_one_minute(ctx: CommandContext):
     ctx.shared.game_time.minute += 1
