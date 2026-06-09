@@ -57,6 +57,8 @@ class WorldClock:
         await self._check_curfew_all_sessions()
         if self.shared.game_time.minute % 15 == 0:
             await self._check_storylets()
+        if self.shared.game_time.minute % 60 == 0 and self.shared.game_time.minute > 0:
+            self._check_mission_expiry()
         self._process_survival_all_sessions()
         await self._check_death_and_victory()
 
@@ -254,6 +256,15 @@ class WorldClock:
                         lines.append(f"{idx}. {option.text}")
                     asyncio.create_task(session.send_display("\n".join(lines)))
 
+    def _check_mission_expiry(self):
+        mm = self.shared.mission_manager
+        if not mm:
+            return
+        for session in self.session_amanger.sessions.values():
+            expired = mm.check_expiry(session.player, self.shared.game_time.day)
+            for mid in expired:
+                asyncio.create_task(session.send_display(f"Mission {mid} has expired."))
+                
     def _process_survival_all_sessions(self):
         for session in self.session_manager.sessions.values():
             session.player.hunger = max(0, session.player.hunger - HUNGER_DECAY_RATE)
