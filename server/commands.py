@@ -1505,3 +1505,49 @@ def process_survival_tick(ctx: CommandContext):
             asyncio.create_task(post_display(ctx, loc("hunger.cramps")))
     if ctx.session.player.hunger > 80 and ctx.shared.game_time.minute % 60 == 0:
         ctx.session.player.health = min(100, ctx.session.player.health + 1)
+
+
+_COMMAND_REGISTRY = None
+
+
+def build_command_registry() -> Dict[str, Callable]:
+    global _COMMAND_REGISTRY
+    if _COMMAND_REGISTRY is None:
+        _COMMAND_REGISTRY = {
+            "look": cmd_look,
+            "go": cmd_go,
+            "take": cmd_take,
+            "drop": cmd_drop,
+            "inventory": cmd_inventory,
+            "talk to": cmd_talk_to,
+            "ask about": cmd_ask_about,
+            "wait": cmd_wait,
+            "help": cmd_help,
+            "quit": cmd_quit,
+            "status": cmd_status,
+            "disguise as": cmd_disguise_as,
+            "tail": cmd_tail,
+            "hide": cmd_hide,
+            "plant": cmd_plant,
+            "read": cmd_read,
+            "journal": cmd_journal,
+            "ask": cmd_stub,
+            "whisper": cmd_whisper,
+            "give": cmd_give,
+            "use": cmd_stub,
+            "eat": cmd_eat,
+            "sleep": cmd_sleep,
+            "rest": cmd_rest,
+            "bond": cmd_bond,
+            "say": cmd_say,
+            "attack": cmd_attack,
+            "buy": cmd_buy,
+            "sell": cmd_sell,
+            "pickpocket": cmd_pickpocket,
+            "equip": cmd_equip,
+            "unequip": cmd_unequip,
+            "heal": cmd_heal,
+            "missions": cmd_missions,
+            "unknown": cmd_stub,
+        }
+    return _COMMAND_REGISTRY
