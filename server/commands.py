@@ -605,6 +605,7 @@ async def cmd_go(ctx: CommandContext, cmd: Command):
     ctx.session.player.current_room = dest
     ctx.session.player.hidden = False
     log_event(ctx, f"You moved {direction} into {dest}.")
+    await _handle_mission_objectives(ctx, "visit_room", dest)
     await cmd_look(ctx, cmd)
     await maybe_trigger_storylet(ctx)
     
@@ -624,6 +625,7 @@ async def cmd_take(ctx: CommandContext, cmd: Command):
     room.items.remove(item)
     ctx.session.player.inventory.append(item)
     log_event(ctx, f"You took {item.name}.")
+    await _handle_mission_objectives(ctx, "collect_item", item.id)
     await post_display(ctx, f"You take {item.name}.")
     await maybe_trigger_storylet(ctx)
 
@@ -668,6 +670,7 @@ async def cmd_talk_to(ctx: CommandContext, cmd: Command):
     record_conversation(ctx, npc_id, f"Hello, {npc.name}.", line)
     apply_action_trust(ctx, f"talk_to_{npc.faction}.{npc.role}", room_npcs(ctx))
     log_event(ctx, f"You spoke with {npc.name}.")
+    await _handle_mission_objectives(ctx, "deliver_to_npc", npc_id)
     await maybe_trigger_storylet(ctx)
 
 
@@ -714,13 +717,19 @@ async def cmd_wait(ctx: CommandContext, cmd: Command):
 
 
 async def cmd_status(ctx: CommandContext, cmd: Command):
-    disguise = ctx.disguise.get(ctx.session.player.disguise)
+    disguise = ctx.disguises.get(ctx.session.player.disguise)
     lines = [time_str(ctx.shared.game_time)]
     lines.append(f"Health: {ctx.session.player.health}/100")
     lines.append(f"Hunger: {ctx.session.player.hunger}/100")
     lines.append(f"Morale: {ctx.session.player.morale}/100")
+    lines.append(f"Courage: {ctx.session.player.courage}")
+    lines.append(f"Money: {ctx.session.player.money_silver} silver, {ctx.session.player.money_fabi} fabi")
     lines.append(f"Disguise: {disguise.name if disguise else 'none'}")
     lines.append(f"Stealth skill: {ctx.session.player.stealth_skill}")
+    if ctx.session.player.worn_armour_id:
+        armour = await _get_worn_armour(ctx.session.player)
+        if armour:
+            lines.append(f"Armour: {armour.name} (def {armour.defense_value}, dur {armour.durability})")
     lines.append("Trust:")
     lines.extend(summary_trust_lines(ctx))
     if ctx.session.player.flags:
@@ -978,13 +987,23 @@ async def cmd_give(ctx: CommandContext, cmd: Command):
     await target_session.send_display(f"{ctx.session.player.name} hands you {item.name}.")
 
 
-async def cmd_attack(ctx: CommandContext, cmd: Command): #This is the dice system for now, to be implemented with the pokemon one in the future
-    parts = cmd.raw.split()
-    if len(parts) < 2:
-        await post_display(ctx, "Attack whom?")
+async def cmd_attack(ctx: CommandContext, cmd: Command): 
+    if not cmd.direct_obj:
+        await post_display(ctx, loc("cmd_attack.no_target"))
+        return
+    
+    room = _room(ctx)
+    if room and room.safe_room:
+        await post_display(ctx, loc("cmd_attack.safe_room"))
+        return
+    
+    target_name = cmd.direct_obj
+
+    npc_id = resolve_npc(ctx, target_name)
+    if npc_id:
+        await _attack_npc(ctx, npc_id)
         return
 
-    target_name = parts[1]
     target_session = None
     for session in ctx.session_manager.get_players_in_room(ctx.session.player.current_room):
         if session.username == target_name or session.player.name.lower() == target_name.lower():
@@ -992,213 +1011,30 @@ async def cmd_attack(ctx: CommandContext, cmd: Command): #This is the dice syste
             break
 
     if not target_session:
-        await post_display(ctx, f"{target_name} is not here.")
+        await post_display(ctx, loc("cmd_attack.not_here").format(name=target_name))
         return
-
-    attack_roll = random.randint(1, 20)
-    defend_roll = random.randint(1, 20)
-    damage = random.randint(5, 15) if attack_roll > defend_roll else 0
-    counter_damage = random.randint(3, 10) if attack_roll <= defend_roll else 0
-
-    if damage > 0:
-        target_session.player.health = max(0, target_session.player.health - damage)
-        await broadcast_to_room(ctx, f"{ctx.session.player.name} attacks {target_session.player.name} for {damage} damage!")
-        if target_session.player.health <= 0:
-            await handle_player_death(ctx, f"You killed {target_session.player.name}.")
-    else:
-        await post_display(ctx, f"You attack {target_session.player.name} but miss!")
-
-    if counter_damage > 0:
-        ctx.session.player.health = max(0, ctx.session.player.health - counter_damage)
-        await post_display(ctx, f"{target_session.player.name} counters for {counter_damage} damage!")
-        if ctx.session.player.health <= 0:
-            death_msg = f"You were killed by {target_session.player.name}."
-            await handle_player_death(ctx, death_msg)
+    
+    await _attack_player(ctx, target_session)
 
 
-async def advance_time_one_minute(ctx: CommandContext):
-    ctx.shared.game_time.minute += 1
-    if ctx.shared.game_time.minute >= 1440:
-        ctx.shared.game_time.minute = 0
-        ctx.shared.game_time.day += 1
-    ctx.shared.scheduler.process(
-        ctx.shared.game_time,
-        lambda msg: asyncio.create_task(post_display(ctx, msg)),
-    )
-    move_npcs_if_hour_changed(ctx)
-    process_gossip(ctx)
-    await check_planted_evidence(ctx)
-    await process_tailing(ctx)
-    await check_curfew_penalty(ctx)
-    if ctx.shared.game_time.minute % 15 == 0:
-        await maybe_trigger_storylet(ctx)
-    process_survival_tick(ctx)
+def _get_equipped_weapon(player: PlayerData) -> Optional[Item]:
+    for item in player.inventory:
+        if item.is_weapon:
+            return item
+    return None
 
-    is_dead, death_message = check_death_conditions(ctx)
-    if is_dead:
-        asyncio.create_task(handle_player_death(ctx, death_message))
+
+def _get_worn_armour(player: PlayerData) -> Optional[Item]:
+    if not player.worn_armour_id:
+        return None
+    for item in player.inventory:
+        if item.id == player.worn_armour_id and item.is_armour:
+            return item
+    return None
+
+
+async def _attack_npc(ctx: CommandContext, npc_id: str):
+    npc = ctx.shared.world.npcs.get(npc_id)
+    if not npc:
+        await post_display(ctx, loc("cmd_attack.not_here").format(name=npc_id))
         return
-
-    if ctx.shared.game_time.minute == 0:
-        ending = check_victory_conditions(
-            ctx.shared.game_time.day,
-            ctx.shared.ccp_influence,
-            ctx.shared.gmd_influence,
-        )
-        if ending:
-            asyncio.create_task(trigger_ending(ctx, ending))
-            return
-
-
-def move_npcs_if_hour_changed(ctx: CommandContext):
-    if ctx.shared.game_time.minute % 60 != 0:
-        return
-    hour = ctx.shared.game_time.minute // 60
-    for npc_id, npc in ctx.shared.world.npcs.items():
-        room_id = npc.schedule.get(hour)
-        if room_id and room_id in ctx.shared.world.rooms:
-            old_room_id = ctx.shared.world.npc_locations.get(npc_id)
-            if old_room_id:
-                old_room = ctx.shared.world.rooms.get(old_room_id)
-                if old_room and npc_id in old_room.npcs:
-                    old_room.npcs.remove(npc_id)
-            if npc_id not in ctx.shared.world.rooms.get(room_id, []).npcs:
-                ctx.shared.world.rooms[room_id].npcs.append(npc_id)
-            ctx.shared.world.npc_locations[npc_id] = room_id
-
-
-def process_gossip(ctx: CommandContext):
-    for room in ctx.shared.world.rooms.values():
-        npc_ids = room.npcs
-        if len(npc_ids) < 2:
-            continue
-        for i in range(len(npc_ids) - 1):
-            a = ctx.shared.world.npcs.get(npc_ids[i])
-            b = ctx.shared.world.npcs.get(npc_ids[i + 1])
-            if not a or not b:
-                continue
-            if exchange_gossip(a.memory, b.memory, chance=0.25):
-                rumor = b.memory[-1] if b.memory else ""
-                if rumor:
-                    ctx.shared.rumour_mill.setdefault(b.faction, []).append(rumor)
-                    ctx.shared.rumour_mill[b.faction] = ctx.shared.rumour_mill[b.faction][-12:]
-
-
-async def check_planted_evidence(ctx: CommandContext):
-    if not ctx.session.player.planted_evidence:
-        return
-    remaining = []
-    for planted in ctx.session.player.planted_evidence:
-        room = ctx.shared.world.get_room(str(planted["room_id"]))
-        target = str(planted.get("target", "")).lower()
-        triggered = False
-        if room:
-            for npc_id in room.npcs:
-                npc = ctx.shared.world.npcs.get(npc_id)
-                if not npc:
-                    continue
-                if not target or target in npc.faction.lower() or target in npc.role.lower() or target in npc.name.lower():
-                    event_text = f"Your planted {planted['item_name']} in {room.title} has stirred suspicion."
-                    log_event(ctx, event_text)
-                    ctx.shared.rumour_mill.setdefault(npc.faction, []).append(event_text)
-                    await post_display(ctx, event_text)
-                    triggered = True
-                    break
-        if not triggered:
-            remaining.append(planted)
-    ctx.session.player.planted_evidence = remaining
-
-
-async def process_tailing(ctx: CommandContext):
-    tail = ctx.session.player.tailing_state
-    if not tail:
-        return
-    current_total = (ctx.shared.game_time.day - 1) * 1440 + ctx.shared.game_time.minute
-    if current_total - tail.last_checked_minute < 5:
-        return
-    tail.last_checked_minute = current_total
-    tail.elapsed_minutes += 5
-    target = ctx.shared.world.npcs.get(tail.target_npc_id)
-    if not target:
-        ctx.session.player.tailing_state = None
-        await post_display(ctx, loc("cmd_tail.target_vanished"))
-        return
-    success, _ = ctx.stealth.tail_check(
-        tail,
-        target,
-        ctx.session.player.stealth_skill,
-        disguise_bonus(ctx),
-        ctx.session.player.hidden,
-    )
-    if not success and tail.distance <= 0:
-        ctx.session.player.tailing_state = None
-        log_event(ctx, f"{target.name} spotted you while you were tailing them.")
-        await post_display(ctx, f"{target.name} glances over a shoulder, slows, and knows exactly what you are doing.")
-        return
-    target_room = ctx.shared.world.npc_locations.get(target.id)
-    if success and target_room and ctx.session.player.current_room != target_room:
-        ctx.session.player.current_room = target_room
-        ctx.session.player.hidden = False
-        await post_display(ctx, f"You shadow {target.name} and keep them in sight.")
-
-
-async def check_curfew_penalty(ctx: CommandContext):
-    if ctx.shared.game_time.minute < CURFEW_MINUTE:
-        return
-    if ctx.session.player.last_curfew_penalty_day == ctx.shared.game_time.day:
-        return
-    room = _room(ctx)
-    if room and not room.indoors:
-        apply_action_trust(ctx, "out_after_curfew", room.npcs)
-        ctx.session.player.last_curfew_penalty_day = ctx.shared.game_time.day
-        log_event(ctx, "You were seen outside after curfew.")
-        await post_display(ctx, loc("curfew.warning"))
-
-
-def process_survival_tick(ctx: CommandContext):
-    ctx.session.player.hunger = max(0, ctx.session.player.hunger - HUNGER_DECAY_RATE)
-    if ctx.session.player.hunger <= LOW_HUNGER_THRESHOLD:
-        ctx.session.player.health = max(0, ctx.session.player.health - HUNGER_HEALTH_DAMAGE)
-        if ctx.shared.game_time.minute % 30 == 0:
-            asyncio.create_task(post_display(ctx, loc("hunger.cramps")))
-    if ctx.session.player.hunger > 80 and ctx.shared.game_time.minute % 60 == 0:
-        ctx.session.player.health = min(100, ctx.session.player.health + 1)
-
-
-_COMMAND_REGISTRY = None
-
-
-def build_command_registry() -> Dict[str, Callable]:
-    global _COMMAND_REGISTRY
-    if _COMMAND_REGISTRY is None:
-        _COMMAND_REGISTRY = {
-            "look": cmd_look,
-            "go": cmd_go,
-            "take": cmd_take,
-            "drop": cmd_drop,
-            "inventory": cmd_inventory,
-            "talk to": cmd_talk_to,
-            "ask about": cmd_ask_about,
-            "wait": cmd_wait,
-            "help": cmd_help,
-            "quit": cmd_quit,
-            "status": cmd_status,
-            "disguise as": cmd_disguise_as,
-            "tail": cmd_tail,
-            "hide": cmd_hide,
-            "plant": cmd_plant,
-            "read": cmd_read,
-            "journal": cmd_journal,
-            "ask": cmd_stub,
-            "whisper": cmd_whisper,
-            "give": cmd_give,
-            "use": cmd_stub,
-            "eat": cmd_eat,
-            "sleep": cmd_sleep,
-            "rest": cmd_rest,
-            "bond": cmd_bond,
-            "say": cmd_say,
-            "attack": cmd_attack,
-            "unknown": cmd_stub,
-        }
-    return _COMMAND_REGISTRY
