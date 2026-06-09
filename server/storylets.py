@@ -87,33 +87,57 @@ class StoryletManager:
         
         pre = storylet.preconditions
         for flag in pre.get("flags_required", []):
-            if flag not in state.player.flags:
+            if flag not in player.flags:
                 return False
         for flag in pre.get("flags_missing", []):
-            if flag in state.player.flags:
+            if flag in player.flags:
                 return False
         for item_id in pre.get("inventory_has", []):
-            if item_id not in [item.id for item in state.player.inventory]:
+            if item_id not in [item.id for item in player.inventory]:
                 return False
-            
+
         hour_range = pre.get("game_hour")
         if hour_range:
-            hour = state.game_time.minute // 60
+            hour = shared.game_time.minute // 60
             if hour < int(hour_range[0]) or hour > int(hour_range[1]):
                 return False
-            
+
         for trust_key, bounds in pre.get("trust_ranges", {}).items():
-            current = state.get_trust_value(trust_key)
-            if  current < int(boundss[0]) or current > int(bounds[1]):
+            from .trust import get_role_trust
+            if "." in trust_key:
+                faction, role = trust_key.split(".", 1)
+                current = get_role_trust(player.trust, faction, role)
+            else:
+                current = get_role_trust(player.trust, trust_key)
+            if current < int(bounds[0]) or current > int(bounds[1]):
                 return False
         return True
-    
-    def maybe_trigger(self, state) -> Optional[ActiveStorylet]:
-        eligible = [storylet for storylet in self.storylets.values() if self._eligible(storylet, state)]
+
+    def maybe_trigger(self, shared) -> Optional[ActiveStorylet]:
+        return None
+
+    def maybe_trigger_for_player(self, player, shared) -> Optional[ActiveStorylet]:
+        eligible = [storylet for storylet in self.storylets.values() if self._eligible(storylet, player, shared)]
         if not eligible:
             return None
         random.shuffle(eligible)
         for storylet in eligible:
             if random.random() < storylet.trigger_chance:
-                return ActiveStorylet(storylet_id=storylet.id,narrative=storylet.narrative,options=storylet.options,)
+                if story.scope == "room":
+                    room = shared.world.get_room(player.current_room)
+                    if room:
+                        shared.active_room_storylets[room.id] = {
+                            "storylet_id": storylet.id,
+                            "triggered_at": time.time(),
+                            "resolved": False,
+                            "options": storylet.options,
+                            "narrative": storylet.narrative,
+                        }
+                return ActiveStorylet(
+                    storylet_id=storylet.id,
+                    narrative=storylet.narrative,
+                    options=storylet.options,
+                    room_id=player.current_room if storylet.scope == "room" else "",
+                )
         return None
+    
