@@ -18,6 +18,7 @@ from .save_manager import save_player
 from .locales import load_locale, get as loc
 from .stealth import StealthSystem
 from .storylets import load_storylets, StoryletManager
+from .missions import load_missions, MissionManger
 from .world import World
 
 
@@ -33,6 +34,9 @@ class GameServer:
 
         storylets = load_storylets(STORYLETS_PATH)
         self.storylet_manager = StoryletManager(storylets)
+
+        missions = load_missions()
+        self.shared.mission_manager = MissionManager(missions)
 
         from .session_manager import SessionManager
         self.session_manager = SessionManager(self.shared, self.disguises, self.stealth, self.storylet_manager)
