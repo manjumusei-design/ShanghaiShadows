@@ -36,12 +36,81 @@ cmd_bond.no_food: "You have no food to share."
 cmd_bond.no_gift: "Gift what item?"
 cmd_bond.usage: "Bond actions: SHARE MEAL, GIFT <item>"
 cmd_unknown.format: "I don't understand '{raw}'. Try HELP."
-cmd_help.text: "MOVEMENT: LOOK, GO <direction>, WAIT <minutes>
-INTERACTION: TALK TO <npc>, ASK <npc> ABOUT <topic>, SAY <message>, WHISPER <target> <message>, GIVE <item> TO <target>, BOND WITH <npc> USING <action>
-COVERT: DISGUISE AS <role>, TAIL <npc>, HIDE, PLANT <item>
-SURVIVAL: EAT <item>, SLEEP, REST, INVENTORY, JOURNAL, STATUS
-COMBAT: ATTACK <target>
-SYSTEM: HELP, QUIT"
+cmd_help.text: "MOVEMENT:
+  LOOK - Examine your surroundings
+  GO <direction|room> - Move in a direction or auto-path to a known room
+  MAP - Display visited areas
+  FLEE - Random escape direction (costs morale)
+  TAKE TRISHAW TO <district> - Fast travel to another district
+
+INTERACTION:
+  TALK TO <npc> - Speak with someone
+  ASK <npc> ABOUT <topic> - Ask about a specific topic
+  SAY <message> - Speak aloud
+  WHISPER <target> <message> - Whisper to someone
+  YELL <message> - Broadcast to nearby rooms
+  GIVE <item> TO <target> - Give an item to someone
+  BOND WITH <npc> USING <action> - Build trust through shared activity
+
+COVERT:
+  HIDE - Conceal yourself in hiding spots
+  TAIL <npc> - Follow someone secretly
+  DISGUISE AS <role> - Impersonate a faction role
+  PLANT <item> - Plant evidence on an NPC
+  PICKPOCKET <npc> - Steal from someone (risk of discovery)
+  SEARCH - Look for hidden exits and items
+  EXAMINE <target> - Detailed inspection of items, NPCs, or containers
+
+ITEMS:
+  TAKE <item> - Pick up an item
+  DROP <item> - Discard an item
+  INVENTORY - List your possessions
+  WEAR <armour> - Equip armour
+  REMOVE <armour> - Unequip armour
+  OPEN <container> - Open a container
+  CLOSE <container> - Close a container
+  LOCK <container> - Lock a container (requires key)
+  UNLOCK <container> - Unlock a container (requires key)
+  PUT <item> IN <container> - Place item in container
+  TAKE <item> FROM <container> - Retrieve item from container
+  READ <item> - Read an item
+  WRITE NOTE <text> - Create a note
+  LEAVE NOTE - Drop a note in the room
+
+SURVIVAL:
+  EAT <item> - Consume food
+  SLEEP - Sleep until dawn
+  REST - Rest for a short time
+  VISIT NURSE - Receive medical treatment (costs 20 fabi)
+  JOURNAL [character] - View your journal or an archived journal
+  STATUS - View your character's condition
+
+COMBAT:
+  ATTACK <target> - Engage in combat (courage-based)
+  MOD WEAPON <weapon> WITH <mod> - Attach a mod to a weapon
+
+ECONOMY:
+  BUY <item> - Purchase items from vendors
+  SELL <item> - Sell items for fabi
+
+MISSIONS:
+  MISSIONS - View active missions
+  MISSIONS AVAILABLE - Show available missions
+  MISSIONS ACCEPT <id> - Accept a mission
+  MISSIONS COMPLETE <id> - Turn in a completed mission
+  MISSIONS ABANDON <id> - Abandon a mission
+
+SYSTEM:
+  HELP - Display this help
+  MEMORIAL - View the legacy book (fallen characters)
+  QUIT - Save and exit
+
+TIPS:
+- Faction clothing affects NPC reactions
+- Safe rooms (inns, clinics) protect from arrest
+- Curfew is enforced from 20:00-06:00
+- Multiple perception checks reveal hidden details
+- Building trust unlocks missions and resources"
 cmd_look.nowhere: "You are nowhere."
 cmd_stub.not_implemented: "{verb} has not been implemented."
 death.health: "You collapse in the cold alley, too weak to continue. The city claims another life."
@@ -53,20 +122,20 @@ hunger.cramps: "Your stomach cramps with hunger."
 newspaper.delivery: "At dawn a newspaper runner slips a fresh edition into your hands."
 newspaper.fallback_prefix: "Headline"
 
+storylet.choose: "Choose 1-{max}: "
 
-
-greeting: "Shanghai Shadows\nEnter your codename to continue.\n"
+greeting: "Shanghai Shadows\nEnter save slot codename to continue.\n"
 slot_prompt: "slot> "
 loaded: "Loaded slot '{slot}'.\n"
 new_chapter: "A NEW CHAPTER BEGINS"
 new_chapter.footer: "The city remembers what came before, and now you must find your own path."
 connection_lost: "Connection lost. Refresh to reconnect."
+
 victory.ccp_headline: "THE PEOPLE RISE!"
 victory.gmd_headline: "THE REPUBLIC RETURNS!"
-victory.ccp_body: "Workers and students flood the streets. Red banners fly from the Bund to Hongkou. The Japanese garrison crumbles before the fury of a people who refused to kneel. After years of terror, the disappearances, the executions, the starvation - Shanghai is finally free."
+victory.ccp_body: "Workers and students flood the streets. Red banners fly from the Bund to Hongkou. The Japanese garrison crumbles before the fury of a people who refused to kneel. After years of terror — the disappearances, the executions, the starvation — Shanghai is free."
 victory.gmd_body: "The flag of the Republic flies over the Bund once more. Nationalist forces march through streets that have known only occupation and terror. The long night is over."
-victory.footer: "SHANGHAI SHADOWS - END"
-
+victory.footer: "SHANGHAI SHADOWS — THE END"
 
 cmd_attack.no_target: "Attack whom?"
 cmd_attack.safe_room: "Violence is impossible here. This is a sanctuary."
@@ -83,7 +152,7 @@ cmd_buy.success: "You buy {name} for {cost} fabi."
 cmd_sell.no_target: "Sell what?"
 cmd_sell.not_held: "You don't have that."
 cmd_sell.no_value: "Nobody would buy that."
-cmd_sell.success: "You sell {name} for {cost} fabi."
+cmd_sell.success: "You sell {name} for {price} fabi."
 
 cmd_pickpocket.no_target: "Pickpocket whom?"
 cmd_pickpocket.not_here: "They aren't here."
