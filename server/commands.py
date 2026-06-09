@@ -1549,7 +1549,203 @@ async def cmd_unlock(ctx: CommandContext, cmd: Command):
 
     item.locked = False
     await post_display(ctx, f"You unlock {item.name}.")
-    
+
+
+async def cmd_put_in(ctx: CommandContext, cmd: Command):
+    if not cmd.direct_obj or not cmd.indirect_obj:
+        await post_display(ctx, "Put what in what?")
+        return
+
+    item = find_item_by_name(cmd.direct_obj, ctx.session.player.inventory)
+    if not item:
+        await post_display(ctx, "You don't have that.")
+        return
+
+    container = _find_container(ctx, cmd.indirect_obj)
+    if not container:
+        await post_display(ctx, "That's not a container.")
+        return
+
+    if container.locked:
+        await post_display(ctx, "It's locked.")
+        return
+
+    ctx.session.player.inventory.remove(item)
+    container.container_items.append(item)
+    await post_display(ctx, f"You put {item.name} in {container.name}.")
+
+
+async def cmd_take_from(ctx: CommandContext, cmd: Command):
+    if not cmd.direct_obj or not cmd.indirect_obj:
+        await post_display(ctx, "Take what from what?")
+        return
+
+    container = _find_container(ctx, cmd.indirect_obj)
+    if not container:
+        await post_display(ctx, "That's not a container.")
+        return
+
+    if container.locked:
+        await post_display(ctx, "It's locked.")
+        return
+
+    item = find_item_by_name(cmd.direct_obj, container.container_items)
+    if not item:
+        await post_display(ctx, "That's not in there.")
+        return
+
+    container.container_items.remove(item)
+    ctx.session.player.inventory.append(item)
+    await post_display(ctx, f"You take {item.name} from {container.name}.")
+
+
+async def cmd_wear(ctx: CommandContext, cmd: Command):
+    if not cmd.direct_obj:
+        await post_display(ctx, "Wear what?")
+        return
+
+    item = find_item_by_name(cmd.direct_obj, ctx.session.player.inventory)
+    if not item:
+        await post_display(ctx, "You don't have that.")
+        return
+
+    if not item.is_armour:
+        await post_display(ctx, "You can't wear that.")
+        return
+
+    if ctx.session.player.worn_armour_id:
+        old_armour = _get_worn_armour(ctx.session.player)
+        if old_armour and old_armour.id == item.id:
+            await post_display(ctx, "You're already wearing that.")
+            return
+
+    ctx.session.player.worn_armour_id = item.id
+    await post_display(ctx, f"You put on {item.name}. Defense: +{item.defense_value}.")
+
+
+async def cmd_remove(ctx: CommandContext, cmd: Command):
+    if not cmd.direct_obj:
+        if not ctx.session.player.worn_armour_id:
+            await post_display(ctx, "You aren't wearing anything.")
+            return
+    else:
+        item = find_item_by_name(cmd.direct_obj, ctx.session.player.inventory)
+        if not item or item.id != ctx.session.player.worn_armour_id:
+            await post_display(ctx, "You aren't wearing that.")
+            return
+
+    armour = _get_worn_armour(ctx.session.player)
+    ctx.session.player.worn_armour_id = ""
+    if armour:
+        await post_display(ctx, f"You take off {armour.name}.")
+    else:
+        await post_display(ctx, "You remove your armour.")
+
+
+async def cmd_write_note(ctx: CommandContext, cmd: Command):
+    text = cmd.indirect_obj or ""
+    if not text:
+        await post_display(ctx, "Write what on the note?")
+        return
+
+    from .world import Item
+    note = Item(
+        id=f"note_{random.randint(1000, 9999)}",
+        name="handwritten note",
+        description="A handwritten note.",
+        takeable=True,
+        is_note=True,
+        note_text=text,
+    )
+    ctx.session.player.inventory.append(note)
+    await post_display(ctx, "You write a note.")
+
+
+async def cmd_leave_note(ctx: CommandContext, cmd: Command):
+    if not cmd.direct_obj or cmd.direct_obj != "note":
+        await post_display(ctx, "Leave what note?")
+        return
+
+    note_item = None
+    for item in ctx.session.player.inventory:
+        if item.is_note:
+            note_item = item
+            break
+
+    if not note_item:
+        await post_display(ctx, "You don't have a note to leave.")
+        return
+
+    room = _room(ctx)
+    if not room:
+        return
+
+    ctx.session.player.inventory.remove(note_item)
+    room.items.append(note_item)
+    await post_display(ctx, "You leave the note here.")
+
+
+async def cmd_flee(ctx: CommandContext, cmd: Command):
+    if ctx.session.player.hidden:
+        await post_display(ctx, "You can't flee while hidden.")
+        return
+
+    room = _room(ctx)
+    if not room or not room.exits:
+        await post_display(ctx, "There's nowhere to flee!")
+        return
+
+    direction = random.choice(list(room.exits.keys()))
+    ctx.session.player.morale = max(0, ctx.session.player.morale - 5)
+    await post_display(ctx, "You panic and run!")
+    await cmd_go(ctx, cmd)
+
+
+async def cmd_take_trishaw(ctx: CommandContext, cmd: Command):
+    if cmd.verb == "take trishaw" and cmd.preposition == "to" and cmd.indirect_obj:
+        target_district = cmd.indirect_obj.lower()
+    else:
+        await post_display(ctx, "Take trishaw to where?")
+        return
+
+    room = _room(ctx)
+    if not room or not room.trishaw_stand:
+        await post_display(ctx, "There's no trishaw stand here.")
+        return
+
+    hour = ctx.shared.game_time.minute // 60
+    if hour < 6 or hour >= 20:
+        await post_display(ctx, "Trishaws only run during daytime (6:00-20:00).")
+        return
+
+    if not _check_money(ctx.session.player, 5):
+        await post_display(ctx, "You can't afford the fare (5 fabi).")
+        return
+
+    _spend_money(ctx.session.player, 5)
+
+    target_rooms = [
+        r for r in ctx.shared.world.rooms.values()
+        if r.tags and target_district in [t.lower() for t in r.tags]
+    ]
+    if not target_rooms:
+        await post_display(ctx, f"No rooms found in {target_district}.")
+        return
+
+    dest_room = random.choice(target_rooms)
+    old_room_id = ctx.session.player.current_room
+    ctx.session.player.current_room = dest_room.id
+    ctx.session.player.hidden = False
+    log_event(ctx, f"You took a trishaw to {dest_room.title}.")
+
+    await post_display(ctx, f"You pay 5 fabi and take a trishaw to {dest_room.title}.")
+    await advance_time_one_minute(ctx)
+    for _ in range(29):
+        await advance_time_one_minute(ctx)
+
+    await cmd_look(ctx, Command(verb="look"))
+    await maybe_trigger_storylet(ctx)
+ 
 
 async def advance_time_one_minute(ctx: CommandContext):
     ctx.shared.game_time.minute += 1
@@ -1747,6 +1943,21 @@ def build_command_registry() -> Dict[str, Callable]:
             "unequip": cmd_unequip,
             "heal": cmd_heal,
             "missions": cmd_missions,
+            "flee": cmd_flee,
+            "search": cmd_search,
+            "examine": cmd_examine,
+            "map": cmd_map,
+            "wear": cmd_wear,
+            "remove": cmd_remove,
+            "open": cmd_open,
+            "close": cmd_close,
+            "lock": cmd_lock,
+            "unlock": cmd_unlock,
+            "put in": cmd_put_in,
+            "take from": cmd_take_from,
+            "write note": cmd_write_note,
+            "leave note": cmd_leave_note,
+            "take trishaw": cmd_take_trishaw,
             "unknown": cmd_stub,
         }
     return _COMMAND_REGISTRY
