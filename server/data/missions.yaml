@@ -1,0 +1,57 @@
+missions:
+  - id: collect_intel_01
+    title: "Gather Patrol Intelligence"
+    description: "Captain Ishikawa's patrol routes have changed. Find a folded patrol route and bring it to Liu Wei."
+    faction: ccp
+    min_trust: 30
+    giver_npc_hint: "liu_wei"
+    objectives:
+      - type: collect_item
+        target: patrol_route
+        count: 1
+        current: 0
+    rewards:
+      money_fabi: 25
+      trust:
+        ccp.guerrilla: 10
+    expires_days: 7
+
+  - id: eliminate_informer_01
+    title: "Silence the Informer"
+    description: "A civilian informant is feeding information to the Kempeitai. Remove the threat quietly."
+    faction: gmd
+    min_trust: 40
+    giver_npc_hint: "madam_xu"
+    objectives:
+      - type: kill_npc
+        target: vendor_lin
+        count: 1
+        current: 0
+    rewards:
+      money_fabi: 40
+      trust:
+        gmd.spy: 15
+    expires_days: 5
+
+  - id: deliver_medicine_01
+    title: "Deliver Contraband Medicine"
+    description: "Dr Zhao needs morphine for his patients. Get a vial and deliver it to his clinic."
+    faction: civilian
+    min_trust: 20
+    giver_npc_hint: "dr_zhao"
+    objectives:
+      - type: collect_item
+        target: contraband_morphine
+        count: 1
+        current: 0
+      - type: deliver_to_npc
+        target: dr_zhao
+        count: 1
+        current: 0
+    rewards:
+      money_fabi: 15
+      trust:
+        civilian.resident: 10
+        ccp.guerrilla: 5
+      health_restore: 10
+    expires_days: 10
