@@ -34,6 +34,9 @@ VERB_ALIASES = {
     "h": "help",
     "?": "help",
     "stat": "status",
+    "run": "flee",
+    "equip": "wear",
+    "unequip": "remove",
 }   
 
 KNOWN_VERBS = {
@@ -64,6 +67,24 @@ KNOWN_VERBS = {
     "bond",
     "say",
     "attack",
+    "flee",
+    "search",
+    "examine",
+    "map",
+    "pickpocket",
+    "wear",
+    "remove",
+    "open",
+    "close",
+    "lock",
+    "unlock",
+    "missions",
+    "memorial",
+    "yell",
+    "buy",
+    "sell",
+    "equip",
+    "heal",
 }
 
 
@@ -115,21 +136,77 @@ def parse(text: str) -> Command:
         indirect = " ".join(tokens[2:])
         return Command(verb="whisper", direct_obj=direct, indirect_obj=indirect, raw=raw)
 
+    if first == "take" and len(tokens) > 2 and tokens[1].lower() == "trishaw":
+        rest = _strip_articles(tokens[2:])
+        if rest and rest[0].lower() == "to":
+            direct = "trishaw"
+            indirect = " ".join(rest[1:]) if len(rest) > 1 else None
+            return Command(verb="take trishaw", direct_obj=direct, preposition="to", indirect_obj=indirect, raw=raw)
+        return Command(verb="take trishaw", direct_obj="trishaw", raw=raw)
+
+    if first == "write" and len(tokens) > 1 and tokens[1].lower() == "note":
+        rest = _strip_articles(tokens[2:])
+        direct = "note"
+        indirect = " ".join(rest) if rest else None
+        return Command(verb="write note", direct_obj=direct, indirect_obj=indirect, raw=raw)
+
+    if first == "leave" and len(tokens) > 1 and tokens[1].lower() == "note":
+        rest = _strip_articles(tokens[2:])
+        direct = "note"
+        indirect = " ".join(rest) if rest else None
+        return Command(verb="leave note", direct_obj=direct, indirect_obj=indirect, raw=raw)
+
+    if first == "put" and len(tokens) > 2:
+        prep_idx = next((i for i, t in enumerate(tokens[1:], 1) if t.lower() == "in"), None)
+        if prep_idx:
+            direct_tokens = _strip_articles(tokens[1:prep_idx])
+            direct = " ".join(direct_tokens) if direct_tokens else None
+            indirect_tokens = _strip_articles(tokens[prep_idx + 1:])
+            indirect = " ".join(indirect_tokens) if indirect_tokens else None
+            return Command(verb="put in", direct_obj=direct, preposition="in", indirect_obj=indirect, raw=raw)
+
+    if first == "take" and len(tokens) > 2:
+        prep_idx = next((i for i, t in enumerate(tokens[1:], 1) if t.lower() == "from"), None)
+        if prep_idx:
+            direct_tokens = _strip_articles(tokens[1:prep_idx])
+            direct = " ".join(direct_tokens) if direct_tokens else None
+            indirect_tokens = _strip_articles(tokens[prep_idx + 1:])
+            indirect = " ".join(indirect_tokens) if indirect_tokens else None
+            return Command(verb="take from", direct_obj=direct, preposition="from", indirect_obj=indirect, raw=raw)
+
+    if first == "mod" and len(tokens) > 2 and tokens[1].lower() == "weapon":
+        prep_idx = next((i for i, t in enumerate(tokens[2:], 2) if t.lower() == "with"), None)
+        if prep_idx:
+            direct_tokens = _strip_articles(tokens[2:prep_idx])
+            direct = " ".join(direct_tokens) if direct_tokens else None
+            indirect_tokens = _strip_articles(tokens[prep_idx + 1:])
+            indirect = " ".join(indirect_tokens) if indirect_tokens else None
+            return Command(verb="mod weapon", direct_obj=direct, preposition="with", indirect_obj=indirect, raw=raw)
+
+    if first == "abandon" and len(tokens) > 1 and tokens[1].lower() == "mission":
+        rest = _strip_articles(tokens[2:])
+        direct = "mission"
+        indirect = " ".join(rest) if rest else None
+        return Command(verb="abandon mission", direct_obj=direct, indirect_obj=indirect, raw=raw)
+
+    if first == "visit" and len(tokens) > 1 and tokens[1].lower() == "nurse":
+        return Command(verb="visit nurse", direct_obj="nurse", raw=raw)
+
     verb = _resolve_verb(first)
-    rest  = tokens[1:]
+    rest = tokens[1:]
 
     if verb == "go" and first in DIRECTIONS:
         return Command(verb="go", direct_obj=first, raw=raw)
-    
+
     prep_idx = next(
-        (i for i , t in enumerate(rest) if t.lower() in PREPOSITIONS), None
+        (i for i, t in enumerate(rest) if t.lower() in PREPOSITIONS), None
     )
 
     if prep_idx is not None:
         direct_tokens = rest[:prep_idx]
         direct = " ".join(_strip_articles(direct_tokens)) if direct_tokens else None
         prep = rest[prep_idx].lower()
-        indirect_tokens = rest[prep_idx + 1:]
+        indirect_tokens = rest[prep_idx + 1 :]
         indirect = " ".join(_strip_articles(indirect_tokens)) if indirect_tokens else None
         return Command(
             verb=verb,
@@ -138,6 +215,6 @@ def parse(text: str) -> Command:
             indirect_obj=indirect,
             raw=raw,
         )
-    else: 
+    else:
         direct = " ".join(_strip_articles(rest)) if rest else None
         return Command(verb=verb, direct_obj=direct, raw=raw)
