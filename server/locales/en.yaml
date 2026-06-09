@@ -135,7 +135,7 @@ victory.ccp_headline: "THE PEOPLE RISE!"
 victory.gmd_headline: "THE REPUBLIC RETURNS!"
 victory.ccp_body: "Workers and students flood the streets. Red banners fly from the Bund to Hongkou. The Japanese garrison crumbles before the fury of a people who refused to kneel. After years of terror — the disappearances, the executions, the starvation — Shanghai is free."
 victory.gmd_body: "The flag of the Republic flies over the Bund once more. Nationalist forces march through streets that have known only occupation and terror. The long night is over."
-victory.footer: "SHANGHAI SHADOWS — THE END"
+victory.footer: "SHANGHAI SHADOWS — END"
 
 cmd_attack.no_target: "Attack whom?"
 cmd_attack.safe_room: "Violence is impossible here. This is a sanctuary."
