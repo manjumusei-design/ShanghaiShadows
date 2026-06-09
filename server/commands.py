@@ -1072,3 +1072,72 @@ async def _attack_npc(ctx: CommandContext, npc_id: str):
         is_dead, death_msg = check_death_conditions(ctx)
         if is_dead:
             await handle_player_death(ctx, death_msg)
+
+
+async def _attack_player(ctx: CommandContext, target_session: Session):
+    player = ctx.session.player
+    target = target_session.player
+
+    weapon = _get_equipped_weapon(player)
+    target_armour = await _get_worn_armour(target)
+
+    result = resolve_attack(
+        attacker_courage=player.courage,
+        attacker_weapon=weapon,
+        target_authority=target.courage,
+        target_armour=target_armour,
+        attacker_hidden=player.hidden,
+    )
+
+    if result.won:
+        target.health = max(0, target.health - 20)
+        await broadcast_to_room(ctx, f"{player.name} strikes {target.name}!")
+        log_event(ctx, f"You attacked {target.name}.")
+        if target.health <= 0:
+            await handle_player_death(ctx, f"You killed {target.name}.")
+    else:
+        if result.attacker_damaged > 0:
+            player.health = max(0, player.health - result.attacker_damaged)
+        await post_display(ctx, f"Your attack on {target.name} fails.")
+
+    await _degrade_and_notify_weapon(ctx, weapon, result.won)
+
+    if not result.silent:
+        player.hidden = False
+        is_dead, death_msg = check_death_conditions(ctx)
+        if is_dead:
+            await handle_player_death(ctx, death_msg)
+
+
+async def cmd_buy(ctx: CommandContext, cmd: Command):
+    if not cmd.direct_obj:
+        await post_display(ctx, loc("cmd_buy.no_target"))
+        return
+    room = _room(ctx)
+    if not room:
+        return
+    item = find_item_by_name(cmd.direct_obj, room.items)
+    if not item:
+        await post_display(ctx, loc("cmd_buy.not_here"))
+        return
+    fabi_cost = 0
+    if item.id == "rice_bowl":
+        fabi_cost = RICE_BOWL_COST
+    elif item.id == "baozi":
+        fabi_cost = BAOZI_COST
+    elif item.id == "tea":
+        fabi_cost = TEA_COST
+    else:
+        await post_display(ctx, loc("cmd_buy.not_for_sale"))
+        return
+
+    if not _check_money(ctx.session.player, fabi_cost):
+        await post_display(ctx, loc("cmd_buy.no_money").format(cost=fabi_cost))
+        return
+
+    _spend_money(ctx.session.player, fabi_cost)
+    item_copy = replace(item)
+    room.items.remove(item)
+    ctx.session.player.inventory.append(item_copy)
+    log_event(ctx, f"You bought {item.name} for {fabi_cost} fabi.")
+    await post_display(ctx, loc("cmd_buy.success").format(name=item.name, cost=fabi_cost))
