@@ -1141,3 +1141,56 @@ async def cmd_buy(ctx: CommandContext, cmd: Command):
     ctx.session.player.inventory.append(item_copy)
     log_event(ctx, f"You bought {item.name} for {fabi_cost} fabi.")
     await post_display(ctx, loc("cmd_buy.success").format(name=item.name, cost=fabi_cost))
+
+
+async def cmd_sell(ctx: CommandContext, cmd: Command):
+    if not cmd.direct_obj:
+        await post_display(ctx, loc("cmd_sell.no_target"))
+        return
+    item = find_item_by_name(cmd.direct_obj, ctx.session.player.inventory)
+    if not item:
+        await post_display(ctx, loc("cmd_sell.not_held"))
+        return
+
+    sell_price = 0
+    if item.is_weapon:
+        sell_price = item.courage_bonus
+    elif item.is_armour:
+        sell_price = item.defense_value
+
+    if sell_price == 0:
+        await post_display(ctx, loc("cmd_sell.no_value"))
+        return
+
+    ctx.session.player.inventory.remove(item)
+    _earn_money(ctx.session.player, sell_price)
+    log_event(ctx, f"You sold {item.name} for {sell_price} fabi.")
+    await post_display(ctx, loc("cmd_sell.success").format(name=item.name, price=sell_price))
+
+
+async def cmd_pickpocket(ctx: CommandContext, cmd: Command):
+    if not cmd.direct_obj:
+        await post_display(ctx, loc("cmd_pickpocket.no_target"))
+        return
+    npc_id = resolve_npc(ctx, cmd.direct_obj)
+    if not npc_id:
+        await post_display(ctx, loc("cmd_pickpocket.not_here"))
+        return
+
+    npc = ctx.shared.world.npcs.get(npc_id)
+    if not npc:
+        await post_display(ctx, loc("cmd_pickpocket.not_here"))
+        return
+
+    success, amount = _pickpocket_roll(ctx.session.player.stealth_skill, npc.perception)
+    if success:
+        _earn_money(ctx.session.player, amount)
+        log_event(ctx, f"You pickpocketed {npc.name} for {amount} fabi.")
+        apply_action_trust(ctx, f"pickpocket_{npc.faction}.{npc.role}", room_npcs(ctx))
+        await post_display(ctx, loc("cmd_pickpocket.success").format(name=npc.name, amount=amount))
+    else:
+        log_event(ctx, f"You were caught pickpocketing {npc.name}.")
+        apply_action_trust(ctx, f"caught_pickpocket_{npc.faction}.{npc.role}", room_npcs(ctx))
+        ctx.session.player.hidden = False
+        await post_display(ctx, loc("cmd_pickpocket.caught").format(name=npc.name))
+        await broadcast_to_room(ctx, f"{ctx.session.player.name} is caught pickpocketing {npc.name}!")
