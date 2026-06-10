@@ -404,6 +404,9 @@ class WorldClock:
             return True
         return False
     
+    def _get_nearby_npcs(self, npc_id: str, current_room) -> list:
+        return [self.shared.world.npcs.get(nid) for nid in current_room.npcs if nid != npc_id and self.shared.world.npcs.get(nid)]
+
     async def _check_death_and_victory(self):
         from .victory import check_victory_conditions
         from .trust import get_role_trust
