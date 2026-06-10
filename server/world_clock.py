@@ -407,6 +407,22 @@ class WorldClock:
     def _get_nearby_npcs(self, npc_id: str, current_room) -> list:
         return [self.shared.world.npcs.get(nid) for nid in current_room.npcs if nid != npc_id and self.shared.world.npcs.get(nid)]
 
+    def _npc_move_action(self, npc, current_room_id: str, current_room, rooms_with_players: set):
+        import random
+        if not current_room.exits:
+            return
+
+        direction = random.choice(list(current_room.exits.keys()))
+        dest_room_id = current_room.exits[direction]
+
+        if self._move_npc_between_rooms(npc.id, current_room_id, dest_room_id):
+            if current_room_id in rooms_with_players or dest_room_id in rooms_with_players:
+                for session in self.session_manager.get_players_in_room(current_room_id):
+                    asyncio.create_task(session.send_display(f"{npc.name} walks {direction}."))
+
+                for session in self.session_manager.get_players_in_room(dest_room_id):
+                    asyncio.create_task(session.send_display(f"{npc.name} walks {direction}."))
+
     async def _check_death_and_victory(self):
         from .victory import check_victory_conditions
         from .trust import get_role_trust
