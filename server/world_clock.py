@@ -392,6 +392,18 @@ class WorldClock:
             elif roll < 0.80:
                 self._npc_flee_action(npc, current_room_id, current_room, rooms_with_players)
 
+    def _move_npc_between_rooms(self, npc_id: str, from_room_id: str, to_room_id: str, direction: str = "", silent: bool = False):
+        old_room = self.shared.world.rooms.get(from_room_id)
+        if old_room and npc_id in old_room.npcs:
+            old_room.npcs.remove(npc_id)
+
+        dest_room = self.shared.world.rooms.get(to_room_id)
+        if dest_room:
+            dest_room.npcs.append(npc_id)
+            self.shared.world.npc_locations[npc_id] = to_room_id
+            return True
+        return False
+    
     async def _check_death_and_victory(self):
         from .victory import check_victory_conditions
         from .trust import get_role_trust
