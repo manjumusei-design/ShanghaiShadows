@@ -1075,3 +1075,153 @@ storylets:
             ccp.organizer: 5
             civilian.resident: 5
           log_event: "You warned students to disperse before a confrontation."
+
+  - id: wounded_courier_room
+    location_tags: [indoor, commercial]
+    trigger_chance: 0.3
+    scope: room
+    preconditions:
+      game_hour: [18, 23]
+    narrative: "A wounded courier crashes through the door, blood staining his shirt. He clutches a folded document to his chest and collapses against the wall."
+    options:
+      - text: "Help him hide and tend to his wounds."
+        effects:
+          trust:
+            ccp.guerilla: 10
+            civilian.resident: 8
+          flag: helped_wounded_courier
+          log_event: "You hid a wounded courier from the authorities."
+      - text: "Drag him out into the street."
+        effects:
+          trust:
+            kempeitai.patrol: 5
+            civilian.resident: -15
+          flag: betrayed_courier
+          log_event: "You exposed a wounded courier to the Kempeitai."
+      - text: "Turn him in to the authorities."
+        effects:
+          trust:
+            kempeitai.patrol: 15
+            civilian.resident: -25
+            gmd.spy: -10
+          flag: betrayed_courier_authorities
+          log_event: "You turned a wounded courier in to the Kempeitai."
+             
+  - id: kempeitai_search
+    location_tags: [residential, indoor]
+    trigger_chance: 0.25
+    scope: room
+    preconditions:
+      game_hour: [6, 20]
+    narrative: "Kempeitai soldiers pound on the door and push inside without waiting. 'We have reports of Resistance activity. Everyone against the wall. Now.'"
+    options:
+      - text: "Comply with the search."
+        effects:
+          trust:
+            civilian.resident: -3
+          log_event: "You submitted to a Kempeitai search."
+      - text: "Hide something quickly."
+        effects:
+          trust:
+            kempeitai.patrol: -8
+          health: -5
+          flag: hid_from_kempeitai
+          log_event: "You hid evidence from a Kempeitai search."
+      - text: "Resist and demand a warrant."
+        effects:
+          trust:
+            civilian.resident: 8
+            kempeitai.patrol: -12
+          flag: resisted_kempeitai
+          log_event: "You resisted an unlawful Kempeitai search."
+
+  - id: arms_cache_found
+    location_tags: [warehouse, hidden]
+    trigger_chance: 0.2
+    scope: room
+    preconditions:
+      trust_ranges:
+        ccp.guerrilla: [20, 100]
+        gmd.spy: [20, 100]
+    narrative: "A hidden crate in the corner creaks with movement. Inside, you find a cache of weapons — pistols, grenades, and ammunition."
+    options:
+      - text: "Report the cache to your faction contacts."
+        effects:
+          trust:
+            ccp.guerrilla: 12
+            gmd.spy: 8
+          flag: reported_arms_cache
+          log_event: "You reported an arms cache to your faction."
+      - text: "Take weapons for yourself."
+        effects:
+          add_item: mauser_c96
+          trust:
+            ccp.guerrilla: -5
+          flag: looted_arms_cache
+          log_event: "You looted an arms cache for personal use."
+      - text: "Share with the other refugees hiding here."
+        effects:
+          trust:
+            civilian.resident: 15
+            ccp.guerrilla: 5
+          morale: 10
+          flag: shared_arms_cache
+          log_event: "You distributed weapons from an arms cache to refugees." 
+
+  - id: food_dispute
+    location_tags: [civilian, street]
+    trigger_chance: 0.35
+    scope: room
+    preconditions:
+      game_hour: [8, 18]
+    narrative: "Two civilians argue over a stolen bag of rice. One accuses the other of theft, while the other claims hunger drove them to it. A crowd watches nervously."
+    options:
+      - text: "Mediate the dispute and suggest sharing."
+        effects:
+          trust:
+            civilian.resident: 10
+          morale: 5
+          flag: mediated_food_dispute
+          log_event: "You mediate a dispute over stolen food."
+      - text: "Side with the hungry thief and argue for compassion."
+        effects:
+          trust:
+            civilian.resident: 10
+          morale: 5
+          flag: mediated_food_dispute
+      - text: "Side with the hungry thief and argue for compassion."
+        effects:
+          trust:
+            civilian.resident: 8
+          flag: defended_thief
+          log_event: "You defended a starving person accused of theft."
+
+  - id: lost_child
+    location_tags: [commercial, street]
+    trigger_chance: 0.3
+    scope: room
+    preconditions:
+      game_hour: [10, 20]
+    narrative: "A crying child, no older than seven, wanders through the crowd calling for their mother. Passersby hurry past, afraid to get involved."
+    options:
+      - text: "Help the child find their mother."
+        effects:
+          trust:
+            civilian.resident: 12
+          morale: 8
+          flag: helped_lost_child
+          log_event: "You helped a lost child find their mother"
+      - text: "Ignore the child and keep moving."
+        effects:
+          trust:
+            civilian.resident: -3
+          morale: -5
+          flag: ignored_lost_child
+          log_event: "You ignored a lost child in need."
+      - text: "Take advantage of teh situation to steal from the distracted crowd."
+        effects:
+          trust:
+            civilian.resident: -20
+          add_item: silver_yuan
+          flag: preyed_on_distraction
+          log_event: "You stole from a crowd while a child was lost."
