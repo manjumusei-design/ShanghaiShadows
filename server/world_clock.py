@@ -52,6 +52,7 @@ class WorldClock:
         self._advance_time_one_minute()
         self._move_npcs_if_hour_changed()
         self._process_gossip()
+        self._process_npc_autonomy()
         await self._process_planted_evidence_all_sessions()
         await self._process_tailing_all_sessions()
         await self._check_curfew_all_sessions()
@@ -256,6 +257,55 @@ class WorldClock:
                         lines.append(f"{idx}. {option.text}")
                     asyncio.create_task(session.send_display("\n".join(lines)))
 
+        await self._check_room_storylet_timeouts()
+
+    async def _check_room_storylet_timeouts(self):
+        import time
+        expired_rooms = []
+        for room_id, storylet_data in self.shared.active_room_storylets.items():
+            if storylet_data.get("resolved", False):
+                expired_rooms.append(room_id)
+                continue
+            triggered_at = storylet_data.get("triggered_at", 0)
+            if time.time() - triggered_at > 30:
+                options = storylet_data.get("options", [])
+                if options:
+                    first_option = options[0]
+                    await self._resolve_room_storylet(room_id, first_option)
+                else:
+                    expired_rooms.append(room_id)
+
+        for room_id in expired_rooms:
+            if room_id in self.shared.active_room_storylets:
+                del self.shared.active_room_storylets[room_id]
+
+    def _apply_trust_effects(self, player, trust_changes: dict) -> None:
+        from .trust import change_trust
+        for faction, delta in trust_changes.items():
+            change_trust(player.trust, faction, delta)
+
+    def _apply_flag_effects(self, player, flag: str) -> None:
+        player.flags.appemd(flag)
+
+    def _apply_item_effects(self, player, item_id: str) -> None:
+        item = self.shared.world.clone_item(item_id)
+        if item:
+            player.inventory.append(item)
+
+    def _apply_health_effects(self, player, health_change: int) -> None:
+        player.health = max(0, min(100, player.health + health_change))
+
+    def _apply_morale_effects(self, player, morale_change: int) -> None:
+        player.morale = max(0, min(100, player.morale + morale_change))
+
+    EFFECT_HANDLERS = {
+        "trust": lambda s, v: s._apply_trust_effects(s.player, v),
+        "flag": lambda s, v: s._apply_flag_effects(s.player, v),
+        "item": lambda s, v: s._apply_item_effects(s.player, v),
+        "health": lambda s, v: s._apply_health_effects(s.player, v),
+        "morale": lambda s, v: s._apply_morale_effects(s.player, v),
+    }
+
     def _check_mission_expiry(self):
         mm = self.shared.mission_manager
         if not mm:
@@ -264,7 +314,7 @@ class WorldClock:
             expired = mm.check_expiry(session.player, self.shared.game_time.day)
             for mid in expired:
                 asyncio.create_task(session.send_display(f"Mission {mid} has expired."))
-                
+
     def _process_survival_all_sessions(self):
         for session in self.session_manager.sessions.values():
             session.player.hunger = max(0, session.player.hunger - HUNGER_DECAY_RATE)
