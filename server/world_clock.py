@@ -348,6 +348,50 @@ class WorldClock:
             if session.player.hunger > 80 and self.shared.game_time.minute % 60 == 0:
                 session.player.health = min(100, session.player.health + 1)
 
+    def _process_npc_autonomy(self):
+        import random
+        from .trust import exchange_gossip
+
+        if self.shared.game_time.minute % 30 != 0:
+            return
+        
+        world_tension = (self.shared.ccp_influence + self.shared.gmd_influence) / 2
+        base_act_chance = 0.2
+        if world_tension > 50:
+            base_act_chance = 0.3
+
+        rooms_with_players = set()
+        for session in self.session_manager.sessions.values():
+            rooms_with_players.add(session.player.current_room)
+
+        for npc_id, npc in self.shared.world.npcs.items():
+            current_room_id = self.shared.world.npc_locations.get(npc_id)
+            if not current_room_id:
+                continue
+            current_room = self.shared.world.rooms.get(current_room_id)
+            if not current_room:
+                continue
+            skip_npc = False
+            for session in self.session_manager.get_players_in_room(current_room_id):
+                if session.player.active_storylet or session.player.manually_advancing:
+                    skip_npc = True
+                    break
+            if skip_npc:
+                continue
+            if random.random() >= base_act_chance:
+                continue
+
+            roll = random.random()
+            action_roll = random.random()
+            if roll < 0.40:
+                self._npc_move_action(npc, current_room_id, current_room, rooms_with_players)
+            elif roll < 0.60:
+                self._npc_gossip_action(npc, current_room, rooms_with_players)
+            elif roll < 0.70:
+                self._npc_argue_action(npc, current_room, rooms_with_players)
+            elif roll < 0.80:
+                self._npc_flee_action(npc, current_room_id, current_room, rooms_with_players)
+
     async def _check_death_and_victory(self):
         from .victory import check_victory_conditions
         from .trust import get_role_trust
