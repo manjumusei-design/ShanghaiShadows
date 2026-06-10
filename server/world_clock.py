@@ -423,6 +423,20 @@ class WorldClock:
                 for session in self.session_manager.get_players_in_room(dest_room_id):
                     asyncio.create_task(session.send_display(f"{npc.name} walks {direction}."))
 
+    def _npc_gossip_action(self, npc, current_room, rooms_with_players: set):
+        from.trust import exchange_gossip
+        import random
+
+        nearby_npcs = self._get_nearby_npcs(npc.id, current_room)
+        if not nearby_npcs:
+            return
+        
+        other = random.choice(nearby_npcs)
+        if exchange_gossip(npc.memory, other.memory, chance=0.5):
+            if current_room.id in rooms_with_players:
+                for session in self.session_manager.get_players_in_room(current_room.id):
+                    asyncio.create_task(session.send_display(f"{npc.name} whispers something to {other.name}."))
+
     async def _check_death_and_victory(self):
         from .victory import check_victory_conditions
         from .trust import get_role_trust
