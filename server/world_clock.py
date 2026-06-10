@@ -306,6 +306,28 @@ class WorldClock:
         "morale": lambda s, v: s._apply_morale_effects(s.player, v),
     }
 
+    async def _resolve_room_storylet(self, room_id: str, option_index: int, option):
+        if room_id not in self.shared.active_room_storylets:
+            return
+        
+        storylet_data = self.shared.active_room_storylets[room_id]
+        storylet_data["resolved"] = True
+
+        effects = option.get("effects", {})
+        for session in self.session_manager.get_players_in_room(room_id):
+            if session.player.active_storylet and session.player.active_storylet.room_id == room_id:
+                session.player.active_storylet = None
+
+                for effect_type, effect_value in effects.item():
+                    handler = self.EFFECT_HANDLERS.get(effect_type)
+                    if handler:
+                        handler(self, effect_value)
+
+                if option_index == 0:
+                    asyncio.create_task(session.send_display("The moment passes."))
+                else:
+                asyncio.create_task(session.send_display(f"You chose option {option_index + 1}. The moment passes."))
+
     def _check_mission_expiry(self):
         mm = self.shared.mission_manager
         if not mm:
