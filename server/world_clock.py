@@ -457,8 +457,41 @@ class WorldClock:
                     f"Tension rises as {npc.name} confronts {opponent.name}."
                 ]
                 asyncio.create_task(session.send_display(random.choice(messages)))
-                
-    async def _check_death_and_victory(self):
+
+    def _npc_flee_action(self, npc, current_room_id: str, current_room, rooms_with_players: set):
+        import random
+
+        nearby_npcs = self._get_nearby_npcs(npc.id, current_room)
+        kempeitai_nearby = any(n.faction == "kempeitai" for n in nearby_npcs)
+        is_resistance = npc.faction in ["ccp", "gmd"]
+
+        if not (kempeitai_nearby and is_resistance):
+            return
+
+        if not current_room.exits:
+            return
+
+        direction = random.choice(list(current_room.exits.keys()))
+        dest_room_id = current_room.exits[direction]
+
+        if self._move_npc_between_rooms(npc.id, current_room_id, dest_room_id):
+            if current_room_id in rooms_with_players or dest_room_id in rooms_with_players:
+                for session in self.session_manager.get_players_in_room(current_room_id):
+                    asyncio.create_task(session.send_display(f"{npc.name} flees {direction}!"))
+
+OPPOSITE_FACTION_PAIRS = {
+    ("ccp", "kempeitai"),
+    ("gmd", "kempeitai"),
+    ("ccp", "green_gang"),
+    ("gmd", "green_gang"),
+    ("green_gang", "civilian"),
+}
+
+def _are_opposite_factions(self, faction1: str, faction2: str) -> bool:
+    pair = tuple(sorted([faction1, faction2]))
+    return pair in OPPOSITE_FACTION_PAIRS
+
+async def _check_death_and_victory(self):
         from .victory import check_victory_conditions
         from .trust import get_role_trust
         from .locales import get as loc
