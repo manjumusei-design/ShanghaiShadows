@@ -437,6 +437,27 @@ class WorldClock:
                 for session in self.session_manager.get_players_in_room(current_room.id):
                     asyncio.create_task(session.send_display(f"{npc.name} whispers something to {other.name}."))
 
+    def _npc_argue_action(self, npc, current_room, rooms_with_players: set):
+        import random
+
+        nearby_npcs = self._get_nearby_npcs(npc.id, current_room)
+        if not nearby_npcs:
+            return
+        
+        opponents = [n for n in nearby_npcs if self._are_opposite_factions(npc.faction, n.faction)]
+        if not opponents:
+            return
+
+        opponent = random.choice(opponents)
+        if current_room.id in rooms_with_players:
+            for session in self.session_manager.get_players_in_room(current_room.id):
+                messages = [
+                    f"{npc.name} argues heatedly with {opponent.name}.",
+                    f"{npc.name} and {opponent.name} exchange angry words.",
+                    f"Tension rises as {npc.name} confronts {opponent.name}."
+                ]
+                asyncio.create_task(session.send_display(random.choice(messages)))
+                
     async def _check_death_and_victory(self):
         from .victory import check_victory_conditions
         from .trust import get_role_trust
