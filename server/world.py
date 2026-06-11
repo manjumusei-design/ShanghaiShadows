@@ -151,7 +151,30 @@ def _merge_custom(base: Dict, custom_path: Path, load_func) -> Dict:
     base.update(load_func(str(custom_path)))
     return base
 
+def _apply_room_properties(rooms: Dict[str, Room], props_path: Path) -> None:
+    if not props_path.exists():
+        return
+    with open(props_path, "r", encoding="utf-8") as f:
+        data = yaml.safe_load(f) or {}
+    BOOL_FIELDS = ("safe_room", "hiding_spots", "trishaw_stand", "nurse_available", "indoors")
+    for entry in data.get("rooms", []):
+        room_id = entry.get("id")
+        if not room_id or room_id not in rooms:
+            continue
+        room = rooms[room_id]
+        for key in BOOL_FIELDS:
+            if key in entry:
+                setattr(room, key, entry[key])
+        if "hidden_exits" in entry:
+            room.hidden_exits.update(entry["hidden_exits"])
+        if "nurse_hours" in entry:
+            room.nurse_hours = entry["nurse_hours"]
+        if "tags" in entry:
+            for tag in entry["tags"]:
+                if tag not in room.tags:
+                    room.tags.append(tag)
 
+                    
 class World:
     def __init__(self):
         items = load_items("server/data/items.yaml")
