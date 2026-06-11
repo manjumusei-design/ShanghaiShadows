@@ -2778,3 +2778,44 @@ npcs:
     - A foreman at the Number Three mill was found beaten in the alley. Nobody saw anything. Nobody ever does.
     secret:
     - We are planning a work stoppage. Not yet, but soon. When the signal comes, every loom stops.
+
+- id: underground_doctor_li
+  name: Doctor Li Wei
+  description: A slight man with wire-rimmed glasses who carries his surgical kit in a false-bottomed rice sack and operates by candlelight in a cellar that smells of antiseptic and fear.
+  faction: ccp
+  role: medic
+  personality: stoic
+  awareness: 55
+  authority: 28
+  courage: 58
+  perception: 50
+  faction_leader: false
+  schedule:
+    8: hidden_shanghai_cellar
+    14: residential_apartment
+    18: hidden_shanghai_cellar
+    22: residential_apartment
+  dialogue:
+    greeting:
+    - Lie down. I can tell by the way you are standing that you need to.
+    - The cellar is clean enough. I boiled everything twice.
+    - You are my third patient today and it is not yet noon. The occupation keeps me busy.
+    friendly:
+    - I have penicillin. Do not ask where. Just be grateful and heal quickly.
+    - The wound is clean. No infection. Next time, try not to get shot.
+    - I patch people up not because it is safe, but because the alternative is unacceptable.
+    suspicious:
+    - I am a doctor, not a revolutionary. You have the wrong address.
+    - The clinic down the street treats everyone. Try there.
+    neutral:
+    - I charge what I can and forget what I cannot. That is the only policy that survives wartime.
+    - The morphine ran out last week. I have gin and a steady hand. That will have to do.
+    - I do not ask how the wounds happen. I only ask that you hold still.
+    farewell:
+    - Change the bandage tomorrow. Clean water, clean cloth. Come back if it swells.
+    - Go home and rest. The revolution can wait until you can walk without bleeding.
+    rumor:
+    - The garrison hospital has been turning away Chinese patients. A nurse there smuggles bandages out in her laundry basket.
+    - The pharmacist on Sichuan Road is running low on ether. Someone bought it all in one lot. Someone careful.
+    secret:
+    - There is a tunnel behind the east wall. If the Kempeitai come, go through it and do not look back.
