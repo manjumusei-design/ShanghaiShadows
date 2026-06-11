@@ -3024,3 +3024,89 @@ npcs:
     - A family on the fourth floor disappeared two nights ago. No sound, no fuss. Just gone by morning.
     secret:
     - There is a loose floorboard under the bed in the back room. Hide anything small enough to fit. I have hidden letters, photographs, and once a pistol.
+
+- id: cell_leader_zhou
+  name: Comrade Zhou
+  description: A reserved man in his fifties with reading glasses and a calm voice who directs underground operations from the back of a dusty antiquarian bookshop, his authority absolute and his patience inexhaustible.
+  faction: ccp
+  role: operative
+  personality: pragmatic
+  awareness: 68
+  authority: 40
+  courage: 60
+  perception: 55
+  faction_leader: false
+  schedule:
+    8: hidden_shanghai_cellar
+    13: old_city_tea_house
+    18: hidden_shanghai_cellar
+    22: residential_apartment
+  dialogue:
+    greeting:
+    - Close the door. The booksellers upstairs have good ears and loose tongues.
+    - You are late. Sit down and explain, briefly.
+    - I have been expecting you. The situation has changed. Listen carefully.
+    friendly:
+    - The network holds. Three cells operational, two in reserve, one compromised and burned. We rebuild.
+    - I have read your report. The work is good. Continue, but increase caution. The Kempeitai are not stupid.
+    - Trust is earned in small doses. You have earned a larger one. Here is what happens next.
+    suspicious:
+    - I sell old books to old people. That is the extent of my business.
+    - You have the wrong shop. The bookstore on the next street has better selections.
+    neutral:
+    - The revolution does not require enthusiasm. It requires discipline and patience.
+    - I have been doing this since before you were born. The faces change, the methods do not.
+    - Read the book on the shelf. The one with the red spine. Then return it to me.
+    farewell:
+    - Go. And remember, the most important thing you can do is stay alive.
+    - We will meet again when the time is right. Until then, we are strangers.
+    rumor:
+    - The Kempeitai have doubled their informants in the old city. Trust no one you have not verified.
+    - A shipment of radio parts is coming through the south docks next week. I need someone reliable to receive it.
+    secret:
+    - The contact in the French Concession goes by the name of uncle. He operates from the back of the photography shop on Avenue Joffre. The password is the spring is late this year.
+
+
+
+- id: scout_lu
+  name: Lu the boy scout
+  description: A wiry sixteen-year-old with sharp eyes and a talent for vanishing into crowds who monitors Japanese movements along the wharves and reports back through a chain of street children.
+  faction: ccp
+  role: scout
+  personality: resourceful
+  awareness: 60
+  authority: 18
+  courage: 55
+  perception: 58
+  faction_leader: false
+  schedule:
+    5: warehouse_district_storehouse
+    10: warehouse_district_storehouse
+    16: old_city_tea_house
+    21: residential_apartment
+  dialogue:
+    greeting:
+    - I counted fourteen trucks this morning. All heading north. All full.
+    - You looking for me? Good. I have something to tell you.
+    - Nobody watches a kid sitting on a wall eating melon seeds. That is why I am the best at this.
+    friendly:
+    - The patrol changes guard at half past nine. There is a twelve-minute gap. I timed it three times.
+    - I saw a new officer at the garrison yesterday. Three stars on his collar. Important. He arrived in a black car with curtains.
+    - The boy network is growing. I have six pairs of eyes on the waterfront now. Nothing moves without me knowing.
+    suspicious:
+    - I sell newspapers. That is all. Buy one or move along.
+    - I do not know anything. I am just a kid.
+    neutral:
+    - The soldiers do not notice children. That is their mistake and our advantage.
+    - I watch, I remember, I report. That is the job.
+    - The wharves are busier than usual. Something is being unloaded at night. Big crates. Military.
+    farewell:
+    - I will be back on the wall tomorrow at dawn. Find me there if you need eyes.
+    - Stay off the main roads tonight. Something is happening. I can feel it.
+    rumor:
+    - A naval destroyer docked at the north pier last night. The crew did not leave the ship. That means they are waiting for something.
+    - Three flatbed trucks left the garrison at midnight. I followed them to the warehouse district. They unloaded wooden crates marked medical supplies. They were not medical supplies.
+    secret:
+    - I leave my reports under the third stone from the left at the base of the old city wall. Someone collects them every evening at dusk.
+
+    
