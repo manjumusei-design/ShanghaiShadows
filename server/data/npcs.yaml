@@ -2942,3 +2942,44 @@ npcs:
     - The puppet police are nervous. Two of their stations were firebombed last week. Morale is low.
     secret:
     - There is a weapons cache buried under the floor of the old rice shop on Malu Street. Thirty rifles and two crates of ammunition.
+
+- id: rickshaw_courier_wu
+  name: Wu the rickshaw runner
+  description: A lean young man with tireless legs and an innocent smile who carries messages between resistance cells tucked inside the lining of his rickshaw cushions, his routes mapped by memory and never written down.
+  faction: ccp
+  role: courier
+  personality: resourceful
+  awareness: 58
+  authority: 20
+  courage: 55
+  perception: 52
+  faction_leader: false
+  schedule:
+    5: old_city_tea_house
+    10: warehouse_district_storehouse
+    16: residential_apartment
+    21: old_city_tea_house
+  dialogue:
+    greeting:
+    - Need a ride? The fare is cheap and the route is quiet.
+    - Hop in. I know a shortcut that avoids every checkpoint between here and the river.
+    - You look like you need to be somewhere. I look like a rickshaw puller. Perfect match.
+    friendly:
+    - The package is in the left cushion. Do not open it until you are behind closed doors.
+    - I made the run to the south cell this morning. They are ready for the next phase.
+    - Three cells, seven messages, zero stops by the patrol. A good day.
+    suspicious:
+    - I pull a rickshaw. I do not carry packages for strangers.
+    - You have the wrong Wu. There are a hundred rickshaw men in this city.
+    neutral:
+    - Fare is two jiao for the first mile. Patience is free but running low.
+    - I go where the passengers go. Nothing more to tell.
+    - The roads are rough, the soldiers are rougher. My legs do not care about either.
+    farewell:
+    - Same time tomorrow. Wave from the corner, not the main street.
+    - Watch your step getting out. And watch who watches you.
+    rumor:
+    - The checkpoint on Sichuan Road has a new sergeant. He checks cushions now. I lost a good cushion last week.
+    - Someone is following courier routes. I spotted a man in grey on three of my runs. He was not a passenger.
+    secret:
+    - The next drop is at the stone lion by the old temple. Third crack from the left, behind the ear.
