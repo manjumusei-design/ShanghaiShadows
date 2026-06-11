@@ -2696,3 +2696,45 @@ npcs:
     - Gotta go. The street doesn't wait.
     - Thanks for the coin. Don't follow me.
     - Stay out of the alleys after dark. That is free advice. Next time costs extra.
+
+- id: tea_seller_dead_drop
+  name: Old Mrs. Lin, the tea seller
+  description: A grey-haired woman who runs a humble tea stand near the old city gate, her faded awning hiding a dead drop built into the leg of her table.
+  faction: ccp
+  role: courier
+  personality: cautious
+  awareness: 55
+  authority: 22
+  courage: 52
+  perception: 48
+  faction_leader: false
+  schedule:
+    6: old_city_tea_house
+    12: old_city_tea_house
+    18: old_city_tea_house
+    22: residential_apartment
+  dialogue:
+    greeting:
+    - Sit. The jasmine is fresh today and the soldiers are not.
+    - Tea for the road? Two jiao. The second cup is free if you know what to ask for.
+    - You look thirsty. Sit here, by the wall. The shade is better and so is the listening.
+    friendly:
+    - The bottom of the third cup has a mark. Read it, drink it, forget you saw me.
+    - You came at the right time. The message arrived this morning, tucked inside a tea tin.
+    - I have been pouring tea in this spot for twenty years. Long enough to know which faces belong to the occupation and which belong to the future.
+    suspicious:
+    - I sell tea. Nothing more. Why do you ask about my customers?
+    - The stand closes at sundown. You should not be here after that.
+    neutral:
+    - The jasmine is from Hangzhou, or it was before the roads closed. Now it is local and bitter. Like everything else.
+    - I have cups, I have hot water, I have patience. Pick one.
+    - Three jiao for a pot. Sugar is extra. Courage is your own concern.
+    farewell:
+    - Go carefully. And pour out the last sip before you cross the checkpoint.
+    - Same time tomorrow. The kettle is always on.
+    rumor:
+    - The Kempeitai swept through the noodle shops on Fuzhou Road yesterday. They were looking for printed material, not lunch.
+    - Someone moved the dead drop at the temple. I hope it was one of ours.
+    secret:
+    - The next message goes out folded inside a lotus leaf. The buyer will ask for sweet tea. That is the signal.
+  
