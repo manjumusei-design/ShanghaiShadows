@@ -174,7 +174,7 @@ def _apply_room_properties(rooms: Dict[str, Room], props_path: Path) -> None:
                 if tag not in room.tags:
                     room.tags.append(tag)
 
-                    
+
 class World:
     def __init__(self):
         items = load_items("server/data/items.yaml")
@@ -184,6 +184,7 @@ class World:
         self.rooms: Dict[str, Room] = load_rooms("server/data/rooms.yaml", items)
         if CUSTOM_DIR.exists():
             self.rooms = _merge_custom(self.rooms, CUSTOM_DIR / "rooms.yaml", lambda p: load_rooms(p, items))
+            _apply_room_properties(self.rooms, CUSTOM_DIR / "room_properties.yaml")
         self.npcs: Dict[str, Npc] = load_npcs("server/data/npcs.yaml")
         if CUSTOM_DIR.exists():
             self.npcs = _merge_custom(self.npcs, CUSTOM_DIR / "npcs.yaml", load_npcs)
@@ -203,7 +204,7 @@ class World:
     def clone_item(self, item_id: str) -> Optional[Item]:
         item = self.item_catalog.get(item_id)
         return replace(item) if item else None
-    
+
     def get_room(self, room_id: str) -> Optional[Room]:
         return self.rooms.get(room_id)
 
