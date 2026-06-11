@@ -2983,3 +2983,44 @@ npcs:
     - Someone is following courier routes. I spotted a man in grey on three of my runs. He was not a passenger.
     secret:
     - The next drop is at the stone lion by the old temple. Third crack from the left, behind the ear.
+
+- id: widow_haven_mrs_zhang
+  name: Mrs. Zhang the widow
+  description: A quiet woman in perpetual mourning black who keeps a cramped apartment above a noodle shop where people in need of hiding can find a warm bowl and a locked door.
+  faction: ccp
+  role: safehouse
+  personality: cautious
+  awareness: 48
+  authority: 22
+  courage: 58
+  perception: 45
+  faction_leader: false
+  schedule:
+    6: residential_apartment
+    12: old_city_tea_house
+    18: residential_apartment
+    22: residential_apartment
+  dialogue:
+    greeting:
+    - Come in. The door locks three ways and the neighbors mind their own business.
+    - You look tired. Sit. I will make noodles. We can talk after you eat.
+    - The apartment is small but the walls are thick. Thicker than most people's discretion.
+    friendly:
+    - The back room is ready. Blankets, water, and a window that opens onto the alley. Stay as long as you need.
+    - Three people have stayed here this month. All of them moved on safely. I intend to keep that record.
+    - I lost my husband to the occupation. Every person I shelter is a small revenge and a large mercy.
+    suspicious:
+    - I am a widow who minds her own business. You should do the same.
+    - There is nothing here but grief and leftover rice. Try the next building.
+    neutral:
+    - I keep to myself. A widow in mourning is invisible in this city. That suits me fine.
+    - The noodles are plain but filling. In times like these, filling is enough.
+    - I do not ask questions. Questions have a way of finding answers you did not want.
+    farewell:
+    - Go carefully. And if anyone asks, you came to pay respects to the dead.
+    - The door will be open if you need it. Just knock four times, pause, then once.
+    rumor:
+    - The building manager is a collaborator. He reports to the Kempeitai every Friday. I know his schedule better than he does.
+    - A family on the fourth floor disappeared two nights ago. No sound, no fuss. Just gone by morning.
+    secret:
+    - There is a loose floorboard under the bed in the back room. Hide anything small enough to fit. I have hidden letters, photographs, and once a pistol.
