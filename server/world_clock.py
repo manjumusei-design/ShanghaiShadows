@@ -479,19 +479,18 @@ class WorldClock:
                 for session in self.session_manager.get_players_in_room(current_room_id):
                     asyncio.create_task(session.send_display(f"{npc.name} flees {direction}!"))
 
-OPPOSITE_FACTION_PAIRS = {
-    ("ccp", "kempeitai"),
-    ("gmd", "kempeitai"),
-    ("ccp", "green_gang"),
-    ("gmd", "green_gang"),
-    ("green_gang", "civilian"),
-}
+    OPPOSITE_FACTION_PAIRS = {
+        frozenset({"ccp", "kempeitai"}),
+        frozenset({"gmd", "kempeitai"}),
+        frozenset({"ccp", "green_gang"}),
+        frozenset({"gmd", "green_gang"}),
+        frozenset({"green_gang", "civilian"}),
+    }
 
-def _are_opposite_factions(self, faction1: str, faction2: str) -> bool:
-    pair = tuple(sorted([faction1, faction2]))
-    return pair in OPPOSITE_FACTION_PAIRS
+    def _are_opposite_factions(self, faction1: str, faction2: str) -> bool:
+        return frozenset({faction1, faction2}) in self.OPPOSITE_FACTION_PAIRS
 
-async def _check_death_and_victory(self):
+    async def _check_death_and_victory(self):
         from .victory import check_victory_conditions
         from .trust import get_role_trust
         from .locales import get as loc
