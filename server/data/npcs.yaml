@@ -3147,3 +3147,44 @@ npcs:
     - The puppet government is reorganizing its police force. New uniforms, new badges, same masters.
     secret:
     - The dead drop is inside a shipment of cotton bales at Warehouse Fourteen on the Bund. The contact removes the message during inventory.
+
+- id: newspaper_editor_mei
+  name: Editor Mei, the censor's neighbor
+  description: A sharp-eyed woman in her thirties who runs a small Chinese-language newspaper, hiding coded GMD messages between the lines of garden-variety news stories that pass the occupation censors every morning.
+  faction: gmd
+  role: operative
+  personality: resourceful
+  awareness: 62
+  authority: 30
+  courage: 52
+  perception: 50
+  faction_leader: false
+  schedule:
+    7: commercial_street_market
+    12: commercial_street_market
+    18: french_concession_cafe
+    22: residential_apartment
+  dialogue:
+    greeting:
+    - The morning edition is at the printers. I suggest you read between the lines.
+    - Come in. The ink is wet and so are some of my sources.
+    - You are early. The censors do not arrive until nine. We have time to talk.
+    friendly:
+    - Tomorrow's edition carries a coded message on page three. The ad for the silk merchant. Read the third word of every sentence.
+    - I buried a contact signal in the wedding announcements. If Chungking reads it, they will know the network is intact.
+    - The censor and I have an understanding. He reads what I let him see and I print what he cannot find.
+    suspicious:
+    - I edit a newspaper. I do not traffic in rumors. Buy a copy or leave.
+    - The editorial office is closed to visitors. Submit your letters by post.
+    neutral:
+    - The news is what the censors allow. The truth is what I print between the lines.
+    - Paper shortage again. The occupation controls the supply. They know the power of print.
+    - Every morning I decide which truths to tell and which to hide. It is a careful mathematics.
+    farewell:
+    - Buy tomorrow's paper. You will find what you are looking for on page four.
+    - Watch what you say on the street. My reporters are everywhere, and so are theirs.
+    rumor:
+    - The censor's assistant has been taking bribes. He passes copy without reading it for fifty yuan a page.
+    - A competing newspaper was shut down last week. The editor was arrested. His notes are still missing.
+    secret:
+    - The code is embedded in the classified advertisements. Look for advertisements selling lotus root. The price is the date. The quantity is the time.
