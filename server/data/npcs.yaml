@@ -2819,3 +2819,44 @@ npcs:
     - The pharmacist on Sichuan Road is running low on ether. Someone bought it all in one lot. Someone careful.
     secret:
     - There is a tunnel behind the east wall. If the Kempeitai come, go through it and do not look back.
+
+- id: student_protester_zhao
+  name: Zhao Min, the student agitator
+  description: A nineteen-year-old university student with ink-stained fingers and a backpack full of banned pamphlets who moves through the city like a rumour, appearing wherever young people gather.
+  faction: ccp
+  role: courier
+  personality: bold
+  awareness: 40
+  authority: 20
+  courage: 62
+  perception: 42
+  faction_leader: false
+  schedule:
+    7: residential_apartment
+    12: old_city_tea_house
+    18: warehouse_district_storehouse
+    22: residential_apartment
+  dialogue:
+    greeting:
+    - Comrade. Keep walking. I will find you when it is safe to stop.
+    - The pamphlets are in my bag. The courage is in the words.
+    - You have the look of someone who still believes tomorrow can be different.
+    friendly:
+    - I distributed two hundred copies of the manifesto last night. Every reading group on the south side has one.
+    - The students at the university are organizing a sit-in. Spread the word quietly.
+    - Read this once, then burn it. The words that survive the fire are the ones worth remembering.
+    suspicious:
+    - I do not talk to strangers about politics. Especially not here.
+    - You have the wrong Zhao. There are many of us.
+    neutral:
+    - Classes continue. The occupation prefers us educated but silent. I prefer the opposite.
+    - They shut down three reading groups this month. We opened four.
+    - My mother thinks I study mathematics. In a way, she is not wrong. I calculate risk.
+    farewell:
+    - Disperse. Do not walk in groups larger than two.
+    - The next meeting is at the usual place. Knock twice, then once.
+    rumor:
+    - The Kempeitai arrested a printer in Zhabei. His press was hidden under the floor of a noodle shop.
+    - Someone painted slogans on the school wall again. The soldiers scraped them off by noon, but a thousand students saw them first.
+    secret:
+    - I carry the contact list in my head, never on paper. Names, places, times. If they catch me, they get nothing but a name they already know.
