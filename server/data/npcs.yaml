@@ -3066,8 +3066,6 @@ npcs:
     secret:
     - The contact in the French Concession goes by the name of uncle. He operates from the back of the photography shop on Avenue Joffre. The password is the spring is late this year.
 
-
-
 - id: scout_lu
   name: Lu the boy scout
   description: A wiry sixteen-year-old with sharp eyes and a talent for vanishing into crowds who monitors Japanese movements along the wharves and reports back through a chain of street children.
@@ -3109,4 +3107,43 @@ npcs:
     secret:
     - I leave my reports under the third stone from the left at the base of the old city wall. Someone collects them every evening at dusk.
 
-    
+- id: intelligence_officer_wang
+  name: Wang Zhiming, the merchant
+  description: A well-dressed man in his forties who operates a small import-export office on the Bund as cover for GMD intelligence work, his ledgers containing figures of a different kind than profit and loss.
+  faction: gmd
+  role: operative
+  personality: pragmatic
+  awareness: 70
+  authority: 38
+  courage: 55
+  perception: 55
+  faction_leader: false
+  schedule:
+    8: bund_promenade
+    12: french_concession_cafe
+    18: commercial_street_market
+    22: residential_apartment
+  dialogue:
+    greeting:
+    - The import business is difficult in wartime. So many restrictions. So many opportunities.
+    - Come in. Close the door. The walls are thin but my staff are deaf when they need to be.
+    - You have the look of someone carrying information. Let us discuss it over tea.
+    friendly:
+    - Chungking received the last report. The General is pleased. Continue your work.
+    - I have arranged travel papers for three of our people. French Concession exit permits. Good for six days.
+    - The ledger on my desk has two sets of numbers. The real ones are in red ink, page forty-seven.
+    suspicious:
+    - I trade in textiles and tea. What business is that of yours?
+    - You are asking questions that a merchant would not ask and a policeman should not.
+    neutral:
+    - Business is business. The war is someone else's concern, at least that is what I tell the tax man.
+    - I keep regular hours, pay my taxes, and mind my ledgers. A model citizen.
+    - The Bund is busy today. Ships, soldiers, and spies. One of those is my concern.
+    farewell:
+    - Good day. Return when you have something worth trading. Information or currency, I accept both.
+    - Be careful on your way out. The concession police have been watching the building.
+    rumor:
+    - A Japanese naval attaché was seen at the Peace Hotel last night. He met with a German businessman for two hours.
+    - The puppet government is reorganizing its police force. New uniforms, new badges, same masters.
+    secret:
+    - The dead drop is inside a shipment of cotton bales at Warehouse Fourteen on the Bund. The contact removes the message during inventory.
