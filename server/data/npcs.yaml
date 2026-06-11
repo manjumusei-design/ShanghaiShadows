@@ -3188,3 +3188,85 @@ npcs:
     - A competing newspaper was shut down last week. The editor was arrested. His notes are still missing.
     secret:
     - The code is embedded in the classified advertisements. Look for advertisements selling lotus root. The price is the date. The quantity is the time.
+
+- id: businessman_funder_li
+  name: Li Guangan, the merchant prince
+  description: A portly silk merchant with a shop on Nanking Road and a hidden safe that funds GMD operations from the French Concession, his ledgers recording donations that the occupation would call treason.
+  faction: gmd
+  role: funder
+  personality: pragmatic
+  awareness: 55
+  authority: 35
+  courage: 48
+  perception: 48
+  faction_leader: false
+  schedule:
+    9: commercial_street_market
+    13: bund_promenade
+    18: french_concession_cafe
+    22: residential_apartment
+  dialogue:
+    greeting:
+    - Welcome to my shop. The silk is genuine and so is the tea. What else can I offer?
+    - A businessman has many friends. Some of them are even real.
+    - You have the look of someone who appreciates quality. In silk and in conversation.
+    friendly:
+    - The funds for the next operation are in the usual place. Do not count it here.
+    - I have arranged a shipment through the south port. Hidden inside bolts of fabric. The manifest will say cotton.
+    - My grandfather built this business. I intend to use it to build something that outlasts the occupation.
+    suspicious:
+    - I deal in silk, not secrets. The fabric counter is to your left.
+    - I am a simple merchant. You should direct your questions to the authorities.
+    neutral:
+    - Silk prices are up again. The occupation controls the roads and the roads control the trade.
+    - I pay my taxes, I smile at the soldiers, and I count my inventory twice a day. An honest life.
+    - Business and politics do not mix. At least that is what I tell the tax inspector.
+    farewell:
+    - Come back when you need something finer. In fabric or otherwise.
+    - Walk safely. And do not carry anything through the checkpoint that you cannot explain.
+    rumor:
+    - The Kempeitai are auditing all businesses on Nanking Road this month. Someone tipped them off about a hidden safe.
+    - A merchant on Bubbling Well Road was arrested for currency speculation. The real reason was something else entirely.
+    secret:
+    - The funds are hidden inside a bolt of imperial yellow silk in the back storeroom. Third shelf from the left. The silk is genuine Ming dynasty. The money is worth more.
+
+- id: former_soldier_zhang
+  name: Zhang the ex-soldier
+  description: A discharged Nationalist infantryman who limps slightly from a wound received at Sihang Warehouse and now hides in the French Concession, his military skills undiminished by civilian clothes.
+  faction: gmd
+  role: fighter
+  personality: stoic
+  awareness: 60
+  authority: 28
+  courage: 65
+  perception: 52
+  faction_leader: false
+  schedule:
+    7: residential_apartment
+    12: french_concession_cafe
+    18: warehouse_district_storehouse
+    22: residential_apartment
+  dialogue:
+    greeting:
+    - Stand straight. I can tell a civilian by the way they carry their shoulders.
+    - The leg is fine. It only hurts when the weather changes or when I remember.
+    - You want something. Military men can always tell when someone wants something.
+    friendly:
+    - I held the warehouse for four days with three hundred men. I can hold a secret longer than that.
+    - The weapons cache in the basement is inventoried. Twelve rifles, six handguns, two hundred rounds. Ready for the order.
+    - Chiang's order was to retreat. I followed it. But I never agreed with it. Now I am here, waiting for a different order.
+    suspicious:
+    - I am a shop assistant. Nothing more. You have the wrong man.
+    - I do not talk about the war. Especially not to strangers.
+    neutral:
+    - The 88th Division was the finest in China. What remains of it is scattered, hiding, or dead.
+    - I peel potatoes now instead of firing rifles. The uniform is gone but the discipline is not.
+    - A soldier remembers faces. I remember yours. Whether that is good or bad depends on what you do next.
+    farewell:
+    - Go. And if you hear gunfire, do not run toward it. Civilians never learn that lesson.
+    - If Chungking sends the word, I will be ready. Until then, I sell vegetables and wait.
+    rumor:
+    - A group of former Nationalist soldiers are hiding in the warehouse district. They are armed but disorganized. They need leadership.
+    - The puppet army is recruiting. They offer rice and a uniform. Some men are desperate enough to accept.
+    secret:
+    - There is a map of the garrison defenses hidden inside the lining of my old greatcoat. It hangs in the wardrobe behind the spare blanket.
