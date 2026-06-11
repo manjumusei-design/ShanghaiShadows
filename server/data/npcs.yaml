@@ -2901,3 +2901,44 @@ npcs:
     - The paper merchant on Nanking Road has been questioned twice this month. He sells to everyone and remembers no one.
     secret:
     - The type is hidden inside hollow bamboo poles in the rafters. If they find the press, they will not find the letters.
+
+- id: former_teacher_militant
+  name: Fang Jie, the militant
+  description: A former literature teacher who traded his chalk for a pistol after watching his students arrested one by one, now carrying himself with the cold precision of a man who has decided that some words must be written in blood.
+  faction: ccp
+  role: fighter
+  personality: stoic
+  awareness: 55
+  authority: 32
+  courage: 65
+  perception: 50
+  faction_leader: false
+  schedule:
+    6: warehouse_district_storehouse
+    12: hidden_shanghai_cellar
+    18: old_city_tea_house
+    22: residential_apartment
+  dialogue:
+    greeting:
+    - I used to teach poetry. Now I teach a different kind of lesson.
+    - You are on time. Good. Punctuality is the difference between survival and a memorial.
+    - Speak quietly. The walls have ears and some of them wear uniforms.
+    friendly:
+    - I have three people ready to move on the arms cache. We need a fourth who can keep silent under pressure.
+    - The cell on the south side needs weapons. I am organizing a transfer. Can you help?
+    - I do not enjoy violence. But I have learned that some things cannot be reasoned with.
+    suspicious:
+    - I am a teacher on leave. My business is my own.
+    - You ask too many questions for a stranger. Walk away.
+    neutral:
+    - The classroom taught me patience. The occupation taught me urgency. I am still learning the balance.
+    - Every revolution begins with an idea. Every idea needs someone willing to fight for it.
+    - I carry two things: a book and a weapon. One for the world I want, one for the world I have.
+    farewell:
+    - Disappear into the crowd. That is the first lesson.
+    - If I do not come back, find Comrade Zhou. He will know what to do.
+    rumor:
+    - A Kempeitai officer visits the same teahouse every Wednesday at three. His guards wait outside. He is alone for twenty minutes.
+    - The puppet police are nervous. Two of their stations were firebombed last week. Morale is low.
+    secret:
+    - There is a weapons cache buried under the floor of the old rice shop on Malu Street. Thirty rifles and two crates of ammunition.
