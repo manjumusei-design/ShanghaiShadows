@@ -3270,3 +3270,249 @@ npcs:
     - The puppet army is recruiting. They offer rice and a uniform. Some men are desperate enough to accept.
     secret:
     - There is a map of the garrison defenses hidden inside the lining of my old greatcoat. It hangs in the wardrobe behind the spare blanket.
+
+- id: consulate_secretary_zhao
+  name: Zhao Weiming, the secretary
+  description: A bespectacled young Chinese clerk at the French Consulate who copies sensitive documents during his lunch break and passes them to GMD contacts through a bookshop on Avenue Joffre.
+  faction: gmd
+  role: operative
+  personality: cautious
+  awareness: 58
+  authority: 25
+  courage: 50
+  perception: 50
+  faction_leader: false
+  schedule:
+    8: bund_promenade
+    13: french_concession_cafe
+    18: french_concession_cafe
+    22: residential_apartment
+  dialogue:
+    greeting:
+    - The consulate is open for business. My business happens to be different from what is on the door.
+    - Bonjour. You look like you have reasons to be here that do not involve visas.
+    - The filing cabinets are organized by letter. The interesting files are not organized at all.
+    friendly:
+    - I copied the transit schedule for the Japanese resupply convoy. It is tucked inside a novel at the bookshop on Rue Massenet.
+    - The consul is meeting with the Japanese liaison on Thursday. I will ensure the minutes find their way to the right eyes.
+    - I have access to diplomatic pouches. Small items can travel without inspection. Think about what that means.
+    suspicious:
+    - I am a filing clerk. I stamp documents and organize archives. That is all.
+    - The consulate does not discuss its internal affairs with visitors.
+    neutral:
+    - The French are neutral on paper. In practice, they are exhausted and understaffed. That works in our favor.
+    - I file papers eight hours a day. The interesting papers I file twice, once in the cabinet and once in my memory.
+    - Diplomatic immunity is a useful shield. It does not stop a bullet, but it stops most questions.
+    farewell:
+    - Return to the consulate during office hours. We have never met outside them.
+    - Be careful with what you carry. The concession police are watching more closely these days.
+    rumor:
+    - The consul keeps a private safe in his office. The combination changes weekly, but I see him enter it from my desk.
+    - A Japanese diplomat has been visiting the consulate after hours. They drink cognac and speak French. I listen through the ventilation.
+    secret:
+    - The documents go out inside hollowed-out books. I buy used novels from the shop on Avenue Joffre and return them the next day, heavier than when they left.
+
+- id: weapons_smuggler_sun
+  name: Sun the dock rat
+  description: A weathered dockworker with tar-stained hands who moves crates by day and moves guns by night, his knowledge of every warehouse and pier in the port making him the GMD's most valuable arms pipeline.
+  faction: gmd
+  role: smuggler
+  personality: bold
+  awareness: 62
+  authority: 28
+  courage: 58
+  perception: 52
+  faction_leader: false
+  schedule:
+    5: warehouse_district_storehouse
+    12: warehouse_district_storehouse
+    18: bund_promenade
+    22: warehouse_district_storehouse
+  dialogue:
+    greeting:
+    - The tide is in and so am I. What do you need moved?
+    - I handle cargo. The kind that does not appear on manifests.
+    - You smell like dry land. What brings you to the docks?
+    friendly:
+    - The shipment arrived last night. Ten cases of British rifles, hidden inside crates of pickled vegetables. They are in Warehouse Nine.
+    - I have a contact on the Japanese supply ship. He looks the other way for the right price.
+    - Three trips this month. Sixty rifles, two cases of ammunition, and a mortar that I still cannot believe I got past the checkpoint.
+    suspicious:
+    - I unload cargo. Standard freight. If you want something else, find someone else.
+    - The dockmaster handles the manifests. I just carry the boxes.
+    neutral:
+    - The docks never sleep. Neither do the patrols. I work in the gap between one and the other.
+    - A crate is a crate. What is inside is between the shipper and the receiver.
+    - I have been loading and unloading ships for fifteen years. The flags change, the cargo stays the same.
+    farewell:
+    - Come back after dark. The night shift is more accommodating.
+    - Watch your step on the pier. The boards are loose and so are some of the men.
+    rumor:
+    - The Japanese are storing ammunition in Warehouse Seventeen. I saw the manifest. Three tons of artillery shells.
+    - A new customs inspector starts next week. Rumor says he is honest. That will be a problem.
+    secret:
+    - The weapons are stored in a flooded cellar beneath Pier Six. The water keeps the crates cool and the guards away. Retrieve them at low tide through the iron grate on the south side.
+
+- id: radio_operator_gao
+  name: Gao the radio man
+  description: A thin man with nervous fingers who maintains a hidden wireless set in the attic of a boarding house, transmitting encoded messages to Chungking every night while the city sleeps below.
+  faction: gmd
+  role: operator
+  personality: nervous
+  awareness: 55
+  authority: 25
+  courage: 52
+  perception: 48
+  faction_leader: false
+  schedule:
+    10: residential_apartment
+    14: french_concession_cafe
+    20: residential_apartment
+    23: residential_apartment
+  dialogue:
+    greeting:
+    - The signal was clear last night. Chungking acknowledged receipt at 0300 hours.
+    - Come in quickly. The radio is hidden but the walls are not soundproof.
+    - You look like you have a message. I hope it is short. Transmission time is dangerous.
+    friendly:
+    - I transmitted the troop movement report last night. Chungking sends their thanks and a new code sheet.
+    - The frequency changes at midnight. I have the new settings memorized. Nothing on paper.
+    - The attic is cramped and cold, but the signal reaches Chungking clean. That is all that matters.
+    suspicious:
+    - I am a clerk. I work at a shipping company. I do not know anything about radios.
+    - You have the wrong address. There is nothing in the attic but dust and old furniture.
+    neutral:
+    - A radio operator is only as good as his last transmission. One mistake and the triangulation team finds you.
+    - I transmit for forty-five seconds, then move. Never the same time two nights in a row.
+    - The code changes weekly. I memorize it and burn the sheet. My memory is the only record.
+    farewell:
+    - Leave before dark. The triangulation vans come out after nine.
+    - If I miss a scheduled transmission, assume the worst and burn everything.
+    rumor:
+    - The Japanese have a new radio detection vehicle. It cruises the French Concession between ten and two. I can hear its engine from the attic.
+    - A GMD radio operator in Zhabei was caught last week. They found his set and his code sheets. He talked within a day.
+    secret:
+    - The radio is hidden inside a hollowed-out wardrobe in the attic. The antenna runs up the chimney. If I hear boots on the stairs, I have ninety seconds to dismantle it and hide the parts in the floorboards.
+
+- id: hospital_nurse_luo
+  name: Nurse Luo, the angel of mercy
+  description: A calm-faced nurse at the French Concession hospital who conceals military intelligence inside bandage rolls and patient charts, her white uniform making her invisible to everyone including the soldiers she spies on.
+  faction: gmd
+  role: operative
+  personality: cautious
+  awareness: 52
+  authority: 22
+  courage: 50
+  perception: 48
+  faction_leader: false
+  schedule:
+    7: french_concession_cafe
+    13: french_concession_cafe
+    18: commercial_street_market
+    22: residential_apartment
+  dialogue:
+    greeting:
+    - The ward is quiet today. Quiet wards mean fewer questions.
+    - You look well enough to walk. That means you are here for something other than medicine.
+    - The hospital treats everyone. Some patients are more interesting than others.
+    friendly:
+    - The Japanese officer in bed six talks in his sleep. Last night he mentioned troop positions near Suzhou.
+    - I placed the intelligence inside a roll of gauze in the supply closet. Ward Three, second shelf.
+    - The military doctor leaves his briefcase unlocked during surgery. I have ten minutes to copy whatever is inside.
+    suspicious:
+    - I am a nurse. I take temperatures and change bandages. That is all.
+    - Patient confidentiality is sacred. I will not discuss anyone in my care.
+    neutral:
+    - The hospital is neutral ground. That is what the French say. The Japanese do not always agree.
+    - Medicine is my profession. What I see while practicing it is between me and the patients.
+    - Every wound tells a story. Some stories are more useful than others.
+    farewell:
+    - Visiting hours end at six. Please leave before the night shift arrives.
+    - Take care of yourself. The city is sick, but not all of its patients are in beds.
+    rumor:
+    - A Japanese colonel was admitted under a false name last week. Gunshot wound to the shoulder. He claimed it was a hunting accident. There are no hunting grounds in Shanghai.
+    - The hospital pharmacy is missing morphine again. Either someone is stealing it or someone is using it for purposes other than pain relief.
+    secret:
+    - The intelligence is written on rice paper, rolled inside the hollow tube of a thermometers. I leave them in the bin marked for sterilization. The contact picks them up during the afternoon shift change.
+
+- id: dock_observer_wu
+  name: Wu the dock watcher
+  description: An elderly dockhand who has worked the Whangpoo for thirty years and now spends his days perched on a bollard, cataloguing every Japanese vessel that enters and leaves the harbor with a deckhand's eye and a spy's discipline.
+  faction: gmd
+  role: scout
+  personality: stoic
+  awareness: 65
+  authority: 22
+  courage: 48
+  perception: 58
+  faction_leader: false
+  schedule:
+    5: bund_promenade
+    12: warehouse_district_storehouse
+    18: bund_promenade
+    22: residential_apartment
+  dialogue:
+    greeting:
+    - I have been watching this river since before the first Japanese ship sailed up it.
+    - Two destroyers and a transport entered the harbor this morning. I noted the drafts and the flags.
+    - Sit down. The bollard is cold but the view is excellent and so is my memory.
+    friendly:
+    - The convoy schedule is in my head. Three transports every Tuesday, resupply on Fridays. I can tell you when every ship will be vulnerable.
+    - I saw a submarine surface at the river mouth last night. Japanese. It submerged before dawn. No one else noticed.
+    - The contact picks up my reports every Thursday. They go to Chungking inside a crate of dried fish.
+    suspicious:
+    - I am an old man who watches the river. There is no crime in that.
+    - Ships come, ships go. I have nothing to say about it.
+    neutral:
+    - The Whangpoo is a highway for the occupation. Every ship carries soldiers, weapons, or both.
+    - I know every vessel on this river by its silhouette. I can identify them at night by the sound of their engines.
+    - Thirty years on the docks. I have seen flags change. The river stays the same.
+    farewell:
+    - Come back at dawn. That is when the military ships move.
+    - Watch the tide tables. They tell you more than the newspapers.
+    rumor:
+    - A Japanese ammunition ship docked at Pier Eleven last night. Armed guards, no manifest posted. It will unload under cover of darkness.
+    - The harbor master was replaced last week. The new one is a Kempeitai appointee. He keeps different hours than his predecessor.
+    secret:
+    - I write my reports in waterproof ink on the inside of cigarette papers. I fold them into the bottom of a tea tin and leave it under the third bollard from the north end of the pier. The contact swaps it for an identical tin.
+
+- id: nightclub_singer_mei
+  name: Mei Ling, the torch singer
+  description: A glamorous singer at the Paramount Club who collects intelligence from Japanese officers too drunk or too charmed to notice that every compliment she receives is catalogued alongside every confession they make.
+  faction: gmd
+  role: operative
+  personality: bold
+  awareness: 58
+  authority: 28
+  courage: 52
+  perception: 52
+  faction_leader: false
+  schedule:
+    12: residential_apartment
+    16: french_concession_cafe
+    20: commercial_street_market
+    23: bund_promenade
+  dialogue:
+    greeting:
+    - The next set starts in twenty minutes. Buy a drink and pretend you came for the music.
+    - You are early. The interesting customers do not arrive until after midnight.
+    - The spotlight hides everything except what I want people to see.
+    friendly:
+    - A major at table three mentioned a troop convoy heading south next week. He thought he was flirting. He was not.
+    - I memorized the patrol schedule for the Bund district. A naval captain showed it to me between verses of Night and Day.
+    - The dressing room has a lock and no listening devices. Talk quickly, I have two minutes between sets.
+    suspicious:
+    - I sing for a living. That is the beginning and the end of my profession.
+    - Buy a ticket or move along. The club does not tolerate loiterers.
+    neutral:
+    - Men tell singers things they would never tell their wives. It is the music, the whiskey, and the illusion of intimacy.
+    - The Paramount is neutral ground. Japanese officers dance beside Chinese merchants. Everyone pretends to get along.
+    - I know every regular customer by name, rank, and weakness. That is not gossip. That is survival.
+    farewell:
+    - My next number is a slow one. Request something from the bar. It looks less suspicious.
+    - Be careful leaving. The military police check IDs at the door after midnight.
+    rumor:
+    - The admiral's aide has been reassigned. He was my best source. His replacement is a teetotaler. This will require a different approach.
+    - A colonel's wife comes to the club every Thursday afternoon. She drinks gimlets and complains about her husband's secrets. She has no idea she is the best informant in the room.
+    secret:
+    - The intelligence goes out inside the false heel of my stage shoes. I leave them in my dressing room after the last set. The cleaner swaps them for an identical pair before dawn.
