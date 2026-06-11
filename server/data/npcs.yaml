@@ -2860,3 +2860,44 @@ npcs:
     - Someone painted slogans on the school wall again. The soldiers scraped them off by noon, but a thousand students saw them first.
     secret:
     - I carry the contact list in my head, never on paper. Names, places, times. If they catch me, they get nothing but a name they already know.
+
+- id: printer_propagandist_chen
+  name: Chen the typesetter
+  description: A middle-aged man with permanent ink stains on his knuckles who operates a hand-cranked press hidden beneath a tofu shop, printing truth one page at a time.
+  faction: ccp
+  role: operator
+  personality: resourceful
+  awareness: 52
+  authority: 25
+  courage: 55
+  perception: 48
+  faction_leader: false
+  schedule:
+    7: hidden_shanghai_cellar
+    13: hidden_shanghai_cellar
+    18: old_city_tea_house
+    22: residential_apartment
+  dialogue:
+    greeting:
+    - The press is quiet for now. Come back when the shutters are closed.
+    - I set type by hand and by conviction. Both leave marks.
+    - Mind the stairs. The last three steps creak and the neighbors have good ears.
+    friendly:
+    - Two hundred copies of the bulletin, ready by midnight. The ink is still wet and so is the truth.
+    - I carved a new woodblock last night. The caricature of the puppet mayor should raise some smiles and some fists.
+    - The paper supply is holding. A sympathetic clerk at the ration office looks the other way.
+    suspicious:
+    - I print funeral notices and wedding invitations. Nothing more.
+    - You should not be down here. The shop is closed.
+    neutral:
+    - The type is set. What happens after that is not my business.
+    - A good pressman does not read what he prints. I am not a good pressman.
+    - Paper is harder to find than courage these days. Both are running short.
+    farewell:
+    - Go out through the shop. Buy some tofu on your way. It looks natural.
+    - I will have the next run ready in three days. The truth does not wait.
+    rumor:
+    - The Kempeitai are offering a reward for anyone who reports a hidden printing press. Five hundred yuan. Some people will sell their mothers for less.
+    - The paper merchant on Nanking Road has been questioned twice this month. He sells to everyone and remembers no one.
+    secret:
+    - The type is hidden inside hollow bamboo poles in the rafters. If they find the press, they will not find the letters.
