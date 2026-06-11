@@ -7,6 +7,9 @@ npcs:
   role: worker
   personality: cautious, loyal when trust is earned.
   awareness: 48
+  authority: 12
+  courage: 28
+  perception: 35
   schedule:
     6: bund_dawn
     12: nanjing_road
@@ -57,6 +60,9 @@ npcs:
   role: resident
   personality: compassionate, exhausted, quietly stubborn
   awareness: 42
+  authority: 10
+  courage: 35
+  perception: 38
   schedule:
     6: french_04
     12: french_08
@@ -104,6 +110,9 @@ npcs:
   role: officer
   personality: cold, observant, politely cruel
   awareness: 82
+  autority: 85
+  courage: 70
+  perception: 70
   faction_leader: true
   schedule:
     7: hongkou_03
@@ -156,6 +165,9 @@ npcs:
   role: broker
   personality: elegant, calculating, amused by weakness
   awareness: 68
+  authority: 48
+  courage: 52
+  perception: 50
   schedule:
     9: commercial_06
     14: commercial_09
@@ -205,6 +217,9 @@ npcs:
   role: clerks
   personality: pious, conflicted, unexpectedly brave
   awareness: 40
+  authority: 30
+  courage: 45
+  perception: 38
   schedule:
     6: french_02
     12: french_04
@@ -253,6 +268,9 @@ npcs:
   role: dockmaster
   personality: dry, compromised, not yet empty
   awareness: 57
+  authority: 38
+  courage: 35
+  perception: 45
   schedule:
     8: docks_03
     12: docks_07
@@ -302,6 +320,9 @@ npcs:
   role: vendor
   personality: warm, watchful, practical
   awareness: 46
+  authority: 8
+  courage: 25
+  perception: 32
   schedule:
     7: commercial_03
     12: commercial_05
@@ -352,6 +373,9 @@ npcs:
   role: courier
   personality: quick, brave, unsentimental
   awareness: 74
+  authority: 22
+  courage: 65
+  perception: 55
   schedule:
     6: oldcity_04
     12: commercial_14
@@ -397,6 +421,9 @@ npcs:
   role: resident
   personality: patient, shrewd, ceremonial
   awareness: 60
+  courage: 40
+  perception: 50
+  awareness: 42
   schedule:
     5: oldcity_09
     12: oldcity_11
@@ -445,6 +472,9 @@ npcs:
   role: police
   personality: tired, skeptical, decent in flashes
   awareness: 63
+  authority: 42
+  courage: 40
+  perception: 50
   schedule:
     8: french_06
     13: french_10
@@ -499,6 +529,9 @@ npcs:
   role: smuggler
   personality: slick, greedy, charming under pressure
   awareness: 66
+  authority: 38
+  courage: 55
+  perception: 48
   schedule:
     10: docks_05
     15: docks_14
@@ -545,6 +578,9 @@ npcs:
   role: merchant
   personality: measured, kind, privately furious
   awareness: 44
+  authority: 25
+  courage: 38
+  perception: 40
   schedule:
     7: hongkou_11
     12: hongkou_13
@@ -597,6 +633,9 @@ npcs:
   role: patrol
   personality: disciplined, suspicious, proud
   awareness: 76
+  authority: 65
+  courage: 70
+  perception: 58
   schedule:
     6: hongkou_01
     12: commercial_25
@@ -643,6 +682,9 @@ npcs:
   role: organizer
   personality: laconic, dependable, quietly defiant
   awareness: 58
+  authority: 38
+  courage: 60
+  perception: 50
   schedule:
     8: french_18
     13: french_19
@@ -691,6 +733,9 @@ npcs:
   role: resident
   personality: sharp, maternal, unsentimental
   awareness: 51
+  authority: 12
+  courage: 32
+  perception: 38
   schedule:
     7: oldcity_13
     12: oldcity_15
@@ -741,6 +786,9 @@ npcs:
   role: consul
   personality: formal, uneasy, morally fraying
   awareness: 54
+  authority: 35
+  courage: 32
+  perception: 42
   schedule:
     9: bund_14
     14: french_09
@@ -795,6 +843,9 @@ npcs:
   role: spy
   personality: compassionate, secretive, haunted
   awareness: 75
+  authority: 30
+  courage: 55
+  perception: 52
   schedule:
     8: hidden_02
     14: commercial_05
@@ -846,6 +897,9 @@ npcs:
   role: vendor
   personality: observant, quiet, ambitious
   awareness: 60
+  authority: 6
+  courage: 30
+  perception: 45
   schedule:
     10: commercial_08
     14: commercial_08
@@ -897,6 +951,9 @@ npcs:
   role: organizer
   personality: fierce, maternal, pragmatic
   awareness: 70
+  authority: 28
+  courage: 62
+  perception: 48
   schedule:
     9: residence_05
     13: church_12
@@ -950,6 +1007,9 @@ npcs:
   role: resident
   personality: wise, patient, influential
   awareness: 40
+  authority: 18
+  courage: 22
+  perception: 30
   schedule:
     8: residence_02
     12: church_10
@@ -1003,6 +1063,9 @@ npcs:
   role: cleric
   personality: secretive, comforting, harbours fugitives
   awareness: 48
+  authority: 14
+  courage: 35
+  perception: 36
   schedule:
     7: church_05
     10: church_08
@@ -1054,6 +1117,9 @@ npcs:
   role: boss
   personality: loud, jovial mask over ruthlessness
   awareness: 72
+  authority: 14
+  courage: 35
+  perception: 36
   schedule:
     10: commercial_12
     14: warehouse_08
@@ -1104,6 +1170,9 @@ npcs:
   role: reporter
   personality: idealistic, curious, takes notes on everything
   awareness: 65
+  authority: 8
+  courage: 35
+  perception: 42
   schedule:
     9: commercial_05
     13: french_11
@@ -1160,6 +1229,9 @@ npcs:
   role: student
   personality: young, passionate, reckless with courage
   awareness: 38
+  authority: 20
+  courage: 58
+  perception: 40
   schedule:
     9: school_05
     13: french_07
@@ -1213,6 +1285,9 @@ npcs:
   role: interrogator
   personality: patient, soft-spoken, terrifying
   awareness: 85
+  authority: 78
+  courage: 70
+  perception: 65
   schedule:
     7: hongkou_01
     12: hongkou_01
@@ -1271,6 +1346,9 @@ npcs:
   role: vendor
   personality: chatty, generous, knows every alley
   awareness: 52
+  authority: 6
+  courage: 28
+  perception: 40
   schedule:
     8: commercial_10
     12: commercial_10
@@ -1331,6 +1409,9 @@ npcs:
   role: nurse
   personality: gentle, overworked, hides resistance sympathies
   awareness: 44
+  authority: 10
+  courage: 25
+  perception: 45
   schedule:
     8: oldcity_06
     14: hidden_05
@@ -1385,6 +1466,9 @@ npcs:
   role: tailor
   personality: meticulous, discreet, measures twice
   awareness: 60
+  authority: 10
+  courage: 25
+  perception: 45
   schedule:
     8: commercial_07
     12: commercial_07
@@ -1443,6 +1527,9 @@ npcs:
   role: civilian
   personality: lonely, conflicted, misses Kyoto
   awareness: 35
+  authority: 60
+  courage: 35
+  perception: 50
   schedule:
     7: hongkou_07
     12: hongkou_09
@@ -1498,6 +1585,9 @@ npcs:
   role: cook
   personality: warm exterior, cold intelligence
   awareness: 66
+  authority: 35
+  courage: 48
+  perception: 45
   schedule:
     6: docks_06
     12: docks_06
@@ -1555,6 +1645,9 @@ npcs:
   role: informant
   personality: polite, calculating, two-faced
   awareness: 78
+  authority: 62
+  courage: 55
+  perception: 65
   schedule:
     9: commercial_11
     13: bund_12
@@ -1606,6 +1699,9 @@ npcs:
   role: patrol
   personality: nervous, obedient, ashamed
   awareness: 60
+  authority: 60
+  courage: 50
+  perception: 52
   schedule:
     7: bund_08
     12: commercial_20
@@ -1653,6 +1749,9 @@ npcs:
   role: clerks
   personality: urbane, cynical, quietly sober
   awareness: 50
+  authority: 40
+  courage: 35
+  perception: 45
   schedule:
     10: french_03
     14: french_07
@@ -1705,6 +1804,9 @@ npcs:
   role: clerks
   personality: bookish, melancholic, principled
   awareness: 46
+  authority: 5
+  courage: 38
+  perception: 48
   schedule:
     8: french_06
     12: school_03
@@ -1759,6 +1861,9 @@ npcs:
   role: worker
   personality: cheerful, cunning, fearless
   awareness: 65
+  authority: 5
+  courage: 38
+  perception: 48
   schedule:
     6: bund_03
     10: commercial_04
@@ -1808,6 +1913,9 @@ npcs:
   role: merchant
   personality: artistic, grieving, resilient
   awareness: 42
+  authority: 15
+  courage: 30
+  perception: 35
   schedule:
     10: french_05
     14: commercial_13
@@ -1865,6 +1973,9 @@ npcs:
   role: spy
   personality: athletic, focused, humorless
   awareness: 72
+  authority: 25
+  courage: 60
+  perception: 55
   schedule:
     7: hidden_12
     11: commercial_16
@@ -1912,6 +2023,9 @@ npcs:
   role: resident
   personality: grief-stricken, stubborn, surprisingly informed
   awareness: 48
+  authority: 10
+  courage: 22
+  perception: 30
   schedule:
     6: oldcity_09
     10: residence_03
@@ -1960,6 +2074,9 @@ npcs:
   role: officer
   personality: intellectual, patient, ruthless
   awareness: 85
+  authority: 80
+  courage: 70
+  perception: 68
   schedule:
     8: hongkou_02
     13: commercial_22
@@ -2015,6 +2132,9 @@ npcs:
   role: vendor
   personality: quiet, dignified, mournful
   awareness: 35
+  authority: 8
+  courage: 20
+  perception: 28
   schedule:
     5: commercial_02
     10: commercial_02
@@ -2068,6 +2188,9 @@ npcs:
   role: teacher
   personality: calm, educated, teaches history that's been banned
   awareness: 58
+  authority: 25
+  courage: 55
+  perception: 48
   schedule:
     7: school_02
     12: school_08
@@ -2116,6 +2239,9 @@ npcs:
   role: entertainer
   personality: glamorous mask over sharp mind
   awareness: 65
+  authority: 32
+  courage: 50
+  perception: 52
   schedule:
     14: french_08
     18: french_14
@@ -2165,6 +2291,9 @@ npcs:
   role: engineer
   personality: practical, blunt, misses Warsaw
   awareness: 50
+  authority: 32
+  courage: 38
+  perception: 42
   schedule:
     7: warehouse_05
     12: warehouse_10
@@ -2214,6 +2343,9 @@ npcs:
   role: monk
   personality: serene, observant, offers shelter to all
   awareness: 45
+  authority: 12
+  courage: 28
+  perception: 38
   schedule:
     5: church_04
     10: oldcity_07
@@ -2261,6 +2393,9 @@ npcs:
   role: officer
   personality: dignified, patient, waits for orders from Chongqing
   awareness: 72
+  authority: 40
+  courage: 65
+  perception: 55
   schedule:
     6: warehouse_02
     12: warehouse_06
@@ -2311,6 +2446,9 @@ npcs:
   role: entertainer
   personality: sultry voice, sharp eyes, knows secrets
   awareness: 68
+  authority: 35
+  courage: 42
+  perception: 52
   schedule:
     10: french_10
     14: french_13
@@ -2360,6 +2498,9 @@ npcs:
   role: smuggler
   personality: weathered, taciturn, moves goods by night
   awareness: 62
+  authority: 30
+  courage: 50
+  perception: 48
   schedule:
     4: docks_02
     8: docks_02
@@ -2405,6 +2546,9 @@ npcs:
   role: baker
   personality: warm, flour-dusted, feeds people regardless of papers
   awareness: 38
+  authority: 22
+  courage: 35
+  perecption: 38
   schedule:
     5: french_02
     9: french_02
@@ -2454,6 +2598,9 @@ npcs:
   role: operator
   personality: precise hands, quiet voice, listens to the world
   awareness: 70
+  authority: 30
+  courage: 55
+  perception: 55
   schedule:
     8: commercial_09
     12: commercial_09
@@ -2506,6 +2653,9 @@ npcs:
   role: orphan
   personality: small, quick, sees everything from below
   awareness: 75
+  authority: 5
+  courage: 35
+  perception: 48
   schedule:
     6: bund_05
     10: commercial_04
