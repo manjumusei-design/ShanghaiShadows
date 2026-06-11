@@ -2738,3 +2738,43 @@ npcs:
     secret:
     - The next message goes out folded inside a lotus leaf. The buyer will ask for sweet tea. That is the signal.
   
+- id: factory_worker_organizer
+  name: Big Gu, the mill hand
+  description: A broad-shouldered textile worker with permanent cotton dust in his hair and a talent for whispered persuasion on the factory floor.
+  faction: ccp
+  role: organizer
+  personality: bold
+  awareness: 50
+  authority: 30
+  courage: 60
+  perception: 45
+  faction_leader: false
+  schedule:
+    6: warehouse_district_storehouse
+    12: warehouse_district_storehouse
+    18: old_city_tea_house
+    22: residential_apartment
+  dialogue:
+    greeting:
+    - The foreman counts bobbins. I count something else entirely.
+    - You are a long way from the Bund. Good. The Bund counts you.
+    - Stand straight. The mill owners smell fear the way dogs smell blood.
+    friendly:
+    - The men on the third floor are ready. They have been ready since the last pay cut.
+    - I organized forty workers this month. Not for a union. For something bigger.
+    - You need hands? I know forty pairs that will follow if I say the word.
+    suspicious:
+    - I do not know you. Factory business stays in the factory.
+    - Who sent you? Name them or walk away.
+    neutral:
+    - Twelve hours a day, six days a week, and the rice still costs more than we earn.
+    - The foreman says we should be grateful for the work. The foreman eats at a different table.
+    - I mind my loom and I mind my business. At least that is what the foreman thinks.
+    farewell:
+    - Back to the floor. The whistle blows in ten minutes.
+    - If you need to find me, ask for Big Gu at the mill gate. Everyone knows me.
+    rumor:
+    - The mill owner is selling cloth directly to the Japanese quartermaster. Double profits, half the shame.
+    - A foreman at the Number Three mill was found beaten in the alley. Nobody saw anything. Nobody ever does.
+    secret:
+    - We are planning a work stoppage. Not yet, but soon. When the signal comes, every loom stops.
