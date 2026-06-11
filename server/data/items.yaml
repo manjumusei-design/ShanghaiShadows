@@ -176,3 +176,194 @@ items:
     description: "A typed sheet containing the latest broadcast from Free China's radio station in Chungking. The announcer speaks of resistance, unity, and the certainty that the occupation will end."
     takeable: true
     readable_text: "VOICE OF FREE CHINA — To our brothers and sisters in occupied Shanghai: You are not forgotten. Your suffering is seen. Your resistance is felt. The Japanese war machine bleeds from a thousand cuts inflicted by your courage. Hold fast. Liberation comes. The people's will cannot be broken."
+
+  - id: mauser_c96
+    name: "a Mauser C96 pistol"
+    description: "A battered but functional pistol, its serial numbers filed off. The wooden stock is carved with a small five-pointed star."
+    takeable: true
+    is_weapon: true
+    courage_bonus: 15
+    durability: 50
+    max_durability: 50
+    mod_slots: ["silencer", "stabilizer"]
+
+  - id: wooden_club
+    name: "a wooden club"
+    description: "A stout piece of lumber, wrapped in cloth at the grip. Silent and effective in close quarters."
+    takeable: true
+    is_weapon: true
+    courage_bonus: 5
+    durability: 80
+    max_durability: 80
+    mod_slots: ["stock"]
+
+  - id: kitchen_knife
+    name: "a kitchen knife"
+    description: "A cleaver stolen from a street vendor's stall. Dull but heavy enough to crack bone."
+    takeable: true
+    is_weapon: true
+    courage_bonus: 8
+    durability: 30
+    max_durability: 30
+    mod_slots: []
+
+  - id: smuggled_rifle
+    name: "a smuggled rifle"
+    description: "A Type 38 Arisaka rifle with the chrysanthemum crest filed off the receiver. Stolen from a Japanese supply depot."
+    takeable: true
+    is_weapon: true
+    courage_bonus: 25
+    durability: 60
+    max_durability: 60
+    mod_slots: ["scope", "stabilizer", "stock"]
+
+  - id: strangling_wire
+    name: "a length of piano wire"
+    description: "Thin, strong wire with wooden handles wrapped in cloth. Silent and personal."
+    takeable: true
+    is_weapon: true
+    courage_bonus: 12
+    durability: 20
+    max_durability: 20
+    mod_slots: []
+
+  - id: quilted_jacket
+    name: "a padded quilted jacket"
+    description: "Layers of cotton stuffed between silk. Looks ordinary but absorbs blade cuts."
+    takeable: true
+    is_armour: true
+    defense_value: 3
+    durability: 50
+    max_durability: 50
+    concealed: true
+
+  - id: leather_vest
+    name: "a stitched leather vest"
+    description: "Thick leather panels over canvas. Not bulletproof, but it turns a blade."
+    takeable: true
+    is_armour: true
+    defense_value: 5
+    durability: 40
+    max_durability: 40
+    concealed: true
+
+  - id: stolen_kempeitai_armor
+    name: "a Kempeitai flak vest"
+    description: "A military police body vest, obviously stolen. Wearing it openly invites questions."
+    takeable: true
+    is_armour: true
+    defense_value: 15
+    durability: 60
+    max_durability: 60
+    concealed: false
+
+  - id: silencer
+    name: "a improvised silencer"
+    description: "A machined cylinder that fits over a barrel. Reduces noise but adds bulk."
+    takeable: true
+    is_mod: true
+    mod_type: "stealth"
+    mod_bonus: 15
+
+  - id: stabilizer
+    name: "a barrel stabilizer"
+    description: "A counterweight that reduces muzzle climb. Improves accuracy under pressure."
+    takeable: true
+    is_mod: true
+    mod_type: "courage"
+    mod_bonus: 5
+
+  - id: scope
+    name: "a telescopic scope"
+    description: "A salvaged optic from a broken rangefinder. Magnifies distant targets."
+    takeable: true
+    is_mod: true
+    mod_type: "perception"
+    mod_bonus: 10
+
+  - id: stock
+    name: "a reinforced stock"
+    description: "A wooden or metal stock replacement that improves handling."
+    takeable: true
+    is_mod: true
+    mod_type: "courage"
+    mod_bonus: 3
+
+  - id: extended_magazine
+    name: "an extended magazine"
+    description: "A higher-capacity magazine. More rounds before reload means more staying power."
+    takeable: true
+    is_mod: true
+    mod_type: "durability"
+    mod_bonus: 10
+
+  - id: wooden_crate
+    name: "a wooden crate"
+    description: "A nailed-shut shipping crate. The wood is damp and the stencilled label has faded."
+    takeable: false
+    is_container: true
+
+  - id: iron_safe
+    name: "an iron safe"
+    description: "A heavy safe bolted to the floor. The combination dial is tarnished but intact."
+    takeable: false
+    is_container: true
+    locked: true
+    key_id: "safe_key"
+
+  - id: cloth_bag
+    name: "a cloth bag"
+    description: "A simple canvas sack with a drawstring. Light and unremarkable."
+    takeable: true
+    is_container: true
+
+  - id: old_city_map
+    name: "an old city map"
+    description: "A hand-drawn map of the Old City district, annotated with shop names and back alleys."
+    takeable: true
+    is_map: true
+    map_districts: ["old_city"]
+
+  - id: french_concession_guide
+    name: "a French Concession guide"
+    description: "A tourist pamphlet from before the war. The cafes and nightclubs listed are now barracks and brothels."
+    takeable: true
+    is_map: true
+    map_districts: ["french"]
+
+  - id: full_city_map
+    name: "a full city survey map"
+    description: "A comprehensive surveyor's map of greater Shanghai. Folded into a square and wrapped in oilcloth."
+    takeable: true
+    is_map: true
+    map_districts: ["bund", "commercial", "old_city", "hongkou", "french", "huangpu", "hidden", "residential", "warehouse", "church", "school"]
+
+  - id: safe_key
+    name: "a safe key"
+    description: "A small iron key with a square bow. Engraved on it: the number 7."
+    takeable: true
+    is_key: true
+    opens_container: "iron_safe"
+
+  - id: drawer_key
+    name: "a desk drawer key"
+    description: "A brass key with a decorative bow. It looks like it belongs to an office desk."
+    takeable: true
+    is_key: true
+    opens_container: "locked_drawer"
+
+  - id: fabi_note
+    name: "a fabi banknote"
+    description: "A crumpled one-yuan fabi note. The paper is thin and the ink is fading."
+    takeable: true
+    is_money: true
+    money_amount: 1
+    money_currency: "fabi"
+
+  - id: silver_yuan
+    name: "a silver yuan coin"
+    description: "A worn silver dollar from the Republic era. Still holds real value in any market."
+    takeable: true
+    is_money: true
+    money_amount: 10
+    money_currency: "fabi"
