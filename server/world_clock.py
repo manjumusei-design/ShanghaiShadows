@@ -571,40 +571,54 @@ class WorldClock:
                     await session.websocket.close()
                 except Exception:
                     pass
+        
+        if self.shared.game_time.minute == 0:
+            ending = check_victory_conditions(
+                self.shared.game_time.day,
+                self.shared.ccp_influence,
+                self.shared.gmd_influence,
+            )
+            if ending:
+                await self._handle_server_reset(ending)
 
-            if self.shared.game_time.minute == 0:
-                ending = check_victory_conditions(
-                    self.shared.game_time.day,
-                    self.shared.ccp_influence,
-                    self.shared.gmd_influence,
-                )
-                if ending:
-                    from .commands import trigger_ending
-                    from .save_manager import save_player, save_world_state
-                    from .victory import generate_liberation_ending, compile_legacy_narrative
-                    ending_text = generate_liberation_ending(ending, session.player.name, self.shared.legacy_book, self.shared.ccp_influence, self.shared.gmd_influence)
-                    legacy = compile_legacy_narrative(self.shared.legacy_book)
+    async def _handle_server_reset(self, ending_type: str):
+        from .victory import generate_liberation_ending, compile_legacy_narrative, archive_legacy_cycle
+        from .save_manager import save_player, save_world_state
+        from .locales import get as loc
+        import json
 
-                    end_screen = f"""
+        archive_legacy_cycle(self.shared.legacy_book, self.shared.server_cycle)
+        legacy = compile_legacy_narrative(self.shared.legacy_book)
+
+        for session in self.session_manager.sessions.values():
+            ending_text = generate_liberation_ending(
+                ending_type, session.player.name, self.shared.legacy_book,
+                self.shared.ccp_influence, self.shared.gmd_influence,
+            )
+            end_screen = f"""
 {ending_text}
 
 {legacy}
 
 {loc("victory.footer")}
 """
-                    asyncio.create_task(session.send_display(end_screen))
-                    session.player.flags.append("player_died")
-                    save_player(session.player)
-                    save_world_state(self.shared)
-                    session.running = False
-                    try:
-                        await session.websocket.close()
-                    except Exception:
-                        pass
-
-    async def _broadcast_display(self, text: str):
-        for session in self.session_manager.sessions.values():
             try:
-                await session.send_display(text)
+                await session.websocket.send(json.dumps({"type": "ending", "payload": end_screen}))
+            except Exception:
+                pass
+            session.player.flags.append("player_died")
+            save_player(session.player)
+
+        save_world_state(self.shared)
+
+        self.shared.server_cycle += 1
+
+        await asyncio.sleep(60)
+
+        reset_msg = "A new timeline begins. Shanghai, November 1937."
+        for session in list(self.session_manager.sessions.values()):
+            try:
+                await session.websocket.send(json.dumps({"type": "server_reset", "payload": reset_msg}))
+                await session.websocket.close()
             except Exception:
                 pass
