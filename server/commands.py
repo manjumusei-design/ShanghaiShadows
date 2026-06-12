@@ -170,6 +170,18 @@ async def broadcast_state(ctx: CommandContext):
         return
     summary = summarize_faction_trust(ctx.session.player.trust)
     disguise = ctx.disguises.get(ctx.session.player.disguise)
+    room = _room(ctx)
+    active_missions_data = []
+    mm = state.mission_manager
+    if mm and ctx.session.player.active_missions:
+        for active in ctx.session.player.active_missions:
+            mission = mm.missions.get(active["mission_id"])
+            if mission:
+                active_missions_data.append({
+                    "mission_id": mission.id,
+                    "title": mission.title,
+                    "objectives": active.get("objectives_progress", []),
+                })
     await ctx.session.send_state({
         "health": ctx.session.player.health,
         "hunger": ctx.session.player.hunger,
@@ -183,6 +195,8 @@ async def broadcast_state(ctx: CommandContext):
         "gmd_influence": state.gmd_influence,
         "money_fabi": ctx.session.player.money_fabi,
         "money_silver": ctx.session.player.money_silver,
+        "safe_room": room.safe_room if room else False,
+        "active_missions": active_missions_data,
     })
 
 
