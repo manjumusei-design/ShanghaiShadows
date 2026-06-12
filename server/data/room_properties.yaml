@@ -1,0 +1,228 @@
+rooms:
+  - id: bund_dawn
+    safe_room: true
+  - id: bund_05
+    safe_room: true
+
+  # Commercial district
+  - id: nanjing_road
+    safe_room: true
+  - id: commercial_04
+    safe_room: true
+  - id: commercial_08
+    safe_room: true
+  - id: commercial_12
+    safe_room: true
+  - id: commercial_16
+    safe_room: true
+  - id: commercial_20
+    safe_room: true
+
+  # Old City
+  - id: oldcity_03
+    safe_room: true
+  - id: oldcity_06
+    safe_room: true
+  - id: oldcity_09
+    safe_room: true
+  - id: oldcity_15
+    safe_room: true
+  - id: oldcity_18
+    safe_room: true
+  - id: oldcity_21
+    safe_room: true
+
+  # French Concession
+  - id: french_02
+    safe_room: true
+  - id: french_06
+    safe_room: true
+  - id: french_10
+    safe_room: true
+  - id: french_14
+    safe_room: true
+  - id: french_18
+    safe_room: true
+  - id: french_22
+    safe_room: true
+
+  # Hongkou distrcit
+  - id: hongkou_04
+    safe_room: true
+  - id: hongkou_08
+    safe_room: true
+  - id: hongkou_12
+    safe_room: true
+  - id: hongkou_16
+    safe_room: true
+  - id: hongkou_20
+    safe_room: true
+
+  # Church
+  - id: church_01
+    safe_room: true
+  - id: church_05
+    safe_room: true
+  - id: church_10
+    safe_room: true
+  - id: church_15
+    safe_room: true
+  - id: church_18
+    safe_room: true
+
+  # Residential areas
+  - id: residence_01
+    safe_room: true
+  - id: residence_05
+    safe_room: true
+  - id: residence_10
+    safe_room: true
+  - id: residence_15
+    safe_room: true
+  - id: residence_20
+    safe_room: true
+  - id: residence_25
+    safe_room: true
+
+  # Hidden parts
+  - id: hidden_01
+    safe_room: true
+  - id: hidden_05
+    safe_room: true
+  - id: hidden_10
+    safe_room: true
+  - id: hidden_15
+    safe_room: true
+  - id: hidden_20
+    safe_room: true
+  - id: hidden_30
+    safe_room: true
+  - id: hidden_40
+    safe_room: true
+
+  # CCP Base
+  - id: ccp_base_05
+    safe_room: true
+
+  # GMD Office
+  - id: gmd_office_01
+    safe_room: true
+
+  # Hiding spots
+  - id: oldcity_02
+    hiding_spots: true
+  - id: oldcity_07
+    hiding_spots: true
+  - id: oldcity_12
+    hiding_spots: true
+  - id: oldcity_17
+    hiding_spots: true
+  - id: oldcity_22
+    hiding_spots: true
+  - id: docks_05
+    hiding_spots: true
+  - id: docks_10
+    hiding_spots: true
+  - id: docks_18
+    hiding_spots: true
+  - id: french_08
+    hiding_spots: true
+  - id: french_16
+    hiding_spots: true
+  - id: warehouse_04
+    hiding_spots: true
+  - id: warehouse_10
+    hiding_spots: true
+  - id: warehouse_16
+    hiding_spots: true
+  - id: commercial_05
+    hiding_spots: true
+  - id: commercial_15
+    hiding_spots: true
+
+  # Hidden exits
+  - id: church_08
+    hidden_exits:
+      - direction: down
+        to: hidden_12
+        description: "A loose stone behind the altar reveals a narrow staircase descending into darkness."
+  - id: church_12
+    hidden_exits:
+      - direction: down
+        to: hidden_25
+        description: "Behind the confessional booth, a hidden panel slides open to reveal a damp passage."
+  - id: oldcity_10
+    hidden_exits:
+      - direction: down
+        to: hidden_08
+        description: "Beneath a loose floorboard in the shrine, stone steps spiral down into the earth."
+  - id: oldcity_14
+    hidden_exits:
+      - direction: west
+        to: hidden_20
+        description: "A false wall in the alley opens onto a tunnel that smells of earth and lamp oil."
+  - id: french_12
+    hidden_exits:
+      - direction: down
+        to: hidden_01
+        description: "Behind a tall wardrobe in the apartment, a trapdoor leads to a hidden cellar."
+  - id: french_20
+    hidden_exits:
+      - direction: east
+        to: hidden_35
+        description: "An ornate mirror in the hallway swings inward, revealing a concealed corridor."
+  - id: residence_08
+    hidden_exits:
+      - direction: down
+        to: hidden_15
+        description: "A coal chute in the kitchen floor opens onto a narrow underground passage."
+  - id: commercial_22
+    hidden_exits:
+      - direction: south
+        to: hidden_28
+        description: "A bookshelf in the printshop office slides aside to expose a descending staircase."
+  - id: hongkou_06
+    hidden_exits:
+      - direction: down
+        to: hidden_18
+        description: "Under the boarding house floorboards, a hatch opens into a forgotten tunnel."
+  - id: warehouse_08
+    hidden_exits:
+      - direction: down
+        to: hidden_22
+        description: "Behind a stack of old crates, a rusted iron door leads to an underground passage."
+
+  # Trishaw for fast travel
+  - id: bund_dawn
+    trishaw_stand: true
+  - id: bund_10
+    trishaw_stand: true
+  - id: nanjing_road
+    trishaw_stand: true
+  - id: commercial_10
+    trishaw_stand: true
+  - id: commercial_20
+    trishaw_stand: true
+  - id: hongkou_01
+    trishaw_stand: true
+  - id: oldcity_01
+    trishaw_stand: true
+  - id: docks_01
+    trishaw_stand: true
+
+  # Nurses
+  - id: oldcity_06
+    nurse_available: true
+    nurse_hours: [8, 18]
+  - id: hongkou_04
+    nurse_available: true
+    nurse_hours: [8, 18]
+  - id: hongkou_16
+    nurse_available: true
+    nurse_hours: [8, 18]
+  - id: church_18
+    nurse_available: true
+    nurse_hours: [8, 18]
+  - id: hidden_10
+    nurse_available: true
+    nurse_hours: [8, 18]
