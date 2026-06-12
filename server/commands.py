@@ -1065,11 +1065,7 @@ async def cmd_whisper(ctx: CommandContext, cmd: Command):
     target_name = parts[1]
     message = " ".join(parts[2:]) if len(parts) > 2 else ""
 
-    target_session = None
-    for session in ctx.session_manager.get_players_in_room(ctx.session.player.current_room):
-        if session.username == target_name or session.player.name.lower() == target_name.lower():
-            target_session = session
-            break
+    target_session = _find_player_in_room(ctx, target_name)
 
     if not target_session:
         await post_display(ctx, f"{target_name} is not here.")
@@ -1092,11 +1088,7 @@ async def cmd_give(ctx: CommandContext, cmd: Command):
     if not item:
         await post_display(ctx, f"You don't have {item_name}.")
         return
-    target_session = None
-    for session in ctx.session_manager.get_players_in_room(ctx.session.player.current_room):
-        if session.username == target_name or session.player.name.lower() == target_name.lower():
-            target_session = session
-            break
+    target_session = _find_player_in_room(ctx, target_name)
 
     if not target_session:
         await post_display(ctx, f"{target_name} is not here.")
