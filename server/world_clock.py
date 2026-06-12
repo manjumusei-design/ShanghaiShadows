@@ -1,6 +1,6 @@
 import asyncio
 import random
-from collections import
+from collections import deque
 from typing import TYPE_CHECKING
 
 from .constants import (
@@ -15,7 +15,7 @@ from .commands import (
     apply_action_trust,
     advance_time_one_minute,
     check_death_conditions,
-    check_planted_evidence, 
+    check_planted_evidence,
     check_curfew_penalty,
     disguise_bonus,
     handle_player_death,
@@ -46,10 +46,10 @@ class WorldClock:
     async def tick(self):
         if not self.session_manager.sessions:
             return
-        
+
         if any(s.manually_advancing for s in self.session_manager.sessions.values()):
             return
-        
+
         self._advance_time_one_minute()
         self._move_npcs_if_hour_changed()
         self._process_gossip()
@@ -99,7 +99,7 @@ class WorldClock:
         npc = self.shared.world.npcs.get(npc_id)
         if not npc:
             return
-        
+
         old_room = self.shared.world.rooms.get(old_room_id)
         new_room = self.shared.world.rooms.get(new_room_id)
 
@@ -108,7 +108,7 @@ class WorldClock:
                 direction = self._get_direction(old_room_id, new_room_id)
                 if direction:
                     asyncio.create_task(session.send_display(f"{npc.name} walks {direction}."))
-            
+
         if new_room:
             for session in self.session_manager.get_players_in_room(new_room_id):
                 direction = self._get_direction(new_room_id, old_room_id)
@@ -123,16 +123,16 @@ class WorldClock:
             if dest == to_room:
                 return direction
         return ""
-    
+
     def _process_gossip(self):
         for room in self.shared.world.rooms.values():
             npc_ids = room.npcs
             if len(npc_ids) < 2:
                 continue
-            for i in range(len(npc_ids) -1):
+            for i in range(len(npc_ids) - 1):
                 from .trust import exchange_gossip
                 a = self.shared.world.npcs.get(npc_ids[i])
-                b = self.shared.world.npcs.get(npc_ids[i+1])
+                b = self.shared.world.npcs.get(npc_ids[i + 1])
                 if not a or not b:
                     continue
                 if exchange_gossip(a.memory, b.memory, chance=0.25):
@@ -142,7 +142,7 @@ class WorldClock:
                         self.shared.rumour_mill[b.faction] = self.shared.rumour_mill[b.faction][-12:]
 
     async def _process_planted_evidence_all_sessions(self):
-        for session in self.session_manager.sessions.values(): 
+        for session in self.session_manager.sessions.values():
             if session.player.planted_evidence:
                 await self._check_planted_evidence_for_session(session)
 
@@ -216,7 +216,7 @@ class WorldClock:
     def _disguise_bonus_for_session(self, session: Session) -> int:
         disguise = self.disguises.get(session.player.disguise)
         return disguise.bonus if disguise else 0
-    
+
     async def _check_curfew_all_sessions(self):
         if self.shared.game_time.minute < CURFEW_MINUTE:
             return
@@ -274,7 +274,7 @@ class WorldClock:
                 options = storylet_data.get("options", [])
                 if options:
                     first_option = options[0]
-                    await self._resolve_room_storylet(room_id, first_option)
+                    await self._resolve_room_storylet(room_id, 0, first_option)
                 else:
                     expired_rooms.append(room_id)
 
@@ -288,7 +288,7 @@ class WorldClock:
             change_trust(player.trust, faction, delta)
 
     def _apply_flag_effects(self, player, flag: str) -> None:
-        player.flags.appemd(flag)
+        player.flags.append(flag)
 
     def _apply_item_effects(self, player, item_id: str) -> None:
         item = self.shared.world.clone_item(item_id)
@@ -312,7 +312,7 @@ class WorldClock:
     async def _resolve_room_storylet(self, room_id: str, option_index: int, option):
         if room_id not in self.shared.active_room_storylets:
             return
-        
+
         storylet_data = self.shared.active_room_storylets[room_id]
         storylet_data["resolved"] = True
 
@@ -321,21 +321,21 @@ class WorldClock:
             if session.player.active_storylet and session.player.active_storylet.room_id == room_id:
                 session.player.active_storylet = None
 
-                for effect_type, effect_value in effects.item():
-                    handler = self.EFFECT_HANDLERS.get(effect_type)
-                    if handler:
-                        handler(self, effect_value)
+            for effect_type, effect_value in effects.items():
+                handler = self.EFFECT_HANDLERS.get(effect_type)
+                if handler:
+                    handler(self, effect_value)
 
-                if option_index == 0:
-                    asyncio.create_task(session.send_display("The moment passes."))
-                else:
+            if option_index == 0:
+                asyncio.create_task(session.send_display("The moment passes."))
+            else:
                 asyncio.create_task(session.send_display(f"You chose option {option_index + 1}. The moment passes."))
 
     def _check_mission_expiry(self):
         mm = self.shared.mission_manager
         if not mm:
             return
-        for session in self.session_amanger.sessions.values():
+        for session in self.session_manager.sessions.values():
             expired = mm.check_expiry(session.player, self.shared.game_time.day)
             for mid in expired:
                 asyncio.create_task(session.send_display(f"Mission {mid} has expired."))
@@ -357,7 +357,7 @@ class WorldClock:
 
         if self.shared.game_time.minute % 30 != 0:
             return
-        
+
         world_tension = (self.shared.ccp_influence + self.shared.gmd_influence) / 2
         base_act_chance = 0.2
         if world_tension > 50:
@@ -406,7 +406,7 @@ class WorldClock:
             self.shared.world.npc_locations[npc_id] = to_room_id
             return True
         return False
-    
+
     def _get_nearby_npcs(self, npc_id: str, current_room) -> list:
         return [self.shared.world.npcs.get(nid) for nid in current_room.npcs if nid != npc_id and self.shared.world.npcs.get(nid)]
 
@@ -424,16 +424,16 @@ class WorldClock:
                     asyncio.create_task(session.send_display(f"{npc.name} walks {direction}."))
 
                 for session in self.session_manager.get_players_in_room(dest_room_id):
-                    asyncio.create_task(session.send_display(f"{npc.name} walks {direction}."))
+                    asyncio.create_task(session.send_display(f"{npc.name} arrives from the {self._get_direction(dest_room_id, current_room_id)}."))
 
     def _npc_gossip_action(self, npc, current_room, rooms_with_players: set):
-        from.trust import exchange_gossip
+        from .trust import exchange_gossip
         import random
 
         nearby_npcs = self._get_nearby_npcs(npc.id, current_room)
         if not nearby_npcs:
             return
-        
+
         other = random.choice(nearby_npcs)
         if exchange_gossip(npc.memory, other.memory, chance=0.5):
             if current_room.id in rooms_with_players:
@@ -446,7 +446,7 @@ class WorldClock:
         nearby_npcs = self._get_nearby_npcs(npc.id, current_room)
         if not nearby_npcs:
             return
-        
+
         opponents = [n for n in nearby_npcs if self._are_opposite_factions(npc.faction, n.faction)]
         if not opponents:
             return
@@ -571,7 +571,7 @@ class WorldClock:
                     await session.websocket.close()
                 except Exception:
                     pass
-        
+
         if self.shared.game_time.minute == 0:
             ending = check_victory_conditions(
                 self.shared.game_time.day,
@@ -595,6 +595,7 @@ class WorldClock:
                 ending_type, session.player.name, self.shared.legacy_book,
                 self.shared.ccp_influence, self.shared.gmd_influence,
             )
+
             end_screen = f"""
 {ending_text}
 
@@ -622,9 +623,8 @@ class WorldClock:
                 await session.websocket.close()
             except Exception:
                 pass
+
         self._reset_shared_world()
-
-
 
     def _reset_shared_world(self):
         from .game_world import SharedWorldState
@@ -657,4 +657,3 @@ class WorldClock:
                 await session.send_display(text)
             except Exception:
                 pass
-            
