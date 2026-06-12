@@ -12,7 +12,7 @@ from .locales import get as loc
 from .locales import load_locale
 from .npc import Npc, get_contextual_dialogue
 from .parser import Command, parse
-from .player_data import PlayerData
+from .player_data import PlayerData, _reset_player_defaults
 from .serialization import _load_yaml, deserialize_item, serialize_item
 from .session import Session
 from .stealth import Disguise, StealthSystem, TailingState
@@ -361,8 +361,13 @@ def _apply_inherited_trust(ctx: CommandContext, adjustments: dict) -> TrustMap:
     return base_trust
 
 
-def _generate_obituary(ctx: CommandContext, death_message: str) -> str:
-    player = ctx.session.player
+def _generate_obituary(ctx_or_player, death_message: str, game_day: int = 1) -> str:
+    from .player_data import PlayerData
+    if isinstance(ctx_or_player, PlayerData):
+        player = ctx_or_player
+    else:
+        player = ctx_or_player.session.player
+        game_day = ctx_or_player.shared.game_time.day
     high_trust_factions = [f for f, roles in player.trust.items() if any(v > 70 for v in roles.values())]
     cause = "starvation" if player.hunger <= 0 else "illness" if player.health <= 0 else "execution"
     if player.arrested:
@@ -372,7 +377,7 @@ def _generate_obituary(ctx: CommandContext, death_message: str) -> str:
     faction = high_trust_factions[0] if high_trust_factions else "civilian"
     tpl_context = {
         "name": player.name,
-        "date": f"day {ctx.shared.game_time.day}",
+        "date": f"day {game_day}",
         "cause": cause,
         "deed": deed,
         "faction": faction,
@@ -445,6 +450,16 @@ async def initialize_new_character(ctx: CommandContext):
     ctx.session.player.planted_evidence = []
     ctx.session.player.last_curfew_penalty_day = 0
     ctx.session.player.conversation_history = deque(maxlen=CONVERSATION_HISTORY_MAXLEN)
+    ctx.session.player.money_fabi = 50
+    ctx.session.player.money_silver = 0
+    ctx.session.player.courage = 50
+    ctx.session.player.perception = 30
+    ctx.session.player.map_revealed = ["bund_dawn"]
+    ctx.session.player.maps_purchased = []
+    ctx.session.player.worn_armour_id = ""
+    ctx.session.player.active_missions = []
+    ctx.session.player.completed_missions = []
+    ctx.session.player.abandoned_missions = []
 
     save_world_state(ctx.shared)
 
