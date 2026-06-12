@@ -274,9 +274,21 @@ def _has_key_for_container(player: PlayerData, container: Item) -> bool:
     return any(i.key_id == container.key_id for i in player.inventory)
 
 
+def _find_player_in_room(ctx: CommandContext, name: str) -> Optional[Session]:
+    for s in ctx.session_manager.get_players_in_room(ctx.session.player.current_room):
+        if s.username == name or s.player.name.lower() == name.lower():
+            return s
+        return None
+    
+
+_CACHED_VERBS: Optional[List[str]] = None
+
+
 def build_completions(ctx: CommandContext) -> List[str]:
-    from .session_manager import build_command_registry
-    verbs = [v for v in build_command_registry().keys() if v not in ("unknown", "stub")]
+    global _CACHED_VERBS
+    if _CACHED_VERBS is None:
+        _CACHED_VERBS = [v for v in build_command_registry().keys() if v not in ("unknown", "stub")]
+    verbs = list(_CACHED_VERBS)
     room = _room(ctx)
     if room:
         verbs.extend(room.exits.keys())
@@ -291,38 +303,22 @@ def _get_npc_dialogue(ctx: CommandContext, npc: Npc, context_type: str = "talk")
     return get_contextual_dialogue(npc, ctx.session.player.trust, context_type)
 
 
+_OBITUARY_TEMPLATES: Optional[List[dict]] = None
+
+
+def _get_obituary_templates() -> List[dict]:
+    global _OBITUARY_TEMPLATES
+    if _OBITUARY_TEMPLATE is None:
+        _OBITUARY_TEMPLATES = _load_yaml(OBITUARY_PATH).get("templates", [])
+    return _OBITUARY_TEMPLATES
+
+
 def _select_obituary(context: dict) -> str:
-    templates = _load_yaml(OBITUARY_PATH).get("templates", [])
-    best, best_score = None, -1
-    for t in templates:
-        cond = t.get("condition", "default")
-        if cond == "default" or cond == {} or cond is None:
-            score = 0
-        elif isinstance(cond, dict):
-            score = 0
-            for key, value in cond.items():
-                actual = context.get(key)
-                if actual is None:
-                    if value is True:
-                        continue
-                    score = -1
-                    break
-                if actual == value:
-                    score += 1
-                elif isinstance(actual, str) and isinstance(value, str) and actual.lower() == value.lower():
-                    score += 1
-                else:
-                    score = -1
-                    break
-            if score == -1:
-                continue
-        else:
-            score = -1
-        if score > best_score:
-            best, best_score = t, score
+    from .victory import _select_template
+    best = _select_template(_get_obituary_templates(), context)
     if best:
         return best["text"].format(**context)
-    return "{name} passed in occupied Shanghai. The city endures."
+    return "{name} passed in occupied Shanghai. The city endures." 
 
 
 def _generate_background() -> dict:
