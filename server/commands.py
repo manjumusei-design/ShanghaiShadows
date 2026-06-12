@@ -820,7 +820,7 @@ async def cmd_status(ctx: CommandContext, cmd: Command):
     lines.append(f"Disguise: {disguise.name if disguise else 'none'}")
     lines.append(f"Stealth skill: {ctx.session.player.stealth_skill}")
     if ctx.session.player.worn_armour_id:
-        armour = await _get_worn_armour(ctx.session.player)
+        armour = _get_worn_armour(ctx.session.player)
         if armour:
             lines.append(f"Armour: {armour.name} (def {armour.defense_value}, dur {armour.durability})")
     lines.append("Trust:")
