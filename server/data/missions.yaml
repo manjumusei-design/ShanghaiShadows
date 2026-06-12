@@ -174,7 +174,7 @@ missions:
         count: 1
         current: 0
       - type: deliver_to_npc
-        target: underground_doctor
+        target: underground_doctor_li
         count: 1
         current: 0
     rewards:
