@@ -626,3 +626,35 @@ class WorldClock:
 
 
 
+    def _reset_shared_world(self):
+        from .game_world import SharedWorldState
+        from .world import World
+        from .time_system import EventScheduler, GameTime
+        from .constants import EVENTS_PATH, TRUST_RULES_PATH
+        from .trust import load_trust_rules
+
+        cycle = self.shared.server_cycle
+        self.shared.world = World()
+        self.shared.game_time = GameTime()
+        self.shared.scheduler = EventScheduler()
+        self.shared.scheduler.load_from_yaml(EVENTS_PATH)
+        self.shared.trust_rules = load_trust_rules(TRUST_RULES_PATH)
+        self.shared.ccp_influence = 10
+        self.shared.gmd_influence = 15
+        self.shared.event_log = []
+        self.shared.legacy_book = []
+        self.shared.rumour_mill = {}
+        self.shared.archived_journals = {}
+        self.shared.mission_manager = None
+        self.shared.server_cycle = cycle
+        self.shared.weather = "clear"
+        self.shared.active_room_storylets = {}
+        self.session_manager.sessions.clear()
+
+    async def _broadcast_display(self, text: str):
+        for session in self.session_manager.sessions.values():
+            try:
+                await session.send_display(text)
+            except Exception:
+                pass
+            
