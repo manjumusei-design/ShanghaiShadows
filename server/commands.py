@@ -1328,7 +1328,7 @@ async def cmd_unequip(ctx: CommandContext, cmd: Command):
         await post_display(ctx, loc("cmd_unequip.nothing"))
         return
 
-    armour = await _get_worn_armour(ctx.session.player)
+    armour = _get_worn_armour(ctx.session.player)
     ctx.session.player.worn_armour_id = ""
     if armour:
         await post_display(ctx, loc("cmd_unequip.success").format(name=armour.name))
@@ -1832,9 +1832,7 @@ async def cmd_take_trishaw(ctx: CommandContext, cmd: Command):
     log_event(ctx, f"You took a trishaw to {dest_room.title}.")
 
     await post_display(ctx, f"You pay 5 fabi and take a trishaw to {dest_room.title}.")
-    await advance_time_one_minute(ctx)
-    for _ in range(29):
-        await advance_time_one_minute(ctx)
+    await _advance_time_manual(ctx, 30)
 
     await cmd_look(ctx, Command(verb="look"))
     await maybe_trigger_storylet(ctx)
@@ -1935,16 +1933,19 @@ async def cmd_memorial(ctx: CommandContext, cmd: Command):
         await post_display(ctx, "The legacy book is empty.")
         return
 
-    entries = list(ctx.shared.legacy_book.items())[-20:]
+    entries = ctx.shared.legacy_book[-20:]
     if not entries:
         await post_display(ctx, "No entries in the legacy book.")
         return
 
-    lines = ["=== Legacy Book ===", ""]
-    for name, entry in entries:
-        day_of_death = entry.get("day", "Unknown")
-        cause = entry.get("cause", "Unknown")
-        lines.append(f"{name} - Day {day_of_death}: {cause}")
+    lines = ["Legacy Book", ""]
+    for entry in entries:
+        name = entry.get("character_name", "Unknown")
+        day = entry.get("day_of_death", "?")
+        summary = entry.get("summary", "")
+        lines.append(f"{name} — Day {day}")
+        if summary:
+            lines.append(f"  {summary}")
 
     await post_display(ctx, "\n".join(lines))
 
