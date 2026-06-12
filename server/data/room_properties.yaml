@@ -4,6 +4,8 @@ rooms:
   - id: bund_05
     safe_room: true
 
+# Structure should be name of area followed by -id: "name" and then whether or not it is a safe room, by default it isnt
+
   # Commercial district
   - id: nanjing_road
     safe_room: true
