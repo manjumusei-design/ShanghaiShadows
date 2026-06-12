@@ -622,3 +622,7 @@ class WorldClock:
                 await session.websocket.close()
             except Exception:
                 pass
+        self._reset_shared_world()
+
+
+
