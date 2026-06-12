@@ -148,6 +148,16 @@ def generate_liberation_ending(ending_type: str, player_alias: str, legacy_book:
     return "\n".join(parts)
 
 
+def archive_legacy_cycle(legacy_book: List[Dict], cycle: int) -> None:
+    if not legacy_book:
+        return
+    archive_dir = Path(_DATA_DIR) / "archives"
+    archive_dir.mkdir(parents=True, exist_ok=True)
+    path = archive_dir / f"legacy_cycle_{cycle}.yaml"
+    with open(path, "w", encoding="utf-8") as f:
+        yaml.dump(legacy_book, f, allow_unicode=True, default_flow_style=False)
+
+        
 def compile_legacy_narrative(legacy_book: List[Dict]) -> str:
     if not legacy_book:
         return "No one lived to tell the tale. But the city remembers."
