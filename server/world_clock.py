@@ -493,6 +493,18 @@ class WorldClock:
     def _are_opposite_factions(self, faction1: str, faction2: str) -> bool:
         return frozenset({faction1, faction2}) in self.OPPOSITE_FACTION_PAIRS
 
+    def _update_weather(self):
+        from .victory import _season_from_day
+        season = _season_from_day(self.shared.game_time.day)
+        rain_chance = 30 if season in ("summer", "autumn") else 10
+        if random.randint(1, 100) <= rain_chance:
+            self.shared.weather = "rain"
+        else:
+            self.shared.weather = "clear"
+        if self.shared.weather == "rain":
+            self._apply_weather_degradation()
+
+
     async def _check_death_and_victory(self):
         from .victory import check_victory_conditions
         from .trust import get_role_trust
