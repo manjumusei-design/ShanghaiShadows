@@ -4,27 +4,17 @@ from typing import Dict, List, Optional
 
 import yaml
 
+from .serialization import _load_yaml
 from .time_system import GameTime
 
 
-DAY_1944 = 2250
 DAY_LIBERATION = 2835
 
-_DATA_DIR = Path("server/data")
+_DATA_DIR = "server/data"
 
 
-def _load_yaml(filename: str) -> dict:
-    path = _DATA_DIR / filename
-    if not path.exists():
-        return {}
-    with open(path, "r", encoding="utf-8") as f:
-        return yaml.safe_load(f) or {}
-
-
-_ENDINGS_DATA = _load_yaml("endings.yaml")
-_TIME_SKIP_DATA = _load_yaml("time_skip_templates.yaml")
-
-_CCP_ENDING_KEYS = {"ccp_uprising", "ccp_uprising_early"}
+_ENDINGS_DATA = _load_yaml(f"{_DATA_DIR}/endings.yaml")
+_TIME_SKIP_DATA = _load_yaml(f"{_DATA_DIR}/time_skip_templates.yaml")
 
 
 def _season_from_day(day: int) -> str:
