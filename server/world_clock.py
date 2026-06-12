@@ -542,7 +542,7 @@ class WorldClock:
 
             if is_dead:
                 from .commands import _generate_obituary, format_life_retrospective
-                obituary = _generate_obituary(session.player, death_message)
+                obituary = _generate_obituary(session.player, death_message, game_day=self.shared.game_time.day)
                 retrospective = format_life_retrospective(self.shared.event_log, session.player.name)
                 self.shared.legacy_book.append({
                     "character_name": session.player.name,
