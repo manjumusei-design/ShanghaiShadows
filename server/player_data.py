@@ -48,6 +48,42 @@ class PlayerData:
     visited_rooms: List[str] = field(default_factory=list)
 
 
+def _reset_player_defaults(player: PlayerData, background: dict) -> None:
+    from collections import deque
+    from .constants import CONVERSATION_HISTORY_MAXLEN
+    player.name = background.get("name", "Newcomer")
+    player.current_room = "bund_dawn"
+    player.inventory = []
+    player.disguise = ""
+    player.stealth_skill = 55
+    player.hidden = False
+    player.flags = []
+    player.world_events = []
+    player.newspapers = []
+    player.health = 100
+    player.hunger = 100
+    player.morale = 80
+    player.arrested = False
+    player.relationships = {}
+    player.storylet_history = []
+    player.active_storylet = None
+    player.tailing_state = None
+    player.planted_evidence = []
+    player.last_curfew_penalty_day = 0
+    player.last_newspaper_day = 0
+    player.conversation_history = deque(maxlen=CONVERSATION_HISTORY_MAXLEN)
+    player.money_fabi = 50
+    player.money_silver = 0
+    player.courage = 50
+    player.perception = 30
+    player.map_revealed = ["bund_dawn"]
+    player.maps_purchased = []
+    player.worn_armour_id = ""
+    player.active_missions = []
+    player.completed_missions = []
+    player.abandoned_missions = []
+
+    
 def serialize_player(player: PlayerData) -> Dict[str, object]:
     payload = {
         "username": player.username,
