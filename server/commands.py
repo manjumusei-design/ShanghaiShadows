@@ -357,13 +357,7 @@ def _apply_inherited_trust(adjustments: dict) -> TrustMap:
     return base_trust
 
 
-def _generate_obituary(ctx_or_player, death_message: str, game_day: int = 1) -> str:
-    from .player_data import PlayerData
-    if isinstance(ctx_or_player, PlayerData):
-        player = ctx_or_player
-    else:
-        player = ctx_or_player.session.player
-        game_day = ctx_or_player.shared.game_time.day
+def _generate_obituary(player: PlayerData, death_message: str, game_day: int) -> str:
     high_trust_factions = [f for f, roles in player.trust.items() if any(v > 70 for v in roles.values())]
     cause = "starvation" if player.hunger <= 0 else "illness" if player.health <= 0 else "execution"
     if player.arrested:
@@ -383,7 +377,7 @@ def _generate_obituary(ctx_or_player, death_message: str, game_day: int = 1) -> 
 
 async def handle_player_death(ctx: CommandContext, death_message: str):
     from .save_manager import save_player
-    obituary = _generate_obituary(ctx, death_message)
+    obituary = _generate_obituary(ctx.session.player, death_message, ctx.shared.game_time.day)
     retrospective = format_life_retrospective(ctx.shared.event_log, ctx.session.player.name)
     ctx.shared.legacy_book.append({
         "character_name": ctx.session.player.name,
@@ -423,39 +417,10 @@ async def initialize_new_character(ctx: CommandContext):
 
     background = _generate_background()
 
-    new_trust = _apply_inherited_trust(ctx, background.get("trust_adjustments", {}))
+    new_trust = _apply_inherited_trust(background.get("trust_adjustments", {}))
 
-    ctx.session.player.name = background.get("name", "Newcomer")
-    ctx.session.player.current_room = "bund_dawn"
-    ctx.session.player.inventory = []
+    _reset_player_defaults(ctx.session.player, background)
     ctx.session.player.trust = new_trust
-    ctx.session.player.disguise = ""
-    ctx.session.player.stealth_skill = 55
-    ctx.session.player.hidden = False
-    ctx.session.player.flags = []
-    ctx.session.player.world_events = []
-    ctx.session.player.newspapers = []
-    ctx.session.player.health = 100
-    ctx.session.player.hunger = 100
-    ctx.session.player.morale = 80
-    ctx.session.player.arrested = False
-    ctx.session.player.relationships = {}
-    ctx.session.player.storylet_history = []
-    ctx.session.player.active_storylet = None
-    ctx.session.player.tailing_state = None
-    ctx.session.player.planted_evidence = []
-    ctx.session.player.last_curfew_penalty_day = 0
-    ctx.session.player.conversation_history = deque(maxlen=CONVERSATION_HISTORY_MAXLEN)
-    ctx.session.player.money_fabi = 50
-    ctx.session.player.money_silver = 0
-    ctx.session.player.courage = 50
-    ctx.session.player.perception = 30
-    ctx.session.player.map_revealed = ["bund_dawn"]
-    ctx.session.player.maps_purchased = []
-    ctx.session.player.worn_armour_id = ""
-    ctx.session.player.active_missions = []
-    ctx.session.player.completed_missions = []
-    ctx.session.player.abandoned_missions = []
 
     save_world_state(ctx.shared)
 
