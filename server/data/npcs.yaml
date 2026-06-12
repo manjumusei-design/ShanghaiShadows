@@ -110,7 +110,7 @@ npcs:
   role: officer
   personality: cold, observant, politely cruel
   awareness: 82
-  autority: 85
+  authority: 85
   courage: 70
   perception: 70
   faction_leader: true
@@ -421,9 +421,9 @@ npcs:
   role: resident
   personality: patient, shrewd, ceremonial
   awareness: 60
-  courage: 40
-  perception: 50
-  awareness: 42
+  authority: 15
+  courage: 30
+  perception: 42
   schedule:
     5: oldcity_09
     12: oldcity_11
@@ -1117,9 +1117,9 @@ npcs:
   role: boss
   personality: loud, jovial mask over ruthlessness
   awareness: 72
-  authority: 14
-  courage: 35
-  perception: 36
+  authority: 50
+  courage: 58
+  perception: 52
   schedule:
     10: commercial_12
     14: warehouse_08
@@ -1409,9 +1409,9 @@ npcs:
   role: nurse
   personality: gentle, overworked, hides resistance sympathies
   awareness: 44
-  authority: 10
-  courage: 25
-  perception: 45
+  authority: 8
+  courage: 32
+  perception: 35
   schedule:
     8: oldcity_06
     14: hidden_05
@@ -1804,9 +1804,9 @@ npcs:
   role: clerks
   personality: bookish, melancholic, principled
   awareness: 46
-  authority: 5
-  courage: 38
-  perception: 48
+  authority: 28
+  courage: 40
+  perception: 42
   schedule:
     8: french_06
     12: school_03
@@ -2548,7 +2548,7 @@ npcs:
   awareness: 38
   authority: 22
   courage: 35
-  perecption: 38
+  perception: 38
   schedule:
     5: french_02
     9: french_02
@@ -2737,7 +2737,7 @@ npcs:
     - Someone moved the dead drop at the temple. I hope it was one of ours.
     secret:
     - The next message goes out folded inside a lotus leaf. The buyer will ask for sweet tea. That is the signal.
-  
+
 - id: factory_worker_organizer
   name: Big Gu, the mill hand
   description: A broad-shouldered textile worker with permanent cotton dust in his hair and a talent for whispered persuasion on the factory floor.
@@ -3516,3 +3516,177 @@ npcs:
     - A colonel's wife comes to the club every Thursday afternoon. She drinks gimlets and complains about her husband's secrets. She has no idea she is the best informant in the room.
     secret:
     - The intelligence goes out inside the false heel of my stage shoes. I leave them in my dressing room after the last set. The cleaner swaps them for an identical pair before dawn.
+
+- id: rickshaw_puller_ah_foo
+  name: Ah Foo
+  description: A weathered rickshaw puller with rope-burned palms and a habit of humming
+    old folk tunes between fares.
+  faction: civilian
+  role: worker
+  personality: taciturn, observant, deferential to authority
+  awareness: 35
+  authority: 8
+  courage: 25
+  perception: 40
+  schedule:
+    6: bund_dawn
+    12: bund_05
+    18: bund_10
+    21: bund_dawn
+  dialogue:
+    greeting:
+    - Need a ride? I know the Bund like the back of my hand.
+    - Step in, laoban. The rain is coming and my rickshaw is dry.
+    neutral:
+    - I pull all day and sleep when my legs let me. That is the whole story.
+    - The fare is two jiao to the end of the promenade. No haggling, please.
+    friendly:
+    - I overheard two officers talking near the customs house. Something about a shipment
+      tomorrow night.
+    - You have been kind to me. I tell you for free, the checkpoint on the Bund thins
+      out after the shift change.
+    hostile:
+    - I do not know anything. Ask someone else.
+    - You are bad for business. Stand somewhere else.
+    afraid:
+    - Please, I am just a rickshaw puller. I see nothing, I hear nothing.
+    - Take the rickshaw if you want. Just let me go home to my family.
+    gossip:
+    - The foreign clerks on the Bund keep strange hours lately. I see them after midnight,
+      carrying briefcases.
+    - A new officer inspects every rickshaw on Tuesdays now. Something spooked them.
+    farewell:
+    - Watch yourself out there. The Bund looks different after dark.
+    - Same time tomorrow, if we are both still here.
+
+- id: noodle_vendor_wu
+  name: Old Wu
+  description: A hunched noodle vendor with a permanent squint from years of peering
+    through steam rising from his wok.
+  faction: civilian
+  role: vendor
+  personality: gruff, superstitious, talkative when the mood strikes
+  awareness: 30
+  authority: 5
+  courage: 20
+  perception: 35
+  schedule:
+    6: oldcity_01
+    12: oldcity_05
+    18: oldcity_10
+    21: oldcity_01
+  dialogue:
+    greeting:
+    - Noodles? Three jiao. Sit on the stool, not the crate.
+    - You look hungry. First bowl is full price, same as the second.
+    neutral:
+    - I sell noodles. The broth is honest, even if the times are not.
+    - Sit and eat. Standing customers make me nervous.
+    friendly:
+    - I see everyone who passes through the old city. The man in the grey coat has been
+      here three days running.
+    - Extra pork for you. You look thin. A thin friend is a worried friend.
+    hostile:
+    - I sell noodles, not answers. Buy something or move along.
+    - You are scaring away my customers. Go bother someone else.
+    afraid:
+    - The noodles are free. Take them. Just do not make trouble here.
+    - I did not see anything. I was busy with the broth. I am always busy with the broth.
+    gossip:
+    - A young man came through this morning carrying a package wrapped in newspaper.
+      He walked fast and did not stop to eat.
+    - The soldiers took old Mrs. Huang's grandson yesterday. Right off the street. Nobody
+      knows why.
+    farewell:
+    - Come back when you are hungry. The broth is always on.
+    - Eat well and walk carefully. The old city is not as safe as it used to be.
+
+- id: bar_girl_suyin
+  name: Suyin
+  description: A bar hostess with painted lips and tired eyes who pours drinks with
+    one hand and collects secrets with the other.
+  faction: civilian
+  role: entertainer
+  personality: flirtatious exterior, sharp and calculating underneath
+  awareness: 40
+  authority: 8
+  courage: 30
+  perception: 45
+  schedule:
+    14: french_01
+    18: french_05
+    22: french_10
+    2: french_01
+  dialogue:
+    greeting:
+    - Sit down. Buy me a drink and I will pretend to listen.
+    - You look like you need company. Or a confession. Hard to tell which.
+    neutral:
+    - I pour drinks and smile. That is what I am paid for.
+    - The bar is crowded tonight. Speak quietly or not at all.
+    friendly:
+    - The major at table four has had too much whisky. He keeps talking about a convoy
+      leaving on Thursday.
+    - A naval officer left a map on the bar last week. I glanced at it before he snatched
+      it back. Nanking was circled.
+    hostile:
+    - I do not answer to people who do not tip. Try elsewhere.
+    - You are making my other customers uncomfortable. Leave.
+    afraid:
+    - I am just a bar girl. I serve drinks. I do not know anything important.
+    - The manager does not like trouble. Please, just go.
+    gossip:
+    - The colonel's mistress comes in every Wednesday. She talks too much and drinks
+      even more.
+    - A foreign businessman at the corner table has been meeting with a Kempeitai translator
+      after midnight.
+    farewell:
+    - Come back when you can afford better company. Or when you have something interesting
+      to say.
+    - My shift ends at two. After that, I am just a woman walking home alone. Do not
+      follow me.
+
+- id: rat_face_xiao
+  name: Rat-Face Xiao
+  description: A wiry Green Gang informant with sharp features and darting eyes who
+    sells whispers to the highest bidder and sleeps with one eye open.
+  faction: green_gang
+  role: informant
+  personality: nervous, greedy, survivalist
+  awareness: 55
+  authority: 30
+  courage: 40
+  perception: 50
+  schedule:
+    8: hongkou_01
+    12: hongkou_05
+    18: hongkou_10
+    22: hongkou_01
+  dialogue:
+    greeting:
+    - You got money? I got ears. Let us do business.
+    - Keep your voice down. I cannot be seen talking to just anyone.
+    neutral:
+    - Information costs. How much depends on how dangerous it is.
+    - I sell what I hear. What you do with it is your affair.
+    friendly:
+    - The Kempeitai are planning a raid on the old city day after tomorrow. I heard it
+      from a sergeant who drinks too much.
+    - There is a new informant in Hongkou. Works for the puppet police. I can find out
+      who, but it will cost you.
+    hostile:
+    - You ask too many questions for someone who does not pay. Walk away.
+    - I have friends who handle problems. You are starting to look like a problem.
+    afraid:
+    - Look, I will tell you anything you want. Just do not hurt me. I have debts, not
+      courage.
+    - I sell information, not loyalty. If someone paid me to watch you, I would. That
+      is just survival.
+    gossip:
+    - The Green Gang is moving opium through the French Concession again. Different route
+      this time, through the back of a laundry.
+    - A Kempeitai captain is being transferred. His replacement is supposed to be worse.
+      Hard to imagine, but there it is.
+    farewell:
+    - Same place, same price. Do not come to my home. Ever.
+    - Watch your back. Not everyone in Hongkou sells information. Some of them sell people.
