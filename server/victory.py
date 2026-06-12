@@ -66,11 +66,13 @@ def adjust_influence(ccp_influence: int, gmd_influence: int, faction: str, amoun
 
 def check_victory_conditions(day: int, ccp_influence: int, gmd_influence: int) -> Optional[str]:
     if day >= DAY_LIBERATION:
-        if ccp_influence > gmd_influence:
+        if ccp_influence >= 80 and ccp_influence > gmd_influence:
             return "ccp_uprising"
+        if gmd_influence >= 80 and gmd_influence > ccp_influence:
+            return "gmd_return"
+        if ccp_influence >= 60 and gmd_influence >= 60 and abs(ccp_influence - gmd_influence) <= 15:
+            return "unity"
         return "gmd_return"
-    if day >= DAY_1944 and ccp_influence >= 80:
-        return "ccp_uprising_early"
     return None
 
 
