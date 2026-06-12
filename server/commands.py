@@ -1150,7 +1150,7 @@ async def _attack_npc(ctx: CommandContext, npc_id: str):
 
     player = ctx.session.player
     weapon = _get_equipped_weapon(player)
-    armour = await _get_worn_armour(player)
+    armour = _get_worn_armour(player)
     result = resolve_attack(
         attacker_courage=player.courage,
         attacker_weapon=weapon,
