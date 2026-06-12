@@ -1188,7 +1188,7 @@ async def _attack_player(ctx: CommandContext, target_session: Session):
     target = target_session.player
 
     weapon = _get_equipped_weapon(player)
-    target_armour = await _get_worn_armour(target)
+    target_armour = _get_worn_armour(target)
 
     result = resolve_attack(
         attacker_courage=player.courage,
