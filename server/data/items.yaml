@@ -367,3 +367,32 @@ items:
     is_money: true
     money_amount: 10
     money_currency: "fabi"
+
+  - id: leaflet_bundle
+    name: "a bundle of resistance leaflets"
+    description: "A thick stack of rice paper pamplets printed with crude ink, each one calling for resistance against the occupation. The words are urgent and the paper is thin - meant to be read once and passed on."
+    takeable: true
+
+  - id: patrol_communique
+    name: "a Kempeitai patrol communique"
+    description: "A sealed military document bearing the Kempeitai crest. Inside, precise patrol schedules are laid out in neat columns, revealing the timing and routes of security sweeps near Hongkou."
+    takeable: true
+    readable_text: "Patrol timing details indicate heightened surveillance near Hongkou between 22:00 and 02:00. Sweep routes cover north-south avenues every 45 minutes with a two-man team rotating through side streets."
+
+  - id: food_parcel
+    name: "a wrapped food parcel"
+    description: "A cloth-wrapped parcel of rice and dried fish, tied with twine. Enough to sustain someone for several days in a city where hunger is a weapon of control."
+    takeable: true
+    food_value: 40
+    morale_restore: 10
+
+  - id: confiscated_supplies
+    name: "a crate of confiscated supplies"
+    description: "A wooden crate labelled with Japanese military stamps, pried open to reveal medical supplies and rations seized from the civilian population. The contents are a small fortune in occupied Shanghai."
+    takeable: true
+
+  - id: diplomatic_pouch
+    name: "a sealed diplomatic pouch"
+    description: "A leather pouch bearing the French consulate seal, secured with wax. Whatever it contains was important enough to warrant diplomatic protection — and dangerous enough that someone hid it here."
+    takeable: true
+    readable_text: "Official diplomatic correspondence detailing consular movements and protected channels. The documents reference secure transit arrangements and coded meeting protocols between foreign delegations."
