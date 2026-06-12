@@ -350,7 +350,7 @@ def _generate_background() -> dict:
     }
 
 
-def _apply_inherited_trust(ctx: CommandContext, adjustments: dict) -> TrustMap:
+def _apply_inherited_trust(adjustments: dict) -> TrustMap:
     base_trust = default_trust()
     for key, delta in adjustments.items():
         change_trust(base_trust, key, int(delta))
