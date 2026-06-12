@@ -55,3 +55,441 @@ missions:
         ccp.guerrilla: 5
       health_restore: 10
     expires_days: 10
+
+  - id: ccp_leaflet_run
+    title: "Distribute Resistance Leaflets"
+    description: "The underground press has printed fresh leaflets calling for resistance against the occupation. Deliver three bundles to tea houses in the old city where sympathetic patrons will pass them hand to hand. Move quickly — the Kempeitai have been raiding reading circles."
+    faction: ccp
+    min_trust: 25
+    giver_npc_hint: "comrade_chen"
+    objectives:
+      - type: collect_item
+        target: leaflet_bundle
+        count: 3
+        current: 0
+      - type: visit_room
+        target: tea_house
+        count: 1
+        current: 0
+    rewards:
+      money_fabi: 15
+      trust:
+        ccp.guerrilla: 12
+      morale_restore: 5
+    expires_days: 7
+
+  - id: ccp_intercept_communique
+    title: "Intercept Kempeitai Communique"
+    description: "A high-ranking Kempeitai officer is carrying a sealed communique detailing troop redeployments along the Yangtze. Steal the document from under his nose at headquarters before it reaches the garrison commander. Every hour we waste, another village burns."
+    faction: ccp
+    min_trust: 45
+    giver_npc_hint: "zhang_the_silent"
+    objectives:
+      - type: collect_item
+        target: patrol_communique
+        count: 1
+        current: 0
+      - type: visit_room
+        target: kempeitai_hq
+        count: 1
+        current: 0
+    rewards:
+      money_fabi: 40
+      trust:
+        ccp.guerrilla: 20
+      morale_restore: 10
+    expires_days: 5
+
+  - id: ccp_safehouse_supply
+    title: "Resupply the Hidden Safehouse"
+    description: "Comrades sheltering in a hidden safehouse beneath the old city are running low on food. A sack of rice waits at the rendezvous point. Deliver it before sundown — starvation is a poor weapon against the occupation."
+    faction: ccp
+    min_trust: 20
+    giver_npc_hint: "auntie_mei"
+    objectives:
+      - type: collect_item
+        target: rice_parcel
+        count: 1
+        current: 0
+      - type: visit_room
+        target: hidden_shanghai
+        count: 1
+        current: 0
+    rewards:
+      money_fabi: 10
+      trust:
+        ccp.guerrilla: 10
+      health_restore: 5
+    expires_days: 6
+
+  - id: ccp_recruit_student
+    title: "Recruit a Student Activist"
+    description: "Student Luo has been writing anti-Japanese slogans on university walls under cover of darkness. His courage is real but his discipline is not. Meet him at the university, gauge his commitment, and bring him into the cell if he is ready. One careless hand can doom us all."
+    faction: ccp
+    min_trust: 30
+    giver_npc_hint: "comrade_chen"
+    objectives:
+      - type: deliver_to_npc
+        target: student_luo
+        count: 1
+        current: 0
+      - type: visit_room
+        target: university
+        count: 1
+        current: 0
+    rewards:
+      money_fabi: 12
+      trust:
+        ccp.guerrilla: 15
+      morale_restore: 8
+    expires_days: 10
+
+  - id: ccp_rescue_prisoner
+    title: "Rescue the Imprisoned Comrade"
+    description: "A comrade was seized during a midnight raid and is being held in the Hongkou detention center. The guards change shift at dusk. Reach the holding room and extract our people before the morning interrogation begins. Failure means a shallow grave in the western fields."
+    faction: ccp
+    min_trust: 50
+    giver_npc_hint: "zhang_the_silent"
+    objectives:
+      - type: visit_room
+        target: hongkou_detention
+        count: 1
+        current: 0
+    rewards:
+      money_fabi: 35
+      trust:
+        ccp.guerrilla: 25
+      health_restore: 10
+    expires_days: 5
+
+  - id: ccp_smuggle_medicine
+    title: "Smuggle Medicine to Underground Doctor"
+    description: "An underground doctor treating wounded partisans is nearly out of supplies. A medical kit has been procured from a sympathetic pharmacist on Bubbling Well Road. Deliver it without drawing the attention of the street patrols — a search would condemn the doctor and his patients alike."
+    faction: ccp
+    min_trust: 30
+    giver_npc_hint: "auntie_mei"
+    objectives:
+      - type: collect_item
+        target: medical_kit
+        count: 1
+        current: 0
+      - type: deliver_to_npc
+        target: underground_doctor
+        count: 1
+        current: 0
+    rewards:
+      money_fabi: 20
+      trust:
+        ccp.guerrilla: 12
+      health_restore: 15
+    expires_days: 8
+
+  - id: ccp_gather_intel
+    title: "Gather Patrol Route Intelligence"
+    description: "The Kempeitai have altered their patrol routes in the French Concession and we are blind. Speak with three contacts — a rickshaw puller, a noodle vendor, and a bar girl — who watch the soldiers come and go each day. Piece together the new pattern before the next supply run."
+    faction: ccp
+    min_trust: 25
+    giver_npc_hint: "comrade_chen"
+    objectives:
+      - type: deliver_to_npc
+        target: rickshaw_puller_ah_foo
+        count: 1
+        current: 0
+      - type: deliver_to_npc
+        target: noodle_vendor_wu
+        count: 1
+        current: 0
+      - type: deliver_to_npc
+        target: bar_girl_suyin
+        count: 1
+        current: 0
+    rewards:
+      money_fabi: 25
+      trust:
+        ccp.guerrilla: 15
+      morale_restore: 5
+    expires_days: 9
+
+  - id: ccp_sabotage_dock
+    title: "Sabotage the Dock Warehouse"
+    description: "Japanese war materiel flows through the Bund docks under cover of darkness. Between midnight and five in the morning the warehouse is guarded by a skeleton crew. Reach the dock warehouse and cripple the supply chain. A fire in the right place can delay shipments for weeks."
+    faction: ccp
+    min_trust: 45
+    giver_npc_hint: "zhang_the_silent"
+    objectives:
+      - type: visit_room
+        target: dock_warehouse
+        count: 1
+        current: 0
+    rewards:
+      money_fabi: 45
+      trust:
+        ccp.guerrilla: 20
+      morale_restore: 15
+    expires_days: 7
+    game_hour:
+      - 0
+      - 5
+
+  - id: ccp_protect_courier
+    title: "Escort the Underground Courier"
+    description: "A courier carrying coded messages must pass through two districts to reach his contact. The Green Gang has eyes everywhere and the Kempeitai are watching the main roads. Walk with him from the old city to the French Concession safehouse — if he falls, the entire network falls with him."
+    faction: ccp
+    min_trust: 35
+    giver_npc_hint: "comrade_chen"
+    objectives:
+      - type: visit_room
+        target: old_city_market
+        count: 1
+        current: 0
+      - type: visit_room
+        target: french_concession_safehouse
+        count: 1
+        current: 0
+    rewards:
+      money_fabi: 30
+      trust:
+        ccp.guerrilla: 18
+      health_restore: 5
+      morale_restore: 8
+    expires_days: 6
+
+  - id: ccp_destroy_radio
+    title: "Destroy the Kempeitai Radio Post"
+    description: "A Kempeitai radio post hidden in a Hongkou tenement coordinates naval patrols along the Whangpoo. Destroy the transmitter and blind their coastal watch. The building is guarded but the back entrance is unwatched after the second watch change."
+    faction: ccp
+    min_trust: 50
+    giver_npc_hint: "zhang_the_silent"
+    objectives:
+      - type: visit_room
+        target: kempeitai_radio_post_hongkou
+        count: 1
+        current: 0
+    rewards:
+      money_fabi: 50
+      trust:
+        ccp.guerrilla: 25
+      morale_restore: 20
+    expires_days: 5
+
+  - id: gmd_weapons_manifest
+    title: "Recover the Weapons Manifest"
+    description: "A shipping manifest detailing Japanese arms shipments has been misplaced in the warehouse district — or more likely, stolen by someone who does not understand its value. Find the dock manifest before the Kempeitai realize it is missing and lock down the entire harbor."
+    faction: gmd
+    min_trust: 30
+    giver_npc_hint: "major_tang"
+    objectives:
+      - type: collect_item
+        target: dock_manifest
+        count: 1
+        current: 0
+      - type: visit_room
+        target: warehouse_district
+        count: 1
+        current: 0
+    rewards:
+      money_fabi: 30
+      trust:
+        gmd.spy: 15
+      morale_restore: 5
+    expires_days: 8
+
+  - id: gmd_establish_contact
+    title: "Establish Contact with Inspector Moreau"
+    description: "Inspector Moreau of the French Concession Police is sympathetic to the Republic's cause but will not risk his position openly. Approach him with the agreed code phrase — 'the plum blossoms fall eastward' — and secure his cooperation. A friend in the police is worth a company of soldiers."
+    faction: gmd
+    min_trust: 35
+    giver_npc_hint: "madam_xu"
+    objectives:
+      - type: deliver_to_npc
+        target: inspector_moreau
+        count: 1
+        current: 0
+    rewards:
+      money_fabi: 20
+      trust:
+        gmd.spy: 18
+      morale_restore: 10
+    expires_days: 7
+
+  - id: gmd_supply_network
+    title: "Provision the GMD Safe Houses"
+    description: "Three GMD safe houses across Shanghai have not been resupplied in weeks. Collect food parcels from the dead drop and deliver them to each location. A well-fed operative is an effective operative — a hungry one is a liability."
+    faction: gmd
+    min_trust: 25
+    giver_npc_hint: "major_tang"
+    objectives:
+      - type: collect_item
+        target: food_parcel
+        count: 3
+        current: 0
+      - type: visit_room
+        target: gmd_safehouse_old_city
+        count: 1
+        current: 0
+      - type: visit_room
+        target: gmd_safehouse_french_concession
+        count: 1
+        current: 0
+      - type: visit_room
+        target: gmd_safehouse_bund
+        count: 1
+        current: 0
+    rewards:
+      money_fabi: 35
+      trust:
+        gmd.spy: 15
+      health_restore: 10
+    expires_days: 10
+
+  - id: gmd_intercept_report
+    title: "Pickpocket the Sergeant's Report"
+    description: "A Japanese sergeant carrying a written assessment of garrison strength is drinking at a bar in the International Settlement. His uniform pockets are loose and his sake cup is never empty. Lift the report from his person while he is distracted. Speed and a light hand are everything."
+    faction: gmd
+    min_trust: 40
+    giver_npc_hint: "madam_xu"
+    objectives:
+      - type: visit_room
+        target: international_settlement_bar
+        count: 1
+        current: 0
+    rewards:
+      money_fabi: 25
+      trust:
+        gmd.spy: 20
+      morale_restore: 5
+    expires_days: 6
+
+  - id: gmd_rescue_pilot
+    title: "Rescue the Downed Pilot"
+    description: "A Nationalist airman was shot down over Hongkou and is hiding in the bombed-out ruins near the river. Find him before the Kempeitai do, then escort him through the back alleys to a safehouse in the French Concession. One trained pilot is worth a hundred propaganda leaflets."
+    faction: gmd
+    min_trust: 40
+    giver_npc_hint: "major_tang"
+    objectives:
+      - type: visit_room
+        target: hongkou_ruins
+        count: 1
+        current: 0
+      - type: visit_room
+        target: french_concession_safehouse
+        count: 1
+        current: 0
+    rewards:
+      money_fabi: 45
+      trust:
+        gmd.spy: 22
+      health_restore: 10
+      morale_restore: 10
+    expires_days: 5
+
+  - id: gmd_counter_intel
+    title: "Plant Counter-Intelligence Evidence"
+    description: "Merchant Sato trades in silk and secrets, selling information to whoever pays. Plant forged documents in his shop that will lead the Kempeitai on a false trail into the hinterlands. The forgeries are convincing but the window for planting them is narrow."
+    faction: gmd
+    min_trust: 35
+    giver_npc_hint: "madam_xu"
+    objectives:
+      - type: deliver_to_npc
+        target: merchant_sato
+        count: 1
+        current: 0
+    rewards:
+      money_fabi: 30
+      trust:
+        gmd.spy: 18
+      morale_restore: 8
+    expires_days: 8
+
+  - id: gmd_secure_route
+    title: "Secure the Escape Route"
+    description: "Four checkpoints along a corridor from the northern warehouse district to the southern docks must be scouted and marked for an upcoming extraction. Walk the route end to end, noting guard positions, blind spots, and fallback alleys. When the moment comes there will be no time for reconnaissance."
+    faction: gmd
+    min_trust: 30
+    giver_npc_hint: "major_tang"
+    objectives:
+      - type: visit_room
+        target: checkpoint_north_gate
+        count: 1
+        current: 0
+      - type: visit_room
+        target: checkpoint_soochow_creek
+        count: 1
+        current: 0
+      - type: visit_room
+        target: checkpoint_garden_bridge
+        count: 1
+        current: 0
+      - type: visit_room
+        target: checkpoint_south_docks
+        count: 1
+        current: 0
+    rewards:
+      money_fabi: 40
+      trust:
+        gmd.spy: 20
+      morale_restore: 10
+    expires_days: 12
+
+  - id: gmd_liberate_supplies
+    title: "Liberate Confiscated Supplies"
+    description: "The occupation forces have stockpiled confiscated rice and medicine in a dock warehouse under light guard. These supplies belong to the people of Shanghai. Enter the warehouse, secure what you can carry, and vanish before the patrol returns. The hungry cannot fight."
+    faction: gmd
+    min_trust: 35
+    giver_npc_hint: "major_tang"
+    objectives:
+      - type: visit_room
+        target: dock_warehouse
+        count: 1
+        current: 0
+      - type: collect_item
+        target: confiscated_supplies
+        count: 1
+        current: 0
+    rewards:
+      money_fabi: 35
+      trust:
+        gmd.spy: 15
+        civilian.resident: 10
+      health_restore: 10
+    expires_days: 7
+
+  - id: gmd_diplomatic_courier
+    title: "Deliver the Diplomatic Pouch"
+    description: "A sealed message from Generalissimo Chiang's headquarters in Chungking must reach a sympathetic diplomat at the French Consulate without passing through Japanese or Green Gang hands. Collect the pouch from the dead drop and deliver it in person. The contents could shift the balance of foreign sympathy."
+    faction: gmd
+    min_trust: 40
+    giver_npc_hint: "madam_xu"
+    objectives:
+      - type: collect_item
+        target: diplomatic_pouch
+        count: 1
+        current: 0
+      - type: deliver_to_npc
+        target: diplomat_renault
+        count: 1
+        current: 0
+    rewards:
+      money_fabi: 50
+      trust:
+        gmd.spy: 25
+      morale_restore: 15
+    expires_days: 6
+
+  - id: gmd_assassinate_informant
+    title: "Eliminate the Green Gang Informant"
+    description: "A Green gang thug named Rat-Face Xiao has been selling names and addresses to the Kempeitai for opium money. Three operatives have already vanished. Find him in his usual haunts and ensure he never whispers another name. Make it look like a settling of underworld scores."
+    faction: gmd
+    min_trust: 50
+    giver_npc_hint: "madam_xu"
+    objectives:
+      - type: kill_npc
+        target: rat_face_xiao
+        count: 1
+        current: 0
+    rewards:
+      money_fabi: 40
+      trust:
+        gmd.spy: 25
+      morale_restore: 10
+    expires_days: 5
