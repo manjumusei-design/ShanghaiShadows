@@ -62,6 +62,26 @@ class SessionManager:
                         await session.send_prompt()
                     continue
 
+                room_storylet = self.shared.active_room_storylets.get(session.player.current_room)
+                if room_storylet and not room_storylet.get("resolved", True):
+                    stripped = text.strip()
+                    if stripped.isdigit():
+                        choice = int(stripped)
+                        options = room_storylet.get("options", [])
+                        if 1 <= choice <= len(options):
+                            option = options[choice - 1]
+                            room_storylet["resolved"] = True
+                            effects = option.effects
+                            for sess in self.get_players_in_room(session.player.current_room):
+                                if sess.player.active_storylet and sess.player.active_storylet.room_id == session.player.current_room:
+                                    sess.player.active_storylet = None
+                                if effects:
+                                    await apply_storylet_effects(self._make_context(sess), effects)
+                                await sess.send_display("You chose. The moment passes.\n")
+                            if session.running:
+                                await session.send_prompt()
+                            continue
+
                 cmd = parse(text)
                 if cmd.verb == "pass":
                     await session.send_prompt()
@@ -166,32 +186,13 @@ class SessionManager:
     def _create_new_player(self, username: str):
         from .player_data import PlayerData
         from .trust import default_trust
-        from .commands import _generate_background, _apply_inherited_trust
+        from .commands import _generate_background, _apply_inherited_trust, _reset_player_defaults
 
         background = _generate_background()
 
         player = PlayerData()
         player.username = username
-        player.name = background.get("name", "Newcomer")
-        player.current_room = "bund_dawn"
-        player.inventory = []
-        player.trust = _apply_inherited_trust(None, background.get("trust_adjustments", {}))
-        player.disguise = ""
-        player.stealth_skill = 55
-        player.hidden = False
-        player.flags = []
-        player.world_events = []
-        player.newspapers = []
-        player.health = 100
-        player.hunger = 100
-        player.morale = 80
-        player.arrested = False
-        player.relationships = {}
-        player.storylet_history = []
-        player.active_storylet = None
-        player.tailing_state = None
-        player.planted_evidence = []
-        player.last_curfew_penalty_day = 0
+        _reset_player_defaults(player, background)
         player.last_newspaper_day = 0
 
         save_player(player)
