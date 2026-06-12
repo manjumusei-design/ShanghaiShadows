@@ -1,5 +1,6 @@
 import asyncio
 import random
+from collections import
 from typing import TYPE_CHECKING
 
 from .constants import (
@@ -60,6 +61,8 @@ class WorldClock:
             await self._check_storylets()
         if self.shared.game_time.minute % 60 == 0 and self.shared.game_time.minute > 0:
             self._check_mission_expiry()
+        if self.shared.game_time.minute % 60 == 0:
+            self._update_weather()
         self._process_survival_all_sessions()
         await self._check_death_and_victory()
 
