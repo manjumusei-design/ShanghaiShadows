@@ -1117,11 +1117,7 @@ async def cmd_attack(ctx: CommandContext, cmd: Command):
         await _attack_npc(ctx, npc_id)
         return
 
-    target_session = None
-    for session in ctx.session_manager.get_players_in_room(ctx.session.player.current_room):
-        if session.username == target_name or session.player.name.lower() == target_name.lower():
-            target_session = session
-            break
+    target_session = _find_player_in_room(ctx, target_name)
 
     if not target_session:
         await post_display(ctx, loc("cmd_attack.not_here").format(name=target_name))
