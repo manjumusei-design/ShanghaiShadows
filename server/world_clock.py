@@ -504,9 +504,26 @@ class WorldClock:
         if self.shared.weather == "rain":
             self._apply_weather_degradation()
 
+    def _apply_weather_degradation(self):
+        from .constants import DEGRADE_RAIN_RATE
+        for session in self.session_manager.sessions.values():
+            room = self.shared.world.get_room(session.player.current_room)
+            if room and room.indoors:
+                continue
+            broken = []
+            for item in session.player.inventory:
+                if not (item.is_weapon or item.is_armour) or item.durability <= 0:
+                    continue
+                item.durability = max(0, item.durability - DEGRADE_RAIN_RATE)
+                if item.durability <= 0:
+                    verb = "rusts apart" if item.is_weapon else "is ruined by the rain"
+                    asyncio.create_task(session.send_display(f"Your {item.name} {verb}."))
+                    broken.append(item)
+            for item in broken:
+                session.player.inventory.remove(item)
 
     async def _check_death_and_victory(self):
-        from .victory import check_victory_conditions
+        from .victory import check_victory_conditions, archive_legacy_cycle
         from .trust import get_role_trust
         from .locales import get as loc
 
