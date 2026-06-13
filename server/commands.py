@@ -94,6 +94,23 @@ def room_npcs(ctx: CommandContext) -> List[str]:
     return room.npcs if room else []
 
 
+def _update_npc_sound_memory(npc, source_room_id: str, intensity: int, sound_type: str, game_time) -> None:
+    bb = getattr(npc, "_blackboard", None)
+    if bb is None:
+        from .behaviour_tree import Blackboard
+        bb = Blackboard()
+        npc._blackboard = bb
+    game_minute = game_time.minute + game_time.day * 1440 if game_time else 0
+    bb.set("last_heard_sound", {
+        "room_id": source_room_id,
+        "intensity": intensity,
+        "type": sound_type,
+        "minute": game_minute,
+    })
+    hostile_factions = {"kempeitai"}
+    bb.set("heard_hostile_sound", npc.faction in hostile_factions and intensity >= 2)
+
+
 async def post_display(ctx: CommandContext, text: str) -> None:
     await ctx.session.send_display(text if text.endswith("\n") else text + "\n")
 
