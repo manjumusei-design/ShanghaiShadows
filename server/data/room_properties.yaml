@@ -3,9 +3,7 @@ rooms:
     safe_room: true
   - id: bund_05
     safe_room: true
-
 # Structure should be name of area followed by -id: "name" and then whether or not it is a safe room, by default it isnt
-
   # Commercial district
   - id: nanjing_road
     safe_room: true
@@ -228,3 +226,12 @@ rooms:
   - id: hidden_10
     nurse_available: true
     nurse_hours: [8, 18]
+# Faction safehouse
+  - id: hidden_01
+    tags: [ccp_safehouse]
+  - id: hidden_05
+    tags: [ccp_safehouse]
+  - id: hidden_08
+    tags: [gmd_safehouse]
+  - id: hidden_12
+    tags: [gmd_safehouse]
