@@ -84,25 +84,9 @@ def resolve_npc(ctx: CommandContext, name: str) -> Optional[str]:
 
 
 def _bfs_find_path(world: World, start_room_id: str, target_room_id: str) -> List[str]:
-    queue = deque([(start_room_id, [])])
-    visited = {start_room_id}
-
-    while queue:
-        current_room_id, path = queue.popleft()
-
-        if current_room_id == target_room_id:
-            return path
-
-        room = world.rooms.get(current_room_id)
-        if not room:
-            continue
-
-        for direction, dest_id in room.exits.items():
-            if dest_id not in visited:
-                visited.add(dest_id)
-                queue.append((dest_id, path + [direction]))
-
-    return []
+    from .pathfinding import a_star_find_path, make_cost_fn
+    cost_fn = make_cost_fn(world.rooms)
+    return a_star_find_path(world.rooms, start_room_id, target_room_id, cost_fn)
 
 
 def room_npcs(ctx: CommandContext) -> List[str]:
