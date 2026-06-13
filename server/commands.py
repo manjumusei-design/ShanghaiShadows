@@ -12,7 +12,7 @@ from .locales import get as loc
 from .locales import load_locale
 from .npc import Npc, get_contextual_dialogue
 from .parser import Command, parse
-from .player_data import PlayerData, _reset_player_defaults
+from .player_data import PlayerData, _reset_player_defaults, grow_stat
 from .serialization import _load_yaml, deserialize_item, serialize_item
 from .session import Session
 from .stealth import Disguise, StealthSystem, TailingState
@@ -30,6 +30,8 @@ from .constants import (
     HUNGER_DECAY_RATE, HUNGER_HEALTH_DAMAGE, LOW_HUNGER_THRESHOLD,
     RICE_BOWL_COST, BAOZI_COST, TEA_COST, PICKPOCKET_BASE,
     MISSION_FABI_RANGE, NURSE_COST, NURSE_HEAL,
+    STAT_GAIN_COURAGE_COMBAT, STAT_GAIN_STEALTH_HIDE, STAT_GAIN_PERCEPTION_OBSERVE,
+    COMBAT_GROWTH_FACTIONS,
 )
 
 if TYPE_CHECKING:
@@ -210,7 +212,7 @@ async def broadcast_state(ctx: CommandContext):
             await ctx.session.websocket.send('{"type":"audio","sound":"rain_stop"}')
             ctx.session._audio_rain_active = False
 
-            
+
 async def broadcast_to_room(ctx: CommandContext, text: str, exclude_username: str = ""):
     room_id = ctx.session.player.current_room
     for session in ctx.session_manager.get_players_in_room(room_id):
@@ -386,7 +388,7 @@ def _generate_obituary(player: PlayerData, death_message: str, game_day: int) ->
     return _select_obituary(tpl_context)
 
 
-async def handle_player_death(ctx: CommandContext, death_message: str):
+async def handle_player_death(ctx: CommandContext, death_message: str, last_words: str = ""):
     from .save_manager import save_player
     obituary = _generate_obituary(ctx.session.player, death_message, ctx.shared.game_time.day)
     retrospective = format_life_retrospective(ctx.shared.event_log, ctx.session.player.name)
@@ -395,6 +397,7 @@ async def handle_player_death(ctx: CommandContext, death_message: str):
         "obituary": obituary,
         "summary": retrospective,
         "day_of_death": ctx.shared.game_time.day,
+        "last_words": last_words,
     })
     end_screen = f"""THE END
 
