@@ -370,6 +370,27 @@ def _apply_inherited_trust(adjustments: dict) -> TrustMap:
     return base_trust
 
 
+def _derive_death_cause(player: PlayerData, death_message: str) -> str:
+    msg = death_message.lower()
+    if player.hunger <= 0:
+        return "starvation"
+    if player.arrested:
+        if any(k in msg for k in ("execute", "tribunal", "sentence", "shot")):
+            return "execution"
+        return "cell"
+    if "betray" in msg:
+        return "betrayal"
+    if any(k in msg for k in ("raid", "sweep")):
+        return "raid"
+    if any(k in msg for k in ("crossfire", "caught in")):
+        return "crossfire"
+    if any(k in msg for k in ("attack", "strike", "gunshot", "shot", "kill", "combat", "fight", "blade", "fist")):
+        return "combat"
+    if player.health <= 0:
+        return "illness"
+    return "execution"
+
+
 def _generate_obituary(player: PlayerData, death_message: str, game_day: int) -> str:
     high_trust_factions = [f for f, roles in player.trust.items() if any(v > 70 for v in roles.values())]
     cause = "starvation" if player.hunger <= 0 else "illness" if player.health <= 0 else "execution"
