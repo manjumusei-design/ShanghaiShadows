@@ -391,19 +391,31 @@ def _derive_death_cause(player: PlayerData, death_message: str) -> str:
     return "execution"
 
 
+def _derive_deed(player: PlayerData) -> str:
+    if any("kempeitai" in e.lower() and ("eliminated" in e.lower() or "killed" in e.lower()) for e in player.world_events):
+        return "the killing of an occupation officer"
+
+    if player.completed_missions:
+        return "their work for the underground"
+
+    high_trust = [f for f, roles in player.trust.items() if any(v > 70 for v in roles.values())]
+    if high_trust:
+        faction_name = {"ccp": "the resistance", "gmd": "the Republic's cause", "kempeitai": "the occupation"}.get(high_trust[0], "their allies")
+        return f"their loyalty to {faction_name}"
+    if len(player.world_events) > 15:
+        return "small kindnesses in hard times"
+    return "quiet acts of survival"
+
+
 def _generate_obituary(player: PlayerData, death_message: str, game_day: int) -> str:
     high_trust_factions = [f for f, roles in player.trust.items() if any(v > 70 for v in roles.values())]
-    cause = "starvation" if player.hunger <= 0 else "illness" if player.health <= 0 else "execution"
-    if player.arrested:
-        cause = "cell"
-    key_events = player.world_events[-5:] if player.world_events else ["A quiet life in Shanghai"]
-    deed = key_events[-1] if key_events else "small acts of survival"
+    cause = _derive_death_cause(player, death_message)
     faction = high_trust_factions[0] if high_trust_factions else "civilian"
     tpl_context = {
         "name": player.name,
         "date": f"day {game_day}",
         "cause": cause,
-        "deed": deed,
+        "deed": _derive_deed(player),
         "faction": faction,
     }
     return _select_obituary(tpl_context)
