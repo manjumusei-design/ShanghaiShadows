@@ -200,7 +200,17 @@ async def broadcast_state(ctx: CommandContext):
         "active_missions": active_missions_data,
     })
 
+    if getattr(ctx.session, 'audio_enabled', False):
+        weather = getattr(state, 'weather', 'clear')
+        weather_key = f"_audio_weather_{weather}"
+        if weather == "rain" and not getattr(ctx.session, '_audio_rain_active', False):
+            await ctx.session.websocket.send('{"type":"audio","sound":"rain_start"}')
+            ctx.session._audio_rain_active = True
+        elif weather != "rain" and getattr(ctx.session, '_audio_rain_active', False):
+            await ctx.session.websocket.send('{"type":"audio","sound":"rain_stop"}')
+            ctx.session._audio_rain_active = False
 
+            
 async def broadcast_to_room(ctx: CommandContext, text: str, exclude_username: str = ""):
     room_id = ctx.session.player.current_room
     for session in ctx.session_manager.get_players_in_room(room_id):
