@@ -124,3 +124,13 @@ def resolve_spawn_room(username: str) -> str:
     if account and account.primary_safehouse:
         return account.primary_safehouse
     return ""
+
+
+def set_safehouse(username: str, room_id: str) -> None:
+    username = username.strip().lower()
+    accounts = _load_accounts()
+    account = accounts.get(username)
+    if not account:
+        raise ValueError(f"Account '{username}' does not exist")
+    account.primary_safehouse = room_id
+    _save_accounts(accounts)
