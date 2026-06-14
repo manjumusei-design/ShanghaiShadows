@@ -220,7 +220,7 @@ class WorldClock:
                 tail.stealth_awarded = True
                 grow_stat(session.player, "stealth_skill", STAT_GAIN_STEALTH_TAIL)
                 asyncio.create_task(session.send_display("You learn from their movements. (+1 stealth)"))
-                
+
     def _disguise_bonus_for_session(self, session: Session) -> int:
         disguise = self.disguises.get(session.player.disguise)
         return disguise.bonus if disguise else 0
@@ -349,15 +349,45 @@ class WorldClock:
                 asyncio.create_task(session.send_display(f"Mission {mid} has expired."))
 
     def _process_survival_all_sessions(self):
+        from .victory import _season_from_day
+        season = _season_from_day(self.shared.game_time.day)
+        minute = self.shared.game_time.minute
+        hunger_multiplier = 1.5 if season == "winter" else 1.0
+        is_summer = season == "summer"
+
         for session in self.session_manager.sessions.values():
-            session.player.hunger = max(0, session.player.hunger - HUNGER_DECAY_RATE)
+            session.player.hunger = max(0, session.player.hunger - HUNGER_DECAY_RATE * hunger_multiplier)
             if session.player.hunger <= LOW_HUNGER_THRESHOLD:
                 session.player.health = max(0, session.player.health - HUNGER_HEALTH_DAMAGE)
-                if self.shared.game_time.minute % 30 == 0:
+                if minute % 30 == 0:
                     from .locales import get as loc
                     asyncio.create_task(session.send_display(loc("hunger.cramps")))
-            if session.player.hunger > 80 and self.shared.game_time.minute % 60 == 0:
+            if session.player.hunger > 80 and minute % 60 == 0:
                 session.player.health = min(100, session.player.health + 1)
+
+            if minute % 60 == 0:
+                self._apply_morale_effects(session.player, -MORALE_DECAY_PER_HOUR)
+
+            if season == "winter" and minute % 60 == 0:
+                room = self.shared.world.get_room(session.player.current_room)
+                if room and not room.indoors:
+                    has_warm = any(i.id in ("winter_coat", "heavy_jacket") for i in session.player.inventory)
+                    if not has_warm:
+                        session.player.health = max(0, session.player.health - 1)
+                        if session.player.health % 10 == 0:
+                            asyncio.create_task(session.send_display(
+                                "The winter cold seeps into your bones.\n"
+                            ))
+
+            if is_summer and minute % 60 == 0:
+                room = self.shared.world.get_room(session.player.current_room)
+                if room and len(room.npcs) >= 3 and not room.indoors:
+                    import random
+                    if random.randint(1, 100) <= 5:
+                        session.player.health = max(0, session.player.health - 1)
+                        asyncio.create_task(session.send_display(
+                            "The oppressive heat and close quarters make you feel ill.\n"
+                        ))
 
     def _process_npc_autonomy(self):
         import random
