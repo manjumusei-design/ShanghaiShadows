@@ -1210,6 +1210,7 @@ async def _attack_npc(ctx: CommandContext, npc_id: str):
         target_authority=npc.authority,
         target_armour=None,
         attacker_hidden=player.hidden,
+        attacker_morale=player.morale,
     )
 
     for msg in result.messages:
