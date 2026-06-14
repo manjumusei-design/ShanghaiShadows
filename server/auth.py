@@ -134,3 +134,13 @@ def set_safehouse(username: str, room_id: str) -> None:
         raise ValueError(f"Account '{username}' does not exist")
     account.primary_safehouse = room_id
     _save_accounts(accounts)
+
+
+def deposit_stash(username: str, items: List[dict]) -> None:
+    username = username.strip().lower()
+    accounts = _load_accounts()
+    account = accounts.get(username)
+    if not account:
+        raise ValueError(f"Account '{username}' does not exist")
+    account.stash.extend(items)
+    _save_accounts(accounts)
