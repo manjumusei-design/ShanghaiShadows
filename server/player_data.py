@@ -136,7 +136,8 @@ def serialize_player(player: PlayerData) -> Dict[str, object]:
 
 
 def deserialize_player(data: Dict[str, object], storylet_manager=None) -> PlayerData:
-    from .storylets import ActiveStorylet, TailingState
+    from .storylets import ActiveStorylet
+    from .stealth import TailingState
     player = PlayerData()
     player.username = str(data.get("username", ""))
     player.name = str(data.get("name", "Stranger"))
@@ -170,6 +171,7 @@ def deserialize_player(data: Dict[str, object], storylet_manager=None) -> Player
     player.completed_missions = list(data.get("completed_missions", []))
     player.abandoned_missions = list(data.get("abandoned_missions", []))
     player.visited_rooms = list(data.get("visited_rooms", []))
+    player.wanted_level = int(data.get("wanted_level", 0))
 
     if storylet_manager:
         storylet_id = data.get("active_storylet", "")
@@ -190,4 +192,3 @@ def deserialize_player(data: Dict[str, object], storylet_manager=None) -> Player
             last_checked_minute=int(tail.get("last_checked_minute", 0)),
         )
     return player
-
