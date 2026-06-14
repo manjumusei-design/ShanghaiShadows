@@ -1220,6 +1220,15 @@ async def _attack_npc(ctx: CommandContext, npc_id: str):
     if result.won:
         log_event(ctx, f"You eliminated {npc.name}.")
         apply_action_trust(ctx, f"kill_{npc.faction}.{npc.role}", room_npcs(ctx))
+        if npc.faction == "kempeitai":
+            ctx.session.player.wanted_level = min(3, ctx.session.player.wanted_level + 1)
+            log_event(ctx, "The occupation will not forget this. Your face is remembered.")
+        if npc.faction in COMBAT_GROWTH_FACTIONS:
+            grow_stat(player, "courage", STAT_GAIN_COURAGE_COMBAT)
+            await post_display(ctx, "The fight hardens you. (+1 courage)")
+        if npc.is_historical_figure:
+            await _apply_historical_kill(ctx, npc)
+            ctx.shared.world.npcs.pop(npc_id, None)
         if room and npc_id in room.npcs:
             room.npcs.remove(npc_id)
         await _handle_mission_objectives(ctx, "kill_npc", npc_id)
@@ -1232,9 +1241,10 @@ async def _attack_npc(ctx: CommandContext, npc_id: str):
     if not result.silent:
         player.hidden = False
         await broadcast_to_room(ctx, f"{player.name} attacks {npc.name}!", exclude_username=ctx.session.username)
+        await _propagate_combat_sound(ctx, room)
         is_dead, death_msg = check_death_conditions(ctx)
         if is_dead:
-            await handle_player_death(ctx, death_msg)
+            await _trigger_death(ctx, death_msg)
 
 
 async def _attack_player(ctx: CommandContext, target_session: Session):
