@@ -17,6 +17,7 @@ class Account:
     primary_safehouse: str = ""
     stash: List[dict] = field(default_factory = list)
 
+
 def _ensure_accounts_dir():
     ACCOUNTS_PATH.parent.mkdir(parents=True, exist_ok=True)
 
@@ -38,6 +39,8 @@ def _load_accounts() -> Dict[str, Account]:
             username=username,
             password_hash=account_data.get("password_hash", ""),
             characters=account_data.get("characters", []),
+            primary_safehouse=account_data.get("primary_safehouse", ""),
+            stash=account_data.get("stash", []),
         )
     return accounts
 
@@ -49,6 +52,8 @@ def _save_accounts(accounts: Dict[str, Account]) -> None:
             username: {
                 "password_hash": account.password_hash,
                 "characters": account.characters,
+                "primary_safehouse": account.primary_safehouse,
+                "stash": account.stash,
             }
             for username, account in accounts.items()
         }
