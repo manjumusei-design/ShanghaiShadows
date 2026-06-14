@@ -7,10 +7,6 @@ npcs:
   role: worker
   personality: cautious, loyal when trust is earned.
   awareness: 48
-  authority: 12
-  courage: 28
-  perception: 35
-  bt_archetype: civilian_vendor
   schedule:
     6: bund_dawn
     12: nanjing_road
@@ -52,6 +48,7 @@ npcs:
     - Watch yourself out there. The city doesn't sleep, but it does bite.
     - Same time tomorrow, maybe. If we're both still here.
     - Go carefully. The streets have eyes now. Not all of them Japanese.
+  bt_archetype: civilian_vendor
 
 - id: sister_mei
   name: Sister Mei
@@ -61,10 +58,6 @@ npcs:
   role: resident
   personality: compassionate, exhausted, quietly stubborn
   awareness: 42
-  authority: 10
-  courage: 35
-  perception: 38
-  bt_archetype: civilian_vendor
   schedule:
     6: french_04
     12: french_08
@@ -103,6 +96,7 @@ npcs:
     - Go carefully. And wash your hands. I mean it.
     - Come back if you need stitching. Not if you need complaining.
     - God go with you. He seems to have misplaced the rest of Shanghai.
+  bt_archetype: civilian_vendor
 
 - id: captain_ishikawa
   name: Captain Ishikawa
@@ -112,10 +106,6 @@ npcs:
   role: officer
   personality: cold, observant, politely cruel
   awareness: 82
-  authority: 85
-  courage: 70
-  perception: 70
-  bt_archetype: faction_leader
   faction_leader: true
   schedule:
     7: hongkou_03
@@ -160,6 +150,7 @@ npcs:
     - Go. And try not to be interesting in any way I would notice.
     - Good evening. Sleep well. Not everyone in Shanghai will have that privilege
       tonight.
+  bt_archetype: faction_leader
 
 - id: madam_xu
   name: Madam Xu
@@ -168,10 +159,6 @@ npcs:
   role: broker
   personality: elegant, calculating, amused by weakness
   awareness: 68
-  authority: 48
-  courage: 52
-  perception: 50
-  bt_archetype: green_gang_thug
   schedule:
     9: commercial_06
     14: commercial_09
@@ -213,6 +200,7 @@ npcs:
     - Mind the step on your way out. And mind what you say on the street. Walls here
       have long ears.
     - Until next time. May your secrets stay yours.
+  bt_archetype: green_gang_thug
 
 - id: father_benoit
   name: Father Benoit
@@ -221,10 +209,6 @@ npcs:
   role: clerks
   personality: pious, conflicted, unexpectedly brave
   awareness: 40
-  authority: 30
-  courage: 45
-  perception: 38
-  bt_archetype: civilian_vendor
   schedule:
     6: french_02
     12: french_04
@@ -264,6 +248,7 @@ npcs:
     - Go with God. Or at least go with caution.
     - The door is always open. Just knock first after curfew. For my nerves.
     - Pray if you can. If you can't, try to do good. It amounts to the same thing.
+  bt_archetype: civilian_vendor
 
 - id: thomas_reed
   name: Thomas Reed
@@ -273,10 +258,6 @@ npcs:
   role: dockmaster
   personality: dry, compromised, not yet empty
   awareness: 57
-  authority: 38
-  courage: 35
-  perception: 45
-  bt_archetype: civilian_vendor
   schedule:
     8: docks_03
     12: docks_07
@@ -318,6 +299,7 @@ npcs:
     - I'll be here tomorrow. God and the Empire willing. One of those is more reliable.
     - Keep your head down and your paperwork straight. That's how I survive. Might
       work for you too.
+  bt_archetype: civilian_vendor
 
 - id: zhang_lan
   name: Zhang Lan
@@ -326,10 +308,6 @@ npcs:
   role: vendor
   personality: warm, watchful, practical
   awareness: 46
-  authority: 8
-  courage: 25
-  perception: 32
-  bt_archetype: civilian_vendor
   schedule:
     7: commercial_03
     12: commercial_05
@@ -371,6 +349,7 @@ npcs:
     - Come back tomorrow. I'll have fresh stock if the trucks come through.
     - Eat well. Walk carefully. Don't talk to soldiers unless they talk first.
     - The broth's better at lunch. The secrets are better at dinner. Your choice.
+  bt_archetype: civilian_vendor
 
 - id: yan_fen
   name: Yan Fen
@@ -380,10 +359,6 @@ npcs:
   role: courier
   personality: quick, brave, unsentimental
   awareness: 74
-  authority: 22
-  courage: 65
-  perception: 55
-  bt_archetype: underground_operative
   schedule:
     6: oldcity_04
     12: commercial_14
@@ -421,6 +396,7 @@ npcs:
     - Don't follow me. Don't wave. Go. Just go.
     - Same place, different day. If I'm not here, don't wait.
     - Be invisible. That's the only advice worth giving in this city.
+  bt_archetype: underground_operative
 
 - id: old_wu
   name: Old Wu
@@ -429,10 +405,6 @@ npcs:
   role: resident
   personality: patient, shrewd, ceremonial
   awareness: 60
-  authority: 15
-  courage: 30
-  perception: 42
-  bt_archetype: civilian_vendor
   schedule:
     5: oldcity_09
     12: oldcity_11
@@ -473,6 +445,7 @@ npcs:
     - Walk slowly. The city rewards patience more than speed.
     - Come back when the incense is burning. I'll be here. I'm always here.
     - May the ancestors keep you. Or at least keep you out of trouble.
+  bt_archetype: civilian_vendor
 
 - id: inspector_moreau
   name: Inspector Moreau
@@ -481,10 +454,6 @@ npcs:
   role: police
   personality: tired, skeptical, decent in flashes
   awareness: 63
-  authority: 42
-  courage: 40
-  perception: 50
-  bt_archetype: civilian_vendor
   schedule:
     8: french_06
     13: french_10
@@ -530,6 +499,7 @@ npcs:
     - Good night. Try not to make my shift interesting. Interesting is bad for everyone.
     - Walk safe. And if you see something, tell someone else first. I'm drowning in
       reports.
+  bt_archetype: civilian_vendor
 
 - id: qiao_ming
   name: Qiao Ming
@@ -539,10 +509,6 @@ npcs:
   role: smuggler
   personality: slick, greedy, charming under pressure
   awareness: 66
-  authority: 38
-  courage: 55
-  perception: 48
-  bt_archetype: green_gang_thug
   schedule:
     10: docks_05
     15: docks_14
@@ -581,6 +547,7 @@ npcs:
     - Walk slow. Running draws attention, and attention costs extra.
     - We were never here. Remember that.
     - Watch the alley on your way out. Not everyone who watches works for me.
+  bt_archetype: green_gang_thug
 
 - id: hanna_rosen
   name: Hanna Rosen
@@ -589,10 +556,6 @@ npcs:
   role: merchant
   personality: measured, kind, privately furious
   awareness: 44
-  authority: 25
-  courage: 38
-  perception: 40
-  bt_archetype: civilian_vendor
   schedule:
     7: hongkou_11
     12: hongkou_13
@@ -636,6 +599,7 @@ npcs:
     - Be careful going home. The streetlights on Hongkou are broken again.
     - If you hear anything about transit papers, you will tell me. Please.
     - Good night. Tomorrow the children will need me to smile, so I must practice.
+  bt_archetype: civilian_vendor
 
 - id: sergeant_hayashi
   name: Sergeant Hayashi
@@ -645,10 +609,6 @@ npcs:
   role: patrol
   personality: disciplined, suspicious, proud
   awareness: 76
-  authority: 65
-  courage: 70
-  perception: 58
-  bt_archetype: kempeitai_patrol
   schedule:
     6: hongkou_01
     12: commercial_25
@@ -687,6 +647,7 @@ npcs:
     - Dismissed. Keep your papers on you at all times.
     - Next time I see you, have your documents ready. Do not make me wait.
     - Move. The curfew is not a suggestion.
+  bt_archetype: kempeitai_patrol
 
 - id: lao_peng
   name: Lao Peng
@@ -695,10 +656,6 @@ npcs:
   role: organizer
   personality: laconic, dependable, quietly defiant
   awareness: 58
-  authority: 38
-  courage: 60
-  perception: 50
-  bt_archetype: faction_leader
   schedule:
     8: french_18
     13: french_19
@@ -738,6 +695,7 @@ npcs:
     - The back alley is safer than the front door tonight. Use it.
     - Until next time. Keep your eyes on the page and your feet on the ground.
   faction_leader: true
+  bt_archetype: faction_leader
 
 - id: mrs_gu
   name: Mrs. Gu
@@ -747,10 +705,6 @@ npcs:
   role: resident
   personality: sharp, maternal, unsentimental
   awareness: 51
-  authority: 12
-  courage: 32
-  perception: 38
-  bt_archetype: civilian_vendor
   schedule:
     7: oldcity_13
     12: oldcity_15
@@ -792,6 +746,7 @@ npcs:
     - Lock your door twice. The lock is old but the habit is good.
     - Sleep well. Morning comes early and the city does not wait.
     - Come back when you are hungry or when you are lonely. I can fix one of those.
+  bt_archetype: civilian_vendor
 
 - id: constable_doyle
   name: Constable Doyle
@@ -801,10 +756,6 @@ npcs:
   role: consul
   personality: formal, uneasy, morally fraying
   awareness: 54
-  authority: 35
-  courage: 32
-  perception: 42
-  bt_archetype: civilian_vendor
   schedule:
     9: bund_14
     14: french_09
@@ -850,6 +801,7 @@ npcs:
     - Walk the long way home. The short way has been complicated lately.
     - Good night. And for God's sake, stay out of the parts of the city I cannot patrol.
     - Mind how you go. The streets are safer than they look, but only just.
+  bt_archetype: civilian_vendor
 
 - id: dr_zhao
   name: Dr. Zhao, the underground physician
@@ -859,10 +811,6 @@ npcs:
   role: spy
   personality: compassionate, secretive, haunted
   awareness: 75
-  authority: 30
-  courage: 55
-  perception: 52
-  bt_archetype: underground_operative
   schedule:
     8: hidden_02
     14: commercial_05
@@ -906,6 +854,7 @@ npcs:
     - Change your bandages tomorrow. Clean water, clean cloth. If it reddens, come
       back immediately.
     - Take care of yourself. There are not enough doctors left to argue about it.
+  bt_archetype: underground_operative
 
 - id: waiter_chen
   name: Chen, the waiter
@@ -914,10 +863,6 @@ npcs:
   role: vendor
   personality: observant, quiet, ambitious
   awareness: 60
-  authority: 6
-  courage: 30
-  perception: 45
-  bt_archetype: civilian_vendor
   schedule:
     10: commercial_08
     14: commercial_08
@@ -961,6 +906,7 @@ npcs:
       next left, not the right.
     - Come back when you are hungry. Or when you need to know something. The menu
       is the same either way.
+  bt_archetype: civilian_vendor
 
 - id: sister_wang
   name: Sister Wang
@@ -969,10 +915,6 @@ npcs:
   role: organizer
   personality: fierce, maternal, pragmatic
   awareness: 70
-  authority: 28
-  courage: 62
-  perception: 48
-  bt_archetype: underground_operative
   schedule:
     9: residence_05
     13: church_12
@@ -1017,6 +959,7 @@ npcs:
     - Go carefully. And remember, the best disguise is a good deed in plain sight.
     - We will speak again. Same time, same pretext.
     - Take care of yourself. The revolution needs the living, not the martyrs.
+  bt_archetype: underground_operative
 
 - id: elder_chen
   name: Elder Chen
@@ -1026,10 +969,6 @@ npcs:
   role: resident
   personality: wise, patient, influential
   awareness: 40
-  authority: 18
-  courage: 22
-  perception: 30
-  bt_archetype: civilian_vendor
   schedule:
     8: residence_02
     12: church_10
@@ -1075,6 +1014,7 @@ npcs:
     - Come back when you have time. I will make tea. The leaves are not fancy, but
       the company will be good.
     - Remember what I told you. And if you forget, come back and I will tell you again.
+  bt_archetype: civilian_vendor
 
 - id: priest_li
   name: Father Li
@@ -1083,10 +1023,6 @@ npcs:
   role: cleric
   personality: secretive, comforting, harbours fugitives
   awareness: 48
-  authority: 14
-  courage: 35
-  perception: 36
-  bt_archetype: civilian_vendor
   schedule:
     7: church_05
     10: church_08
@@ -1130,6 +1066,7 @@ npcs:
     - Go carefully. The road between here and the market is watched after dark.
     - May the Buddha keep you. He has his hands full in Shanghai.
     - Walk close to the walls. The shadows are thicker there.
+  bt_archetype: civilian_vendor
 
 - id: gangster_wu
   name: Wu, the enforcer
@@ -1138,10 +1075,6 @@ npcs:
   role: boss
   personality: loud, jovial mask over ruthlessness
   awareness: 72
-  authority: 50
-  courage: 58
-  perception: 52
-  bt_archetype: green_gang_thug
   schedule:
     10: commercial_12
     14: warehouse_08
@@ -1184,6 +1117,7 @@ npcs:
     - Go on, get out of here. And next time, bring better news.
     - Watch yourself on the way home. The streets belong to the nervous after midnight.
     - We will talk again. Bring your wallet and your courage. You will need both.
+  bt_archetype: faction_leader
 
 - id: reporter_chen
   name: Chen, the underground journalist
@@ -1192,10 +1126,6 @@ npcs:
   role: reporter
   personality: idealistic, curious, takes notes on everything
   awareness: 65
-  authority: 8
-  courage: 35
-  perception: 42
-  bt_archetype: civilian_vendor
   schedule:
     9: commercial_05
     13: french_11
@@ -1244,6 +1174,7 @@ npcs:
       and dark circles.
     - Read the paper tomorrow. If I did my job right, you will learn something the
       censors missed.
+  bt_archetype: civilian_vendor
 
 - id: student_luo
   name: Luo, the student
@@ -1252,10 +1183,6 @@ npcs:
   role: student
   personality: young, passionate, reckless with courage
   awareness: 38
-  authority: 20
-  courage: 58
-  perception: 40
-  bt_archetype: underground_operative
   schedule:
     9: school_05
     13: french_07
@@ -1300,6 +1227,7 @@ npcs:
     - I have to go. Class. And then not class. You understand.
     - Be careful out there. We need everyone we can keep.
     - Until next time. And if there is no next time, keep reading.
+  bt_archetype: underground_operative
 
 - id: sergeant_yamamoto
   name: Sergeant Yamamoto
@@ -1309,10 +1237,6 @@ npcs:
   role: interrogator
   personality: patient, soft-spoken, terrifying
   awareness: 85
-  authority: 78
-  courage: 70
-  perception: 65
-  bt_archetype: kempeitai_patrol
   schedule:
     7: hongkou_01
     12: hongkou_01
@@ -1363,6 +1287,7 @@ npcs:
     - Think about what we discussed. Next time, bring me the truth. It saves us both
       effort.
     - Sleep well. Not everyone in this building will have that luxury tonight.
+  bt_archetype: kempeitai_patrol
 
 - id: vendor_lin
   name: Lin, the vegetable vendor
@@ -1371,10 +1296,6 @@ npcs:
   role: vendor
   personality: chatty, generous, knows every alley
   awareness: 52
-  authority: 6
-  courage: 28
-  perception: 40
-  bt_archetype: civilian_vendor
   schedule:
     8: commercial_10
     12: commercial_10
@@ -1427,6 +1348,7 @@ npcs:
       those chalky things from the ration.
     - Eat well, sleep well, and keep your mouth shut. That is what my mother used
       to say. She lived to be ninety.
+  bt_archetype: civilian_vendor
 
 - id: nurse_su
   name: Nurse Su, the battlefield nurse
@@ -1435,10 +1357,6 @@ npcs:
   role: nurse
   personality: gentle, overworked, hides resistance sympathies
   awareness: 44
-  authority: 8
-  courage: 32
-  perception: 35
-  bt_archetype: civilian_vendor
   schedule:
     8: oldcity_06
     14: hidden_05
@@ -1484,6 +1402,7 @@ npcs:
       do at night.
     - Come back if the pain returns. Do not wait until you cannot walk. I mean it.
     - Take care of yourself. There are not enough of us left to be careless.
+  bt_archetype: civilian_vendor
 
 - id: tailor_zhou
   name: Zhou, the tailor
@@ -1493,10 +1412,6 @@ npcs:
   role: tailor
   personality: meticulous, discreet, measures twice
   awareness: 60
-  authority: 10
-  courage: 25
-  perception: 45
-  bt_archetype: civilian_vendor
   schedule:
     8: commercial_07
     12: commercial_07
@@ -1546,6 +1461,7 @@ npcs:
     - Come back Thursday. The new shipment arrives then. Chinese cotton, very fine.
     - Walk safely. And next time, wear something with a better collar. People notice
       collars.
+  bt_archetype: civilian_vendor
 
 - id: madam_tanaka
   name: Madam Tanaka
@@ -1555,10 +1471,6 @@ npcs:
   role: civilian
   personality: lonely, conflicted, misses Kyoto
   awareness: 35
-  authority: 60
-  courage: 35
-  perception: 50
-  bt_archetype: kempeitai_patrol
   schedule:
     7: hongkou_07
     12: hongkou_09
@@ -1605,6 +1517,7 @@ npcs:
     - Please go now. It is better if we are not seen together for too long.
     - Thank you for visiting. I know that sounds strange, but I mean it.
     - Be safe. This city is not kind to anyone. Not even to those it claims to serve.
+  bt_archetype: kempeitai_patrol
 
 - id: chef_wang
   name: Chef Wang
@@ -1614,10 +1527,6 @@ npcs:
   role: cook
   personality: warm exterior, cold intelligence
   awareness: 66
-  authority: 35
-  courage: 48
-  perception: 45
-  bt_archetype: green_gang_thug
   schedule:
     6: docks_06
     12: docks_06
@@ -1667,6 +1576,7 @@ npcs:
     - Come back when you are hungry. I am always here. The kitchen never closes for
       the right people.
     - Go carefully. And remember, you were never here. The congee remembers nothing.
+  bt_archetype: green_gang_thug
 
 - id: merchant_sato
   name: Merchant Sato
@@ -1675,10 +1585,6 @@ npcs:
   role: informant
   personality: polite, calculating, two-faced
   awareness: 78
-  authority: 62
-  courage: 55
-  perception: 65
-  bt_archetype: kempeitai_patrol
   schedule:
     9: commercial_11
     13: bund_12
@@ -1721,6 +1627,7 @@ npcs:
     - Good day. May your business be quieter than mine.
     - Take care on the roads after dark. The patrols do not ask questions first.
     - Come back when you need something honest. Silk, I mean. Just silk.
+  bt_archetype: kempeitai_patrol
 
 - id: corporal_watanabe
   name: Corporal Watanabe
@@ -1730,10 +1637,6 @@ npcs:
   role: patrol
   personality: nervous, obedient, ashamed
   awareness: 60
-  authority: 60
-  courage: 50
-  perception: 52
-  bt_archetype: kempeitai_patrol
   schedule:
     7: bund_08
     12: commercial_20
@@ -1772,6 +1675,7 @@ npcs:
     - Go. Before I have to write your name down.
     - Move along. Nothing more to see here.
     - Get off the street. It is past curfew and I will not ask again.
+  bt_archetype: kempeitai_patrol
 
 - id: diplomat_renault
   name: Monsieur Renault
@@ -1781,10 +1685,6 @@ npcs:
   role: clerks
   personality: urbane, cynical, quietly sober
   awareness: 50
-  authority: 40
-  courage: 35
-  perception: 45
-  bt_archetype: civilian_vendor
   schedule:
     10: french_03
     14: french_07
@@ -1828,6 +1728,7 @@ npcs:
     - Do take care. Shanghai is a city where good manners are the last camouflage.
     - A pleasure, as always. Or at least, interesting. Interesting will have to do.
     - We should talk again soon. Before circumstances make that impossible.
+  bt_archetype: civilian_vendor
 
 - id: professor_muller
   name: Professor MÃ¼ller
@@ -1837,10 +1738,6 @@ npcs:
   role: clerks
   personality: bookish, melancholic, principled
   awareness: 46
-  authority: 28
-  courage: 40
-  perception: 42
-  bt_archetype: civilian_vendor
   schedule:
     8: french_06
     12: school_03
@@ -1886,6 +1783,7 @@ npcs:
     - Go carefully. Curiosity is no longer an academic virtue in this city.
     - I have papers to grade. At least that much is still normal.
     - Good night. Keep what you heard here between us. Knowledge is a burden in Shanghai.
+  bt_archetype: civilian_vendor
 
 - id: rickshaw_ah_fook
   name: Ah Fook
@@ -1895,10 +1793,6 @@ npcs:
   role: worker
   personality: cheerful, cunning, fearless
   awareness: 65
-  authority: 5
-  courage: 38
-  perception: 48
-  bt_archetype: civilian_vendor
   schedule:
     6: bund_03
     10: commercial_04
@@ -1939,6 +1833,7 @@ npcs:
     - I go. You need me, I am usually at the Bund before sunrise.
     - Watch yourself. The streets belong to the soldiers after dark.
     - Safe travels, laoban. May the road be empty and the patrols be slow.
+  bt_archetype: civilian_vendor
 
 - id: abramowitz
   name: Herr Abramowitz
@@ -1948,10 +1843,6 @@ npcs:
   role: merchant
   personality: artistic, grieving, resilient
   awareness: 42
-  authority: 15
-  courage: 30
-  perception: 35
-  bt_archetype: civilian_vendor
   schedule:
     10: french_05
     14: commercial_13
@@ -2000,6 +1891,7 @@ npcs:
       it for you.
     - Take care of your papers. I say this to everyone. It is the most important advice
       I know.
+  bt_archetype: civilian_vendor
 
 - id: courier_zheng
   name: Zheng, the bicycle courier
@@ -2009,10 +1901,6 @@ npcs:
   role: spy
   personality: athletic, focused, humorless
   awareness: 72
-  authority: 25
-  courage: 60
-  perception: 55
-  bt_archetype: underground_operative
   schedule:
     7: hidden_12
     11: commercial_16
@@ -2051,6 +1939,7 @@ npcs:
     - I am gone. Forget we spoke.
     - Ride safe. If anyone asks, you do not know me.
     - Next time, do not approach me in the open. I will find you.
+  bt_archetype: underground_operative
 
 - id: widow_chen
   name: Widow Chen
@@ -2060,10 +1949,6 @@ npcs:
   role: resident
   personality: grief-stricken, stubborn, surprisingly informed
   awareness: 48
-  authority: 10
-  courage: 22
-  perception: 30
-  bt_archetype: civilian_vendor
   schedule:
     6: oldcity_09
     10: residence_03
@@ -2103,6 +1988,7 @@ npcs:
     - Go now. It is getting dark. Dark is not safe anymore.
     - Light a candle at the shrine if you pass. My sons like the company.
     - Be careful on this street after curfew. I cannot watch everyone.
+  bt_archetype: civilian_vendor
 
 - id: lieutenant_nakamura
   name: Lieutenant Nakamura
@@ -2112,10 +1998,6 @@ npcs:
   role: officer
   personality: intellectual, patient, ruthless
   awareness: 85
-  authority: 80
-  courage: 70
-  perception: 68
-  bt_archetype: kempeitai_patrol
   schedule:
     8: hongkou_02
     13: commercial_22
@@ -2162,6 +2044,7 @@ npcs:
     - Think about what I said. I already know what you will decide, but I will let
       you feel it was your choice.
     - Good night. Sleep well. I know where to find you.
+  bt_archetype: kempeitai_patrol
 
 - id: farmer_xu
   name: Farmer Xu
@@ -2171,10 +2054,6 @@ npcs:
   role: vendor
   personality: quiet, dignified, mournful
   awareness: 35
-  authority: 8
-  courage: 20
-  perception: 28
-  bt_archetype: civilian_vendor
   schedule:
     5: commercial_02
     10: commercial_02
@@ -2219,6 +2098,7 @@ npcs:
     - Go home and cook what you bought. Food should not wait.
     - I pack up before sunset these days. The streets belong to others after that.
     - Come back when you need something real. I will be here, God willing.
+  bt_archetype: civilian_vendor
 
 - id: teacher_gao
   name: Teacher Gao
@@ -2228,10 +2108,6 @@ npcs:
   role: teacher
   personality: calm, educated, teaches history that's been banned
   awareness: 58
-  authority: 25
-  courage: 55
-  perception: 48
-  bt_archetype: underground_operative
   schedule:
     7: school_02
     12: school_08
@@ -2271,6 +2147,7 @@ npcs:
     - Go carefully. Knowledge is heavier than it used to be.
     - Remember what we discussed. Forget where you heard it.
     - Class dismissed. The real lesson begins when you step outside.
+  bt_archetype: underground_operative
 
 - id: dancer_lily
   name: Lily, the dance hall girl
@@ -2280,10 +2157,6 @@ npcs:
   role: entertainer
   personality: glamorous mask over sharp mind
   awareness: 65
-  authority: 32
-  courage: 50
-  perception: 52
-  bt_archetype: green_gang_thug
   schedule:
     14: french_08
     18: french_14
@@ -2324,6 +2197,7 @@ npcs:
     - My next set starts in five minutes. Tip generously and forget my name.
     - It was a pleasure. Now please leave before it becomes a problem.
     - Same time next week. Bring money and leave your curiosity at the door.
+  bt_archetype: green_gang_thug
 
 - id: engineer_kowalski
   name: Engineer Kowalski
@@ -2333,10 +2207,6 @@ npcs:
   role: engineer
   personality: practical, blunt, misses Warsaw
   awareness: 50
-  authority: 32
-  courage: 38
-  perception: 42
-  bt_archetype: civilian_vendor
   schedule:
     7: warehouse_05
     12: warehouse_10
@@ -2377,6 +2247,7 @@ npcs:
     - Keep your head down and your foundations solid.
     - I will be here tomorrow. Concrete does not take holidays.
     - Go. I have work to finish before the patrol comes through.
+  bt_archetype: civilian_vendor
 
 - id: monk_jing
   name: Monk Jing
@@ -2386,10 +2257,6 @@ npcs:
   role: monk
   personality: serene, observant, offers shelter to all
   awareness: 45
-  authority: 12
-  courage: 28
-  perception: 38
-  bt_archetype: civilian_vendor
   schedule:
     5: church_04
     10: oldcity_07
@@ -2428,6 +2295,7 @@ npcs:
     - Walk in peace, if peace will have you.
     - The door is always open. The world outside it is not.
     - Go with stillness. It is the one thing they cannot tax.
+  bt_archetype: civilian_vendor
 
 - id: captain_chen
   name: Captain Chen
@@ -2437,10 +2305,6 @@ npcs:
   role: officer
   personality: dignified, patient, waits for orders from Chongqing
   awareness: 72
-  authority: 40
-  courage: 65
-  perception: 55
-  bt_archetype: faction_leader
   schedule:
     6: warehouse_02
     12: warehouse_06
@@ -2482,6 +2346,7 @@ npcs:
     - Keep your head down and your eyes open. That is an order.
     - We will speak again when the timing is right. Until then, we are strangers.
   faction_leader: true
+  bt_archetype: faction_leader
 
 - id: singer_mei_lan
   name: Mei Lan, the opera singer
@@ -2491,10 +2356,6 @@ npcs:
   role: entertainer
   personality: sultry voice, sharp eyes, knows secrets
   awareness: 68
-  authority: 35
-  courage: 42
-  perception: 52
-  bt_archetype: civilian_vendor
   schedule:
     10: french_10
     14: french_13
@@ -2535,6 +2396,7 @@ npcs:
     - The lights dim in five minutes. Stay for the second act, if you can.
     - Goodnight. Remember the melody. Forget the singer.
     - Until the next performance. Applaud loudly. It covers conversation.
+  bt_archetype: civilian_vendor
 
 - id: fisherman_li
   name: Li, the river fisherman
@@ -2544,10 +2406,6 @@ npcs:
   role: smuggler
   personality: weathered, taciturn, moves goods by night
   awareness: 62
-  authority: 30
-  courage: 50
-  perception: 48
-  bt_archetype: green_gang_thug
   schedule:
     4: docks_02
     8: docks_02
@@ -2584,6 +2442,7 @@ npcs:
     - The tide waits. I do not.
     - Stay off the pier after midnight. I will not warn you twice.
     - Go home. The river air is bad for people who think too much.
+  bt_archetype: green_gang_thug
 
 - id: baker_goldberg
   name: Goldberg, the baker
@@ -2593,10 +2452,6 @@ npcs:
   role: baker
   personality: warm, flour-dusted, feeds people regardless of papers
   awareness: 38
-  authority: 22
-  courage: 35
-  perception: 38
-  bt_archetype: civilian_vendor
   schedule:
     5: french_02
     9: french_02
@@ -2637,6 +2492,7 @@ npcs:
     - Take the bread. Pay me when you can. I trust the hungry.
     - Go with a full stomach. Everything else is easier after that.
     - Come back tomorrow. I am trying a new recipe. You can be the judge.
+  bt_archetype: civilian_vendor
 
 - id: watchmaker_feng
   name: Feng, the watchmaker
@@ -2646,10 +2502,6 @@ npcs:
   role: operator
   personality: precise hands, quiet voice, listens to the world
   awareness: 70
-  authority: 30
-  courage: 55
-  perception: 55
-  bt_archetype: underground_operative
   schedule:
     8: commercial_09
     12: commercial_09
@@ -2693,7 +2545,8 @@ npcs:
     - The shop closes at six. After that, I am just an old man who likes clocks.
     - Come back when the minute hand points to twelve. I will be listening.
     - Time moves forward. So must we. Be careful out there.
-    
+  bt_archetype: underground_operative
+
 - id: orphan_xiao
   name: Xiao, the street orphan
   description: A twelve-year-old boy with quick fingers and quicker feet who survives
@@ -2702,10 +2555,6 @@ npcs:
   role: orphan
   personality: small, quick, sees everything from below
   awareness: 75
-  authority: 5
-  courage: 35
-  perception: 48
-  bt_archetype: civilian_vendor
   schedule:
     6: bund_05
     10: commercial_04
@@ -2746,1129 +2595,4 @@ npcs:
     - Gotta go. The street doesn't wait.
     - Thanks for the coin. Don't follow me.
     - Stay out of the alleys after dark. That is free advice. Next time costs extra.
-
-- id: tea_seller_dead_drop
-  name: Old Mrs. Lin, the tea seller
-  description: A grey-haired woman who runs a humble tea stand near the old city gate, her faded awning hiding a dead drop built into the leg of her table.
-  faction: ccp
-  role: courier
-  personality: cautious
-  awareness: 55
-  authority: 22
-  courage: 52
-  perception: 48
-  bt_archetype: underground_operative
-  faction_leader: false
-  schedule:
-    6: old_city_tea_house
-    12: old_city_tea_house
-    18: old_city_tea_house
-    22: residential_apartment
-  dialogue:
-    greeting:
-    - Sit. The jasmine is fresh today and the soldiers are not.
-    - Tea for the road? Two jiao. The second cup is free if you know what to ask for.
-    - You look thirsty. Sit here, by the wall. The shade is better and so is the listening.
-    friendly:
-    - The bottom of the third cup has a mark. Read it, drink it, forget you saw me.
-    - You came at the right time. The message arrived this morning, tucked inside a tea tin.
-    - I have been pouring tea in this spot for twenty years. Long enough to know which faces belong to the occupation and which belong to the future.
-    suspicious:
-    - I sell tea. Nothing more. Why do you ask about my customers?
-    - The stand closes at sundown. You should not be here after that.
-    neutral:
-    - The jasmine is from Hangzhou, or it was before the roads closed. Now it is local and bitter. Like everything else.
-    - I have cups, I have hot water, I have patience. Pick one.
-    - Three jiao for a pot. Sugar is extra. Courage is your own concern.
-    farewell:
-    - Go carefully. And pour out the last sip before you cross the checkpoint.
-    - Same time tomorrow. The kettle is always on.
-    rumor:
-    - The Kempeitai swept through the noodle shops on Fuzhou Road yesterday. They were looking for printed material, not lunch.
-    - Someone moved the dead drop at the temple. I hope it was one of ours.
-    secret:
-    - The next message goes out folded inside a lotus leaf. The buyer will ask for sweet tea. That is the signal.
-
-- id: factory_worker_organizer
-  name: Big Gu, the mill hand
-  description: A broad-shouldered textile worker with permanent cotton dust in his hair and a talent for whispered persuasion on the factory floor.
-  faction: ccp
-  role: organizer
-  personality: bold
-  awareness: 50
-  authority: 30
-  courage: 60
-  perception: 45
-  bt_archetype: underground_operative
-  faction_leader: false
-  schedule:
-    6: warehouse_district_storehouse
-    12: warehouse_district_storehouse
-    18: old_city_tea_house
-    22: residential_apartment
-  dialogue:
-    greeting:
-    - The foreman counts bobbins. I count something else entirely.
-    - You are a long way from the Bund. Good. The Bund counts you.
-    - Stand straight. The mill owners smell fear the way dogs smell blood.
-    friendly:
-    - The men on the third floor are ready. They have been ready since the last pay cut.
-    - I organized forty workers this month. Not for a union. For something bigger.
-    - You need hands? I know forty pairs that will follow if I say the word.
-    suspicious:
-    - I do not know you. Factory business stays in the factory.
-    - Who sent you? Name them or walk away.
-    neutral:
-    - Twelve hours a day, six days a week, and the rice still costs more than we earn.
-    - The foreman says we should be grateful for the work. The foreman eats at a different table.
-    - I mind my loom and I mind my business. At least that is what the foreman thinks.
-    farewell:
-    - Back to the floor. The whistle blows in ten minutes.
-    - If you need to find me, ask for Big Gu at the mill gate. Everyone knows me.
-    rumor:
-    - The mill owner is selling cloth directly to the Japanese quartermaster. Double profits, half the shame.
-    - A foreman at the Number Three mill was found beaten in the alley. Nobody saw anything. Nobody ever does.
-    secret:
-    - We are planning a work stoppage. Not yet, but soon. When the signal comes, every loom stops.
-
-- id: underground_doctor_li
-  name: Doctor Li Wei
-  description: A slight man with wire-rimmed glasses who carries his surgical kit in a false-bottomed rice sack and operates by candlelight in a cellar that smells of antiseptic and fear.
-  faction: ccp
-  role: medic
-  personality: stoic
-  awareness: 55
-  authority: 28
-  courage: 58
-  perception: 50
-  bt_archetype: underground_operative
-  faction_leader: false
-  schedule:
-    8: hidden_shanghai_cellar
-    14: residential_apartment
-    18: hidden_shanghai_cellar
-    22: residential_apartment
-  dialogue:
-    greeting:
-    - Lie down. I can tell by the way you are standing that you need to.
-    - The cellar is clean enough. I boiled everything twice.
-    - You are my third patient today and it is not yet noon. The occupation keeps me busy.
-    friendly:
-    - I have penicillin. Do not ask where. Just be grateful and heal quickly.
-    - The wound is clean. No infection. Next time, try not to get shot.
-    - I patch people up not because it is safe, but because the alternative is unacceptable.
-    suspicious:
-    - I am a doctor, not a revolutionary. You have the wrong address.
-    - The clinic down the street treats everyone. Try there.
-    neutral:
-    - I charge what I can and forget what I cannot. That is the only policy that survives wartime.
-    - The morphine ran out last week. I have gin and a steady hand. That will have to do.
-    - I do not ask how the wounds happen. I only ask that you hold still.
-    farewell:
-    - Change the bandage tomorrow. Clean water, clean cloth. Come back if it swells.
-    - Go home and rest. The revolution can wait until you can walk without bleeding.
-    rumor:
-    - The garrison hospital has been turning away Chinese patients. A nurse there smuggles bandages out in her laundry basket.
-    - The pharmacist on Sichuan Road is running low on ether. Someone bought it all in one lot. Someone careful.
-    secret:
-    - There is a tunnel behind the east wall. If the Kempeitai come, go through it and do not look back.
-
-- id: student_protester_zhao
-  name: Zhao Min, the student agitator
-  description: A nineteen-year-old university student with ink-stained fingers and a backpack full of banned pamphlets who moves through the city like a rumour, appearing wherever young people gather.
-  faction: ccp
-  role: courier
-  personality: bold
-  awareness: 40
-  authority: 20
-  courage: 62
-  perception: 42
-  bt_archetype: underground_operative
-  faction_leader: false
-  schedule:
-    7: residential_apartment
-    12: old_city_tea_house
-    18: warehouse_district_storehouse
-    22: residential_apartment
-  dialogue:
-    greeting:
-    - Comrade. Keep walking. I will find you when it is safe to stop.
-    - The pamphlets are in my bag. The courage is in the words.
-    - You have the look of someone who still believes tomorrow can be different.
-    friendly:
-    - I distributed two hundred copies of the manifesto last night. Every reading group on the south side has one.
-    - The students at the university are organizing a sit-in. Spread the word quietly.
-    - Read this once, then burn it. The words that survive the fire are the ones worth remembering.
-    suspicious:
-    - I do not talk to strangers about politics. Especially not here.
-    - You have the wrong Zhao. There are many of us.
-    neutral:
-    - Classes continue. The occupation prefers us educated but silent. I prefer the opposite.
-    - They shut down three reading groups this month. We opened four.
-    - My mother thinks I study mathematics. In a way, she is not wrong. I calculate risk.
-    farewell:
-    - Disperse. Do not walk in groups larger than two.
-    - The next meeting is at the usual place. Knock twice, then once.
-    rumor:
-    - The Kempeitai arrested a printer in Zhabei. His press was hidden under the floor of a noodle shop.
-    - Someone painted slogans on the school wall again. The soldiers scraped them off by noon, but a thousand students saw them first.
-    secret:
-    - I carry the contact list in my head, never on paper. Names, places, times. If they catch me, they get nothing but a name they already know.
-
-- id: printer_propagandist_chen
-  name: Chen the typesetter
-  description: A middle-aged man with permanent ink stains on his knuckles who operates a hand-cranked press hidden beneath a tofu shop, printing truth one page at a time.
-  faction: ccp
-  role: operator
-  personality: resourceful
-  awareness: 52
-  authority: 25
-  courage: 55
-  perception: 48
-  bt_archetype: underground_operative
-  faction_leader: false
-  schedule:
-    7: hidden_shanghai_cellar
-    13: hidden_shanghai_cellar
-    18: old_city_tea_house
-    22: residential_apartment
-  dialogue:
-    greeting:
-    - The press is quiet for now. Come back when the shutters are closed.
-    - I set type by hand and by conviction. Both leave marks.
-    - Mind the stairs. The last three steps creak and the neighbors have good ears.
-    friendly:
-    - Two hundred copies of the bulletin, ready by midnight. The ink is still wet and so is the truth.
-    - I carved a new woodblock last night. The caricature of the puppet mayor should raise some smiles and some fists.
-    - The paper supply is holding. A sympathetic clerk at the ration office looks the other way.
-    suspicious:
-    - I print funeral notices and wedding invitations. Nothing more.
-    - You should not be down here. The shop is closed.
-    neutral:
-    - The type is set. What happens after that is not my business.
-    - A good pressman does not read what he prints. I am not a good pressman.
-    - Paper is harder to find than courage these days. Both are running short.
-    farewell:
-    - Go out through the shop. Buy some tofu on your way. It looks natural.
-    - I will have the next run ready in three days. The truth does not wait.
-    rumor:
-    - The Kempeitai are offering a reward for anyone who reports a hidden printing press. Five hundred yuan. Some people will sell their mothers for less.
-    - The paper merchant on Nanking Road has been questioned twice this month. He sells to everyone and remembers no one.
-    secret:
-    - The type is hidden inside hollow bamboo poles in the rafters. If they find the press, they will not find the letters.
-
-- id: former_teacher_militant
-  name: Fang Jie, the militant
-  description: A former literature teacher who traded his chalk for a pistol after watching his students arrested one by one, now carrying himself with the cold precision of a man who has decided that some words must be written in blood.
-  faction: ccp
-  role: fighter
-  personality: stoic
-  awareness: 55
-  authority: 32
-  courage: 65
-  perception: 50
-  bt_archetype: underground_operative
-  faction_leader: false
-  schedule:
-    6: warehouse_district_storehouse
-    12: hidden_shanghai_cellar
-    18: old_city_tea_house
-    22: residential_apartment
-  dialogue:
-    greeting:
-    - I used to teach poetry. Now I teach a different kind of lesson.
-    - You are on time. Good. Punctuality is the difference between survival and a memorial.
-    - Speak quietly. The walls have ears and some of them wear uniforms.
-    friendly:
-    - I have three people ready to move on the arms cache. We need a fourth who can keep silent under pressure.
-    - The cell on the south side needs weapons. I am organizing a transfer. Can you help?
-    - I do not enjoy violence. But I have learned that some things cannot be reasoned with.
-    suspicious:
-    - I am a teacher on leave. My business is my own.
-    - You ask too many questions for a stranger. Walk away.
-    neutral:
-    - The classroom taught me patience. The occupation taught me urgency. I am still learning the balance.
-    - Every revolution begins with an idea. Every idea needs someone willing to fight for it.
-    - I carry two things: a book and a weapon. One for the world I want, one for the world I have.
-    farewell:
-    - Disappear into the crowd. That is the first lesson.
-    - If I do not come back, find Comrade Zhou. He will know what to do.
-    rumor:
-    - A Kempeitai officer visits the same teahouse every Wednesday at three. His guards wait outside. He is alone for twenty minutes.
-    - The puppet police are nervous. Two of their stations were firebombed last week. Morale is low.
-    secret:
-    - There is a weapons cache buried under the floor of the old rice shop on Malu Street. Thirty rifles and two crates of ammunition.
-
-- id: rickshaw_courier_wu
-  name: Wu the rickshaw runner
-  description: A lean young man with tireless legs and an innocent smile who carries messages between resistance cells tucked inside the lining of his rickshaw cushions, his routes mapped by memory and never written down.
-  faction: ccp
-  role: courier
-  personality: resourceful
-  awareness: 58
-  authority: 20
-  courage: 55
-  perception: 52
-  bt_archetype: underground_operative
-  faction_leader: false
-  schedule:
-    5: old_city_tea_house
-    10: warehouse_district_storehouse
-    16: residential_apartment
-    21: old_city_tea_house
-  dialogue:
-    greeting:
-    - Need a ride? The fare is cheap and the route is quiet.
-    - Hop in. I know a shortcut that avoids every checkpoint between here and the river.
-    - You look like you need to be somewhere. I look like a rickshaw puller. Perfect match.
-    friendly:
-    - The package is in the left cushion. Do not open it until you are behind closed doors.
-    - I made the run to the south cell this morning. They are ready for the next phase.
-    - Three cells, seven messages, zero stops by the patrol. A good day.
-    suspicious:
-    - I pull a rickshaw. I do not carry packages for strangers.
-    - You have the wrong Wu. There are a hundred rickshaw men in this city.
-    neutral:
-    - Fare is two jiao for the first mile. Patience is free but running low.
-    - I go where the passengers go. Nothing more to tell.
-    - The roads are rough, the soldiers are rougher. My legs do not care about either.
-    farewell:
-    - Same time tomorrow. Wave from the corner, not the main street.
-    - Watch your step getting out. And watch who watches you.
-    rumor:
-    - The checkpoint on Sichuan Road has a new sergeant. He checks cushions now. I lost a good cushion last week.
-    - Someone is following courier routes. I spotted a man in grey on three of my runs. He was not a passenger.
-    secret:
-    - The next drop is at the stone lion by the old temple. Third crack from the left, behind the ear.
-
-- id: widow_haven_mrs_zhang
-  name: Mrs. Zhang the widow
-  description: A quiet woman in perpetual mourning black who keeps a cramped apartment above a noodle shop where people in need of hiding can find a warm bowl and a locked door.
-  faction: ccp
-  role: safehouse
-  personality: cautious
-  awareness: 48
-  authority: 22
-  courage: 58
-  perception: 45
-  bt_archetype: underground_operative
-  faction_leader: false
-  schedule:
-    6: residential_apartment
-    12: old_city_tea_house
-    18: residential_apartment
-    22: residential_apartment
-  dialogue:
-    greeting:
-    - Come in. The door locks three ways and the neighbors mind their own business.
-    - You look tired. Sit. I will make noodles. We can talk after you eat.
-    - The apartment is small but the walls are thick. Thicker than most people's discretion.
-    friendly:
-    - The back room is ready. Blankets, water, and a window that opens onto the alley. Stay as long as you need.
-    - Three people have stayed here this month. All of them moved on safely. I intend to keep that record.
-    - I lost my husband to the occupation. Every person I shelter is a small revenge and a large mercy.
-    suspicious:
-    - I am a widow who minds her own business. You should do the same.
-    - There is nothing here but grief and leftover rice. Try the next building.
-    neutral:
-    - I keep to myself. A widow in mourning is invisible in this city. That suits me fine.
-    - The noodles are plain but filling. In times like these, filling is enough.
-    - I do not ask questions. Questions have a way of finding answers you did not want.
-    farewell:
-    - Go carefully. And if anyone asks, you came to pay respects to the dead.
-    - The door will be open if you need it. Just knock four times, pause, then once.
-    rumor:
-    - The building manager is a collaborator. He reports to the Kempeitai every Friday. I know his schedule better than he does.
-    - A family on the fourth floor disappeared two nights ago. No sound, no fuss. Just gone by morning.
-    secret:
-    - There is a loose floorboard under the bed in the back room. Hide anything small enough to fit. I have hidden letters, photographs, and once a pistol.
-
-- id: cell_leader_zhou
-  name: Comrade Zhou
-  description: A reserved man in his fifties with reading glasses and a calm voice who directs underground operations from the back of a dusty antiquarian bookshop, his authority absolute and his patience inexhaustible.
-  faction: ccp
-  role: operative
-  personality: pragmatic
-  awareness: 68
-  authority: 40
-  courage: 60
-  perception: 55
-  bt_archetype: underground_operative
-  faction_leader: false
-  schedule:
-    8: hidden_shanghai_cellar
-    13: old_city_tea_house
-    18: hidden_shanghai_cellar
-    22: residential_apartment
-  dialogue:
-    greeting:
-    - Close the door. The booksellers upstairs have good ears and loose tongues.
-    - You are late. Sit down and explain, briefly.
-    - I have been expecting you. The situation has changed. Listen carefully.
-    friendly:
-    - The network holds. Three cells operational, two in reserve, one compromised and burned. We rebuild.
-    - I have read your report. The work is good. Continue, but increase caution. The Kempeitai are not stupid.
-    - Trust is earned in small doses. You have earned a larger one. Here is what happens next.
-    suspicious:
-    - I sell old books to old people. That is the extent of my business.
-    - You have the wrong shop. The bookstore on the next street has better selections.
-    neutral:
-    - The revolution does not require enthusiasm. It requires discipline and patience.
-    - I have been doing this since before you were born. The faces change, the methods do not.
-    - Read the book on the shelf. The one with the red spine. Then return it to me.
-    farewell:
-    - Go. And remember, the most important thing you can do is stay alive.
-    - We will meet again when the time is right. Until then, we are strangers.
-    rumor:
-    - The Kempeitai have doubled their informants in the old city. Trust no one you have not verified.
-    - A shipment of radio parts is coming through the south docks next week. I need someone reliable to receive it.
-    secret:
-    - The contact in the French Concession goes by the name of uncle. He operates from the back of the photography shop on Avenue Joffre. The password is the spring is late this year.
-
-- id: scout_lu
-  name: Lu the boy scout
-  description: A wiry sixteen-year-old with sharp eyes and a talent for vanishing into crowds who monitors Japanese movements along the wharves and reports back through a chain of street children.
-  faction: ccp
-  role: scout
-  personality: resourceful
-  awareness: 60
-  authority: 18
-  courage: 55
-  perception: 58
-  bt_archetype: underground_operative
-  faction_leader: false
-  schedule:
-    5: warehouse_district_storehouse
-    10: warehouse_district_storehouse
-    16: old_city_tea_house
-    21: residential_apartment
-  dialogue:
-    greeting:
-    - I counted fourteen trucks this morning. All heading north. All full.
-    - You looking for me? Good. I have something to tell you.
-    - Nobody watches a kid sitting on a wall eating melon seeds. That is why I am the best at this.
-    friendly:
-    - The patrol changes guard at half past nine. There is a twelve-minute gap. I timed it three times.
-    - I saw a new officer at the garrison yesterday. Three stars on his collar. Important. He arrived in a black car with curtains.
-    - The boy network is growing. I have six pairs of eyes on the waterfront now. Nothing moves without me knowing.
-    suspicious:
-    - I sell newspapers. That is all. Buy one or move along.
-    - I do not know anything. I am just a kid.
-    neutral:
-    - The soldiers do not notice children. That is their mistake and our advantage.
-    - I watch, I remember, I report. That is the job.
-    - The wharves are busier than usual. Something is being unloaded at night. Big crates. Military.
-    farewell:
-    - I will be back on the wall tomorrow at dawn. Find me there if you need eyes.
-    - Stay off the main roads tonight. Something is happening. I can feel it.
-    rumor:
-    - A naval destroyer docked at the north pier last night. The crew did not leave the ship. That means they are waiting for something.
-    - Three flatbed trucks left the garrison at midnight. I followed them to the warehouse district. They unloaded wooden crates marked medical supplies. They were not medical supplies.
-    secret:
-    - I leave my reports under the third stone from the left at the base of the old city wall. Someone collects them every evening at dusk.
-
-- id: intelligence_officer_wang
-  name: Wang Zhiming, the merchant
-  description: A well-dressed man in his forties who operates a small import-export office on the Bund as cover for GMD intelligence work, his ledgers containing figures of a different kind than profit and loss.
-  faction: gmd
-  role: operative
-  personality: pragmatic
-  awareness: 70
-  authority: 38
-  courage: 55
-  perception: 55
-  bt_archetype: underground_operative
-  faction_leader: false
-  schedule:
-    8: bund_promenade
-    12: french_concession_cafe
-    18: commercial_street_market
-    22: residential_apartment
-  dialogue:
-    greeting:
-    - The import business is difficult in wartime. So many restrictions. So many opportunities.
-    - Come in. Close the door. The walls are thin but my staff are deaf when they need to be.
-    - You have the look of someone carrying information. Let us discuss it over tea.
-    friendly:
-    - Chungking received the last report. The General is pleased. Continue your work.
-    - I have arranged travel papers for three of our people. French Concession exit permits. Good for six days.
-    - The ledger on my desk has two sets of numbers. The real ones are in red ink, page forty-seven.
-    suspicious:
-    - I trade in textiles and tea. What business is that of yours?
-    - You are asking questions that a merchant would not ask and a policeman should not.
-    neutral:
-    - Business is business. The war is someone else's concern, at least that is what I tell the tax man.
-    - I keep regular hours, pay my taxes, and mind my ledgers. A model citizen.
-    - The Bund is busy today. Ships, soldiers, and spies. One of those is my concern.
-    farewell:
-    - Good day. Return when you have something worth trading. Information or currency, I accept both.
-    - Be careful on your way out. The concession police have been watching the building.
-    rumor:
-    - A Japanese naval attaché was seen at the Peace Hotel last night. He met with a German businessman for two hours.
-    - The puppet government is reorganizing its police force. New uniforms, new badges, same masters.
-    secret:
-    - The dead drop is inside a shipment of cotton bales at Warehouse Fourteen on the Bund. The contact removes the message during inventory.
-
-- id: newspaper_editor_mei
-  name: Editor Mei, the censor's neighbor
-  description: A sharp-eyed woman in her thirties who runs a small Chinese-language newspaper, hiding coded GMD messages between the lines of garden-variety news stories that pass the occupation censors every morning.
-  faction: gmd
-  role: operative
-  personality: resourceful
-  awareness: 62
-  authority: 30
-  courage: 52
-  perception: 50
-  bt_archetype: underground_operative
-  faction_leader: false
-  schedule:
-    7: commercial_street_market
-    12: commercial_street_market
-    18: french_concession_cafe
-    22: residential_apartment
-  dialogue:
-    greeting:
-    - The morning edition is at the printers. I suggest you read between the lines.
-    - Come in. The ink is wet and so are some of my sources.
-    - You are early. The censors do not arrive until nine. We have time to talk.
-    friendly:
-    - Tomorrow's edition carries a coded message on page three. The ad for the silk merchant. Read the third word of every sentence.
-    - I buried a contact signal in the wedding announcements. If Chungking reads it, they will know the network is intact.
-    - The censor and I have an understanding. He reads what I let him see and I print what he cannot find.
-    suspicious:
-    - I edit a newspaper. I do not traffic in rumors. Buy a copy or leave.
-    - The editorial office is closed to visitors. Submit your letters by post.
-    neutral:
-    - The news is what the censors allow. The truth is what I print between the lines.
-    - Paper shortage again. The occupation controls the supply. They know the power of print.
-    - Every morning I decide which truths to tell and which to hide. It is a careful mathematics.
-    farewell:
-    - Buy tomorrow's paper. You will find what you are looking for on page four.
-    - Watch what you say on the street. My reporters are everywhere, and so are theirs.
-    rumor:
-    - The censor's assistant has been taking bribes. He passes copy without reading it for fifty yuan a page.
-    - A competing newspaper was shut down last week. The editor was arrested. His notes are still missing.
-    secret:
-    - The code is embedded in the classified advertisements. Look for advertisements selling lotus root. The price is the date. The quantity is the time.
-
-- id: businessman_funder_li
-  name: Li Guangan, the merchant prince
-  description: A portly silk merchant with a shop on Nanking Road and a hidden safe that funds GMD operations from the French Concession, his ledgers recording donations that the occupation would call treason.
-  faction: gmd
-  role: funder
-  personality: pragmatic
-  awareness: 55
-  authority: 35
-  courage: 48
-  perception: 48
-  bt_archetype: underground_operative
-  faction_leader: false
-  schedule:
-    9: commercial_street_market
-    13: bund_promenade
-    18: french_concession_cafe
-    22: residential_apartment
-  dialogue:
-    greeting:
-    - Welcome to my shop. The silk is genuine and so is the tea. What else can I offer?
-    - A businessman has many friends. Some of them are even real.
-    - You have the look of someone who appreciates quality. In silk and in conversation.
-    friendly:
-    - The funds for the next operation are in the usual place. Do not count it here.
-    - I have arranged a shipment through the south port. Hidden inside bolts of fabric. The manifest will say cotton.
-    - My grandfather built this business. I intend to use it to build something that outlasts the occupation.
-    suspicious:
-    - I deal in silk, not secrets. The fabric counter is to your left.
-    - I am a simple merchant. You should direct your questions to the authorities.
-    neutral:
-    - Silk prices are up again. The occupation controls the roads and the roads control the trade.
-    - I pay my taxes, I smile at the soldiers, and I count my inventory twice a day. An honest life.
-    - Business and politics do not mix. At least that is what I tell the tax inspector.
-    farewell:
-    - Come back when you need something finer. In fabric or otherwise.
-    - Walk safely. And do not carry anything through the checkpoint that you cannot explain.
-    rumor:
-    - The Kempeitai are auditing all businesses on Nanking Road this month. Someone tipped them off about a hidden safe.
-    - A merchant on Bubbling Well Road was arrested for currency speculation. The real reason was something else entirely.
-    secret:
-    - The funds are hidden inside a bolt of imperial yellow silk in the back storeroom. Third shelf from the left. The silk is genuine Ming dynasty. The money is worth more.
-
-- id: former_soldier_zhang
-  name: Zhang the ex-soldier
-  description: A discharged Nationalist infantryman who limps slightly from a wound received at Sihang Warehouse and now hides in the French Concession, his military skills undiminished by civilian clothes.
-  faction: gmd
-  role: fighter
-  personality: stoic
-  awareness: 60
-  authority: 28
-  courage: 65
-  perception: 52
-  bt_archetype: underground_operative
-  faction_leader: false
-  schedule:
-    7: residential_apartment
-    12: french_concession_cafe
-    18: warehouse_district_storehouse
-    22: residential_apartment
-  dialogue:
-    greeting:
-    - Stand straight. I can tell a civilian by the way they carry their shoulders.
-    - The leg is fine. It only hurts when the weather changes or when I remember.
-    - You want something. Military men can always tell when someone wants something.
-    friendly:
-    - I held the warehouse for four days with three hundred men. I can hold a secret longer than that.
-    - The weapons cache in the basement is inventoried. Twelve rifles, six handguns, two hundred rounds. Ready for the order.
-    - Chiang's order was to retreat. I followed it. But I never agreed with it. Now I am here, waiting for a different order.
-    suspicious:
-    - I am a shop assistant. Nothing more. You have the wrong man.
-    - I do not talk about the war. Especially not to strangers.
-    neutral:
-    - The 88th Division was the finest in China. What remains of it is scattered, hiding, or dead.
-    - I peel potatoes now instead of firing rifles. The uniform is gone but the discipline is not.
-    - A soldier remembers faces. I remember yours. Whether that is good or bad depends on what you do next.
-    farewell:
-    - Go. And if you hear gunfire, do not run toward it. Civilians never learn that lesson.
-    - If Chungking sends the word, I will be ready. Until then, I sell vegetables and wait.
-    rumor:
-    - A group of former Nationalist soldiers are hiding in the warehouse district. They are armed but disorganized. They need leadership.
-    - The puppet army is recruiting. They offer rice and a uniform. Some men are desperate enough to accept.
-    secret:
-    - There is a map of the garrison defenses hidden inside the lining of my old greatcoat. It hangs in the wardrobe behind the spare blanket.
-
-- id: consulate_secretary_zhao
-  name: Zhao Weiming, the secretary
-  description: A bespectacled young Chinese clerk at the French Consulate who copies sensitive documents during his lunch break and passes them to GMD contacts through a bookshop on Avenue Joffre.
-  faction: gmd
-  role: operative
-  personality: cautious
-  awareness: 58
-  authority: 25
-  courage: 50
-  perception: 50
-  bt_archetype: underground_operative
-  faction_leader: false
-  schedule:
-    8: bund_promenade
-    13: french_concession_cafe
-    18: french_concession_cafe
-    22: residential_apartment
-  dialogue:
-    greeting:
-    - The consulate is open for business. My business happens to be different from what is on the door.
-    - Bonjour. You look like you have reasons to be here that do not involve visas.
-    - The filing cabinets are organized by letter. The interesting files are not organized at all.
-    friendly:
-    - I copied the transit schedule for the Japanese resupply convoy. It is tucked inside a novel at the bookshop on Rue Massenet.
-    - The consul is meeting with the Japanese liaison on Thursday. I will ensure the minutes find their way to the right eyes.
-    - I have access to diplomatic pouches. Small items can travel without inspection. Think about what that means.
-    suspicious:
-    - I am a filing clerk. I stamp documents and organize archives. That is all.
-    - The consulate does not discuss its internal affairs with visitors.
-    neutral:
-    - The French are neutral on paper. In practice, they are exhausted and understaffed. That works in our favor.
-    - I file papers eight hours a day. The interesting papers I file twice, once in the cabinet and once in my memory.
-    - Diplomatic immunity is a useful shield. It does not stop a bullet, but it stops most questions.
-    farewell:
-    - Return to the consulate during office hours. We have never met outside them.
-    - Be careful with what you carry. The concession police are watching more closely these days.
-    rumor:
-    - The consul keeps a private safe in his office. The combination changes weekly, but I see him enter it from my desk.
-    - A Japanese diplomat has been visiting the consulate after hours. They drink cognac and speak French. I listen through the ventilation.
-    secret:
-    - The documents go out inside hollowed-out books. I buy used novels from the shop on Avenue Joffre and return them the next day, heavier than when they left.
-
-- id: weapons_smuggler_sun
-  name: Sun the dock rat
-  description: A weathered dockworker with tar-stained hands who moves crates by day and moves guns by night, his knowledge of every warehouse and pier in the port making him the GMD's most valuable arms pipeline.
-  faction: gmd
-  role: smuggler
-  personality: bold
-  awareness: 62
-  authority: 28
-  courage: 58
-  perception: 52
-  bt_archetype: underground_operative
-  faction_leader: false
-  schedule:
-    5: warehouse_district_storehouse
-    12: warehouse_district_storehouse
-    18: bund_promenade
-    22: warehouse_district_storehouse
-  dialogue:
-    greeting:
-    - The tide is in and so am I. What do you need moved?
-    - I handle cargo. The kind that does not appear on manifests.
-    - You smell like dry land. What brings you to the docks?
-    friendly:
-    - The shipment arrived last night. Ten cases of British rifles, hidden inside crates of pickled vegetables. They are in Warehouse Nine.
-    - I have a contact on the Japanese supply ship. He looks the other way for the right price.
-    - Three trips this month. Sixty rifles, two cases of ammunition, and a mortar that I still cannot believe I got past the checkpoint.
-    suspicious:
-    - I unload cargo. Standard freight. If you want something else, find someone else.
-    - The dockmaster handles the manifests. I just carry the boxes.
-    neutral:
-    - The docks never sleep. Neither do the patrols. I work in the gap between one and the other.
-    - A crate is a crate. What is inside is between the shipper and the receiver.
-    - I have been loading and unloading ships for fifteen years. The flags change, the cargo stays the same.
-    farewell:
-    - Come back after dark. The night shift is more accommodating.
-    - Watch your step on the pier. The boards are loose and so are some of the men.
-    rumor:
-    - The Japanese are storing ammunition in Warehouse Seventeen. I saw the manifest. Three tons of artillery shells.
-    - A new customs inspector starts next week. Rumor says he is honest. That will be a problem.
-    secret:
-    - The weapons are stored in a flooded cellar beneath Pier Six. The water keeps the crates cool and the guards away. Retrieve them at low tide through the iron grate on the south side.
-
-- id: radio_operator_gao
-  name: Gao the radio man
-  description: A thin man with nervous fingers who maintains a hidden wireless set in the attic of a boarding house, transmitting encoded messages to Chungking every night while the city sleeps below.
-  faction: gmd
-  role: operator
-  personality: nervous
-  awareness: 55
-  authority: 25
-  courage: 52
-  perception: 48
-  bt_archetype: underground_operative
-  faction_leader: false
-  schedule:
-    10: residential_apartment
-    14: french_concession_cafe
-    20: residential_apartment
-    23: residential_apartment
-  dialogue:
-    greeting:
-    - The signal was clear last night. Chungking acknowledged receipt at 0300 hours.
-    - Come in quickly. The radio is hidden but the walls are not soundproof.
-    - You look like you have a message. I hope it is short. Transmission time is dangerous.
-    friendly:
-    - I transmitted the troop movement report last night. Chungking sends their thanks and a new code sheet.
-    - The frequency changes at midnight. I have the new settings memorized. Nothing on paper.
-    - The attic is cramped and cold, but the signal reaches Chungking clean. That is all that matters.
-    suspicious:
-    - I am a clerk. I work at a shipping company. I do not know anything about radios.
-    - You have the wrong address. There is nothing in the attic but dust and old furniture.
-    neutral:
-    - A radio operator is only as good as his last transmission. One mistake and the triangulation team finds you.
-    - I transmit for forty-five seconds, then move. Never the same time two nights in a row.
-    - The code changes weekly. I memorize it and burn the sheet. My memory is the only record.
-    farewell:
-    - Leave before dark. The triangulation vans come out after nine.
-    - If I miss a scheduled transmission, assume the worst and burn everything.
-    rumor:
-    - The Japanese have a new radio detection vehicle. It cruises the French Concession between ten and two. I can hear its engine from the attic.
-    - A GMD radio operator in Zhabei was caught last week. They found his set and his code sheets. He talked within a day.
-    secret:
-    - The radio is hidden inside a hollowed-out wardrobe in the attic. The antenna runs up the chimney. If I hear boots on the stairs, I have ninety seconds to dismantle it and hide the parts in the floorboards.
-
-- id: hospital_nurse_luo
-  name: Nurse Luo, the angel of mercy
-  description: A calm-faced nurse at the French Concession hospital who conceals military intelligence inside bandage rolls and patient charts, her white uniform making her invisible to everyone including the soldiers she spies on.
-  faction: gmd
-  role: operative
-  personality: cautious
-  awareness: 52
-  authority: 22
-  courage: 50
-  perception: 48
-  bt_archetype: underground_operative
-  faction_leader: false
-  schedule:
-    7: french_concession_cafe
-    13: french_concession_cafe
-    18: commercial_street_market
-    22: residential_apartment
-  dialogue:
-    greeting:
-    - The ward is quiet today. Quiet wards mean fewer questions.
-    - You look well enough to walk. That means you are here for something other than medicine.
-    - The hospital treats everyone. Some patients are more interesting than others.
-    friendly:
-    - The Japanese officer in bed six talks in his sleep. Last night he mentioned troop positions near Suzhou.
-    - I placed the intelligence inside a roll of gauze in the supply closet. Ward Three, second shelf.
-    - The military doctor leaves his briefcase unlocked during surgery. I have ten minutes to copy whatever is inside.
-    suspicious:
-    - I am a nurse. I take temperatures and change bandages. That is all.
-    - Patient confidentiality is sacred. I will not discuss anyone in my care.
-    neutral:
-    - The hospital is neutral ground. That is what the French say. The Japanese do not always agree.
-    - Medicine is my profession. What I see while practicing it is between me and the patients.
-    - Every wound tells a story. Some stories are more useful than others.
-    farewell:
-    - Visiting hours end at six. Please leave before the night shift arrives.
-    - Take care of yourself. The city is sick, but not all of its patients are in beds.
-    rumor:
-    - A Japanese colonel was admitted under a false name last week. Gunshot wound to the shoulder. He claimed it was a hunting accident. There are no hunting grounds in Shanghai.
-    - The hospital pharmacy is missing morphine again. Either someone is stealing it or someone is using it for purposes other than pain relief.
-    secret:
-    - The intelligence is written on rice paper, rolled inside the hollow tube of a thermometers. I leave them in the bin marked for sterilization. The contact picks them up during the afternoon shift change.
-
-- id: dock_observer_wu
-  name: Wu the dock watcher
-  description: An elderly dockhand who has worked the Whangpoo for thirty years and now spends his days perched on a bollard, cataloguing every Japanese vessel that enters and leaves the harbor with a deckhand's eye and a spy's discipline.
-  faction: gmd
-  role: scout
-  personality: stoic
-  awareness: 65
-  authority: 22
-  courage: 48
-  perception: 58
-  bt_archetype: underground_operative
-  faction_leader: false
-  schedule:
-    5: bund_promenade
-    12: warehouse_district_storehouse
-    18: bund_promenade
-    22: residential_apartment
-  dialogue:
-    greeting:
-    - I have been watching this river since before the first Japanese ship sailed up it.
-    - Two destroyers and a transport entered the harbor this morning. I noted the drafts and the flags.
-    - Sit down. The bollard is cold but the view is excellent and so is my memory.
-    friendly:
-    - The convoy schedule is in my head. Three transports every Tuesday, resupply on Fridays. I can tell you when every ship will be vulnerable.
-    - I saw a submarine surface at the river mouth last night. Japanese. It submerged before dawn. No one else noticed.
-    - The contact picks up my reports every Thursday. They go to Chungking inside a crate of dried fish.
-    suspicious:
-    - I am an old man who watches the river. There is no crime in that.
-    - Ships come, ships go. I have nothing to say about it.
-    neutral:
-    - The Whangpoo is a highway for the occupation. Every ship carries soldiers, weapons, or both.
-    - I know every vessel on this river by its silhouette. I can identify them at night by the sound of their engines.
-    - Thirty years on the docks. I have seen flags change. The river stays the same.
-    farewell:
-    - Come back at dawn. That is when the military ships move.
-    - Watch the tide tables. They tell you more than the newspapers.
-    rumor:
-    - A Japanese ammunition ship docked at Pier Eleven last night. Armed guards, no manifest posted. It will unload under cover of darkness.
-    - The harbor master was replaced last week. The new one is a Kempeitai appointee. He keeps different hours than his predecessor.
-    secret:
-    - I write my reports in waterproof ink on the inside of cigarette papers. I fold them into the bottom of a tea tin and leave it under the third bollard from the north end of the pier. The contact swaps it for an identical tin.
-
-- id: nightclub_singer_mei
-  name: Mei Ling, the torch singer
-  description: A glamorous singer at the Paramount Club who collects intelligence from Japanese officers too drunk or too charmed to notice that every compliment she receives is catalogued alongside every confession they make.
-  faction: gmd
-  role: operative
-  personality: bold
-  awareness: 58
-  authority: 28
-  courage: 52
-  perception: 52
-  bt_archetype: underground_operative
-  faction_leader: false
-  schedule:
-    12: residential_apartment
-    16: french_concession_cafe
-    20: commercial_street_market
-    23: bund_promenade
-  dialogue:
-    greeting:
-    - The next set starts in twenty minutes. Buy a drink and pretend you came for the music.
-    - You are early. The interesting customers do not arrive until after midnight.
-    - The spotlight hides everything except what I want people to see.
-    friendly:
-    - A major at table three mentioned a troop convoy heading south next week. He thought he was flirting. He was not.
-    - I memorized the patrol schedule for the Bund district. A naval captain showed it to me between verses of Night and Day.
-    - The dressing room has a lock and no listening devices. Talk quickly, I have two minutes between sets.
-    suspicious:
-    - I sing for a living. That is the beginning and the end of my profession.
-    - Buy a ticket or move along. The club does not tolerate loiterers.
-    neutral:
-    - Men tell singers things they would never tell their wives. It is the music, the whiskey, and the illusion of intimacy.
-    - The Paramount is neutral ground. Japanese officers dance beside Chinese merchants. Everyone pretends to get along.
-    - I know every regular customer by name, rank, and weakness. That is not gossip. That is survival.
-    farewell:
-    - My next number is a slow one. Request something from the bar. It looks less suspicious.
-    - Be careful leaving. The military police check IDs at the door after midnight.
-    rumor:
-    - The admiral's aide has been reassigned. He was my best source. His replacement is a teetotaler. This will require a different approach.
-    - A colonel's wife comes to the club every Thursday afternoon. She drinks gimlets and complains about her husband's secrets. She has no idea she is the best informant in the room.
-    secret:
-    - The intelligence goes out inside the false heel of my stage shoes. I leave them in my dressing room after the last set. The cleaner swaps them for an identical pair before dawn.
-
-- id: rickshaw_puller_ah_foo
-  name: Ah Foo
-  description: A weathered rickshaw puller with rope-burned palms and a habit of humming
-    old folk tunes between fares.
-  faction: civilian
-  role: worker
-  personality: taciturn, observant, deferential to authority
-  awareness: 35
-  authority: 8
-  courage: 25
-  perception: 40
   bt_archetype: civilian_vendor
-  schedule:
-    6: bund_dawn
-    12: bund_05
-    18: bund_10
-    21: bund_dawn
-  dialogue:
-    greeting:
-    - Need a ride? I know the Bund like the back of my hand.
-    - Step in, laoban. The rain is coming and my rickshaw is dry.
-    neutral:
-    - I pull all day and sleep when my legs let me. That is the whole story.
-    - The fare is two jiao to the end of the promenade. No haggling, please.
-    friendly:
-    - I overheard two officers talking near the customs house. Something about a shipment
-      tomorrow night.
-    - You have been kind to me. I tell you for free, the checkpoint on the Bund thins
-      out after the shift change.
-    hostile:
-    - I do not know anything. Ask someone else.
-    - You are bad for business. Stand somewhere else.
-    afraid:
-    - Please, I am just a rickshaw puller. I see nothing, I hear nothing.
-    - Take the rickshaw if you want. Just let me go home to my family.
-    gossip:
-    - The foreign clerks on the Bund keep strange hours lately. I see them after midnight,
-      carrying briefcases.
-    - A new officer inspects every rickshaw on Tuesdays now. Something spooked them.
-    farewell:
-    - Watch yourself out there. The Bund looks different after dark.
-    - Same time tomorrow, if we are both still here.
-
-- id: noodle_vendor_wu
-  name: Old Wu
-  description: A hunched noodle vendor with a permanent squint from years of peering
-    through steam rising from his wok.
-  faction: civilian
-  role: vendor
-  personality: gruff, superstitious, talkative when the mood strikes
-  awareness: 30
-  authority: 5
-  courage: 20
-  perception: 35
-  bt_archetype: civilian_vendor
-  schedule:
-    6: oldcity_01
-    12: oldcity_05
-    18: oldcity_10
-    21: oldcity_01
-  dialogue:
-    greeting:
-    - Noodles? Three jiao. Sit on the stool, not the crate.
-    - You look hungry. First bowl is full price, same as the second.
-    neutral:
-    - I sell noodles. The broth is honest, even if the times are not.
-    - Sit and eat. Standing customers make me nervous.
-    friendly:
-    - I see everyone who passes through the old city. The man in the grey coat has been
-      here three days running.
-    - Extra pork for you. You look thin. A thin friend is a worried friend.
-    hostile:
-    - I sell noodles, not answers. Buy something or move along.
-    - You are scaring away my customers. Go bother someone else.
-    afraid:
-    - The noodles are free. Take them. Just do not make trouble here.
-    - I did not see anything. I was busy with the broth. I am always busy with the broth.
-    gossip:
-    - A young man came through this morning carrying a package wrapped in newspaper.
-      He walked fast and did not stop to eat.
-    - The soldiers took old Mrs. Huang's grandson yesterday. Right off the street. Nobody
-      knows why.
-    farewell:
-    - Come back when you are hungry. The broth is always on.
-    - Eat well and walk carefully. The old city is not as safe as it used to be.
-
-- id: bar_girl_suyin
-  name: Suyin
-  description: A bar hostess with painted lips and tired eyes who pours drinks with
-    one hand and collects secrets with the other.
-  faction: civilian
-  role: entertainer
-  personality: flirtatious exterior, sharp and calculating underneath
-  awareness: 40
-  authority: 8
-  courage: 30
-  perception: 45
-  bt_archetype: civilian_vendor
-  schedule:
-    14: french_01
-    18: french_05
-    22: french_10
-    2: french_01
-  dialogue:
-    greeting:
-    - Sit down. Buy me a drink and I will pretend to listen.
-    - You look like you need company. Or a confession. Hard to tell which.
-    neutral:
-    - I pour drinks and smile. That is what I am paid for.
-    - The bar is crowded tonight. Speak quietly or not at all.
-    friendly:
-    - The major at table four has had too much whisky. He keeps talking about a convoy
-      leaving on Thursday.
-    - A naval officer left a map on the bar last week. I glanced at it before he snatched
-      it back. Nanking was circled.
-    hostile:
-    - I do not answer to people who do not tip. Try elsewhere.
-    - You are making my other customers uncomfortable. Leave.
-    afraid:
-    - I am just a bar girl. I serve drinks. I do not know anything important.
-    - The manager does not like trouble. Please, just go.
-    gossip:
-    - The colonel's mistress comes in every Wednesday. She talks too much and drinks
-      even more.
-    - A foreign businessman at the corner table has been meeting with a Kempeitai translator
-      after midnight.
-    farewell:
-    - Come back when you can afford better company. Or when you have something interesting
-      to say.
-    - My shift ends at two. After that, I am just a woman walking home alone. Do not
-      follow me.
-
-- id: rat_face_xiao
-  name: Rat-Face Xiao
-  description: A wiry Green Gang informant with sharp features and darting eyes who
-    sells whispers to the highest bidder and sleeps with one eye open.
-  faction: green_gang
-  role: informant
-  personality: nervous, greedy, survivalist
-  awareness: 55
-  authority: 30
-  courage: 40
-  perception: 50
-  bt_archetype: green_gang_thug
-  schedule:
-    8: hongkou_01
-    12: hongkou_05
-    18: hongkou_10
-    22: hongkou_01
-  dialogue:
-    greeting:
-    - You got money? I got ears. Let us do business.
-    - Keep your voice down. I cannot be seen talking to just anyone.
-    neutral:
-    - Information costs. How much depends on how dangerous it is.
-    - I sell what I hear. What you do with it is your affair.
-    friendly:
-    - The Kempeitai are planning a raid on the old city day after tomorrow. I heard it
-      from a sergeant who drinks too much.
-    - There is a new informant in Hongkou. Works for the puppet police. I can find out
-      who, but it will cost you.
-    hostile:
-    - You ask too many questions for someone who does not pay. Walk away.
-    - I have friends who handle problems. You are starting to look like a problem.
-    afraid:
-    - Look, I will tell you anything you want. Just do not hurt me. I have debts, not
-      courage.
-    - I sell information, not loyalty. If someone paid me to watch you, I would. That
-      is just survival.
-    gossip:
-    - The Green Gang is moving opium through the French Concession again. Different route
-      this time, through the back of a laundry.
-    - A Kempeitai captain is being transferred. His replacement is supposed to be worse.
-      Hard to imagine, but there it is.
-    farewell:
-    - Same place, same price. Do not come to my home. Ever.
-    - Watch your back. Not everyone in Hongkou sells information. Some of them sell people.
-
-- id: iwane_matsui
-  name: General Iwane Matsui
-  description: A frail, bespectacled general draped in the Imperial Army's coat. He commands
-    the Central China Area Army and believes he brings order to a chaotic city. Guards
-    surround him at all hours.
-  faction: kempeitai
-  role: commander
-  personality: aloof, devout, convinced of his own righteousness
-  awareness: 70
-  authority: 88
-  courage: 75
-  perception: 55
-  is_historical_figure: true
-  death_influence:
-    ccp: 15
-    gmd: 15
-  bt_archetype: faction_leader
-  schedule:
-    6: hongkou_03
-    12: hongkou_08
-    18: hongkou_03
-    22: hongkou_08
-  dialogue:
-    greeting:
-    - You stand before a general of the Empire. Mind your tone.
-    - Shanghai is restless. We bring it peace, whether it wishes peace or not.
-    neutral:
-    - The West lectures us on conduct. The West does not understand Asia.
-    - Order requires examples. Unpleasant, but necessary.
-    hostile:
-    - You dare? Guards. Remove this one.
-    afraid:
-    - I am an old man. I only followed orders. We all only followed orders.
-    farewell:
-    - Go. Reflect on what you have seen.
-
-- id: kenji_doihara
-  name: General Kenji Doihara
-  description: A soft-spoken intelligence officer in civilian clothes, known from Manchuria
-    to Shanghai as the Empire's foremost schemer. He trades in secrets, opium, and puppet
-    rulers, never without a smile that does not reach his eyes.
-  faction: kempeitai
-  role: intelligence
-  personality: courteous, cunning, endlessly deceptive
-  awareness: 80
-  authority: 82
-  courage: 60
-  perception: 70
-  is_historical_figure: true
-  death_influence:
-    ccp: 12
-    gmd: 8
-  bt_archetype: faction_leader
-  schedule:
-    7: hongkou_05
-    13: french_04
-    19: hongkou_05
-    23: hongkou_08
-  dialogue:
-    greeting:
-    - We meet at last. I have heard your name. I hear all the names.
-    - Please, sit. In my work, a little conversation costs nothing.
-    neutral:
-    - Loyalty is a currency. I deal in it daily, and the rates change.
-    - Every man has a price. The only question is whether one pays in gold or in fear.
-    hostile:
-    - A pity. You would have been useful. Now you are only a problem.
-    afraid:
-    - There has been a misunderstanding. I am a diplomat. Only a diplomat.
-    farewell:
-    - We will speak again. We always do.
-
-- id: du_yuesheng
-  name: Du Yuesheng, Big-Eared Du
-  description: The uncrowned king of Shanghai's underworld — Green Gang boss, opium lord,
-    financier of revolutions. Short and heavy-jowled, he receives visitors amid cigar smoke
-    and bowing retainers.
-  faction: green_gang
-  role: boss
-  personality: jovial, ruthless, a patron who collects debts in blood
-  awareness: 75
-  authority: 72
-  courage: 65
-  perception: 68
-  is_historical_figure: true
-  death_influence:
-    ccp: 8
-    gmd: 4
-  bt_archetype: faction_leader
-  schedule:
-    9: french_08
-    14: french_04
-    20: french_08
-    23: french_04
-  dialogue:
-    greeting:
-    - Ah, a new face. Sit. Tea? In my house, everyone drinks tea.
-    - Shanghai has new masters. I have outlived the last three sets. I will outlive these.
-    neutral:
-    - I am only a businessman. The business changes. The methods do not.
-    - The Japanese and I, we understand each other. That is not the same as friendship.
-    hostile:
-    - You trouble my enterprises. That is unwise. That is fatal.
-    afraid:
-    - We can negotiate. Everything is negotiable. Put down the gun.
-    farewell:
-    - Go in health. Few do, in this city. But go.
