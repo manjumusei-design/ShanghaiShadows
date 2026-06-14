@@ -2,7 +2,7 @@ import random
 from dataclasses import dataclass, field
 from typing import List, Optional, TYPE_CHECKING
 
-from .constants import DISARM_CHANCE_CAP, STEALTH_KILL_BONUS
+from .constants import DISARM_CHANCE_CAP, MORALE_LOW_THRESHOLD, MORALE_PENALTY_MAX, STEALTH_KILL_BONUS
 
 if TYPE_CHECKING:
     from .world import Item
@@ -24,6 +24,7 @@ def resolve_attack(
         target_authority: int,
         target_armour: Optional["Item"],
         attacker_hidden: bool = False,
+        attacker_morale: int = 100,
 ) -> CombatResult:
     result = CombatResult()
 
@@ -36,7 +37,8 @@ def resolve_attack(
 
     defence = target_armour.defense_value if target_armour else 0
     effective_courage -= defence
-
+    if attacker_morale < MORALE_LOW_THRESHOLD:
+        effective_courage -= min(MORALE_PENALTY_MAX, MORALE_LOW_THRESHOLD - attacker_morale)
     if effective_courage >= target_authority:
         result.won = True
         result.messages.append("Your strike finds its mark.")
