@@ -1,0 +1,127 @@
+# For the behaviour trees I will comment on each line of code in detail so there is more transparency regarding the descisions made by each NPC and also for updates in the future
+trees:
+  # Kempeitai patrol officer here is disciplined, investigates threats, pursues hostiles
+  kempeitai_patrol:
+    root:
+      selector:
+        # P1: investigating a reported hostile sound
+        - sequence:
+            - condition: heard_hostile_sound
+            - cooldown:
+                key: investigate_cooldown
+                minutes: 30
+                child:
+                  action: investigate_sound
+        # P2: follow patrol schedule
+        - sequence:
+            - condition: on_schedule_time
+            - action: follow_schedule
+        # P3: routine patrol and pick a random exit
+        - action: patrol_random_exit
+        # P4: idle as fallback
+        - action: idle
+
+  # Civilian vendor should trade gossip, flee danger, otherwise stay put
+  civilian_vendor:
+    root:
+      selector:
+        # P1: flee if danger nearby and low courage
+        - sequence:
+            - condition: danger_nearby
+            - condition: courage_low
+            - action: flee_to_safe_room
+        # P2: trade gossip with customer
+        - sequence:
+            - condition: customer_nearby
+            - cooldown:
+                key: trade_cooldown
+                minutes: 60
+                child:
+                  action: trade_gossip
+        # P3: exchange rumors with same faction neighbor
+        - sequence:
+            - condition: nearby_same_faction
+            - cooldown:
+                key: gossip_cooldown
+                minutes: 30
+                child:
+                  action: exchange_rumors
+        # P4: idle
+        - action: idle
+
+  # Underground operative should avoid detection, gather intel, hide when exposed
+  underground_operative:
+    root:
+      selector:
+        # P1: flee if Kempeitai in room and not disguised
+        - sequence:
+            - condition: kempeitai_in_room
+            - condition: not_disguised
+            - action: flee_to_safe_room
+        # P2: share intel with trusted player
+        - sequence:
+            - condition: trusted_player_nearby
+            - action: share_intel
+        # P3: gather rumors on cooldown
+        - sequence:
+            - cooldown:
+                key: gather_cooldown
+                minutes: 45
+                child:
+                  action: gather_rumors
+        # P4: hide if hiding spots available and not high alert
+        - sequence:
+            - condition: hiding_spots_available
+            - inverter:
+                child:
+                  condition: high_alert
+            - action: hide_in_shadows
+        # P5: quiet patrol
+        - action: patrol_quietly
+
+  # Green Gang thug looks to extort, intimidate, flee authority
+  green_gang_thug:
+    root:
+      selector:
+        # P1: flee from authority
+        - sequence:
+            - condition: authority_nearby
+            - action: flee_from_authority
+        # P2: extort civilian when not watched
+        - sequence:
+            - condition: civilian_nearby
+            - condition: not_watched
+            - cooldown:
+                key: extort_cooldown
+                minutes: 60
+                child:
+                  action: extort_civilian
+        # P3: intimidate gang rival
+        - sequence:
+            - condition: gang_rival_nearby
+            - action: intimidate_rival
+        # P4: patrol territory
+        - action: patrol_territory
+
+  # Faction leader must meet contacts, delegate, stay put
+  faction_leader:
+    root:
+      selector:
+        # P1: hold secret meeting with trusted player
+        - sequence:
+            - condition: trusted_player_nearby
+            - cooldown:
+                key: meeting_cooldown
+                minutes: 120
+                child:
+                  action: hold_secret_meeting
+        # P2: delegate to subordinate
+        - sequence:
+            - condition: subordinate_nearby
+            - cooldown:
+                key: delegate_cooldown
+                minutes: 60
+                child:
+                  action: delegate_task
+        # P3: stay put — leaders don't wander
+        - action: stay_put
