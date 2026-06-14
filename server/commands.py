@@ -1295,6 +1295,7 @@ async def _attack_player(ctx: CommandContext, target_session: Session):
         target_authority=target.courage,
         target_armour=target_armour,
         attacker_hidden=player.hidden,
+        attacker_morale=player.morale,
     )
 
     if result.won:
@@ -1312,9 +1313,10 @@ async def _attack_player(ctx: CommandContext, target_session: Session):
 
     if not result.silent:
         player.hidden = False
+        await _propagate_combat_sound(ctx, _room(ctx))
         is_dead, death_msg = check_death_conditions(ctx)
         if is_dead:
-            await handle_player_death(ctx, death_msg)
+            await _trigger_death(ctx, death_msg)
 
 
 async def cmd_buy(ctx: CommandContext, cmd: Command):
