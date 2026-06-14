@@ -859,6 +859,9 @@ async def cmd_status(ctx: CommandContext, cmd: Command):
     lines.extend(summary_trust_lines(ctx))
     if ctx.session.player.flags:
         lines.append("Flags: " + ", ".join(sorted(ctx.session.player.flags)))
+    kills = [f for f in ctx.session.player.flags if f.startswith("historical_kill:")]
+    if kills:
+        lines.append(f"Assasinations: {len(kills)}")
     await post_display(ctx, "\n".join(lines))
 
 
