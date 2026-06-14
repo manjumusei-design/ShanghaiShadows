@@ -534,6 +534,55 @@ class WorldClock:
     def _are_opposite_factions(self, faction_a: str, faction_b: str) -> bool:
         return frozenset((faction_a, faction_b)) in self.OPPOSITE_FACTION_PAIRS
 
+    def _get_bt_registry(self):
+        if self._bt_registry is not None:
+            return self._bt_registry
+        from .behavior_tree import TreeRegistry, Status
+        actions = self._build_bt_actions()
+        conditions = self._build_bt_conditions()
+        self._bt_registry = TreeRegistry.from_yaml(
+            action_bindings=actions,
+            condition_bindings=conditions,
+        )
+        return self._bt_registry
+    
+    def _build_bt_actions(self):
+        from .behaviour_tree import Status
+
+        def _npc_ctx(bb, require_room=True, require_exits=False):
+            npc_id = bb.get("npc_id")
+            npc = self.shared.world.npcs.get(npc_id)
+            room_id = self.shared.world.npc_locations.get(npc_id) if npc else None
+            room = self.shared.world.rooms.get(room_id) if room_id else None
+            if not npc or (require_room and not room) or (require_exits and (not room or not room.exits)):
+                return None, None, None
+            return npc, room, room_id
+        
+        def _action_move(bb):
+            npc, room, room_id = _npc_ctx(bb, require_exits=True)
+            if not npc:
+                return Status.FAILURE
+            self._npc_move_action(npc, room_id, room, self._rooms_with_players())
+            return Status.SUCCESS
+        
+        def _action_gossip(bb):
+            npc, room, _ = _npc_ctx(bb)
+            if not npc:
+                return Status.FAILURE
+            self._npc_gossip_action(npc, room, self._rooms_with_players())
+            return Status.SUCCESS
+        
+        def _action_flee(bb):
+            npc, room, room_id = _npc_ctx(bb)
+            if not npc:
+                return Status.FAILURE
+            self._npc_flee_action(npc, room_id, room, self._rooms_with_players())
+            return Status.SUCCESS
+        
+        def _action_idle(bb):
+            return Status.SUCCESS
+        
+
     def _update_weather(self):
         from .victory import _season_from_day
         season = _season_from_day(self.shared.game_time.day)
