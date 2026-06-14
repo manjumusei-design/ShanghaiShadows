@@ -11,7 +11,7 @@ class TailingState:
     distance: int = 2
     elapsed_minutes: int = 0
     last_checked_minute: int = 0
-
+    stealth_awarded: bool = False
 
 @dataclass
 class Disguise:
