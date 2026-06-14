@@ -63,6 +63,7 @@ class Room:
     trishaw_stand: bool = False
     nurse_available: bool = False
     nurse_hours: List[int] = field(default_factory=list)
+    dead_drops: List[dict] = field(default_factory=list)
 
 
 def load_items(path: str) -> Dict[str, Item]:
@@ -166,14 +167,16 @@ def _apply_room_properties(rooms: Dict[str, Room], props_path: Path) -> None:
             if key in entry:
                 setattr(room, key, entry[key])
         if "hidden_exits" in entry:
-            room.hidden_exits.update(entry["hidden_exits"])
+            for he in entry["hidden_exits"]:
+                if isinstance(he, dict) and "direction" in he and "to" in he:
+                    room.hidden_exits[he["direction"]] = he["to"]
+                elif isinstance(he, dict):
+                    room.hidden_exits.update(he)
         if "nurse_hours" in entry:
             room.nurse_hours = entry["nurse_hours"]
         if "tags" in entry:
             for tag in entry["tags"]:
                 if tag not in room.tags:
-                    room.tags.append(tag)
-
 
 class World:
     def __init__(self):
