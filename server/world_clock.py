@@ -524,15 +524,15 @@ class WorldClock:
                     asyncio.create_task(session.send_display(f"{npc.name} flees {direction}!"))
 
     OPPOSITE_FACTION_PAIRS = {
-        frozenset({"ccp", "kempeitai"}),
-        frozenset({"gmd", "kempeitai"}),
-        frozenset({"ccp", "green_gang"}),
-        frozenset({"gmd", "green_gang"}),
-        frozenset({"green_gang", "civilian"}),
+        frozenset(("kempeitai", "ccp")),
+        frozenset(("kempeitai", "gmd")),
+        frozenset(("kempeitai", "green_gang")),
+        frozenset(("green_gang", "ccp")),
+        frozenset(("green_gang", "gmd")),
     }
 
-    def _are_opposite_factions(self, faction1: str, faction2: str) -> bool:
-        return frozenset({faction1, faction2}) in self.OPPOSITE_FACTION_PAIRS
+    def _are_opposite_factions(self, faction_a: str, faction_b: str) -> bool:
+        return frozenset((faction_a, faction_b)) in self.OPPOSITE_FACTION_PAIRS
 
     def _update_weather(self):
         from .victory import _season_from_day
