@@ -582,6 +582,34 @@ class WorldClock:
         def _action_idle(bb):
             return Status.SUCCESS
         
+        def _action_investigate_sound(bb):
+            npc, _, _ = _npc_ctx(bb, require_room=False)
+            return self._npc_investigate_action(npc, bb)
+
+        def _action_follow_schedule(bb):
+            npc, _, _ = _npc_ctx(bb, require_room=False)
+            if not npc:
+                return Status.FAILURE
+            hour = bb.get("game_hour", -1)
+            target_room = npc.schedule.get(hour)
+            current_room_id = self.shared.world.npc_locations.get(bb.get("npc_id"))
+            if not target_room or current_room_id == target_room:
+                return Status.FAILURE
+            current_room_obj = self.shared.world.rooms.get(current_room_id)
+            if current_room_obj:
+                self._npc_move_action(npc, current_room_id, current_room_obj, self._rooms_with_players())
+                return Status.SUCCESS
+            return Status.FAILURE
+
+        def _action_share_intel(bb):
+            npc, _, room_id = _npc_ctx(bb, require_room=False)
+            if not npc or not room_id:
+                return Status.FAILURE
+            for session in self.session_manager.get_players_in_room(room_id):
+                asyncio.create_task(session.send_display(
+                    f"{npc.name} glances around cautiously, then leans in close to share a whispered detail."
+                ))
+            return Status.SUCCESS
 
     def _update_weather(self):
         from .victory import _season_from_day
