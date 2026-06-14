@@ -7,7 +7,7 @@ from typing import Any, Dict, List, Optional
 from .trust import TrustMap, default_trust
 from .serialization import deserialize_item, serialize_item
 from .world import Item
-from .constants import CONVERSATION_HISTORY_MAXLEN
+from .constants import CONVERSATION_HISTORY_MAXLEN, STAT_CAP
 
 
 @dataclass
@@ -46,13 +46,13 @@ class PlayerData:
     completed_missions: List[str] = field(default_factory=list)
     abandoned_missions: List[str] = field(default_factory=list)
     visited_rooms: List[str] = field(default_factory=list)
+    wanted_level: int = 0
 
-
-def _reset_player_defaults(player: PlayerData, background: dict) -> None:
+def _reset_player_defaults(player: PlayerData, name: str, spawn_room: str = "bund_dawn") -> None:
     from collections import deque
     from .constants import CONVERSATION_HISTORY_MAXLEN
-    player.name = background.get("name", "Newcomer")
-    player.current_room = "bund_dawn"
+    player.name = name or "Newcomer"
+    player.current_room = spawn_room
     player.inventory = []
     player.disguise = ""
     player.stealth_skill = 55
@@ -76,14 +76,19 @@ def _reset_player_defaults(player: PlayerData, background: dict) -> None:
     player.money_silver = 0
     player.courage = 50
     player.perception = 30
-    player.map_revealed = ["bund_dawn"]
+    player.map_revealed = [spawn_room]
     player.maps_purchased = []
     player.worn_armour_id = ""
     player.active_missions = []
     player.completed_missions = []
     player.abandoned_missions = []
 
-    
+
+
+def grow_stat(player: PlayerData, attr: str, amount: int, cap: int = STAT_CAP) -> None:
+    setattr(player, attr, min(cap, getattr(player, attr) + amount))
+
+
 def serialize_player(player: PlayerData) -> Dict[str, object]:
     payload = {
         "username": player.username,
@@ -125,6 +130,7 @@ def serialize_player(player: PlayerData) -> Dict[str, object]:
         "completed_missions": player.completed_missions,
         "abandoned_missions": player.abandoned_missions,
         "visited_rooms": player.visited_rooms,
+        "wanted_level": player.wanted_level,
     }
     return payload
 
