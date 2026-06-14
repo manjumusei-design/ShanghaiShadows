@@ -85,6 +85,7 @@ KNOWN_VERBS = {
     "sell",
     "equip",
     "heal",
+    "sound",
 }
 
 
