@@ -10,7 +10,10 @@ from .constants import (
     HUNGER_DECAY_RATE,
     HUNGER_HEALTH_DAMAGE,
     LOW_HUNGER_THRESHOLD,
+    MORALE_DECAY_PER_HOUR,
+    STAT_GAIN_STEALTH_TAIL,
 )
+from .player_data import grow_stat
 from .commands import (
     apply_action_trust,
     advance_time_one_minute,
@@ -42,6 +45,7 @@ class WorldClock:
         self.disguises = disguises
         self.stealth = stealth
         self.storylet_manager = storylet_manager
+        self._bt_registry = None
 
     async def tick(self):
         if not self.session_manager.sessions:
