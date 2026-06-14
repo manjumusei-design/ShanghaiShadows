@@ -91,3 +91,16 @@ templates:
   - id: quiet_death
     condition: default
     text: "{name} died on {date}. The cause was listed as {cause}. They had lived in Shanghai through the worst of the occupation. Those who remembered them spoke of {deed}. The city does not pause. The city endures."
+
+  - condition:
+      cause: execution
+      faction: kempeitai
+    text: "{name} was dragged to the execution ground at dawn on {date}. The sentence was read aloud — a formality no one listened to. A single shot echoed across the compound. The occupation adds another number to its ledger."
+
+  - condition:
+      cause: smuggling
+    text: "{name} died moving contraband through the warehouses on {date}. The cargo was more important than the carrier. Somewhere in the city, a resistance cell waits for supplies that will never arrive."
+
+  - condition:
+      cause: betrayal
+    text: "{name} was betrayed on {date}. The person who sold them out sits in a warm room now, counting fabi. In Shanghai, trust is a currency that depreciates faster than the fabi."
