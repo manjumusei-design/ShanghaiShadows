@@ -610,7 +610,80 @@ class WorldClock:
                     f"{npc.name} glances around cautiously, then leans in close to share a whispered detail."
                 ))
             return Status.SUCCESS
+        
+        def _action_hide_in_shadows(bb):
+            npc, room, room_id = _npc_ctx(bb)
+            if not npc or not room or not room.hiding_spots:
+                return Status.FAILURE
+            for session in self.session_manager.get_players_in_room(room_id):
+                asyncio.create_task(session.send_display(
+                    f"{npc.name} slips into the shadows and vanishes from sight."
+                ))
+            return Status.SUCCESS
 
+        def _action_extort_civilian(bb):
+            npc, room, room_id = _npc_ctx(bb)
+            if not npc:
+                return Status.FAILURE
+            civilians = [nid for nid in room.npcs
+                         if nid != npc.id and self.shared.world.npcs.get(nid)
+                         and self.shared.world.npcs.get(nid).faction == "civilian"]
+            if not civilians:
+                return Status.FAILURE
+            target = self.shared.world.npcs.get(civilians[0])
+            for session in self.session_manager.get_players_in_room(room_id):
+                asyncio.create_task(session.send_display(
+                    f"{npc.name} corners {target.name} and demands something in a low voice."
+                ))
+            return Status.SUCCESS
+
+        def _action_intimidate_rival(bb):
+            npc, room, room_id = _npc_ctx(bb)
+            if not npc:
+                return Status.FAILURE
+            rivals = [nid for nid in room.npcs
+                      if nid != npc.id and self.shared.world.npcs.get(nid)
+                      and self._are_opposite_factions(npc.faction, self.shared.world.npcs.get(nid).faction)]
+            if not rivals:
+                return Status.FAILURE
+            target = self.shared.world.npcs.get(rivals[0])
+            for session in self.session_manager.get_players_in_room(room_id):
+                asyncio.create_task(session.send_display(
+                    f"{npc.name} glares at {target.name} threateningly."
+                ))
+            return Status.SUCCESS
+
+        def _action_hold_secret_meeting(bb):
+            npc, _, room_id = _npc_ctx(bb, require_room=False)
+            if not npc or not room_id:
+                return Status.FAILURE
+            for session in self.session_manager.get_players_in_room(room_id):
+                asyncio.create_task(session.send_display(
+                    f"{npc.name} beckons you closer. 'We need to talk. Quickly.'"
+                ))
+            return Status.SUCCESS
+
+        return {
+            "patrol_random_exit": _action_move,
+            "investigate_sound": _action_investigate_sound,
+            "follow_schedule": _action_follow_schedule,
+            "trade_gossip": _action_gossip,
+            "exchange_rumors": _action_gossip,
+            "share_intel": _action_share_intel,
+            "gather_rumors": _action_gossip,
+            "hide_in_shadows": _action_hide_in_shadows,
+            "patrol_quietly": _action_move,
+            "patrol_territory": _action_move,
+            "extort_civilian": _action_extort_civilian,
+            "intimidate_rival": _action_intimidate_rival,
+            "hold_secret_meeting": _action_hold_secret_meeting,
+            "delegate_task": _action_gossip,
+            "stay_put": _action_idle,
+            "flee_to_safe_room": _action_flee,
+            "flee_from_authority": _action_flee,
+            "idle": _action_idle,
+        }
+    
     def _update_weather(self):
         from .victory import _season_from_day
         season = _season_from_day(self.shared.game_time.day)
