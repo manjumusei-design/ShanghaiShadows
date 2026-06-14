@@ -1247,6 +1247,41 @@ async def _attack_npc(ctx: CommandContext, npc_id: str):
             await _trigger_death(ctx, death_msg)
 
 
+async def _trigger_death(ctx: CommandContext, death_msg: str) -> None:
+    if "last_words_spoken" not in ctx.session.player.flags:
+        await ctx.session.send_display(
+            "\nYour vision fades. You have one final breath. Speak your last words:\n"
+        )
+        ctx.session.awaiting_last_words = True
+        return
+    await handle_player_death(ctx, death_msg)
+
+
+async def _propogate_combat_sound(ctx: CommandContext, room) -> None:
+    from .pathfinding import propagate_sound, SOUND_GUNSHOT
+    heard_rooms = propagate_sound(
+        ctx.shared.world.rooms, room.id, SOUND_GUNSHOT,
+        max_distance=4, weather=getattr(ctx.shared, "weather", "clear"),
+        game_time=ctx.shared.game_time,
+    )
+    for heard_room_id, perceived_intensity in heard_rooms:
+        heard_room = ctx.shared.world.rooms.get(heard_room_id)
+        if not heard_room:
+            continue
+        for npc_id in heard_room.npcs:
+            npc = ctx.shared.world.npcs.get(npc_id)
+            if npc:
+                _update_npc_sound_memory(npc, room.id, perceived_intensity, "gunshot", ctx.shared.game_time)
+        if perceived_intensity >= 3:
+            msg = "You hear a loud gunshot nearby!"
+        elif perceived_intensity >= 2:
+            msg = "You hear a distant gunshot."
+        else:
+            msg = "You hear a muffled bang from somewhere nearby."
+        for session in ctx.session_manager.get_players_in_room(heard_room_id):
+            await session.send_display(msg + "\n")
+
+
 async def _attack_player(ctx: CommandContext, target_session: Session):
     player = ctx.session.player
     target = target_session.player
