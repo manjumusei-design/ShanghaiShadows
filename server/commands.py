@@ -1944,35 +1944,59 @@ async def cmd_yell(ctx: CommandContext, cmd: Command):
         await post_display(ctx, "Yell what?")
         return
 
+    from .pathfinding import propagate_sound, SOUND_YELL
+
     message = cmd.direct_obj
     player_name = ctx.session.player.name
     room = _room(ctx)
     if not room:
         return
 
-    rooms_to_notify = [room]
-    for direction, dest_id in room.exits.items():
-        dest_room = ctx.shared.world.rooms.get(dest_id)
-        if dest_room:
-            rooms_to_notify.append(dest_room)
+    heard_rooms = propagate_sound(
+        ctx.shared.world.rooms, room.id, SOUND_YELL,
+        max_distance=3, weather=getattr(ctx.shared, "weather", "clear"),
+        game_time=ctx.shared.game_time,
+    )
 
-    for notify_room in rooms_to_notify:
+    await broadcast_to_room(ctx, f"{player_name} yells: \"{message}\"!")
+
+    for heard_room_id, perceived_intensity in heard_rooms:
+        heard_room = ctx.shared.world.rooms.get(heard_room_id)
+        if not heard_room:
+            continue
         kempeitai_found = False
-        for npc_id in notify_room.npcs:
+        for npc_id in heard_room.npcs:
             npc = ctx.shared.world.npcs.get(npc_id)
-            if npc and npc.faction == "kempeitai" and notify_room != room:
-                if hasattr(npc, 'investigating_room_id'):
-                    npc.investigating_room_id = room.id
+            if not npc:
+                continue
+            _update_npc_sound_memory(npc, room.id, perceived_intensity, "yell", ctx.shared.game_time)
+            if npc.faction == "kempeitai":
                 kempeitai_found = True
 
-        if notify_room == room:
-            await broadcast_to_room(ctx, f"{player_name} yells: \"{message}\"!")
+        if perceived_intensity >= 3:
+            msg = f'You hear someone yell: "{message}"!'
+        elif perceived_intensity >= 2:
+            msg = f"You hear a distant yell from nearby."
         else:
-            kempeitai_msg = " You hear footsteps moving toward the noise." if kempeitai_found else ""
-            for session in ctx.session_manager.get_players_in_room(notify_room.id):
-                await session.send_display(f"You hear someone yell: \"{message}\"!{kempeitai_msg}\n")
+            msg = f"You hear a faint noise from somewhere nearby."
+        kempeitai_msg = " You hear footsteps moving toward the noise." if kempeitai_found else ""
+        for session in ctx.session_manager.get_players_in_room(heard_room_id):
+            await session.send_display(msg + kempeitai_msg + "\n")
 
     log_event(ctx, f"You yelled: \"{message}\"")
+
+
+async def cmd_sound(ctx: CommandContext, cmd: Command):
+    arg = (cmd.direct_obj or cmd.preposition or "").lower()
+    if arg in ("on", "yes", "true"):
+        ctx.session.audio_enabled = True
+        await post_display(ctx, "Ambient audio enabled. Type SOUND OFF to disable.")
+    elif arg in ("off", "no", "false"):
+        ctx.session.audio_enabled = False
+        await post_display(ctx, "Ambient audio disabled.")
+    else:
+        current = getattr(ctx.session, 'audio_enabled', False)
+        await post_display(ctx, f"Ambient audio: {'ON' if current else 'OFF'}. Use SOUND ON/OFF.")
 
 
 async def cmd_mod_weapon(ctx: CommandContext, cmd: Command):
@@ -2029,6 +2053,84 @@ async def cmd_mod_weapon(ctx: CommandContext, cmd: Command):
     await post_display(ctx, f"You attach the {mod.name} to your {weapon.name}. {mod.mod_type} increased by {mod.mod_bonus}.")
 
 
+async def cmd_hide_for(ctx: CommandContext, cmd: Command):
+    raw = cmd.raw
+    parts = raw.split()
+    if len(parts) < 6 or "in" not in [p.lower() for p in parts]:
+        await post_display(ctx, "Usage: hide for <player> <item> in <signal>")
+        return
+
+    in_idx = next(i for i, p in enumerate(parts) if p.lower() == "in")
+    recipient_name = parts[2] if len(parts) > 2 else ""
+    item_name = " ".join(parts[3:in_idx])
+    signal = " ".join(parts[in_idx + 1:])
+
+    if not item_name or not signal:
+        await post_display(ctx, "Specify what to hide and the recognition signal.")
+        return
+
+    room = _room(ctx)
+    if not room:
+        return
+
+    item = find_item_by_name(item_name, ctx.session.player.inventory)
+    if not item:
+        await post_display(ctx, f"You don't have {item_name}.")
+        return
+
+    from .world import replace as copy_item
+    drop_item = copy_item(item)
+    room.dead_drops.append({
+        "item": drop_item,
+        "signal": signal.lower(),
+        "recipient": recipient_name.lower(),
+        "hider": ctx.session.player.name,
+    })
+    ctx.session.player.inventory.remove(item)
+    await post_display(ctx, f"You hide {item.name} carefully. Only someone who knows to look for '{signal}' will find it.")
+
+
+async def cmd_search(ctx: CommandContext, cmd: Command):
+    detail = cmd.direct_obj
+    if not detail:
+        await post_display(ctx, "Search what? Usage: search <detail>")
+        return
+
+    room = _room(ctx)
+    if not room:
+        return
+
+    detail_lower = detail.lower()
+
+    for drop in room.dead_drops[:]:
+        if drop["signal"] == detail_lower:
+            recipient = drop.get("recipient", "")
+            is_recipient = (
+                recipient in (ctx.session.username.lower(), ctx.session.player.name.lower(), "")
+            )
+            if is_recipient:
+                item = drop["item"]
+                ctx.session.player.inventory.append(item)
+                room.dead_drops.remove(drop)
+                await post_display(ctx, f"Hidden behind '{detail}', you find {item.name}!")
+                return
+
+    if room.hidden_exits:
+        perception_roll = ctx.session.player.perception + random.randint(1, 20)
+        for direction, dest_id in room.hidden_exits.items():
+            if detail_lower in direction.lower():
+                if perception_roll >= 25:
+                    room.exits[direction] = dest_id
+                    grow_stat(ctx.session.player, "perception", STAT_GAIN_PERCEPTION_OBSERVE)
+                    await post_display(ctx, f"You discover a hidden passage leading {direction}. Your eye sharpens. (+1 perception)")
+                    return
+                else:
+                    await post_display(ctx, f"You sense something to the {direction} but can't find it.")
+                    return
+
+    await post_display(ctx, f"You search the {detail} but find nothing.")
+
+
 async def cmd_memorial(ctx: CommandContext, cmd: Command):
     if not ctx.shared.legacy_book:
         await post_display(ctx, "The legacy book is empty.")
@@ -2039,14 +2141,18 @@ async def cmd_memorial(ctx: CommandContext, cmd: Command):
         await post_display(ctx, "No entries in the legacy book.")
         return
 
-    lines = ["Legacy Book", ""]
+    lines = ["Memorial", ""]
     for entry in entries:
         name = entry.get("character_name", "Unknown")
         day = entry.get("day_of_death", "?")
-        summary = entry.get("summary", "")
-        lines.append(f"{name} — Day {day}")
-        if summary:
-            lines.append(f"  {summary}")
+        obituary = entry.get("obituary", "")
+        last_words = entry.get("last_words", "")
+        lines.append(f"— {name}, Day {day} —")
+        if obituary:
+            lines.append(obituary)
+        if last_words:
+            lines.append(f'  Last words: "{last_words}"')
+        lines.append("")
 
     await post_display(ctx, "\n".join(lines))
 
@@ -2206,6 +2312,40 @@ def process_survival_tick(ctx: CommandContext):
         ctx.session.player.health = min(100, ctx.session.player.health + 1)
 
 
+async def cmd_claim(ctx: CommandContext, cmd: Command):
+    room = _room(ctx)
+    if not room:
+        await post_display(ctx, "There is nothing here to claim.")
+        return
+    if not getattr(room, "safe_room", False):
+        await post_display(ctx, "Only a safe room can be claimed as a safehouse — a place beyond the curfew's reach.")
+        return
+    set_safehouse(ctx.session.username, room.id)
+    await post_display(ctx, f"You claim {room.title} as your safehouse. Should you fall, your next life begins here.")
+
+
+async def cmd_retrieve(ctx: CommandContext, cmd: Command):
+    from .auth import resolve_spawn_room, withdraw_stash
+    from .serialization import deserialize_item
+    from .save_manager import save_player
+    safehouse = resolve_spawn_room(ctx.session.username)
+    room = _room(ctx)
+    if not safehouse or not room or room.id != safehouse:
+        await post_display(ctx, "You can only recover stowed gear at your own safehouse.")
+        return
+    stash = withdraw_stash(ctx.session.username)
+    if not stash:
+        await post_display(ctx, "Nothing has been stowed here.")
+        return
+    recovered = []
+    for data in stash:
+        item = deserialize_item(data)
+        ctx.session.player.inventory.append(item)
+        recovered.append(item.name)
+    save_player(ctx.session.player)
+    await post_display(ctx, f"You recover stowed gear: {', '.join(recovered)}.")
+
+
 _COMMAND_REGISTRY = None
 
 
@@ -2265,7 +2405,11 @@ def build_command_registry() -> Dict[str, Callable]:
             "take trishaw": cmd_take_trishaw,
             "mod weapon": cmd_mod_weapon,
             "yell": cmd_yell,
+            "sound": cmd_sound,
             "memorial": cmd_memorial,
+            "claim": cmd_claim,
+            "retrieve": cmd_retrieve,
+            "hide for": cmd_hide_for,
             "unknown": cmd_stub,
         }
     return _COMMAND_REGISTRY
