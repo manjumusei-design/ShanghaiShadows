@@ -117,3 +117,10 @@ def list_characters(username: str) -> List[str]:
     if not account:
         return[]
     return account.characters.copy()
+
+
+def resolve_spawn_room(username: str) -> str:
+    account = get_account(username)
+    if account and account.primary_safehouse:
+        return account.primary_safehouse
+    return ""
