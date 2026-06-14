@@ -1178,6 +1178,23 @@ def _get_worn_armour(player: PlayerData) -> Optional[Item]:
     return None
 
 
+async def _apply_historical_kill(ctx: CommandContext, npc) -> None:
+    effects = npc.death_influence
+    if not effects:
+        return
+    parts = []
+    for faction, delta in effects.items():
+        ctx.shared.ccp_influence, ctx.shared.gmd_influence = adjust_influence(
+            ctx.shared.ccp_influence, ctx.shared.gmd_influence, faction, delta
+        )
+        parts.append(f"{faction} + {delta}")
+    flag = f"historical_kill:{npc.id}"
+    if flag not in ctx.session.player.flags:
+        ctx.session.player.flags.append(flag)
+    grow_stat(ctx.session.player, "morale", 10)
+    await post_display(ctx, f"{npc.name} falls. The news races through Shanghai — {', '.join(parts)}.")
+
+
 async def _attack_npc(ctx: CommandContext, npc_id: str):
     npc = ctx.shared.world.npcs.get(npc_id)
     if not npc:
