@@ -920,6 +920,7 @@ async def cmd_hide(ctx: CommandContext, cmd: Command):
     if success:
         log_event(ctx, "You found a place to hide.")
         await post_display(ctx, "You slip into shadow and become part of the room's silence.")
+        grow_stat(ctx.session.player, "stealth_skill", STAT_GAIN_STEALTH_HIDE)
     else:
         log_event(ctx, "You failed to hide cleanly.")
         await post_display(ctx, "You try to hide, but too many eyes still know where you stand.")
