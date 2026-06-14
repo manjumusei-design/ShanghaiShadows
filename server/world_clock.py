@@ -391,7 +391,6 @@ class WorldClock:
 
     def _process_npc_autonomy(self):
         import random
-        from .trust import exchange_gossip
 
         if self.shared.game_time.minute % 30 != 0:
             return
@@ -401,9 +400,8 @@ class WorldClock:
         if world_tension > 50:
             base_act_chance = 0.3
 
-        rooms_with_players = set()
-        for session in self.session_manager.sessions.values():
-            rooms_with_players.add(session.player.current_room)
+        rooms_with_players = self._rooms_with_players()
+        bt_registry = self._get_bt_registry()
 
         for npc_id, npc in self.shared.world.npcs.items():
             current_room_id = self.shared.world.npc_locations.get(npc_id)
@@ -422,16 +420,21 @@ class WorldClock:
             if random.random() >= base_act_chance:
                 continue
 
-            roll = random.random()
-            action_roll = random.random()
-            if roll < 0.40:
-                self._npc_move_action(npc, current_room_id, current_room, rooms_with_players)
-            elif roll < 0.60:
-                self._npc_gossip_action(npc, current_room, rooms_with_players)
-            elif roll < 0.70:
-                self._npc_argue_action(npc, current_room, rooms_with_players)
-            elif roll < 0.80:
-                self._npc_flee_action(npc, current_room_id, current_room, rooms_with_players)
+            archetype = getattr(npc, "bt_archetype", "")
+            if archetype:
+                tree = bt_registry.tree_for(npc_id, archetype)
+                self._refresh_blackboard(tree.blackboard, npc, current_room_id, current_room)
+                tree.tick()
+            else:
+                roll = random.random()
+                if roll < 0.40:
+                    self._npc_move_action(npc, current_room_id, current_room, rooms_with_players)
+                elif roll < 0.60:
+                    self._npc_gossip_action(npc, current_room, rooms_with_players)
+                elif roll < 0.70:
+                    self._npc_argue_action(npc, current_room, rooms_with_players)
+                elif roll < 0.80:
+                    self._npc_flee_action(npc, current_room_id, current_room, rooms_with_players)
 
     def _move_npc_between_rooms(self, npc_id: str, from_room_id: str, to_room_id: str, direction: str = "", silent: bool = False):
         old_room = self.shared.world.rooms.get(from_room_id)
