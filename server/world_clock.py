@@ -684,6 +684,136 @@ class WorldClock:
             "idle": _action_idle,
         }
     
+    def _build_bt_conditions(self):
+        def _cond_heard_hostile_sound(bb):
+            return bb.get("heard_hostile_sound", False)
+        
+        def _cond_on_schedule_time(bb):
+            npc_id = bb.get("npc_id")
+            npc = self.shared.world.npcs.get(npc_id)
+            return npc is not None and bb.get("game_hour", -1) in npc.schedule
+
+        _cond_danger_nearby = _cond_high_alert = lambda bb: bb.get("danger_nearby", False)
+        _cond_kempeitai_in_room = _cond_authority_nearby = lambda bb: bb.get("kempeitai_in_room", False)
+
+        def _cond_courage_low(bb):
+            return bb.get("courage", 50) < 40
+
+        _cond_customer_nearby = _cond_trusted_player_nearby = lambda bb: bb.get("nearby_player_count", 0) > 0
+
+        def _cond_nearby_same_faction(bb):
+            npc_id = bb.get("npc_id")
+            npc = self.shared.world.npcs.get(npc_id)
+            return npc is not None and bb.get("nearby_same_faction", 0) > 0
+
+        _cond_subordinate_nearby = _cond_nearby_same_faction
+
+        def _cond_not_disguised(bb):
+            return True
+
+        def _cond_hiding_spots_available(bb):
+            return bb.get("hiding_spots", False)
+
+        def _cond_civilian_nearby(bb):
+            return bb.get("nearby_civilian_count", 0) > 0
+
+        def _cond_not_watched(bb):
+            return not bb.get("kempeitai_in_room", False)
+
+        def _cond_gang_rival_nearby(bb):
+            return bb.get("nearby_rival_count", 0) > 0
+
+        return {
+            "heard_hostile_sound": _cond_heard_hostile_sound,
+            "on_schedule_time": _cond_on_schedule_time,
+            "danger_nearby": _cond_danger_nearby,
+            "courage_low": _cond_courage_low,
+            "customer_nearby": _cond_customer_nearby,
+            "nearby_same_faction": _cond_nearby_same_faction,
+            "kempeitai_in_room": _cond_kempeitai_in_room,
+            "not_disguised": _cond_not_disguised,
+            "trusted_player_nearby": _cond_trusted_player_nearby,
+            "hiding_spots_available": _cond_hiding_spots_available,
+            "high_alert": _cond_high_alert,
+            "authority_nearby": _cond_authority_nearby,
+            "civilian_nearby": _cond_civilian_nearby,
+            "not_watched": _cond_not_watched,
+            "gang_rival_nearby": _cond_gang_rival_nearby,
+            "subordinate_nearby": _cond_subordinate_nearby,
+        }
+
+    def _rooms_with_players(self) -> set:
+        return {s.player.current_room for s in self.session_manager.sessions.values()}
+
+    def _refresh_blackboard(self, bb, npc, room_id, room):
+        game_time = self.shared.game_time
+        bb.set("current_room_id", room_id)
+        bb.set("game_minute", game_time.minute + game_time.day * 1440)
+        bb.set("game_hour", game_time.hour)
+        bb.set("weather", getattr(self.shared, "weather", "clear"))
+        bb.set("courage", npc.courage)
+        bb.set("awareness", npc.awareness)
+        bb.set("perception", npc.perception)
+        bb.set("faction", npc.faction)
+
+        bb.set("hiding_spots", room.hiding_spots if room else False)
+        bb.set("safe_room", room.safe_room if room else False)
+
+        nearby_npcs = self._get_nearby_npcs(npc.id, room) if room else []
+        bb.set("nearby_npc_count", len(nearby_npcs))
+        bb.set("nearby_same_faction", sum(1 for n in nearby_npcs if n.faction == npc.faction))
+        bb.set("nearby_rival_count", sum(1 for n in nearby_npcs if self._are_opposite_factions(npc.faction, n.faction)))
+        bb.set("kempeitai_in_room", any(n.faction == "kempeitai" for n in nearby_npcs))
+        bb.set("nearby_civilian_count", sum(1 for n in nearby_npcs if n.faction == "civilian"))
+        player_count = len(self.session_manager.get_players_in_room(room_id)) if room else 0
+        bb.set("nearby_player_count", player_count)
+
+        bb.set("danger_nearby", bb.get("kempeitai_in_room", False) and npc.faction in ("ccp", "gmd"))
+
+        npc_bb = getattr(npc, "_blackboard", None)
+        if npc_bb:
+            sound = npc_bb.get("last_heard_sound")
+            if sound:
+                bb.set("last_heard_sound", sound)
+            bb.set("heard_hostile_sound", npc_bb.get("heard_hostile_sound", False))
+
+    def _npc_investigate_action(self, npc, bb):
+        from .behavior_tree import Status
+        from .pathfinding import a_star_find_path
+        sound = bb.get("last_heard_sound")
+        if not sound:
+            return Status.FAILURE
+        target_room_id = sound.get("room_id") if isinstance(sound, dict) else None
+        if not target_room_id:
+            return Status.FAILURE
+        npc_id = bb.get("npc_id")
+        current_room_id = self.shared.world.npc_locations.get(npc_id)
+        if current_room_id == target_room_id:
+            bb.clear("last_heard_sound")
+            return Status.SUCCESS
+        current_room = self.shared.world.rooms.get(current_room_id) if current_room_id else None
+        if not current_room or not current_room.exits:
+            bb.clear("last_heard_sound")
+            return Status.FAILURE
+        path = a_star_find_path(
+            self.shared.world.rooms, current_room_id, target_room_id,
+            cost_fn=lambda a, b: 1.0,
+        )
+        if not path:
+            bb.clear("last_heard_sound")
+            return Status.FAILURE
+        direction = path[0]
+        dest_id = current_room.exits.get(direction)
+        if dest_id:
+            rooms_with_players = self._rooms_with_players()
+            self._move_npc_between_rooms(npc_id, current_room_id, dest_id, direction)
+            if current_room_id in rooms_with_players or dest_id in rooms_with_players:
+                for session in self.session_manager.get_players_in_room(current_room_id):
+                    asyncio.create_task(session.send_display(f"{npc.name} moves purposefully {direction}."))
+            return Status.RUNNING
+        bb.clear("last_heard_sound")
+        return Status.FAILURE
+
     def _update_weather(self):
         from .victory import _season_from_day
         season = _season_from_day(self.shared.game_time.day)
@@ -732,36 +862,9 @@ class WorldClock:
                     death_message = loc("death.arrest")
 
             if is_dead:
-                from .commands import _generate_obituary, format_life_retrospective
-                obituary = _generate_obituary(session.player, death_message, game_day=self.shared.game_time.day)
-                retrospective = format_life_retrospective(self.shared.event_log, session.player.name)
-                self.shared.legacy_book.append({
-                    "character_name": session.player.name,
-                    "obituary": obituary,
-                    "summary": retrospective,
-                    "day_of_death": self.shared.game_time.day,
-                })
-                end_screen = f"""THE END
-
-{death_message}
-
----
-{obituary}
----
-
-{retrospective}
-
-{loc("death.legacy")}
-"""
-                asyncio.create_task(session.send_display(end_screen))
-                session.player.flags.append("player_died")
-                from .save_manager import save_player
-                save_player(session.player)
-                session.running = False
-                try:
-                    await session.websocket.close()
-                except Exception:
-                    pass
+                from .commands import _trigger_death
+                ctx = self.session_manager._make_context(session)
+                await _trigger_death(ctx, death_message)
 
         if self.shared.game_time.minute == 0:
             ending = check_victory_conditions(
