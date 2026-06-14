@@ -216,7 +216,11 @@ class WorldClock:
             session.player.current_room = target_room
             session.player.hidden = False
             asyncio.create_task(session.send_display(f"You shadow {target.name} and keep them in sight."))
-
+            if not tail.stealth_awarded:
+                tail.stealth_awarded = True
+                grow_stat(session.player, "stealth_skill", STAT_GAIN_STEALTH_TAIL)
+                asyncio.create_task(session.send_display("You learn from their movements. (+1 stealth)"))
+                
     def _disguise_bonus_for_session(self, session: Session) -> int:
         disguise = self.disguises.get(session.player.disguise)
         return disguise.bonus if disguise else 0
