@@ -7,7 +7,6 @@ from .commands import (
     apply_storylet_effects,
     build_command_registry,
     build_completions,
-    initialize_new_character,
     maybe_trigger_storylet,
     parse,
     resolve_storylet_choice,
@@ -54,6 +53,15 @@ class SessionManager:
                 text = message.strip()
                 if not text:
                     await session.send_prompt()
+                    continue
+
+                if getattr(session, 'awaiting_last_words', False):
+                    last_words = text.strip()[:200]
+                    session.awaiting_last_words = False
+                    session.player.flags.append("last_words_spoken")
+                    await session.send_display(f'\nYour last words echo in the cold air: "{last_words}"\n')
+                    from .commands import handle_player_death
+                    await handle_player_death(self._make_context(session), "You have spoken your final words.", last_words=last_words)
                     continue
 
                 if session.player.active_storylet:
@@ -186,14 +194,17 @@ class SessionManager:
     def _create_new_player(self, username: str):
         from .player_data import PlayerData
         from .trust import default_trust
-        from .commands import _generate_background, _apply_inherited_trust, _reset_player_defaults
+        from .commands import _generate_character_name, _reset_player_defaults
+        from .auth import resolve_spawn_room
 
-        background = _generate_background()
+        spawn_room = resolve_spawn_room(username) or "bund_dawn"
+        if not self.shared.world.get_room(spawn_room):
+            spawn_room = "bund_dawn"
 
         player = PlayerData()
         player.username = username
-        _reset_player_defaults(player, background)
-        player.last_newspaper_day = 0
+        _reset_player_defaults(player, _generate_character_name(), spawn_room)
+        player.trust = default_trust()
 
         save_player(player)
         return player
