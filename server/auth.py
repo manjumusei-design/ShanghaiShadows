@@ -144,3 +144,15 @@ def deposit_stash(username: str, items: List[dict]) -> None:
         raise ValueError(f"Account '{username}' does not exist")
     account.stash.extend(items)
     _save_accounts(accounts)
+
+
+def withdraw_stash(username: str) -> List[dict]:
+    username = username.strip().lower()
+    accounts = _load_accounts()
+    account = accounts.get(username)
+    if not account:
+        return []
+    items = account.stash
+    account.stash = []
+    _save_accounts(accounts)
+    return items
