@@ -1225,3 +1225,64 @@ storylets:
           add_item: silver_yuan
           flag: preyed_on_distraction
           log_event: "You stole from a crowd while a child was lost."
+
+  - id: tutorial_01_ration_card
+    scope: player
+    trigger_condition:
+      flag_not_set: tutorial_complete
+      room: bund_dawn
+    narrative: |
+      A thin man in a threadbare coat approaches you cautiously on the Bund.
+      "You look new here," he says, pressing a small card into your hand.
+      "This is a ration card. Keep it hidden. The Kempeitai confiscate them on sight."
+      He glances over his shoulder. "Go find Old Wu in the Old City. He runs a noodle stand there.
+      Tell him Liu Wei sent you. He'll explain how things work around here."
+    options:
+      - text: "Thank him and take the card"
+        effects:
+          - type: item
+            item_id: ration_card
+          - type: flag
+            flag: tutorial_step_1
+    probability: 1.0
+
+  - id: tutorial_02_deliver_note
+    scope: player
+    trigger_condition:
+      flag_set: tutorial_step_1
+      room: oldcity_01
+    narrative: |
+      Old Wu looks up from his wok, squinting through the steam. "Liu Wei sent you? Hmph."
+      He wipes his hands on his apron and produces a folded note from his pocket.
+      "Take this to Sister Mei at the chapel in the French Concession. Don't read it.
+      And don't get caught after curfew - that's 8 PM to 6 AM. The patrols are very thorough."
+    options:
+      - text: "Accept the note"
+        effects:
+          - type: item
+            item_id: folded_note
+          - type: flag
+            flag: tutorial_step_2
+    probability: 1.0
+
+  - id: tutorial_03_safe_rooms
+    scope: player
+    trigger_condition:
+      flag_set: tutorial_step_2
+      room: french_01
+    narrative: |
+      Sister Mei takes the note, reads it quickly, and nods. "Welcome to Shanghai. Or what's left of it."
+      She gestures around the chapel. "This is a safe room. No violence here. No arrests.
+      If you're hurt or hungry, look for rooms like this — clinics, churches, teahouses with the right connections."
+      She hands you a bowl of rice. "Eat. You look half-dead. And remember: trust is everything here.
+      Talk to people. Listen. Help when you can. The factions notice who's useful."
+    options:
+      - text: "Eat the rice and listen carefully"
+        effects:
+          - type: health
+            value: 20
+          - type: morale
+            value: 10
+          - type: flag
+            flag: tutorial_complete
+    probability: 1.0
