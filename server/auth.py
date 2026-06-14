@@ -14,7 +14,8 @@ class Account:
     username: str
     password_hash: str
     characters: List[str] = field(default_factory=list)
-
+    primary_safehouse: str = ""
+    stash: List[dict] = field(default_factory = list)
 
 def _ensure_accounts_dir():
     ACCOUNTS_PATH.parent.mkdir(parents=True, exist_ok=True)
