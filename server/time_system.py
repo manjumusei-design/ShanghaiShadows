@@ -7,7 +7,11 @@ class GameTime:
     minute: int = 0
     day: int = 1
 
-
+    @property
+    def hour(self) -> int:
+        return (self.minute // 60) % 24
+    
+    
 def time_str(gt: GameTime) -> str:
     h = (gt.minute // 60)  % 24
     m = gt.minute % 60
