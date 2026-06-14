@@ -627,6 +627,51 @@ async def cmd_look(ctx: CommandContext, cmd: Command):
     elif someone_watching:
         await ctx.session.send_display("You sense someone watching you.\n")
 
+    if room.tags and any("police" in t.lower() or "kempeitai" in t.lower() for t in room.tags):
+        for session in ctx.session_manager.sessions.values():
+            if session.player.wanted_level > 0 and session.player.name != ctx.session.player.name:
+                level_desc = ["suspected", "wanted", "MOST WANTED"][min(session.player.wanted_level - 1, 2)]
+                await ctx.session.send_display(
+                    f"A poster on the wall shows a sketch labelled '{session.player.name}' — {level_desc}. "
+                    f"Reward: {session.player.wanted_level * 20} fabi.\n"
+                )
+
+    if room.tags:
+        for tag in room.tags:
+            tag_lower = tag.lower()
+            if "ccp_safehouse" in tag_lower:
+                ccp_inf = ctx.shared.ccp_influence
+                if ccp_inf >= 80:
+                    await ctx.session.send_display(
+                        "The safehouse is well-equipped. A nurse tends to patients in the corner. "
+                        "A workbench holds tools for weapon modification. A map on the wall shows "
+                        "Kempeitai patrol routes marked in red ink.\n"
+                    )
+                elif ccp_inf >= 60:
+                    await ctx.session.send_display(
+                        "The safehouse has a cot and a jug of water. Someone has scratched a crude "
+                        "map of nearby streets into the wall.\n"
+                    )
+                else:
+                    await ctx.session.send_display(
+                        "The safehouse is bare - a single candle flickering, a thin blanket, the smell of damp concrete.\n"
+                    )
+            elif "gmd_safehouse" in tag_lower:
+                gmd_inf = ctx.shared.gmd_influence
+                if gmd_inf >= 80:
+                    await ctx.session.send_display(
+                        "The safehouse bristles with organization. A radio operator transmits in the back room. "
+                        "A weapons rack holds cleaned rifles. Charts on the wall track Japanese troop movements.\n"
+                    )
+                elif gmd_inf >= 60:
+                    await ctx.session.send_display(
+                        "The safehouse has a desk with papers and a radio hidden under a floorboard.\n"
+                    )
+                else:
+                    await ctx.session.send_display(
+                        "The safehouse is barely furnished — a chair, a table, blackout curtains.\n"
+                    )
+
     await ctx.session.send_completions(build_completions(ctx))
 
 
