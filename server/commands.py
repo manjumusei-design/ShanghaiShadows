@@ -334,40 +334,13 @@ def _select_obituary(context: dict) -> str:
     return "{name} passed in occupied Shanghai. The city endures." 
 
 
-def _generate_background() -> dict:
-    backgrounds = _load_yaml(BACKGROUNDS_PATH)
-    names = backgrounds.get("names", {})
-    backgrounds_list = backgrounds.get("backgrounds", [])
-    connections = backgrounds.get("connections", [])
-    motivations = backgrounds.get("motivations", [])
-    trust_presets = backgrounds.get("trust_presets", {})
 
+def _generate_character_name() -> str:
+    names = _load_yaml(BACKGROUNDS_PATH).get("names", {})
     import random
     gender = random.choice(["male", "female", "neutral"])
     name_lists = names.get(gender, ["Chen Wei"])
-    name = random.choice(name_lists)
-
-    background = random.choice(backgrounds_list) if backgrounds_list else "A survivor of the occupation."
-    connection = random.choice(connections) if connections else "You know someone in the resistance."
-    motivation = random.choice(motivations) if motivations else "You want to see Shanghai free."
-
-    trust_preset = random.choice(list(trust_presets.keys())) if trust_presets else "neutral"
-    trust_adjustments = trust_presets.get(trust_preset, {})
-
-    return {
-        "name": name,
-        "background": background,
-        "background_connection": connection,
-        "motivation": motivation,
-        "trust_adjustments": trust_adjustments,
-    }
-
-
-def _apply_inherited_trust(adjustments: dict) -> TrustMap:
-    base_trust = default_trust()
-    for key, delta in adjustments.items():
-        change_trust(base_trust, key, int(delta))
-    return base_trust
+    return random.choice(name_lists)
 
 
 def _derive_death_cause(player: PlayerData, death_message: str) -> str:
@@ -432,18 +405,17 @@ async def handle_player_death(ctx: CommandContext, death_message: str, last_word
         "day_of_death": ctx.shared.game_time.day,
         "last_words": last_words,
     })
+    from .auth import deposit_stash
+    from .serialization import serialize_item
+    if ctx.session.player.inventory:
+        deposit_stash(ctx.session.username, [serialize_item(item) for item in ctx.session.player.inventory])
     end_screen = f"""THE END
 
 {death_message}
-
----
-{obituary}
----
-
-{retrospective}
-
-{loc("death.legacy")}
 """
+    if last_words:
+        end_screen += f'\nLast words: "{last_words}"\n'
+    end_screen += "\nYour name has been added to the memorial. The city endures.\n"
     await post_display(ctx, end_screen)
     ctx.session.player.flags.append("player_died")
     save_player(ctx.session.player)
@@ -452,38 +424,6 @@ async def handle_player_death(ctx: CommandContext, death_message: str, last_word
         await ctx.session.websocket.close()
     except Exception:
         pass
-
-
-async def initialize_new_character(ctx: CommandContext):
-    from .save_manager import save_player, save_world_state
-    skip_days = apply_time_skip(ctx.shared)
-    skip_summary = generate_time_skip_summary(
-        skip_days,
-        ctx.shared.ccp_influence, ctx.shared.gmd_influence,
-    )
-
-    background = _generate_background()
-
-    new_trust = _apply_inherited_trust(background.get("trust_adjustments", {}))
-
-    _reset_player_defaults(ctx.session.player, background)
-    ctx.session.player.trust = new_trust
-
-    save_world_state(ctx.shared)
-
-    welcome_text = f"""
-{loc("new_chapter")}
-
-{skip_summary}
-You are {ctx.session.player.name}, {background['background_connection']}
-
-{background['motivation']}
-
-{loc("new_chapter.footer")}
-"""
-
-    await post_display(ctx, welcome_text)
-    await cmd_look(ctx, Command(verb="look", raw="look"))
 
 
 async def trigger_ending(ctx: CommandContext, ending_type: str):
