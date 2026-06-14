@@ -16,14 +16,16 @@ class Npc:
     role: str
     personality: str
     awareness: int
-    faction_leader: bool
-    schedule: Dict[int, str]
-    dialogue: Dict[str, List[str]]
+    schedule: Dict[int, str] = field(default_factory=dict)
+    dialogue: Dict[str, List[str]] = field(default_factory=dict)
+    faction_leader: bool = False
     memory: List[str] = field(default_factory=list)
     authority: int = 50
     courage: int = 50
     perception: int = 50
     is_historical_figure: bool = False
+    death_infleunce: Dict[str, int] = field(default_factory=dict)
+    bt_archetype: str = ""
 
 
 def load_npcs(path: str) -> Dict[str, Npc]:
