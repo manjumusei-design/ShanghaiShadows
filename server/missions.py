@@ -20,11 +20,12 @@ class MissionObjective:
 
 
 @dataclass
-class Mission:
-    id: str
-    title: str
-    description: str
-    faction: str
+class MissionReward:
+    money_fabi: int = 0
+    money_silver: int = 0
+    trust: Dict[str, int] = field(default_factory=dict)
+    influence: Dict[str, int] = field(default_factory=dict)
+    health_restore: int = 0
     morale_restore: int = 0
     add_flag: str = ""
     add_item: str = ""
