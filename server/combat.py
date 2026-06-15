@@ -15,6 +15,7 @@ class CombatResult:
     disarmed: bool = False
     weapon_broken: bool = False
     attacker_damaged: int = 0
+    target_damage: int = 0
     messages: List[str] = field(default_factory=list)
 
 
@@ -29,18 +30,24 @@ def resolve_attack(
     result = CombatResult()
 
     effective_courage = attacker_courage
+    weapon_type = attacker_weapon.weapon_type if attacker_weapon else ""
     if attacker_weapon:
         effective_courage += attacker_weapon.courage_bonus
     if attacker_hidden:
         effective_courage += STEALTH_KILL_BONUS
-        result.silent = True
+        result.silent = weapon_type == "stealth"
 
     defence = target_armour.defense_value if target_armour else 0
     effective_courage -= defence
     if attacker_morale < MORALE_LOW_THRESHOLD:
         effective_courage -= min(MORALE_PENALTY_MAX, MORALE_LOW_THRESHOLD - attacker_morale)
+
     if effective_courage >= target_authority:
         result.won = True
+        base = WEAPON_TYPE_BASE_DAMAGE.get(weapon_type, 20)
+        if attacker_hidden and weapon_type == "stealth":
+            base += STEALTH_DAMAGE_BONUS
+        result.target_damage = max(1, base + random.randint(0, 10) - defence)
         result.messages.append("Your strike finds its mark.")
     else:
         disarm_chance = min((target_authority - effective_courage) * 2, DISARM_CHANCE_CAP)
