@@ -83,6 +83,7 @@ missions:
     description: "A high-ranking Kempeitai officer is carrying a sealed communique detailing troop redeployments along the Yangtze. Steal the document from under his nose at headquarters before it reaches the garrison commander. Every hour we waste, another village burns."
     faction: ccp
     min_trust: 45
+    prerequisite_mission: ccp_leaflet_run
     giver_npc_hint: "zhang_the_silent"
     objectives:
       - type: collect_item
@@ -97,6 +98,8 @@ missions:
       money_fabi: 40
       trust:
         ccp.guerrilla: 20
+      influence:
+        ccp: 5
       morale_restore: 10
     expires_days: 5
 
@@ -269,6 +272,8 @@ missions:
       money_fabi: 50
       trust:
         ccp.guerrilla: 25
+      influence:
+        ccp: 8
       morale_restore: 20
     expires_days: 5
 
@@ -473,6 +478,8 @@ missions:
       money_fabi: 50
       trust:
         gmd.spy: 25
+      influence:
+        gmd: 5
       morale_restore: 15
     expires_days: 6
 
@@ -491,5 +498,55 @@ missions:
       money_fabi: 40
       trust:
         gmd.spy: 25
+      influence:
+        gmd: 8
       morale_restore: 10
     expires_days: 5
+
+  - id: dilemma_ccp_supplies
+    title: "Divert Supplies to the Underground"
+    description: "A crate of confiscated supplies sits in a dock warehouse under light guard. The CCP underground needs medicine and food for the hidden safehouses. Secure the crate and deliver it to Comrade Chen — but be warned, the Nationalists have their eyes on the same prize."
+    faction: ccp
+    min_trust: 30
+    giver_npc_hint: "comrade_chen"
+    objectives:
+      - type: collect_item
+        target: confiscated_supplies
+        count: 1
+        current: 0
+      - type: deliver_to_npc
+        target: comrade_chen
+        count: 1
+        current: 0
+    rewards:
+      money_fabi: 25
+      trust:
+        ccp.guerilla: 15
+      influence:
+        ccp: 8
+      morale_restore: 5
+    expires_days: 7
+
+  - id: dilemma_gmd_supplies
+    title: "Secure Supplies for the Republic"
+    description: "A crate of confiscated supplies sits in a dock warehouse under light guard. The Nationalist resistance needs these resources to arm and feed its operatives. Secure the crate and deliver it to Major Tang — the Communists are circling the same warehouse."
+    faction: gmd
+    min_trust: 30
+    giver_npc_hint: "major_tang"
+    objectives:
+      - type: collect_item
+        target: confiscated_supplies
+        count: 1
+        current: 0
+      - type: deliver_to_npc
+        target: major_tang
+        count: 1
+        current: 0
+    reward:
+      money_fabi: 25
+      trust:
+        gmd.spy: 15
+      influence:
+        gmd: 8
+      morale_restore: 5
+    expires_days: 7
