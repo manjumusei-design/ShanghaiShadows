@@ -13,13 +13,14 @@ from .locales import load_locale
 from .npc import Npc, get_contextual_dialogue
 from .parser import Command, parse
 from .player_data import PlayerData, _reset_player_defaults, grow_stat
+from .auth import set_safehouse
 from .serialization import _load_yaml, deserialize_item, serialize_item
 from .session import Session
 from .stealth import Disguise, StealthSystem, TailingState
 from .storylets import ActiveStorylet, StoryletManager, load_storylets
 from .time_system import EventScheduler, GameTime, time_str
-from .trust import (TrustMap, apply_trust_delta, change_trust, default_trust, exchange_gossip, get_role_trust, load_trust_rules, migrate_resistance_to_ccp_gmd, summarize_faction_trust,)
-from .victory import (check_victory_conditions, compile_legacy_narrative, compute_progress, generate_liberation_ending, generate_time_skip_summary, adjust_influence, apply_time_skip,)
+from .trust import (apply_trust_delta, change_trust, exchange_gossip, get_role_trust, load_trust_rules, migrate_resistance_to_ccp_gmd, summarize_faction_trust,)
+from .victory import (check_victory_conditions, compile_legacy_narrative, compute_progress, generate_liberation_ending, adjust_influence, predict_ending, fabi_inflation_multiplier, DAY_LIBERATION,)
 from .world import Item, World, replace
 from .game_world import SharedWorldState
 from .combat import resolve_attack, degrade_weapon, degrade_armour
@@ -31,7 +32,7 @@ from .constants import (
     RICE_BOWL_COST, BAOZI_COST, TEA_COST, PICKPOCKET_BASE,
     MISSION_FABI_RANGE, NURSE_COST, NURSE_HEAL,
     STAT_GAIN_COURAGE_COMBAT, STAT_GAIN_STEALTH_HIDE, STAT_GAIN_PERCEPTION_OBSERVE,
-    COMBAT_GROWTH_FACTIONS,
+    COMBAT_GROWTH_FACTIONS, WANTED_LEVEL_MAX,
 )
 
 if TYPE_CHECKING:
