@@ -855,6 +855,19 @@ async def cmd_status(ctx: CommandContext, cmd: Command):
             lines.append(f"Armour: {armour.name} (def {armour.defense_value}, dur {armour.durability})")
     lines.append("Trust:")
     lines.extend(summary_trust_lines(ctx))
+    progress = compute_progress(ctx.shared.game_time.day)
+    days_left = max(0, DAY_LIBERATION - ctx.shared.game_time.day)
+    ccp_inf = ctx.shared.ccp_influence
+    gmd_inf = ctx.shared.gmd_influence
+    _ENDING_TIDE = {
+        "ccp_uprising": "The tide favours the Communist underground.",
+        "gmd_return": "The tide favours the Nationalist return.",
+        "unity": "The factions walk a knife's edge toward unity.",
+        "balance": "The outcome hangs in the balance.",
+    }
+    lines.append(f"Liberation: {progress}% ({days_left} days remain)")
+    lines.append(f"Influence — CCP: {ccp_inf}  GMD: {gmd_inf}")
+    lines.append(_ENDING_TIDE[predict_ending(ccp_inf, gmd_inf)])
     if ctx.session.player.flags:
         lines.append("Flags: " + ", ".join(sorted(ctx.session.player.flags)))
     kills = [f for f in ctx.session.player.flags if f.startswith("historical_kill:")]
