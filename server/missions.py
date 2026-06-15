@@ -42,7 +42,7 @@ class Mission:
     prerequisite_mission: str = ""
     objectives: List[MissionObjective] = field(default_factory=list)
     rewards: MissionReward = field(default_factory=MissionReward)
-    expires_days = int = 7
+    expires_days: int = 7
 
 
 class MissionManager:
@@ -65,8 +65,8 @@ class MissionManager:
             if mission.prerequisite_mission and mission.prerequisite_mission not in player.completed_missions:
                 continue
             available.append(mission)
-        return available 
-    
+        return available
+
     def accept(self, player: "PlayerData", mission_id: str, current_day: int) -> bool:
         mission = self.missions.get(mission_id)
         if not mission:
@@ -86,7 +86,7 @@ class MissionManager:
             "objectives_progress": progress,
         })
         return True
-    
+
     def update_objectives(self, player: "PlayerData", event_type: str, target_id: str) -> List[str]:
         completed = []
         for active in player.active_missions:
@@ -101,17 +101,17 @@ class MissionManager:
             if self._is_complete(active):
                 completed.append(active["mission_id"])
         return completed
-    
+
     def _is_complete(self, active: dict) -> bool:
         return all(
             prog["current"] >= prog["count"]
             for prog in active["objectives_progress"]
         )
-    
+
     def complete(self, player: "PlayerData", mission_id: str) -> Optional[Mission]:
         active = None
         for a in player.active_missions:
-            if a ["mission_id"] == mission_id:
+            if a["mission_id"] == mission_id:
                 active = a
                 break
         if not active or not self._is_complete(active):
@@ -119,11 +119,11 @@ class MissionManager:
         player.active_missions.remove(active)
         player.completed_missions.append(mission_id)
         return self.missions.get(mission_id)
-    
+
     def abandon(self, player: "PlayerData", mission_id: str) -> bool:
-        active  = None
+        active = None
         for a in player.active_missions:
-            if a ["mission_id"] == mission_id:
+            if a["mission_id"] == mission_id:
                 active = a
                 break
         if not active:
@@ -131,7 +131,7 @@ class MissionManager:
         player.active_missions.remove(active)
         player.abandoned_missions.append(mission_id)
         return True
-    
+
     def check_expiry(self, player: "PlayerData", current_day: int) -> List[str]:
         expired = []
         remaining = []
@@ -141,12 +141,12 @@ class MissionManager:
                 expired.append(active["mission_id"])
             else:
                 remaining.append(active)
-            player.active_missions = remaining
-            return expired
-        
+        player.active_missions = remaining
+        return expired
+
     def get_active(self, player: "PlayerData") -> List[dict]:
         return player.active_missions
-    
+
 
 def load_missions(path: str = MISSIONS_PATH) -> Dict[str, Mission]:
     p = Path(path)
