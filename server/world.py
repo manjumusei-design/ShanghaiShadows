@@ -27,6 +27,7 @@ class Item:
     mods: List[str] = field(default_factory=list)
     concealed: bool = False
     is_weapon: bool = False
+    weapon_type: str = ""
     is_armour: bool = False
     is_container: bool = False
     container_items: List = field(default_factory=list)
