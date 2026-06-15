@@ -23,6 +23,7 @@ class Npc:
     authority: int = 50
     courage: int = 50
     perception: int = 50
+    hp: int = 100
     is_historical_figure: bool = False
     death_infleunce: Dict[str, int] = field(default_factory=dict)
     bt_archetype: str = ""
