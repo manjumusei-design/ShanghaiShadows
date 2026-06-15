@@ -64,15 +64,22 @@ def adjust_influence(ccp_influence: int, gmd_influence: int, faction: str, amoun
     return ccp_influence, gmd_influence
 
 
+def predict_ending(ccp_influence: int, gmd_influence: int) -> str:
+    if ccp_influence >= 80 and ccp_influence > gmd_influence:
+        return "ccp_uprising"
+    if gmd_influence >= 80 and gmd_influence > ccp_influence:
+        return "gmd_return"
+    if ccp_influence >= 60 and gmd_influence >= 60 and abs(ccp_influence - gmd_influence) <= 15:
+        return "unity"
+    return "balance"
+
+
 def check_victory_conditions(day: int, ccp_influence: int, gmd_influence: int) -> Optional[str]:
     if day >= DAY_LIBERATION:
-        if ccp_influence >= 80 and ccp_influence > gmd_influence:
-            return "ccp_uprising"
-        if gmd_influence >= 80 and gmd_influence > ccp_influence:
+        outcome = predict_ending(ccp_influence, gmd_influence)
+        if outcome == "balance":
             return "gmd_return"
-        if ccp_influence >= 60 and gmd_influence >= 60 and abs(ccp_influence - gmd_influence) <= 15:
-            return "unity"
-        return "gmd_return"
+        return outcome
     return None
 
 
@@ -157,7 +164,7 @@ def archive_legacy_cycle(legacy_book: List[Dict], cycle: int) -> None:
     with open(path, "w", encoding="utf-8") as f:
         yaml.dump(legacy_book, f, allow_unicode=True, default_flow_style=False)
 
-        
+
 def compile_legacy_narrative(legacy_book: List[Dict]) -> str:
     if not legacy_book:
         return "No one lived to tell the tale. But the city remembers."
