@@ -1292,13 +1292,13 @@ async def _propagate_combat_sound(ctx: CommandContext, room, intensity: int, max
         for npc_id in heard_room.npcs:
             npc = ctx.shared.world.npcs.get(npc_id)
             if npc:
-                _update_npc_sound_memory(npc, room.id, perceived_intensity, "gunshot", ctx.shared.game_time)
+                _update_npc_sound_memory(npc, room.id, perceived_intensit, noun, ctx.shared.game_time)
         if perceived_intensity >= 3:
-            msg = "You hear a loud gunshot nearby!"
+            msg = f"You hear a loud {noun} nearby!"
         elif perceived_intensity >= 2:
-            msg = "You hear a distant gunshot."
+            msg = f"You hear a distant {noun}."
         else:
-            msg = "You hear a muffled bang from somewhere nearby."
+            msg = f"You hear a muffled {noun} from somewhere nearby."
         for session in ctx.session_manager.get_players_in_room(heard_room_id):
             await session.send_display(msg + "\n")
 
@@ -1332,12 +1332,7 @@ async def _attack_player(ctx: CommandContext, target_session: Session):
 
     await _degrade_and_notify_weapon(ctx, weapon, result.won)
 
-    if not result.silent:
-        player.hidden = False
-        await _propagate_combat_sound(ctx, _room(ctx))
-        is_dead, death_msg = check_death_conditions(ctx)
-        if is_dead:
-            await _trigger_death(ctx, death_msg)
+    await _post_attack_sound(ctx, weapon, _room(ctx), result.silent)
 
 
 async def cmd_buy(ctx: CommandContext, cmd: Command):
