@@ -108,9 +108,11 @@ SYSTEM:
 TIPS:
 - Faction clothing affects NPC reactions
 - Safe rooms (inns, clinics) protect from arrest
-- Curfew is enforced from 20:00-06:00
+- Curfew is enforced 20:00-06:00
 - Multiple perception checks reveal hidden details
-- Building trust unlocks missions and resources"
+- Building trust unlocks missions and resources
+- Rain degrades weapons and armour when outdoors
+- Use JOURNAL <name> to read archived journals of fallen characters"
 cmd_look.nowhere: "You are nowhere."
 cmd_stub.not_implemented: "{verb} has not been implemented."
 death.health: "You collapse in the cold alley, too weak to continue. The city claims another life."
