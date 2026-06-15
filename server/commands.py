@@ -1278,11 +1278,11 @@ def _combat_sound_profile(weapon, hidden: bool):
     return SOUND_MELEE, 2, "struggle"
 
 
-async def _propogate_combat_sound(ctx: CommandContext, room) -> None:
-    from .pathfinding import propagate_sound, SOUND_GUNSHOT
+async def _propagate_combat_sound(ctx: CommandContext, room, intensity: int, max_distance: int, noun: str) -> None:
+    from .pathfinding import propagate_sound
     heard_rooms = propagate_sound(
-        ctx.shared.world.rooms, room.id, SOUND_GUNSHOT,
-        max_distance=4, weather=getattr(ctx.shared, "weather", "clear"),
+        ctx.shared.world.rooms, room.id, intensity,
+        max_distance=max_distance, weather=getattr(ctx.shared, "weather", "clear"),
         game_time=ctx.shared.game_time,
     )
     for heard_room_id, perceived_intensity in heard_rooms:
