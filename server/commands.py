@@ -1239,6 +1239,7 @@ async def _attack_npc(ctx: CommandContext, npc_id: str):
             apply_action_trust(ctx, f"kill_{npc.faction}.{npc.role}", room_npcs(ctx))
             if npc.faction == "kempeitai":
                 ctx.session.player.wanted_level = min(3, ctx.session.player.wanted_level + 1)
+                _adjust_shared_influence(ctx.shared, "ccp", 2)
                 log_event(ctx, "The occupation will not forget this. Your face is remembered.")
             if npc.faction in COMBAT_GROWTH_FACTIONS:
                 grow_stat(player, "courage", STAT_GAIN_COURAGE_COMBAT)
