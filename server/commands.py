@@ -1504,7 +1504,9 @@ async def _award_mission_rewards(ctx: CommandContext, mission):
     if reward.morale_restore > 0:
         player.morale = min(100, player.morale + reward.morale_restore)
     for trust_key, delta in reward.trust.items():
-        change_trust(player.trust, trust_key, delta)
+        change_trust(player.trust, trust_key, delta)\
+    for faction, delta in reward.influence.items():
+        _adjust_shared_influence(ctx.shared, faction, delta)
     if reward.add_flag:
         player.flags.append(reward.add_flag)
     if reward.add_item:
