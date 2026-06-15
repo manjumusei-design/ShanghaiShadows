@@ -100,7 +100,7 @@ def room_npcs(ctx: CommandContext) -> List[str]:
 def _update_npc_sound_memory(npc, source_room_id: str, intensity: int, sound_type: str, game_time) -> None:
     bb = getattr(npc, "_blackboard", None)
     if bb is None:
-        from .behaviour_tree import Blackboard
+        from .behavior_tree import Blackboard
         bb = Blackboard()
         npc._blackboard = bb
     game_minute = game_time.minute + game_time.day * 1440 if game_time else 0
@@ -292,8 +292,8 @@ def _find_player_in_room(ctx: CommandContext, name: str) -> Optional[Session]:
     for s in ctx.session_manager.get_players_in_room(ctx.session.player.current_room):
         if s.username == name or s.player.name.lower() == name.lower():
             return s
-        return None
-    
+    return None
+
 
 _CACHED_VERBS: Optional[List[str]] = None
 
@@ -322,7 +322,7 @@ _OBITUARY_TEMPLATES: Optional[List[dict]] = None
 
 def _get_obituary_templates() -> List[dict]:
     global _OBITUARY_TEMPLATES
-    if _OBITUARY_TEMPLATE is None:
+    if _OBITUARY_TEMPLATES is None:
         _OBITUARY_TEMPLATES = _load_yaml(OBITUARY_PATH).get("templates", [])
     return _OBITUARY_TEMPLATES
 
@@ -332,8 +332,7 @@ def _select_obituary(context: dict) -> str:
     best = _select_template(_get_obituary_templates(), context)
     if best:
         return best["text"].format(**context)
-    return "{name} passed in occupied Shanghai. The city endures." 
-
+    return "{name} passed in occupied Shanghai. The city endures."
 
 
 def _generate_character_name() -> str:
@@ -873,7 +872,7 @@ async def cmd_status(ctx: CommandContext, cmd: Command):
         lines.append("Flags: " + ", ".join(sorted(ctx.session.player.flags)))
     kills = [f for f in ctx.session.player.flags if f.startswith("historical_kill:")]
     if kills:
-        lines.append(f"Assasinations: {len(kills)}")
+        lines.append(f"Assassinations: {len(kills)}")
     await post_display(ctx, "\n".join(lines))
 
 
@@ -1239,7 +1238,7 @@ async def _attack_npc(ctx: CommandContext, npc_id: str):
             log_event(ctx, f"You eliminated {npc.name}.")
             apply_action_trust(ctx, f"kill_{npc.faction}.{npc.role}", room_npcs(ctx))
             if npc.faction == "kempeitai":
-                ctx.session.player.wanted_level = min(3, ctx.session.player.wanted_level + 1)
+                ctx.session.player.wanted_level = min(WANTED_LEVEL_MAX, ctx.session.player.wanted_level + 1)
                 _adjust_shared_influence(ctx.shared, "ccp", 2)
                 log_event(ctx, "The occupation will not forget this. Your face is remembered.")
             if npc.faction in COMBAT_GROWTH_FACTIONS:
@@ -1248,6 +1247,7 @@ async def _attack_npc(ctx: CommandContext, npc_id: str):
             if npc.is_historical_figure:
                 await _apply_historical_kill(ctx, npc)
                 ctx.shared.world.npcs.pop(npc_id, None)
+            ctx.shared.dead_npcs.add(npc_id)
             if room and npc_id in room.npcs:
                 room.npcs.remove(npc_id)
             await _handle_mission_objectives(ctx, "kill_npc", npc_id)
@@ -1260,7 +1260,7 @@ async def _attack_npc(ctx: CommandContext, npc_id: str):
         await _degrade_and_notify_weapon(ctx, weapon, False)
 
     await _post_attack_sound(ctx, weapon, room, result.silent, f"{player.name} attacks {npc.name}!")
-    
+
 
 async def _trigger_death(ctx: CommandContext, death_msg: str) -> None:
     if "last_words_spoken" not in ctx.session.player.flags:
@@ -1309,7 +1309,7 @@ async def _propagate_combat_sound(ctx: CommandContext, room, intensity: int, max
         for npc_id in heard_room.npcs:
             npc = ctx.shared.world.npcs.get(npc_id)
             if npc:
-                _update_npc_sound_memory(npc, room.id, perceived_intensit, noun, ctx.shared.game_time)
+                _update_npc_sound_memory(npc, room.id, perceived_intensity, noun, ctx.shared.game_time)
         if perceived_intensity >= 3:
             msg = f"You hear a loud {noun} nearby!"
         elif perceived_intensity >= 2:
@@ -1373,6 +1373,8 @@ async def cmd_buy(ctx: CommandContext, cmd: Command):
     else:
         await post_display(ctx, loc("cmd_buy.not_for_sale"))
         return
+
+    fabi_cost = int(fabi_cost * fabi_inflation_multiplier(ctx.shared.game_time.day))
 
     if not _check_money(ctx.session.player, fabi_cost):
         await post_display(ctx, loc("cmd_buy.no_money").format(cost=fabi_cost))
@@ -1505,7 +1507,7 @@ async def _award_mission_rewards(ctx: CommandContext, mission):
     if reward.morale_restore > 0:
         player.morale = min(100, player.morale + reward.morale_restore)
     for trust_key, delta in reward.trust.items():
-        change_trust(player.trust, trust_key, delta)\
+        change_trust(player.trust, trust_key, delta)
     for faction, delta in reward.influence.items():
         _adjust_shared_influence(ctx.shared, faction, delta)
     if reward.add_flag:
