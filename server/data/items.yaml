@@ -182,6 +182,7 @@ items:
     description: "A battered but functional pistol, its serial numbers filed off. The wooden stock is carved with a small five-pointed star."
     takeable: true
     is_weapon: true
+    weapon_type: firearm
     courage_bonus: 15
     durability: 50
     max_durability: 50
@@ -192,6 +193,7 @@ items:
     description: "A stout piece of lumber, wrapped in cloth at the grip. Silent and effective in close quarters."
     takeable: true
     is_weapon: true
+    weapon_type: melee
     courage_bonus: 5
     durability: 80
     max_durability: 80
@@ -202,6 +204,7 @@ items:
     description: "A cleaver stolen from a street vendor's stall. Dull but heavy enough to crack bone."
     takeable: true
     is_weapon: true
+    weapon_type: melee
     courage_bonus: 8
     durability: 30
     max_durability: 30
@@ -212,6 +215,7 @@ items:
     description: "A Type 38 Arisaka rifle with the chrysanthemum crest filed off the receiver. Stolen from a Japanese supply depot."
     takeable: true
     is_weapon: true
+    weapon_type: firearm
     courage_bonus: 25
     durability: 60
     max_durability: 60
@@ -222,6 +226,7 @@ items:
     description: "Thin, strong wire with wooden handles wrapped in cloth. Silent and personal."
     takeable: true
     is_weapon: true
+    weapon_type: stealth
     courage_bonus: 12
     durability: 20
     max_durability: 20
