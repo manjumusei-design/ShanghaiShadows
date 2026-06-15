@@ -396,3 +396,25 @@ items:
     description: "A leather pouch bearing the French consulate seal, secured with wax. Whatever it contains was important enough to warrant diplomatic protection — and dangerous enough that someone hid it here."
     takeable: true
     readable_text: "Official diplomatic correspondence detailing consular movements and protected channels. The documents reference secure transit arrangements and coded meeting protocols between foreign delegations."
+
+  - id: ration_card
+    name: "a worn ration card"
+    description: "A small cardboard card with Chinese characters and an official stamp. It entitles the bearer to a meager food allocation — if the distribution center still has supplies."
+    takeable: true
+    readable_text: "Shanghai Special Municipality — Weekly Ration Authorization. Bearer entitled to 200g rice, 50g oil. Valid through December 1937."
+
+  - id: folded_note
+    name: "a folded note"
+    description: "A small piece of rice paper, folded tightly. The handwriting is cramped and hurried."
+    takeable: true
+    readable_text: "You shouldn't read this. But if you do: the fish supplier at Huangpu Dock has been reliable. Tell him 'the carp are running.' He'll know what it means."
+
+  - id: winter_coat
+    name: "a padded winter coat"
+    description: "A thick quilted coat, well-worn but warm enough for Shanghai's damp winters."
+    takeable: true
+
+  - id: heavy_hacjet
+    name: "a heavy wool jacket"
+    description: "A military-surplus wool jacket. Heavy, scratchy, but it keeps the cold out."
+    takeable: true
