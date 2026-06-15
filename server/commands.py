@@ -523,9 +523,7 @@ async def _apply_effect_specials(ctx: CommandContext, effects: Dict[str, object]
 
 def _apply_effect_influence(shared: SharedWorldState, effects: Dict[str, object]) -> None:
     for faction_key, delta in effects.get("change_influence", {}).items():
-        shared.ccp_influence, shared.gmd_influence = adjust_influence(
-            shared.ccp_influence, shared.gmd_influence, faction_key, int(delta)
-        )
+        _adjust_shared_influence(shared, faction_key, int(delta))
 
 
 async def apply_storylet_effects(ctx: CommandContext, effects: Dict[str, object]):
