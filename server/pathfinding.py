@@ -7,6 +7,7 @@ SOUND_GUNSHOT = 5
 SOUND_WHISPER = 1
 SOUND_NPC_ALERT = 2
 SOUND_FOOTSTEP = 1
+SOUND_MELEE = 2
 
 
 def a_star_find_path(
