@@ -39,6 +39,7 @@ class Mission:
     faction: str
     min_trust: int = 0
     giver_npc_hint: str = ""
+    prerequisite_mission: str = ""
     objectives: List[MissionObjective] = field(default_factory=list)
     rewards: MissionReward = field(default_factory=MissionReward)
     expires_days = int = 7
@@ -60,6 +61,8 @@ class MissionManager:
                 continue
             faction_trust = get_role_trust(player.trust, mission.faction, None)
             if faction_trust < mission.min_trust:
+                continue
+            if mission.prerequisite_mission and mission.prerequisite_mission not in player.completed_missions:
                 continue
             available.append(mission)
         return available 
@@ -165,6 +168,7 @@ def load_missions(path: str = MISSIONS_PATH) -> Dict[str, Mission]:
             faction=row["faction"],
             min_trust=int(row.get("min_trust", 0)),
             giver_npc_hint=row.get("giver_npc_hint", ""),
+            prerequisite_mission=row.get("prerequisite_mission", ""),
             objectives=objectives,
             rewards=rewards,
             expires_days=int(row.get("expires_days", 7)),
