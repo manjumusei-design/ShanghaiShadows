@@ -51,6 +51,7 @@ class SharedWorldState:
     server_cycle: int = 1
     weather: str = "clear"
     active_room_storylets: Dict[str, dict] = field(default_factory=dict)
+    dead_npcs: set = field(default_factory=set)
 
     def get_trust_value(self, key: str, player_trust: TrustMap) -> int:
         if "." in key:
