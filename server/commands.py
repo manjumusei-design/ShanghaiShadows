@@ -1218,34 +1218,32 @@ async def _attack_npc(ctx: CommandContext, npc_id: str):
 
     room = _room(ctx)
     if result.won:
-        log_event(ctx, f"You eliminated {npc.name}.")
-        apply_action_trust(ctx, f"kill_{npc.faction}.{npc.role}", room_npcs(ctx))
-        if npc.faction == "kempeitai":
-            ctx.session.player.wanted_level = min(3, ctx.session.player.wanted_level + 1)
-            log_event(ctx, "The occupation will not forget this. Your face is remembered.")
-        if npc.faction in COMBAT_GROWTH_FACTIONS:
-            grow_stat(player, "courage", STAT_GAIN_COURAGE_COMBAT)
-            await post_display(ctx, "The fight hardens you. (+1 courage)")
-        if npc.is_historical_figure:
-            await _apply_historical_kill(ctx, npc)
-            ctx.shared.world.npcs.pop(npc_id, None)
-        if room and npc_id in room.npcs:
-            room.npcs.remove(npc_id)
-        await _handle_mission_objectives(ctx, "kill_npc", npc_id)
+        npc.hp = max(0, npc.hp - result.target_damage)
+        if npc.hp <= 0:
+            log_event(ctx, f"You eliminated {npc.name}.")
+            apply_action_trust(ctx, f"kill_{npc.faction}.{npc.role}", room_npcs(ctx))
+            if npc.faction == "kempeitai":
+                ctx.session.player.wanted_level = min(3, ctx.session.player.wanted_level + 1)
+                log_event(ctx, "The occupation will not forget this. Your face is remembered.")
+            if npc.faction in COMBAT_GROWTH_FACTIONS:
+                grow_stat(player, "courage", STAT_GAIN_COURAGE_COMBAT)
+                await post_display(ctx, "The fight hardens you. (+1 courage)")
+            if npc.is_historical_figure:
+                await _apply_historical_kill(ctx, npc)
+                ctx.shared.world.npcs.pop(npc_id, None)
+            if room and npc_id in room.npcs:
+                room.npcs.remove(npc_id)
+            await _handle_mission_objectives(ctx, "kill_npc", npc_id)
+        else:
+            await post_display(ctx, f"{npc.name} staggers, wounded. ({npc.hp} hp left)")
         await _degrade_and_notify_weapon(ctx, weapon, True)
     else:
         if result.attacker_damaged > 0:
             player.health = max(0, player.health - result.attacker_damaged)
         await _degrade_and_notify_weapon(ctx, weapon, False)
 
-    if not result.silent:
-        player.hidden = False
-        await broadcast_to_room(ctx, f"{player.name} attacks {npc.name}!", exclude_username=ctx.session.username)
-        await _propagate_combat_sound(ctx, room)
-        is_dead, death_msg = check_death_conditions(ctx)
-        if is_dead:
-            await _trigger_death(ctx, death_msg)
-
+    await _post_attack_sound(ctx, weapon, room, result.silent, f"{player.name} attacks {npc.name}!")
+    
 
 async def _trigger_death(ctx: CommandContext, death_msg: str) -> None:
     if "last_words_spoken" not in ctx.session.player.flags:
@@ -1255,6 +1253,29 @@ async def _trigger_death(ctx: CommandContext, death_msg: str) -> None:
         ctx.session.awaiting_last_words = True
         return
     await handle_player_death(ctx, death_msg)
+
+
+async def _post_attack_sound(ctx: CommandContext, weapon, room, silent: bool, broadcast: str = "") -> None:
+    player = ctx.session.player
+    if silent:
+        return
+    was_hidden = player.hidden
+    player.hidden = False
+    if broadcast:
+        await broadcast_to_room(ctx, broadcast, exclude_username=ctx.session.username)
+    intensity, max_dist, noun = _combat_sound_profile(weapon, was_hidden)
+    await _propagate_combat_sound(ctx, room, intensity, max_dist, noun)
+    is_dead, death_msg = check_death_conditions(ctx)
+    if is_dead:
+        await _trigger_death(ctx, death_msg)
+
+
+def _combat_sound_profile(weapon, hidden: bool):
+    from .pathfinding import SOUND_GUNSHOT, SOUND_MELEE
+    wtype = weapon.weapon_type if weapon else ""
+    if wtype == "firearm":
+        return SOUND_GUNSHOT, 2 if hidden else 4, "gunshot"
+    return SOUND_MELEE, 2, "struggle"
 
 
 async def _propogate_combat_sound(ctx: CommandContext, room) -> None:
