@@ -1189,16 +1189,20 @@ def _get_worn_armour(player: PlayerData) -> Optional[Item]:
     return None
 
 
+def _adjust_shared_influence(shared: SharedWorldState, faction: str, delta: int) -> None:
+    shared.ccp_influence, shared.gmd_influence = adjust_influence(
+        shared.ccp_influence, shared.gmd_influence, faction, delta
+    )
+
+
 async def _apply_historical_kill(ctx: CommandContext, npc) -> None:
     effects = npc.death_influence
     if not effects:
         return
     parts = []
     for faction, delta in effects.items():
-        ctx.shared.ccp_influence, ctx.shared.gmd_influence = adjust_influence(
-            ctx.shared.ccp_influence, ctx.shared.gmd_influence, faction, delta
-        )
-        parts.append(f"{faction} + {delta}")
+        _adjust_shared_influence(ctx.shared, faction, delta)
+        parts.append(f"{faction} +{delta}")
     flag = f"historical_kill:{npc.id}"
     if flag not in ctx.session.player.flags:
         ctx.session.player.flags.append(flag)
