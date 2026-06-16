@@ -32,7 +32,7 @@ from .constants import (
     RICE_BOWL_COST, BAOZI_COST, TEA_COST, PICKPOCKET_BASE,
     MISSION_FABI_RANGE, NURSE_COST, NURSE_HEAL,
     STAT_GAIN_COURAGE_COMBAT, STAT_GAIN_STEALTH_HIDE, STAT_GAIN_PERCEPTION_OBSERVE,
-    COMBAT_GROWTH_FACTIONS, WANTED_LEVEL_MAX,
+    COMBAT_GROWTH_FACTIONS, WANTED_LEVEL_MAX, SUSPICION_FAILED_STEALTH,
 )
 
 if TYPE_CHECKING:
@@ -933,6 +933,7 @@ async def cmd_hide(ctx: CommandContext, cmd: Command):
         await post_display(ctx, "You slip into shadow and become part of the room's silence.")
         grow_stat(ctx.session.player, "stealth_skill", STAT_GAIN_STEALTH_HIDE)
     else:
+        _raise_nearby_suspicion(ctx, SUSPICION_FAILED_STEALTH)
         log_event(ctx, "You failed to hide cleanly.")
         await post_display(ctx, "You try to hide, but too many eyes still know where you stand.")
 
@@ -1189,6 +1190,16 @@ def _get_worn_armour(player: PlayerData) -> Optional[Item]:
     return None
 
 
+def _raise_nearby_suspicion(ctx: CommandContext, amount: int) -> None:
+    room = _room(ctx)
+    if not room:
+        return
+    for npc_id in room.npcs:
+        npc = ctx.shared.world.npcs.get(npc_id)
+        if npc:
+            npc.suspicion = min(100, npc.suspicion + amount)
+
+            
 def _adjust_shared_influence(shared: SharedWorldState, faction: str, delta: int) -> None:
     shared.ccp_influence, shared.gmd_influence = adjust_influence(
         shared.ccp_influence, shared.gmd_influence, faction, delta
