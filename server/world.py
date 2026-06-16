@@ -5,7 +5,7 @@ from typing import Dict, List, Optional
 import yaml
 
 from .npc import Npc, load_npcs
-from .data_utils import filter_to_dataclass
+from .dataclass_utils import filter_to_dataclass
 
 CUSTOM_DIR = Path("server/data/custom")
 
@@ -22,7 +22,7 @@ class Item:
     morale_restore: int = 0
     courage_bonus: int = 0
     defense_value: int = 0
-    durability: int = -1 
+    durability: int = -1
     max_durability: int = -1
     mods: List[str] = field(default_factory=list)
     concealed: bool = False
@@ -146,12 +146,12 @@ def _load_generated_rooms(data: Dict[str, object], items: Dict[str, Item]) -> Di
     return rooms
 
 
-
 def _merge_custom(base: Dict, custom_path: Path, load_func) -> Dict:
     if not custom_path.exists():
         return base
     base.update(load_func(str(custom_path)))
     return base
+
 
 def _apply_room_properties(rooms: Dict[str, Room], props_path: Path) -> None:
     if not props_path.exists():
@@ -178,6 +178,8 @@ def _apply_room_properties(rooms: Dict[str, Room], props_path: Path) -> None:
         if "tags" in entry:
             for tag in entry["tags"]:
                 if tag not in room.tags:
+                    room.tags.append(tag)
+
 
 class World:
     def __init__(self):
@@ -220,7 +222,7 @@ class World:
             self.rooms[room_id].npcs.append(npc_id)
             self.npc_locations[npc_id] = room_id
 
-    def format_room(self, room_id: str) -> str:
+    def format_room(self, room_id: str, room_state_overrides: dict = None) -> str:
         room = self.get_room(room_id)
         if not room:
             return "You are nowhere."
@@ -234,6 +236,10 @@ class World:
                     lines.append(npc.name + " is here.")
         if room.exits:
             lines.append("Exits: " + ", ".join(room.exits.keys()))
+        if room_state_overrides:
+            override = room_state_overrides.get(room_id)
+            if override and override.get("shop_closed"):
+                lines.append(override.get("closed_reason", "This shop has closed."))
         return "\n".join(lines) + "\n"
 
 
