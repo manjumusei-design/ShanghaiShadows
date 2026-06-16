@@ -894,6 +894,7 @@ class WorldClock:
                 await _trigger_death(ctx, death_message)
 
         if self.shared.game_time.minute == 0:
+            await self._check_milestone_day()
             ending = check_victory_conditions(
                 self.shared.game_time.day,
                 self.shared.ccp_influence,
@@ -967,11 +968,26 @@ class WorldClock:
         self.shared.rumour_mill = {}
         self.shared.archived_journals = {}
         self.shared.mission_manager = None
+        self.shared.milestone_manager = None
         self.shared.server_cycle = cycle
         self.shared.weather = "clear"
         self.shared.active_room_storylets = {}
         self.shared.dead_npcs = set()
         self.session_manager.sessions.clear()
+
+    async def _check_milestone_day(self):
+        mm = self.shared.milestone_manager
+        if not mm:
+            return
+        triggered = mm.check_day(self.shared.game_time.day)
+        if not triggered:
+            return
+        from .milestones import apply_milestone_effects
+        for m in triggered:
+            for session in self.session_manager.sessions.values():
+                if apply_milestone_effects(session.player, m, self.shared):
+                    asyncio.create_task(session.send_display(f"\n{m.narrative}\n"))
+            await self._broadcast_display(f"\n[MILESTONE] {m.narrative}\n")
 
     async def _broadcast_display(self, text: str):
         for session in self.session_manager.sessions.values():
