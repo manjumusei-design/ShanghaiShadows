@@ -48,6 +48,7 @@ class SharedWorldState:
     rumour_mill: Dict[str, List[str]] = field(default_factory=dict)
     archived_journals: Dict[str, List[dict]] = field(default_factory=dict)
     mission_manager: Any = None
+    milestone_manager: Any = None
     server_cycle: int = 1
     weather: str = "clear"
     active_room_storylets: Dict[str, dict] = field(default_factory=dict)
