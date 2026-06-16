@@ -1251,6 +1251,12 @@ async def _attack_npc(ctx: CommandContext, npc_id: str):
             if room and npc_id in room.npcs:
                 room.npcs.remove(npc_id)
             await _handle_mission_objectives(ctx, "kill_npc", npc_id)
+            mm = ctx.shared.milestone_manager
+            if mm:
+                from .milestones import apply_milestone_effects
+                for m in mm.check_action("action_kill_npc"):
+                    if apply_milestone_effects(player, m, ctx.shared):
+                        await post_display(ctx, f"\n{m.narrative}\n")
         else:
             await post_display(ctx, f"{npc.name} staggers, wounded. ({npc.hp} hp left)")
         await _degrade_and_notify_weapon(ctx, weapon, True)
