@@ -15,6 +15,7 @@ STORYLETS_PATH = "server/data/storylets.yaml"
 OBITUARY_PATH = "server/data/obituary_templates.yaml"
 BACKGROUNDS_PATH = "server/data/character)backgrounds.yaml"
 MISSIONS_PATH = "server/data/missions.yaml"
+MILESTONES_PATH = "server/data/milestones.yaml"
 
 BASE_COURAGE_RANGE = (30, 50)
 AUTHORITY_CIVILIAN_RANGE = (5, 20)
