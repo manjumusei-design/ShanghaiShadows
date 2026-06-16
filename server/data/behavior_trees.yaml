@@ -4,6 +4,10 @@ trees:
   kempeitai_patrol:
     root:
       selector:
+        # P0: investigate a suspicious player
+        - sequence:
+            - condition: player_suspicious
+            - action: investigate_player
         # P1: investigating a reported hostile sound
         - sequence:
             - condition: heard_hostile_sound
