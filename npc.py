@@ -27,7 +27,7 @@ class Npc:
     is_historical_figure: bool = False
     death_infleunce: Dict[str, int] = field(default_factory=dict)
     bt_archetype: str = ""
-
+    suspicion: int = 0
 
 def load_npcs(path: str) -> Dict[str, Npc]:
     with open(path, "r", encoding="utf-8") as f:
