@@ -1199,7 +1199,7 @@ def _raise_nearby_suspicion(ctx: CommandContext, amount: int) -> None:
         if npc:
             npc.suspicion = min(100, npc.suspicion + amount)
 
-            
+
 def _adjust_shared_influence(shared: SharedWorldState, faction: str, delta: int) -> None:
     shared.ccp_influence, shared.gmd_influence = adjust_influence(
         shared.ccp_influence, shared.gmd_influence, faction, delta
@@ -1451,6 +1451,7 @@ async def cmd_pickpocket(ctx: CommandContext, cmd: Command):
         apply_action_trust(ctx, f"pickpocket_{npc.faction}.{npc.role}", room_npcs(ctx))
         await post_display(ctx, loc("cmd_pickpocket.success").format(name=npc.name, amount=amount))
     else:
+        _raise_nearby_suspicion(ctx, SUSPICION_FAILED_STEALTH)
         log_event(ctx, f"You were caught pickpocketing {npc.name}.")
         apply_action_trust(ctx, f"caught_pickpocket_{npc.faction}.{npc.role}", room_npcs(ctx))
         ctx.session.player.hidden = False
