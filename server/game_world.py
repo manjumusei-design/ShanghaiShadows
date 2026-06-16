@@ -1,8 +1,10 @@
 import json
-import yaml
+from collections import deque
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Dict, List
+
+import yaml
 
 from .stealth import Disguise
 from .time_system import EventScheduler, GameTime
@@ -14,6 +16,7 @@ from .constants import (
     DISGUISES_PATH,
     STORYLETS_PATH,
     STATE_BROADCAST_INTERVAL,
+    DECISION_LEDGER_MAXLEN,
 )
 
 SAVES_DIR = Path("server/data/saves")
@@ -53,7 +56,10 @@ class SharedWorldState:
     weather: str = "clear"
     active_room_storylets: Dict[str, dict] = field(default_factory=dict)
     dead_npcs: set = field(default_factory=set)
-
+    world_decisions: deque = field(default_factory=lambda: deque(maxlen=DECISION_LEDGER_MAXLEN))
+    room_state_overrides: Dict[str, dict] = field(default_factory=dict)
+    npc_dispositions: Dict[str, dict] = field(default_factory=dict)
+    
     def get_trust_value(self, key: str, player_trust: TrustMap) -> int:
         if "." in key:
             faction, role = key.split(".", 1)
