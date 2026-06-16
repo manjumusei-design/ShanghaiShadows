@@ -46,13 +46,15 @@ class GameServer:
     def _create_shared_world(self) -> SharedWorldState:
         world = World()
         from .time_system import EventScheduler, GameTime
-        from .constants import EVENTS_PATH, TRUST_RULES_PATH
+        from .constants import EVENTS_PATH, TRUST_RULES_PATH, MILESTONES_PATH
         from .trust import load_trust_rules
         from .game_world import SharedWorldState
+        from .milestones import load_milestones, MilestoneManager
 
         scheduler = EventScheduler()
         scheduler.load_from_yaml(EVENTS_PATH)
         trust_rules = load_trust_rules(TRUST_RULES_PATH)
+        milestones = load_milestones(MILESTONES_PATH)
 
         return SharedWorldState(
             world=world,
@@ -64,6 +66,7 @@ class GameServer:
             event_log=[],
             legacy_book=[],
             rumour_mill=[],
+            milestone_manager=MilestoneManager(milestones),
         )
     
     async def tick_loop(self):
