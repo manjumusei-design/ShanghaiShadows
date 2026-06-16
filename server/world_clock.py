@@ -12,6 +12,7 @@ from .constants import (
     LOW_HUNGER_THRESHOLD,
     MORALE_DECAY_PER_HOUR,
     STAT_GAIN_STEALTH_TAIL,
+    WANTED_LEVEL_MAX,
 )
 from .player_data import grow_stat
 from .commands import (
@@ -68,6 +69,8 @@ class WorldClock:
         if self.shared.game_time.minute % 60 == 0:
             self._update_weather()
         self._process_survival_all_sessions()
+        if self.shared.game_time.minute % 360 == 0:
+            self._respawn_dead_npcs()
         await self._check_death_and_victory()
 
     def _advance_time_one_minute(self):
@@ -254,6 +257,13 @@ class WorldClock:
                     })
                     self.shared.event_log = self.shared.event_log[-EVENT_LOG_MAXLEN:]
                     from .locales import get as loc
+                    arrested_chance = 15 + session.player.wanted_level * 20
+                    if random.randint(1, 100) <= arrest_chance:
+                        from .commands import _trigger_death
+                        ctx = self.session_manager._make_context(session)
+                        asyncio.create_task(_trigger_death(ctx, loc("death.arrest")))
+                    else:
+                        session.player.wanted_level = min(WANTED_LEVEL_MAX, session.player.wanted_level + 1)
                     asyncio.create_task(session.send_display(loc("curfew.warning")))
 
     async def _check_storylets(self):
@@ -404,6 +414,8 @@ class WorldClock:
         bt_registry = self._get_bt_registry()
 
         for npc_id, npc in self.shared.world.npcs.items():
+            if npc_id in self.shared.dead_npcs:
+                continue
             current_room_id = self.shared.world.npc_locations.get(npc_id)
             if not current_room_id:
                 continue
@@ -447,6 +459,21 @@ class WorldClock:
             self.shared.world.npc_locations[npc_id] = to_room_id
             return True
         return False
+
+    def _respawn_dead_npcs(self):
+        if not self.shared.dead_npcs:
+            return
+        npc_id = next(iter(self.shared.dead_npcs))
+        npc = self.shared.world.npcs.get(npc_id)
+        if not npc:
+            self.shared.dead_npcs.discard(npc_id)
+            return
+        rooms = list(self.shared.world.rooms)
+        if not rooms:
+            return
+        room_id = random.choice(rooms)
+        self.shared.world.place_npc(npc_id, room_id)
+        self.shared.dead_npcs.discard(npc_id)
 
     def _get_nearby_npcs(self, npc_id: str, current_room) -> list:
         return [self.shared.world.npcs.get(nid) for nid in current_room.npcs if nid != npc_id and self.shared.world.npcs.get(nid)]
@@ -943,6 +970,7 @@ class WorldClock:
         self.shared.server_cycle = cycle
         self.shared.weather = "clear"
         self.shared.active_room_storylets = {}
+        self.shared.dead_npcs = set()
         self.session_manager.sessions.clear()
 
     async def _broadcast_display(self, text: str):
