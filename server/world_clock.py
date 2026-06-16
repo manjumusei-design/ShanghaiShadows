@@ -13,6 +13,10 @@ from .constants import (
     MORALE_DECAY_PER_HOUR,
     STAT_GAIN_STEALTH_TAIL,
     WANTED_LEVEL_MAX,
+    HIDDEN_DECAY_CHANCE,
+    SUSPICION_DECAY_PER_TICK,
+    SUSPICION_THRESHOLD_INVESTIGATE,
+    SUSPICION_INVESTIGATE_RELIEF,
 )
 from .player_data import grow_stat
 from .commands import (
@@ -389,6 +393,12 @@ class WorldClock:
                                 "The winter cold seeps into your bones.\n"
                             ))
 
+            if minute % 15 == 0 and session.player.hidden and random.random() <= HIDDEN_DECAY_CHANCE:
+                session.player.hidden = False
+                asyncio.create_task(session.send_display(
+                    "A passerby glances your way. You are no longer hidden."
+                ))
+
             if is_summer and minute % 60 == 0:
                 room = self.shared.world.get_room(session.player.current_room)
                 if room and len(room.npcs) >= 3 and not room.indoors:
@@ -422,7 +432,7 @@ class WorldClock:
             current_room = self.shared.world.rooms.get(current_room_id)
             if not current_room:
                 continue
-            skip_npc = False
+            npc.suspicion = max(0, npc.suspicion - SUSPICION_DECAY_PER_TICK)
             for session in self.session_manager.get_players_in_room(current_room_id):
                 if session.player.active_storylet or session.player.manually_advancing:
                     skip_npc = True
@@ -690,6 +700,29 @@ class WorldClock:
                 ))
             return Status.SUCCESS
 
+
+        def _action_investigate_player(bb):
+            npc, room, room_id = _npc_ctx(bb)
+            if not npc or not room_id:
+                return Status.FAILURE
+            players = self.session_manager.get_players_in_room(room_id)
+            target = next((s for s in players if s.player.hidden), None)
+            if not target:
+                for nid in room.npcs:
+                    other = self.shared.world.npcs.get(nid)
+                    if other:
+                        other.suspicion = 0
+                return Status.FAILURE
+            target.player.hidden = False
+            asyncio.create_task(target.send_display(
+                f"{npc.name} scans the shadows and spots you. 'What are you doing?'"
+            ))
+            for nid in room.npcs:
+                other = self.shared.world.npcs.get(nid)
+                if other:
+                    other.suspicion = max(0, other.suspicion - SUSPICION_INVESTIGATE_RELIEF)
+            return Status.SUCCESS
+        
         return {
             "patrol_random_exit": _action_move,
             "investigate_sound": _action_investigate_sound,
@@ -750,6 +783,10 @@ class WorldClock:
         def _cond_gang_rival_nearby(bb):
             return bb.get("nearby_rival_count", 0) > 0
 
+
+        def _cond_player_suspicious(bb):
+            return bb.get("player_suspicion_nearby", False)
+        
         return {
             "heard_hostile_sound": _cond_heard_hostile_sound,
             "on_schedule_time": _cond_on_schedule_time,
@@ -767,6 +804,7 @@ class WorldClock:
             "not_watched": _cond_not_watched,
             "gang_rival_nearby": _cond_gang_rival_nearby,
             "subordinate_nearby": _cond_subordinate_nearby,
+            "player_suspicious": _cond_player_suspicious,
         }
 
     def _rooms_with_players(self) -> set:
@@ -796,7 +834,10 @@ class WorldClock:
         bb.set("nearby_player_count", player_count)
 
         bb.set("danger_nearby", bb.get("kempeitai_in_room", False) and npc.faction in ("ccp", "gmd"))
-
+        bb.set("player_suspicion_nearby",
+               npc.suspicion > SUSPICION_THRESHOLD_INVESTIGATE
+               or any (n.suspicion > SUSPICION_THRESHOLD_INVESTIGATE for n in nearby_npcs))
+        
         npc_bb = getattr(npc, "_blackboard", None)
         if npc_bb:
             sound = npc_bb.get("last_heard_sound")
