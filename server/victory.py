@@ -56,6 +56,10 @@ def compute_progress(day: int) -> int:
     return min(100, int(day * 100 / DAY_LIBERATION))
 
 
+def fabi_inflation_multiplier(day: int) -> float:
+    return 1.0 + min(2.0, (day //30) * 0.15)
+
+
 def adjust_influence(ccp_influence: int, gmd_influence: int, faction: str, amount: int) -> tuple:
     if faction == "ccp":
         ccp_influence = max(0, min(100, ccp_influence + amount))
