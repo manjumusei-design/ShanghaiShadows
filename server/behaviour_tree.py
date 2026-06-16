@@ -17,15 +17,15 @@ class Blackboard:
         self._data: Dict[str, Any] = {}
         self._timers: Dict[str, int] = {}
 
-    def get(self, key: str, default: Any =None) -> Any:
+    def get(self, key: str, default: Any = None) -> Any:
         return self._data.get(key, default)
-    
+
     def set(self, key: str, value: Any) -> None:
         self._data[key] = value
 
     def has(self, key: str) -> bool:
         return key in self._data
-    
+
     def clear(self, key: str) -> None:
         self._data.pop(key, None)
 
@@ -35,55 +35,55 @@ class Blackboard:
     def timer_elapsed(self, key: str, current_minute: int, cooldown_minutes: int) -> bool:
         start = self._timers.get(key, -999999)
         return (current_minute - start) >= cooldown_minutes
-    
+
 
 
 class BTNode:
     def tick(self, bb: Blackboard) -> Status:
         raise NotImplementedError
-    
+
 
 
 class Sequence(BTNode):
     def __init__(self, children: List[BTNode]) -> None:
         self.children = children
-        self._running_idx = 0
 
     def tick(self, bb: Blackboard) -> Status:
-        start = self._running_idx
-        self._running_idx = 0
+        key = f"_seq_{id(self)}"
+        start = bb.get(key, 0)
+        bb.set(key, 0)
         for i in range(start, len(self.children)):
             status = self.children[i].tick(bb)
             if status == Status.FAILURE:
                 return Status.FAILURE
             if status == Status.RUNNING:
-                self._running_idx = i
+                bb.set(key, i)
                 return Status.RUNNING
         return Status.SUCCESS
-    
+
 
 class Selector(BTNode):
     def __init__(self, children: List[BTNode]) -> None:
         self.children = children
-        self._running_idx = 0
 
     def tick(self, bb: Blackboard) -> Status:
-        start = self._running_idx
-        self._running_idx = 0
+        key = f"_sel_{id(self)}"
+        start = bb.get(key, 0)
+        bb.set(key, 0)
         for i in range(start, len(self.children)):
             status = self.children[i].tick(bb)
             if status == Status.SUCCESS:
                 return Status.SUCCESS
             if status == Status.RUNNING:
-                self._running_idx = i
+                bb.set(key, i)
                 return Status.RUNNING
-            return Status.FAILURE
-        
+        return Status.FAILURE
+
 
 class Parallel(BTNode):
-    def __init__(self, children: List[BTNode]) -> None:
+    def __init__(self, children: List[BTNode], succeed_on_all: bool = True) -> None:
         self.children = children
-        self._running_idx = 0
+        self.succeed_on_all = succeed_on_all
 
     def tick(self, bb: Blackboard) -> Status:
         statuses = [c.tick(bb) for c in self.children]
@@ -96,7 +96,7 @@ class Parallel(BTNode):
         return (Status.SUCCESS
                 if any(s == Status.SUCCESS for s in statuses)
                 else Status.FAILURE)
-    
+
 
 class Inverter(BTNode):
     def __init__(self, child: BTNode) -> None:
@@ -109,7 +109,7 @@ class Inverter(BTNode):
         if s == Status.FAILURE:
             return Status.SUCCESS
         return Status.RUNNING
-    
+
 
 class Succeeder(BTNode):
     def __init__(self, child: BTNode) -> None:
@@ -134,7 +134,7 @@ class Cooldown(BTNode):
         if status in (Status.SUCCESS, Status.RUNNING):
             bb.set_timer(self.key, current)
         return status
-    
+
 
 class RepeatUntilFail(BTNode):
     def __init__(self, child: BTNode, max_attempts: int = 3) -> None:
@@ -146,16 +146,16 @@ class RepeatUntilFail(BTNode):
             if self.child.tick(bb) == Status.FAILURE:
                 return Status.FAILURE
         return Status.SUCCESS
-    
+
 
 class Action(BTNode):
     def __init__(self, fn: Callable[[Blackboard], Status], name: str = "") -> None:
         self.fn = fn
         self.name = name or getattr(fn, "__name__", "action")
-        
+
     def tick(self, bb: Blackboard) -> Status:
         return self.fn(bb)
-    
+
 
 class Condition(BTNode):
     def __init__(self, fn: Callable[[Blackboard], bool], name: str = "") -> None:
@@ -164,22 +164,22 @@ class Condition(BTNode):
 
     def tick(self, bb: Blackboard) -> Status:
         return Status.SUCCESS if self.fn(bb) else Status.FAILURE
-    
 
-class BehaviourTree:
+
+class BehaviorTree:
     def __init__(self, root: BTNode, blackboard: Blackboard) -> None:
         self.root = root
         self.blackboard = blackboard
-    
+
     def tick(self) -> Status:
         return self.root.tick(self.blackboard)
-    
+
 
 
 _DATA_DIR = Path("server/data")
 
 
-def _load_tree_defs(path: str = "server/data/behaviour_trees.yaml") -> Dict[str, dict]:
+def _load_tree_defs(path: str = "server/data/behavior_trees.yaml") -> Dict[str, dict]:
     p = Path(path)
     if not p.exists():
         return {}
@@ -198,14 +198,14 @@ class TreeRegistry:
         self._defs = tree_defs
         self._actions = action_bindings
         self._conditions = condition_bindings
-        self._root_cache: Dict[str, BTNode] = {} # Cache in case of a performance issue due to requiring of BTNode regen where it might strain NEST resource
+        self._root_cache: Dict[str, BTNode] = {}
 
     @classmethod
     def from_yaml(
         cls,
         path: str = "server/data/behavior_trees.yaml",
         action_bindings: Optional[Dict[str, Callable]] = None,
-        condition_bindings: Optional[Dict[str. Callable]] = None,
+        condition_bindings: Optional[Dict[str, Callable]] = None,
     ) -> "TreeRegistry":
         defs = _load_tree_defs(path)
         return cls(
@@ -213,27 +213,27 @@ class TreeRegistry:
             action_bindings or {},
             condition_bindings or {},
         )
-    
+
     def tree_for(self, npc_id: str, archetype: str) -> BehaviorTree:
         if archetype not in self._root_cache:
             self._root_cache[archetype] = self._build_root(archetype)
         bb = Blackboard()
         bb.set("npc_id", npc_id)
-        return BehaviourTree(self._root_cache[archetype], bb)
-    
+        return BehaviorTree(self._root_cache[archetype], bb)
+
     def _build_root(self, archetype: str) -> BTNode:
         defn = self._defs.get(archetype)
         if not defn or "root" not in defn:
             return Action(lambda bb: Status.SUCCESS, name="idle")
         return self._parse_node(defn["root"])
-    
+
 
     def _parse_node(self, node_def: Any) -> BTNode:
         if not isinstance(node_def, dict):
             if isinstance(node_def, str):
                 return self._make_action(node_def)
             return Action(lambda bb: Status.SUCCESS, name="noop")
-        
+
         if "selector" in node_def:
             return Selector([self._parse_node(c) for c in node_def["selector"]])
         if "sequence" in node_def:
@@ -257,20 +257,20 @@ class TreeRegistry:
                 key=cd.get("key", "default_cooldown"),
                 minutes=cd.get("minutes", 30),
             )
-        
+
         if "condition" in node_def:
             return self._make_condition(node_def["condition"])
         if "action" in node_def:
             return self._make_action(node_def["action"])
-        
+
         return Action(lambda bb: Status.SUCCESS, name="noop")
-        
+
     def _make_action(self, name: str) -> Action:
         fn = self._actions.get(name)
         if fn:
             return Action(fn, name=name)
         return Action(lambda bb: Status.FAILURE, name=f"missing_action:{name}")
-    
+
     def _make_condition(self, name: str) -> Condition:
         fn = self._conditions.get(name)
         if fn:
