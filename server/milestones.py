@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 from typing import Dict, List, TYPE_CHECKING
 from pathlib import Path
-
+import yaml
 
 if TYPE_CHECKING:
     from .player_data import PlayerData
@@ -48,3 +48,21 @@ def apply_milestone_effects(player: "PlayerData", milestone: Milestone, shared: 
                 shared.ccp_influence, shared.gmd_influence, faction, delta
             )
     return True
+
+
+def load_milestones(path: str) -> List[Milestone]:
+    p = Path(path)
+    if not p.exists():
+        return []
+    with open(p, "r", encoding="utf-8") as f:
+        data = yaml.safe_load(f) or {}
+    milestones = []
+    for row in data.get("milestones", []):
+        milestones.append(Milestone(
+            id=row["id"],
+            trigger=row["trigger"],
+            narrative=row["narrative"],
+            day=int(row.get("day", 0)),
+            effects=row.get("effects", {}),
+        ))
+    return milestones
