@@ -591,7 +591,7 @@ async def cmd_look(ctx: CommandContext, cmd: Command):
     if not room:
         await post_display(ctx, loc("cmd_look.nowhere"))
         return
-    room_text = ctx.shared.world.format_room(room.id)
+    room_text = ctx.shared.world.format_room(room.id, getattr(ctx.shared, "room_state_overrides", None))
 
     visible_players = []
     hidden_players_detected = []
@@ -1376,6 +1376,12 @@ async def cmd_buy(ctx: CommandContext, cmd: Command):
     room = _room(ctx)
     if not room:
         return
+    overrides = getattr(ctx.shared, "room_state_overrides", None)
+    if overrides:
+        override = overrides.get(room.id)
+        if override and override.get("shop_closed"):
+            await post_display(ctx, override.get("closed_reason", "This shop has closed."))
+            return
     item = find_item_by_name(cmd.direct_obj, room.items)
     if not item:
         await post_display(ctx, loc("cmd_buy.not_here"))
@@ -2212,6 +2218,33 @@ async def cmd_memorial(ctx: CommandContext, cmd: Command):
     await post_display(ctx, "\n".join(lines))
 
 
+async def cmd_rumors(ctx: CommandContext, cmd: Command):
+    decisions = getattr(ctx.shared, "world_decisions", None)
+    if not decisions:
+        await post_display(ctx, "The city is quiet. No rumours reach your ears.")
+        return
+    recent = [d for d in decisions if d["day"] >= ctx.shared.game_time.day - 1]
+    if not recent:
+        await post_display(ctx, "No new rumours circulate today.")
+        return
+    lines = ["Rumours on the wind:", ""]
+    for d in recent[-10:]:
+        dtype = d["decision_type"]
+        actor = ctx.shared.world.npcs.get(d["actor_npc_id"])
+        name = actor.name if actor else "Someone"
+        if dtype == "vendor_shutter":
+            lines.append(f"  {name} shuttered their shop on Day {d['day']} — some say they fled the city.")
+        elif dtype == "defection":
+            old = d.get("effects", {}).get("old_faction", "")
+            new = d.get("effects", {}).get("new_faction", "")
+            lines.append(f"  {name} has abandoned the {old.upper()} for the {new.upper()}.")
+        elif dtype == "extortion":
+            lines.append(f"  {name} was seen shaking down a civilian for protection money.")
+        else:
+            lines.append(f"  {name} — {dtype} on Day {d['day']}.")
+    await post_display(ctx, "\n".join(lines))
+
+
 async def advance_time_one_minute(ctx: CommandContext):
     ctx.shared.game_time.minute += 1
     if ctx.shared.game_time.minute >= 1440:
@@ -2462,6 +2495,8 @@ def build_command_registry() -> Dict[str, Callable]:
             "yell": cmd_yell,
             "sound": cmd_sound,
             "memorial": cmd_memorial,
+            "rumors": cmd_rumors,
+            "rumours": cmd_rumors,
             "claim": cmd_claim,
             "retrieve": cmd_retrieve,
             "hide for": cmd_hide_for,
