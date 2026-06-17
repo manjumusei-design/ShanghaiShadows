@@ -883,9 +883,17 @@ class WorldClock:
         def _cond_gang_rival_nearby(bb):
             return bb.get("nearby_rival_count", 0) > 0
 
-
         def _cond_player_suspicious(bb):
             return bb.get("player_suspicion_nearby", False)
+        
+        def _cond_tension_high(bb):
+            return bb.get("world_tension:", 0) > VENDOR_SHUTTER_TENSION
+        
+        def _cond_should_defect(bb):
+            disillusionment = bb.get("disillusionment", 0)
+            if disillusionment < DEFECTION_DISILLUSIONMENT_THRESHOLD:
+                return False
+            return random.random() < DEFECTION_DAILY_CHANCE
         
         return {
             "heard_hostile_sound": _cond_heard_hostile_sound,
@@ -905,6 +913,8 @@ class WorldClock:
             "gang_rival_nearby": _cond_gang_rival_nearby,
             "subordinate_nearby": _cond_subordinate_nearby,
             "player_suspicious": _cond_player_suspicious,
+            "tension_high": _cond_tension_high,
+            "should_defect": _cond_shoud_defect,
         }
 
     def _rooms_with_players(self) -> set:
@@ -938,6 +948,11 @@ class WorldClock:
                npc.suspicion > SUSPICION_THRESHOLD_INVESTIGATE
                or any (n.suspicion > SUSPICION_THRESHOLD_INVESTIGATE for n in nearby_npcs))
         
+        world_tension = (self.shared.ccp_influence + self.shared.gmd_influence) / 2
+        bb.set("world_tension", world_tension)
+        disp = self.shared.npc_dispositions.get(npc.id, {})
+        bb.set("disillusionment", disp.get("disillusionment", 0))
+
         npc_bb = getattr(npc, "_blackboard", None)
         if npc_bb:
             sound = npc_bb.get("last_heard_sound")
@@ -1114,6 +1129,9 @@ class WorldClock:
         self.shared.weather = "clear"
         self.shared.active_room_storylets = {}
         self.shared.dead_npcs = set()
+        self.shared.world_decisions.clear()
+        self.shared.room_state_overrides.clear()
+        self.shared.npc_dispositions.clear()
         self.session_manager.sessions.clear()
 
     async def _check_milestone_day(self):
