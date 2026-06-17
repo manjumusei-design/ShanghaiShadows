@@ -20,7 +20,7 @@ from .stealth import Disguise, StealthSystem, TailingState
 from .storylets import ActiveStorylet, StoryletManager, load_storylets
 from .time_system import EventScheduler, GameTime, time_str
 from .trust import (apply_trust_delta, change_trust, exchange_gossip, get_role_trust, load_trust_rules, migrate_resistance_to_ccp_gmd, summarize_faction_trust,)
-from .victory import (check_victory_conditions, compile_legacy_narrative, compute_progress, generate_liberation_ending, adjust_influence, predict_ending, fabi_inflation_multiplier, DAY_LIBERATION,)
+from .victory import (check_victory_conditions, compile_legacy_narrative, compute_progress, generate_liberation_ending, adjust_influence, predict_ending, fabi_inflation_multiplier, _season_from_day, DAY_LIBERATION,)
 from .world import Item, World, replace
 from .game_world import SharedWorldState
 from .combat import resolve_attack, degrade_weapon, degrade_armour
@@ -33,6 +33,7 @@ from .constants import (
     MISSION_FABI_RANGE, NURSE_COST, NURSE_HEAL,
     STAT_GAIN_COURAGE_COMBAT, STAT_GAIN_STEALTH_HIDE, STAT_GAIN_PERCEPTION_OBSERVE,
     COMBAT_GROWTH_FACTIONS, WANTED_LEVEL_MAX, SUSPICION_FAILED_STEALTH,
+    SEASONAL_PRICE_MULTIPLIER,
 )
 
 if TYPE_CHECKING:
@@ -1397,7 +1398,8 @@ async def cmd_buy(ctx: CommandContext, cmd: Command):
         await post_display(ctx, loc("cmd_buy.not_for_sale"))
         return
 
-    fabi_cost = int(fabi_cost * fabi_inflation_multiplier(ctx.shared.game_time.day))
+    season_mult = SEASONAL_PRICE_MULTIPLIER.get(_season_from_day(ctx.shared.game_time.day), 1.0)
+    fabi_cost = int(fabi_cost * fabi_inflation_multiplier(ctx.shared.game_time.day) * season_mult)
 
     if not _check_money(ctx.session.player, fabi_cost):
         await post_display(ctx, loc("cmd_buy.no_money").format(cost=fabi_cost))
