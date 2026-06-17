@@ -22,9 +22,12 @@ from .constants import (
     DEFECTION_DISILLUSIONMENT_THRESHOLD,
     DEFECTION_DAILY_CHANCE,
     DISILLUSIONMENT_PER_TICK,
+    SEASONAL_FOOD_SHORTAGE,
+    FOOD_RESTOCK_INTERVAL,
 )
 from .player_data import grow_stat
 from .trust import exchange_gossip
+from .victory import _season_from_day
 from .commands import (
     apply_action_trust,
     advance_time_one_minute,
@@ -81,6 +84,8 @@ class WorldClock:
         self._process_survival_all_sessions()
         if self.shared.game_time.minute % 360 == 0:
             self._respawn_dead_npcs()
+        if self.shared.game_time.minute % FOOD_RESTOCK_INTERVAL == 0:
+            self._restock_market_food()
         await self._check_death_and_victory()
 
     def _advance_time_one_minute(self):
@@ -156,12 +161,12 @@ class WorldClock:
                     if rumor:
                         self.shared.rumour_mill.setdefault(b.faction, []).append(rumor)
                         self.shared.rumour_mill[b.faction] = self.shared.rumour_mill[b.faction][-12:]
-                        if "observed player action:" in rumor:
+                        if "Observed player action:" in rumor:
                             for nid in room.npcs:
                                 other = self.shared.world.npcs.get(nid)
                                 if other:
                                     other.suspicion = min(100, other.suspicion + 5)
-                
+
     async def _process_planted_evidence_all_sessions(self):
         for session in self.session_manager.sessions.values():
             if session.player.planted_evidence:
@@ -271,7 +276,7 @@ class WorldClock:
                     })
                     self.shared.event_log = self.shared.event_log[-EVENT_LOG_MAXLEN:]
                     from .locales import get as loc
-                    arrested_chance = 15 + session.player.wanted_level * 20
+                    arrest_chance = 15 + session.player.wanted_level * 20
                     if random.randint(1, 100) <= arrest_chance:
                         from .commands import _trigger_death
                         ctx = self.session_manager._make_context(session)
@@ -369,7 +374,7 @@ class WorldClock:
             disp = self.shared.npc_dispositions.setdefault(npc_id, {"disillusionment": 0})
             if own_inf < rival_inf:
                 disp["disillusionment"] = min(100, disp["disillusionment"] + DISILLUSIONMENT_PER_TICK)
-            elif own_inf > rival_inf + 10
+            elif own_inf > rival_inf + 10:
                 disp["disillusionment"] = max(0, disp["disillusionment"] - 1)
 
     EFFECT_HANDLERS = {
@@ -412,7 +417,6 @@ class WorldClock:
                 asyncio.create_task(session.send_display(f"Mission {mid} has expired."))
 
     def _process_survival_all_sessions(self):
-        from .victory import _season_from_day
         season = _season_from_day(self.shared.game_time.day)
         minute = self.shared.game_time.minute
         hunger_multiplier = 1.5 if season == "winter" else 1.0
@@ -484,6 +488,7 @@ class WorldClock:
             if not current_room:
                 continue
             npc.suspicion = max(0, npc.suspicion - SUSPICION_DECAY_PER_TICK)
+            skip_npc = False
             for session in self.session_manager.get_players_in_room(current_room_id):
                 if session.player.active_storylet or session.player.manually_advancing:
                     skip_npc = True
@@ -535,6 +540,25 @@ class WorldClock:
         room_id = random.choice(rooms)
         self.shared.world.place_npc(npc_id, room_id)
         self.shared.dead_npcs.discard(npc_id)
+
+    def _restock_market_food(self):
+        season = _season_from_day(self.shared.game_time.day)
+        restock_chance = SEASONAL_FOOD_SHORTAGE.get(season, 1.0)
+        for room_id, item_ids in self.shared.market_rooms.items():
+            room = self.shared.world.rooms.get(room_id)
+            if not room:
+                continue
+            override = self.shared.room_state_overrides.get(room_id)
+            if override and override.get("shop_closed"):
+                continue
+            existing_ids = {i.id for i in room.items}
+            for item_id in item_ids:
+                if item_id in existing_ids:
+                    continue
+                if random.random() <= restock_chance:
+                    item = self.shared.world.clone_item(item_id)
+                    if item:
+                        room.items.append(item)
 
     def _get_nearby_npcs(self, npc_id: str, current_room) -> list:
         return [self.shared.world.npcs.get(nid) for nid in current_room.npcs if nid != npc_id and self.shared.world.npcs.get(nid)]
@@ -590,7 +614,6 @@ class WorldClock:
                 ]
                 asyncio.create_task(session.send_display(random.choice(messages)))
 
-
     def _npc_flee_action(self, npc, current_room_id: str, current_room, rooms_with_players: set):
         import random
 
@@ -634,9 +657,9 @@ class WorldClock:
             condition_bindings=conditions,
         )
         return self._bt_registry
-    
+
     def _build_bt_actions(self):
-        from .behaviour_tree import Status
+        from .behavior_tree import Status
 
         def _npc_ctx(bb, require_room=True, require_exits=False):
             npc_id = bb.get("npc_id")
@@ -646,31 +669,31 @@ class WorldClock:
             if not npc or (require_room and not room) or (require_exits and (not room or not room.exits)):
                 return None, None, None
             return npc, room, room_id
-        
+
         def _action_move(bb):
             npc, room, room_id = _npc_ctx(bb, require_exits=True)
             if not npc:
                 return Status.FAILURE
             self._npc_move_action(npc, room_id, room, self._rooms_with_players())
             return Status.SUCCESS
-        
+
         def _action_gossip(bb):
             npc, room, _ = _npc_ctx(bb)
             if not npc:
                 return Status.FAILURE
             self._npc_gossip_action(npc, room, self._rooms_with_players())
             return Status.SUCCESS
-        
+
         def _action_flee(bb):
             npc, room, room_id = _npc_ctx(bb)
             if not npc:
                 return Status.FAILURE
             self._npc_flee_action(npc, room_id, room, self._rooms_with_players())
             return Status.SUCCESS
-        
+
         def _action_idle(bb):
             return Status.SUCCESS
-        
+
         def _action_investigate_sound(bb):
             npc, _, _ = _npc_ctx(bb, require_room=False)
             return self._npc_investigate_action(npc, bb)
@@ -699,7 +722,7 @@ class WorldClock:
                     f"{npc.name} glances around cautiously, then leans in close to share a whispered detail."
                 ))
             return Status.SUCCESS
-        
+
         def _action_hide_in_shadows(bb):
             npc, room, room_id = _npc_ctx(bb)
             if not npc or not room or not room.hiding_spots:
@@ -776,7 +799,7 @@ class WorldClock:
                 if other:
                     other.suspicion = max(0, other.suspicion - SUSPICION_INVESTIGATE_RELIEF)
             return Status.SUCCESS
-        
+
         def _action_shutter_shop(bb):
             npc, room, room_id = _npc_ctx(bb)
             if not npc or not room_id:
@@ -839,15 +862,15 @@ class WorldClock:
             "flee_to_safe_room": _action_flee,
             "flee_from_authority": _action_flee,
             "investigate_player": _action_investigate_player,
-            "shutter_shop": _action_defect,
+            "shutter_shop": _action_shutter_shop,
             "defect": _action_defect,
             "idle": _action_idle,
         }
-    
+
     def _build_bt_conditions(self):
         def _cond_heard_hostile_sound(bb):
             return bb.get("heard_hostile_sound", False)
-        
+
         def _cond_on_schedule_time(bb):
             npc_id = bb.get("npc_id")
             npc = self.shared.world.npcs.get(npc_id)
@@ -885,16 +908,16 @@ class WorldClock:
 
         def _cond_player_suspicious(bb):
             return bb.get("player_suspicion_nearby", False)
-        
+
         def _cond_tension_high(bb):
-            return bb.get("world_tension:", 0) > VENDOR_SHUTTER_TENSION
-        
+            return bb.get("world_tension", 0) > VENDOR_SHUTTER_TENSION
+
         def _cond_should_defect(bb):
             disillusionment = bb.get("disillusionment", 0)
             if disillusionment < DEFECTION_DISILLUSIONMENT_THRESHOLD:
                 return False
             return random.random() < DEFECTION_DAILY_CHANCE
-        
+
         return {
             "heard_hostile_sound": _cond_heard_hostile_sound,
             "on_schedule_time": _cond_on_schedule_time,
@@ -914,7 +937,7 @@ class WorldClock:
             "subordinate_nearby": _cond_subordinate_nearby,
             "player_suspicious": _cond_player_suspicious,
             "tension_high": _cond_tension_high,
-            "should_defect": _cond_shoud_defect,
+            "should_defect": _cond_should_defect,
         }
 
     def _rooms_with_players(self) -> set:
@@ -946,8 +969,8 @@ class WorldClock:
         bb.set("danger_nearby", bb.get("kempeitai_in_room", False) and npc.faction in ("ccp", "gmd"))
         bb.set("player_suspicion_nearby",
                npc.suspicion > SUSPICION_THRESHOLD_INVESTIGATE
-               or any (n.suspicion > SUSPICION_THRESHOLD_INVESTIGATE for n in nearby_npcs))
-        
+               or any(n.suspicion > SUSPICION_THRESHOLD_INVESTIGATE for n in nearby_npcs))
+
         world_tension = (self.shared.ccp_influence + self.shared.gmd_influence) / 2
         bb.set("world_tension", world_tension)
         disp = self.shared.npc_dispositions.get(npc.id, {})
@@ -998,7 +1021,6 @@ class WorldClock:
         return Status.FAILURE
 
     def _update_weather(self):
-        from .victory import _season_from_day
         season = _season_from_day(self.shared.game_time.day)
         rain_chance = 30 if season in ("summer", "autumn") else 10
         if random.randint(1, 100) <= rain_chance:
@@ -1129,9 +1151,11 @@ class WorldClock:
         self.shared.weather = "clear"
         self.shared.active_room_storylets = {}
         self.shared.dead_npcs = set()
+        from .game_world import build_market_tracker
         self.shared.world_decisions.clear()
         self.shared.room_state_overrides.clear()
         self.shared.npc_dispositions.clear()
+        self.shared.market_rooms = build_market_tracker(self.shared.world)
         self.session_manager.sessions.clear()
 
     async def _check_milestone_day(self):
