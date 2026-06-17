@@ -95,7 +95,7 @@ templates:
   - condition:
       cause: execution
       faction: kempeitai
-    text: "{name} was dragged to the execution ground at dawn on {date}. The sentence was read aloud — a formality no one listened to. A single shot echoed across the compound. The occupation adds another number to its ledger."
+    text: "{name} was dragged to the execution ground at dawn on {date}. The sentence was read aloud, a formality no one listened to. A single shot echoed across the compound. The occupation adds another number to its ledger."
 
   - condition:
       cause: smuggling

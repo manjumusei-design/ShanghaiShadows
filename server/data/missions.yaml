@@ -58,7 +58,7 @@ missions:
 
   - id: ccp_leaflet_run
     title: "Distribute Resistance Leaflets"
-    description: "The underground press has printed fresh leaflets calling for resistance against the occupation. Deliver three bundles to tea houses in the old city where sympathetic patrons will pass them hand to hand. Move quickly — the Kempeitai have been raiding reading circles."
+    description: "The underground press has printed fresh leaflets calling for resistance against the occupation. Deliver three bundles to tea houses in the old city where sympathetic patrons will pass them hand to hand. Move quickly. The Kempeitai have been raiding reading circles."
     faction: ccp
     min_trust: 25
     giver_npc_hint: "comrade_chen"
@@ -105,7 +105,7 @@ missions:
 
   - id: ccp_safehouse_supply
     title: "Resupply the Hidden Safehouse"
-    description: "Comrades sheltering in a hidden safehouse beneath the old city are running low on food. A sack of rice waits at the rendezvous point. Deliver it before sundown — starvation is a poor weapon against the occupation."
+    description: "Comrades sheltering in a hidden safehouse beneath the old city are running low on food. A sack of rice waits at the rendezvous point. Deliver it before sundown. Starvation is a poor weapon against the occupation."
     faction: ccp
     min_trust: 20
     giver_npc_hint: "auntie_mei"
@@ -167,7 +167,7 @@ missions:
 
   - id: ccp_smuggle_medicine
     title: "Smuggle Medicine to Underground Doctor"
-    description: "An underground doctor treating wounded partisans is nearly out of supplies. A medical kit has been procured from a sympathetic pharmacist on Bubbling Well Road. Deliver it without drawing the attention of the street patrols — a search would condemn the doctor and his patients alike."
+    description: "An underground doctor treating wounded partisans is nearly out of supplies. A medical kit has been procured from a sympathetic pharmacist on Bubbling Well Road. Deliver it without drawing the attention of the street patrols. A search would condemn the doctor and his patients alike."
     faction: ccp
     min_trust: 30
     giver_npc_hint: "auntie_mei"
@@ -189,7 +189,7 @@ missions:
 
   - id: ccp_gather_intel
     title: "Gather Patrol Route Intelligence"
-    description: "The Kempeitai have altered their patrol routes in the French Concession and we are blind. Speak with three contacts — a rickshaw puller, a noodle vendor, and a bar girl — who watch the soldiers come and go each day. Piece together the new pattern before the next supply run."
+    description: "The Kempeitai have altered their patrol routes in the French Concession and we are blind. Speak with three contacts, a rickshaw puller, a noodle vendor, and a bar girl, who watch the soldiers come and go each day. Piece together the new pattern before the next supply run."
     faction: ccp
     min_trust: 25
     giver_npc_hint: "comrade_chen"
@@ -236,7 +236,7 @@ missions:
 
   - id: ccp_protect_courier
     title: "Escort the Underground Courier"
-    description: "A courier carrying coded messages must pass through two districts to reach his contact. The Green Gang has eyes everywhere and the Kempeitai are watching the main roads. Walk with him from the old city to the French Concession safehouse — if he falls, the entire network falls with him."
+    description: "A courier carrying coded messages must pass through two districts to reach his contact. The Green Gang has eyes everywhere and the Kempeitai are watching the main roads. Walk with him from the old city to the French Concession safehouse. If he falls, the entire network falls with him."
     faction: ccp
     min_trust: 35
     giver_npc_hint: "comrade_chen"
@@ -279,7 +279,7 @@ missions:
 
   - id: gmd_weapons_manifest
     title: "Recover the Weapons Manifest"
-    description: "A shipping manifest detailing Japanese arms shipments has been misplaced in the warehouse district — or more likely, stolen by someone who does not understand its value. Find the dock manifest before the Kempeitai realize it is missing and lock down the entire harbor."
+    description: "A shipping manifest detailing Japanese arms shipments has been misplaced in the warehouse district, or more likely stolen by someone who does not understand its value. Find the dock manifest before the Kempeitai realize it is missing and lock down the entire harbor."
     faction: gmd
     min_trust: 30
     giver_npc_hint: "major_tang"
@@ -301,7 +301,7 @@ missions:
 
   - id: gmd_establish_contact
     title: "Establish Contact with Inspector Moreau"
-    description: "Inspector Moreau of the French Concession Police is sympathetic to the Republic's cause but will not risk his position openly. Approach him with the agreed code phrase — 'the plum blossoms fall eastward' — and secure his cooperation. A friend in the police is worth a company of soldiers."
+    description: "Inspector Moreau of the French Concession Police is sympathetic to the Republic's cause but will not risk his position openly. Approach him with the agreed code phrase, 'the plum blossoms fall eastward', and secure his cooperation. A friend in the police is worth a company of soldiers."
     faction: gmd
     min_trust: 35
     giver_npc_hint: "madam_xu"
@@ -319,7 +319,7 @@ missions:
 
   - id: gmd_supply_network
     title: "Provision the GMD Safe Houses"
-    description: "Three GMD safe houses across Shanghai have not been resupplied in weeks. Collect food parcels from the dead drop and deliver them to each location. A well-fed operative is an effective operative — a hungry one is a liability."
+    description: "Three GMD safe houses across Shanghai have not been resupplied in weeks. Collect food parcels from the dead drop and deliver them to each location. A well-fed operative is an effective operative. A hungry one is a liability."
     faction: gmd
     min_trust: 25
     giver_npc_hint: "major_tang"
@@ -505,7 +505,7 @@ missions:
 
   - id: dilemma_ccp_supplies
     title: "Divert Supplies to the Underground"
-    description: "A crate of confiscated supplies sits in a dock warehouse under light guard. The CCP underground needs medicine and food for the hidden safehouses. Secure the crate and deliver it to Comrade Chen — but be warned, the Nationalists have their eyes on the same prize."
+    description: "A crate of confiscated supplies sits in a dock warehouse under light guard. The CCP underground needs medicine and food for the hidden safehouses. Secure the crate and deliver it to Comrade Chen. But be warned: the Nationalists have their eyes on the same prize."
     faction: ccp
     min_trust: 30
     giver_npc_hint: "comrade_chen"
@@ -521,7 +521,7 @@ missions:
     rewards:
       money_fabi: 25
       trust:
-        ccp.guerilla: 15
+        ccp.guerrilla: 15
       influence:
         ccp: 8
       morale_restore: 5
@@ -529,7 +529,7 @@ missions:
 
   - id: dilemma_gmd_supplies
     title: "Secure Supplies for the Republic"
-    description: "A crate of confiscated supplies sits in a dock warehouse under light guard. The Nationalist resistance needs these resources to arm and feed its operatives. Secure the crate and deliver it to Major Tang — the Communists are circling the same warehouse."
+    description: "A crate of confiscated supplies sits in a dock warehouse under light guard. The Nationalist resistance needs these resources to arm and feed its operatives. Secure the crate and deliver it to Major Tang. The Communists are circling the same warehouse."
     faction: gmd
     min_trust: 30
     giver_npc_hint: "major_tang"
@@ -542,7 +542,7 @@ missions:
         target: major_tang
         count: 1
         current: 0
-    reward:
+    rewards:
       money_fabi: 25
       trust:
         gmd.spy: 15

@@ -119,19 +119,19 @@ items:
 
   - id: ccp_pamphlet
     name: "a banned resistance pamphlet"
-    description: "A folded sheet of rice paper, printed with crude ink. The text describes Japanese atrocities in Nanjing — the massacres, the looting, the systematic terror inflicted on civilians."
+    description: "A folded sheet of rice paper, printed with crude ink. The text describes Japanese atrocities in Nanjing: the massacres, the looting, the systematic terror inflicted on civilians."
     takeable: true
-    readable_text: "PEOPLE OF SHANGHAI! The Japanese imperialists murder our families, steal our land, and enslave our workers. In Nanjing they slaughtered hundreds of thousands. Women, children, the elderly — none were spared. But we will not bow. The resistance grows. Every act of defiance brings liberation closer. Distribute this paper. Tell the truth. The people's strength is in their numbers and their anger."
+    readable_text: "PEOPLE OF SHANGHAI! The Japanese imperialists murder our families, steal our land, and enslave our workers. In Nanjing they slaughtered hundreds of thousands. Women, children, the elderly, none were spared. But we will not bow. The resistance grows. Every act of defiance brings liberation closer. Distribute this paper. Tell the truth. The people's strength is in their numbers and their anger."
 
   - id: code_book
     name: "a leather-bound code book"
     description: "A small book with worn leather covers, filled with columns of numbers and characters. It is the key to encoding and decoding underground messages."
     takeable: true
-    readable_text: "The pages contain cipher tables — each number corresponds to a character, each column to a day of the month. Without the matching key, the messages are gibberish. With it, they are a lifeline."
+    readable_text: "The pages contain cipher tables: each number corresponds to a character, each column to a day of the month. Without the matching key, the messages are gibberish. With it, they are a lifeline."
 
   - id: smuggled_pistol
     name: "a Mauser C96 pistol"
-    description: "A battered but functional pistol, its serial numbers filed off. The wooden stock is carved with a small five-pointed star — the mark of the underground."
+    description: "A battered but functional pistol, its serial numbers filed off. The wooden stock is carved with a small five-pointed star, the mark of the underground."
     takeable: true
 
   - id: japanese_travel_pass
@@ -148,7 +148,7 @@ items:
 
   - id: quinine_bottle
     name: "a bottle of quinine pills"
-    description: "A small brown bottle containing quinine — worth more than gold in occupied Shanghai where malaria spreads through the starving population while the Japanese hoard medicine for their own troops."
+    description: "A small brown bottle containing quinine, worth more than gold in occupied Shanghai where malaria spreads through the starving population while the Japanese hoard medicine for their own troops."
     takeable: true
     food_value: 0
     morale_restore: 10
@@ -166,7 +166,7 @@ items:
 
   - id: rice_parcel
     name: "a parcel of smuggled rice"
-    description: "A cloth-wrapped parcel of white rice, enough to feed a family for a week. Rice is a luxury under occupation — the Japanese seize the harvest and leave Chinese civilians to starve."
+    description: "A cloth-wrapped parcel of white rice, enough to feed a family for a week. Rice is a luxury under occupation. The Japanese seize the harvest and leave Chinese civilians to starve."
     takeable: true
     food_value: 40
     morale_restore: 15
@@ -175,7 +175,7 @@ items:
     name: "a transcription of a Chungking radio broadcast"
     description: "A typed sheet containing the latest broadcast from Free China's radio station in Chungking. The announcer speaks of resistance, unity, and the certainty that the occupation will end."
     takeable: true
-    readable_text: "VOICE OF FREE CHINA — To our brothers and sisters in occupied Shanghai: You are not forgotten. Your suffering is seen. Your resistance is felt. The Japanese war machine bleeds from a thousand cuts inflicted by your courage. Hold fast. Liberation comes. The people's will cannot be broken."
+    readable_text: "VOICE OF FREE CHINA: To our brothers and sisters in occupied Shanghai. You are not forgotten. Your suffering is seen. Your resistance is felt. The Japanese war machine bleeds from a thousand cuts inflicted by your courage. Hold fast. Liberation comes. The people's will cannot be broken."
 
   - id: mauser_c96
     name: "a Mauser C96 pistol"
@@ -375,7 +375,7 @@ items:
 
   - id: leaflet_bundle
     name: "a bundle of resistance leaflets"
-    description: "A thick stack of rice paper pamplets printed with crude ink, each one calling for resistance against the occupation. The words are urgent and the paper is thin - meant to be read once and passed on."
+    description: "A thick stack of rice paper pamphlets printed with crude ink, each one calling for resistance against the occupation. The words are urgent and the paper is thin, meant to be read once and passed on."
     takeable: true
 
   - id: patrol_communique
@@ -398,15 +398,15 @@ items:
 
   - id: diplomatic_pouch
     name: "a sealed diplomatic pouch"
-    description: "A leather pouch bearing the French consulate seal, secured with wax. Whatever it contains was important enough to warrant diplomatic protection — and dangerous enough that someone hid it here."
+    description: "A leather pouch bearing the French consulate seal, secured with wax. Whatever it contains was important enough to warrant diplomatic protection, and dangerous enough that someone hid it here."
     takeable: true
     readable_text: "Official diplomatic correspondence detailing consular movements and protected channels. The documents reference secure transit arrangements and coded meeting protocols between foreign delegations."
 
   - id: ration_card
     name: "a worn ration card"
-    description: "A small cardboard card with Chinese characters and an official stamp. It entitles the bearer to a meager food allocation — if the distribution center still has supplies."
+    description: "A small cardboard card with Chinese characters and an official stamp. It entitles the bearer to a meager food allocation, if the distribution center still has supplies."
     takeable: true
-    readable_text: "Shanghai Special Municipality — Weekly Ration Authorization. Bearer entitled to 200g rice, 50g oil. Valid through December 1937."
+    readable_text: "Shanghai Special Municipality: Weekly Ration Authorization. Bearer entitled to 200g rice, 50g oil. Valid through December 1937."
 
   - id: folded_note
     name: "a folded note"
@@ -419,7 +419,7 @@ items:
     description: "A thick quilted coat, well-worn but warm enough for Shanghai's damp winters."
     takeable: true
 
-  - id: heavy_hacjet
+  - id: heavy_jacket
     name: "a heavy wool jacket"
     description: "A military-surplus wool jacket. Heavy, scratchy, but it keeps the cold out."
     takeable: true

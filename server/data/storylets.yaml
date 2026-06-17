@@ -880,7 +880,7 @@ storylets:
         ccp.courier: [35, 100]
       game_hour: [17, 22]
       flags_missing: [distributed_pamphlets]
-    narrative: "A stack of resistance pamphlets sits in a hidden compartment beneath a market stall. The text exposes the Nanjing Massacre in unflinching detail — the systematic murder of hundreds of thousands of Chinese civilians by Japanese soldiers. Distributing them is a death sentence. Not distributing them means the truth dies."
+    narrative: "A stack of resistance pamphlets sits in a hidden compartment beneath a market stall. The text exposes the Nanjing Massacre in unflinching detail: the systematic murder of hundreds of thousands of Chinese civilians by Japanese soldiers. Distributing them is a death sentence. Not distributing them means the truth dies."
     options:
       - text: "Take the pamphlets and slip them into passersby's hands."
         effects:
@@ -1031,7 +1031,7 @@ storylets:
       trust_ranges:
         gmd.spy: [40, 100]
       flags_missing: [forged_documents]
-    narrative: "A Jewish refugee family needs forged travel papers to escape to Chungking. Without them, they face deportation back to Europe — and worse. The forger needs someone to deliver the materials and collect the finished documents without attracting attention."
+    narrative: "A Jewish refugee family needs forged travel papers to escape to Chungking. Without them, they face deportation back to Europe, and worse. The forger needs someone to deliver the materials and collect the finished documents without attracting attention."
     options:
       - text: "Deliver the materials and escort the family to safety."
         effects:
@@ -1057,7 +1057,7 @@ storylets:
         ccp.courier: [45, 100]
       game_hour: [10, 16]
       flags_missing: [student_protest]
-    narrative: "University students are gathering on the Bund for a silent protest against Japanese occupation. They carry no weapons — only handwritten signs demanding freedom and an end to the occupation. The Kempeitai are massing at the end of the street with rifles and bayonets."
+    narrative: "University students are gathering on the Bund for a silent protest against Japanese occupation. They carry no weapons, only handwritten signs demanding freedom and an end to the occupation. The Kempeitai are massing at the end of the street with rifles and bayonets."
     options:
       - text: "Join the protest line and stand with the students."
         effects:
@@ -1087,7 +1087,7 @@ storylets:
       - text: "Help him hide and tend to his wounds."
         effects:
           trust:
-            ccp.guerilla: 10
+            ccp.guerrilla: 10
             civilian.resident: 8
           flag: helped_wounded_courier
           log_event: "You hid a wounded courier from the authorities."
@@ -1102,11 +1102,11 @@ storylets:
         effects:
           trust:
             kempeitai.patrol: 15
-            civilian.resident: -25
+            ccp.guerrilla: -25
             gmd.spy: -10
           flag: betrayed_courier_authorities
-          log_event: "You turned a wounded courier in to the Kempeitai."
-             
+          log_event: "You betrayed a wounded courier to the authorities."
+
   - id: kempeitai_search
     location_tags: [residential, indoor]
     trigger_chance: 0.25
@@ -1143,7 +1143,7 @@ storylets:
       trust_ranges:
         ccp.guerrilla: [20, 100]
         gmd.spy: [20, 100]
-    narrative: "A hidden crate in the corner creaks with movement. Inside, you find a cache of weapons — pistols, grenades, and ammunition."
+    narrative: "A hidden crate in the corner creaks with movement. Inside, you find a cache of weapons: pistols, grenades, and ammunition."
     options:
       - text: "Report the cache to your faction contacts."
         effects:
@@ -1166,7 +1166,7 @@ storylets:
             ccp.guerrilla: 5
           morale: 10
           flag: shared_arms_cache
-          log_event: "You distributed weapons from an arms cache to refugees." 
+          log_event: "You distributed weapons from an arms cache to refugees."
 
   - id: food_dispute
     location_tags: [civilian, street]
@@ -1182,13 +1182,13 @@ storylets:
             civilian.resident: 10
           morale: 5
           flag: mediated_food_dispute
-          log_event: "You mediate a dispute over stolen food."
-      - text: "Side with the hungry thief and argue for compassion."
+          log_event: "You mediated a dispute over stolen food."
+      - text: "Side with the accuser and condemn the theft."
         effects:
           trust:
-            civilian.resident: 10
-          morale: 5
-          flag: mediated_food_dispute
+            civilian.resident: -8
+          flag: condemned_thief
+          log_event: "You condemned a starving thief."
       - text: "Side with the hungry thief and argue for compassion."
         effects:
           trust:
@@ -1210,7 +1210,7 @@ storylets:
             civilian.resident: 12
           morale: 8
           flag: helped_lost_child
-          log_event: "You helped a lost child find their mother"
+          log_event: "You helped a lost child find their mother."
       - text: "Ignore the child and keep moving."
         effects:
           trust:
@@ -1218,7 +1218,7 @@ storylets:
           morale: -5
           flag: ignored_lost_child
           log_event: "You ignored a lost child in need."
-      - text: "Take advantage of teh situation to steal from the distracted crowd."
+      - text: "Take advantage of the situation to steal from the distracted crowd."
         effects:
           trust:
             civilian.resident: -20
@@ -1255,7 +1255,7 @@ storylets:
       Old Wu looks up from his wok, squinting through the steam. "Liu Wei sent you? Hmph."
       He wipes his hands on his apron and produces a folded note from his pocket.
       "Take this to Sister Mei at the chapel in the French Concession. Don't read it.
-      And don't get caught after curfew - that's 8 PM to 6 AM. The patrols are very thorough."
+      And don't get caught after curfew, that's 8 PM to 6 AM. The patrols are thorough."
     options:
       - text: "Accept the note"
         effects:
@@ -1273,7 +1273,7 @@ storylets:
     narrative: |
       Sister Mei takes the note, reads it quickly, and nods. "Welcome to Shanghai. Or what's left of it."
       She gestures around the chapel. "This is a safe room. No violence here. No arrests.
-      If you're hurt or hungry, look for rooms like this — clinics, churches, teahouses with the right connections."
+      If you're hurt or hungry, look for rooms like this: clinics, churches, teahouses with the right connections."
       She hands you a bowl of rice. "Eat. You look half-dead. And remember: trust is everything here.
       Talk to people. Listen. Help when you can. The factions notice who's useful."
     options:
@@ -1289,26 +1289,26 @@ storylets:
 
   - id: vendor_fled
     scope: room
-    locatyion_tags: []
+    location_tags: []
     trigger_chance: 1.0
     preconditions:
       flags_missing: [seen_vendor_fled]
-    narrative: "The shopfront is shuttered. A scrap of paper flutters in the doorway — the proprietor has fled, leaving only dust and unanswered questions."
+    narrative: "The shopfront is shuttered. A scrap of paper flutters in the doorway. The proprietor has fled, leaving only dust and unanswered questions."
     options:
       - text: "Move on."
         effects:
           set_flag: seen_vendor_fled
-          log_event: "A vendor fled the district as tensions rose."
-          
-  - id: exortion_underway
+          log_event: "A vendor fled the district as tension rose."
+
+  - id: extortion_underway
     scope: room
     location_tags: []
     trigger_chance: 1.0
     preconditions:
       flags_missing: [saw_extortion]
-    narrative: "A low voice makes demands. A civilian trembles. The Green Gang enforcer has cornered someone who cannot pay — and the choice of what to do falls to you."
+    narrative: "A low voice makes demands. A civilian trembles. The Green Gang enforcer has cornered someone who cannot pay, and the choice of what to do falls to you."
     options:
-      - text: "Intervene — step between them."
+      - text: "Intervene. Step between them."
         effects:
           set_flag: saw_extortion
           change_trust:

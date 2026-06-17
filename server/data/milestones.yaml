@@ -1,7 +1,7 @@
 milestones:
   - id: first_blood
     trigger: action_kill_npc
-    narrative: "Blood washes into the gutter. Shanghai has swallowed a thousand killings — yours is only the most recent. The city does not judge. It only remembers."
+    narrative: "Blood washes into the gutter. Shanghai has swallowed a thousand killings. Yours is only the most recent. The city does not judge. It only remembers."
     effects:
       courage: 3
       morale: 5
@@ -9,7 +9,7 @@ milestones:
   - id: month_one
     trigger: day
     day: 30
-    narrative: "One month under the Rising Sun. The Kempeitai patrols grow bolder. The markets grow thinner. But the underground has learned your face — and trust is a currency that spends slowly."
+    narrative: "One month under the Rising Sun. The Kempeitai patrols grow bolder. The markets grow thinner. But the underground has learned your face, and trust is a currency that spends slowly."
     effects:
       morale: 10
       influence:
@@ -18,7 +18,7 @@ milestones:
   - id: year_one
     trigger: day
     day: 365
-    narrative: "A year in the shadows. The Liberation promised by Chungking and Chungking alone has not arrived. The occupiers dig deeper. The resistance strikes harder. And you — you are still breathing. That is not nothing."
+    narrative: "A year in the shadows. The Liberation promised by Chungking and Chungking alone has not arrived. The occupiers dig deeper. The resistance strikes harder. And you. You are still breathing. That is not nothing."
     effects:
       morale: 15
       influence:
@@ -27,7 +27,7 @@ milestones:
   - id: kempeitai_crackdown
     trigger: day
     day: 500
-    narrative: "A cold wind through Hongkou. The Kempeitai have reorganized their security apparatus — new officers, new informants, new brutality. Every face in the crowd is a potential betrayer. The old safe routes are no longer safe."
+    narrative: "A cold wind through Hongkou. The Kempeitai have reorganized their security apparatus: new officers, new informants, new brutality. Every face in the crowd is a potential betrayer. The old safe routes are no longer safe."
     effects:
       influence:
         ccp: 2

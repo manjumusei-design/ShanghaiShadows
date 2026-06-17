@@ -140,5 +140,5 @@ trees:
                 minutes: 60
                 child:
                   action: delegate_task
-        # P3: stay put — leaders don't wander
+        # P3: stay put. leaders don't wander
         - action: stay_put
