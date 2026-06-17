@@ -29,6 +29,15 @@ trees:
   civilian_vendor:
     root:
       selector:
+        # P0: shutter shop when tension is high and courage is low
+        - sequence:
+            - condition: tension_high
+            - condition: courage_low
+            - cooldown:
+                key: shutter_cooldown
+                minutes: 120
+                child:
+                  action: shutter_shop
         # P1: flee if danger nearby and low courage
         - sequence:
             - condition: danger_nearby
@@ -57,6 +66,10 @@ trees:
   underground_operative:
     root:
       selector:
+        # P0: defect when disillusionment peaks
+        - sequence:
+            - condition: should_defect
+            - action: defect
         # P1: flee if Kempeitai in room and not disguised
         - sequence:
             - condition: kempeitai_in_room
