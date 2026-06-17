@@ -59,7 +59,8 @@ class SharedWorldState:
     world_decisions: deque = field(default_factory=lambda: deque(maxlen=DECISION_LEDGER_MAXLEN))
     room_state_overrides: Dict[str, dict] = field(default_factory=dict)
     npc_dispositions: Dict[str, dict] = field(default_factory=dict)
-    
+    market_rooms: Dict[str, List[str]] = field(default_factory=dict)
+
     def get_trust_value(self, key: str, player_trust: TrustMap) -> int:
         if "." in key:
             faction, role = key.split(".", 1)
@@ -152,6 +153,15 @@ def deserialize_world_state(data: Dict[str, object], world: World) -> SharedWorl
         server_cycle=server_cycle,
         weather=weather,
     )
+
+
+def build_market_tracker(world: World) -> Dict[str, List[str]]:
+    tracker: Dict[str, List[str]] = {}
+    for room_id, room in world.rooms.items():
+        food_ids = [item.id for item in room.items if item.food_value > 0]
+        if food_ids:
+            tracker[room_id] = food_ids
+    return tracker
 
 
 def load_world_state(world: World = None) -> SharedWorldState:
