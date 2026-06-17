@@ -1286,3 +1286,43 @@ storylets:
           - type: flag
             flag: tutorial_complete
     probability: 1.0
+
+  - id: vendor_fled
+    scope: room
+    locatyion_tags: []
+    trigger_chance: 1.0
+    preconditions:
+      flags_missing: [seen_vendor_fled]
+    narrative: "The shopfront is shuttered. A scrap of paper flutters in the doorway — the proprietor has fled, leaving only dust and unanswered questions."
+    options:
+      - text: "Move on."
+        effects:
+          set_flag: seen_vendor_fled
+          log_event: "A vendor fled the district as tensions rose."
+          
+  - id: exortion_underway
+    scope: room
+    location_tags: []
+    trigger_chance: 1.0
+    preconditions:
+      flags_missing: [saw_extortion]
+    narrative: "A low voice makes demands. A civilian trembles. The Green Gang enforcer has cornered someone who cannot pay — and the choice of what to do falls to you."
+    options:
+      - text: "Intervene — step between them."
+        effects:
+          set_flag: saw_extortion
+          change_trust:
+            civilian.resident: 12
+            green_gang.enforcer: -15
+          log_event: "You intervened in a Green Gang shakedown."
+      - text: "Ignore it and move on."
+        effects:
+          set_flag: saw_extortion
+          log_event: "You witnessed a shakedown and did nothing."
+      - text: "Join the shakedown."
+        effects:
+          set_flag: saw_extortion
+          change_trust:
+            green_gang.enforcer: 15
+            civilian.resident: -20
+          log_event: "You joined a Green Gang extortion."
