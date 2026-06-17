@@ -631,7 +631,7 @@ async def cmd_look(ctx: CommandContext, cmd: Command):
             if session.player.wanted_level > 0 and session.player.name != ctx.session.player.name:
                 level_desc = ["suspected", "wanted", "MOST WANTED"][min(session.player.wanted_level - 1, 2)]
                 await ctx.session.send_display(
-                    f"A poster on the wall shows a sketch labelled '{session.player.name}' — {level_desc}. "
+                    f"A poster on the wall shows a sketch labelled '{session.player.name}': {level_desc}. "
                     f"Reward: {session.player.wanted_level * 20} fabi.\n"
                 )
 
@@ -668,7 +668,7 @@ async def cmd_look(ctx: CommandContext, cmd: Command):
                     )
                 else:
                     await ctx.session.send_display(
-                        "The safehouse is barely furnished — a chair, a table, blackout curtains.\n"
+                        "The safehouse is barely furnished: a chair, a table, blackout curtains.\n"
                     )
 
     await ctx.session.send_completions(build_completions(ctx))
@@ -867,7 +867,7 @@ async def cmd_status(ctx: CommandContext, cmd: Command):
         "balance": "The outcome hangs in the balance.",
     }
     lines.append(f"Liberation: {progress}% ({days_left} days remain)")
-    lines.append(f"Influence — CCP: {ccp_inf}  GMD: {gmd_inf}")
+    lines.append(f"CCP influence: {ccp_inf}  GMD influence: {gmd_inf}")
     lines.append(_ENDING_TIDE[predict_ending(ccp_inf, gmd_inf)])
     if ctx.session.player.flags:
         lines.append("Flags: " + ", ".join(sorted(ctx.session.player.flags)))
@@ -1219,7 +1219,7 @@ async def _apply_historical_kill(ctx: CommandContext, npc) -> None:
     if flag not in ctx.session.player.flags:
         ctx.session.player.flags.append(flag)
     grow_stat(ctx.session.player, "morale", 10)
-    await post_display(ctx, f"{npc.name} falls. The news races through Shanghai — {', '.join(parts)}.")
+    await post_display(ctx, f"{npc.name} falls. The news races through Shanghai: {', '.join(parts)}.")
 
 
 async def _attack_npc(ctx: CommandContext, npc_id: str):
@@ -2210,7 +2210,7 @@ async def cmd_memorial(ctx: CommandContext, cmd: Command):
         day = entry.get("day_of_death", "?")
         obituary = entry.get("obituary", "")
         last_words = entry.get("last_words", "")
-        lines.append(f"— {name}, Day {day} —")
+        lines.append(f"{name}, Day {day}")
         if obituary:
             lines.append(obituary)
         if last_words:
@@ -2235,7 +2235,7 @@ async def cmd_rumors(ctx: CommandContext, cmd: Command):
         actor = ctx.shared.world.npcs.get(d["actor_npc_id"])
         name = actor.name if actor else "Someone"
         if dtype == "vendor_shutter":
-            lines.append(f"  {name} shuttered their shop on Day {d['day']} — some say they fled the city.")
+            lines.append(f"  {name} shuttered their shop on Day {d['day']}; some say they fled the city.")
         elif dtype == "defection":
             old = d.get("effects", {}).get("old_faction", "")
             new = d.get("effects", {}).get("new_faction", "")
@@ -2243,7 +2243,7 @@ async def cmd_rumors(ctx: CommandContext, cmd: Command):
         elif dtype == "extortion":
             lines.append(f"  {name} was seen shaking down a civilian for protection money.")
         else:
-            lines.append(f"  {name} — {dtype} on Day {d['day']}.")
+            lines.append(f"  {name}, {dtype} on Day {d['day']}.")
     await post_display(ctx, "\n".join(lines))
 
 
@@ -2408,7 +2408,7 @@ async def cmd_claim(ctx: CommandContext, cmd: Command):
         await post_display(ctx, "There is nothing here to claim.")
         return
     if not getattr(room, "safe_room", False):
-        await post_display(ctx, "Only a safe room can be claimed as a safehouse — a place beyond the curfew's reach.")
+        await post_display(ctx, "Only a safe room can be claimed as a safehouse: a place beyond the curfew's reach.")
         return
     set_safehouse(ctx.session.username, room.id)
     await post_display(ctx, f"You claim {room.title} as your safehouse. Should you fall, your next life begins here.")
