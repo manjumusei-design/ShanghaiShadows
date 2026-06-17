@@ -1,5 +1,6 @@
 import asyncio
 import random
+import time
 from collections import deque
 from typing import TYPE_CHECKING
 
@@ -17,8 +18,13 @@ from .constants import (
     SUSPICION_DECAY_PER_TICK,
     SUSPICION_THRESHOLD_INVESTIGATE,
     SUSPICION_INVESTIGATE_RELIEF,
+    VENDOR_SHUTTER_TENSION,
+    DEFECTION_DISILLUSIONMENT_THRESHOLD,
+    DEFECTION_DAILY_CHANCE,
+    DISILLUSIONMENT_PER_TICK,
 )
 from .player_data import grow_stat
+from .trust import exchange_gossip
 from .commands import (
     apply_action_trust,
     advance_time_one_minute,
@@ -141,7 +147,6 @@ class WorldClock:
             if len(npc_ids) < 2:
                 continue
             for i in range(len(npc_ids) - 1):
-                from .trust import exchange_gossip
                 a = self.shared.world.npcs.get(npc_ids[i])
                 b = self.shared.world.npcs.get(npc_ids[i + 1])
                 if not a or not b:
@@ -151,7 +156,12 @@ class WorldClock:
                     if rumor:
                         self.shared.rumour_mill.setdefault(b.faction, []).append(rumor)
                         self.shared.rumour_mill[b.faction] = self.shared.rumour_mill[b.faction][-12:]
-
+                        if "observed player action:" in rumor:
+                            for nid in room.npcs:
+                                other = self.shared.world.npcs.get(nid)
+                                if other:
+                                    other.suspicion = min(100, other.suspicion + 5)
+                
     async def _process_planted_evidence_all_sessions(self):
         for session in self.session_manager.sessions.values():
             if session.player.planted_evidence:
@@ -285,7 +295,6 @@ class WorldClock:
         await self._check_room_storylet_timeouts()
 
     async def _check_room_storylet_timeouts(self):
-        import time
         expired_rooms = []
         for room_id, storylet_data in self.shared.active_room_storylets.items():
             if storylet_data.get("resolved", False):
@@ -322,6 +331,46 @@ class WorldClock:
 
     def _apply_morale_effects(self, player, morale_change: int) -> None:
         player.morale = max(0, min(100, player.morale + morale_change))
+
+    def _resolve_decision(self, decision_type: str, npc_id: str, room_id: str, effects: dict, storylet_id: str = "") -> None:
+        npc = self.shared.world.npcs.get(npc_id)
+        entry = {
+            "id": f"{decision_type}_{self.shared.game_time.day}_{self.shared.game_time.minute}_{npc_id}",
+            "day": self.shared.game_time.day,
+            "minute": self.shared.game_time.minute,
+            "actor_npc_id": npc_id,
+            "actor_faction": npc.faction if npc else "",
+            "decision_type": decision_type,
+            "effects": effects,
+            "storylet_id": storylet_id,
+            "resolved": False,
+        }
+        self.shared.world_decisions.append(entry)
+        if storylet_id and room_id:
+            self.shared.active_room_storylets[room_id] = {
+                "storylet_id": storylet_id,
+                "triggered_at": time.time(),
+                "options": [
+                    {"text": "Let events unfold.", "effects": {}},
+                ],
+                "resolved": False,
+                "decision_entry": entry,
+            }
+
+    def _accumulate_dispositions(self) -> None:
+        ccp_inf = self.shared.ccp_influence
+        gmd_inf = self.shared.gmd_influence
+        for npc_id, npc in self.shared.world.npcs.items():
+            if npc_id in self.shared.dead_npcs:
+                continue
+            if npc.faction not in ("ccp", "gmd"):
+                continue
+            own_inf, rival_inf = (ccp_inf, gmd_inf) if npc.faction == "ccp" else (gmd_inf, ccp_inf)
+            disp = self.shared.npc_dispositions.setdefault(npc_id, {"disillusionment": 0})
+            if own_inf < rival_inf:
+                disp["disillusionment"] = min(100, disp["disillusionment"] + DISILLUSIONMENT_PER_TICK)
+            elif own_inf > rival_inf + 10
+                disp["disillusionment"] = max(0, disp["disillusionment"] - 1)
 
     EFFECT_HANDLERS = {
         "trust": lambda s, v: s._apply_trust_effects(s.player, v),
@@ -414,6 +463,8 @@ class WorldClock:
 
         if self.shared.game_time.minute % 30 != 0:
             return
+
+        self._accumulate_dispositions()
 
         world_tension = (self.shared.ccp_influence + self.shared.gmd_influence) / 2
         base_act_chance = 0.2
@@ -538,6 +589,7 @@ class WorldClock:
                     f"Tension rises as {npc.name} confronts {opponent.name}."
                 ]
                 asyncio.create_task(session.send_display(random.choice(messages)))
+
 
     def _npc_flee_action(self, npc, current_room_id: str, current_room, rooms_with_players: set):
         import random
@@ -672,6 +724,9 @@ class WorldClock:
                 asyncio.create_task(session.send_display(
                     f"{npc.name} corners {target.name} and demands something in a low voice."
                 ))
+            self._resolve_decision("extortion", npc.id, room_id,
+                                   {"victim_npc_id": target.id if target else ""},
+                                   "extortion_underway")
             return Status.SUCCESS
 
         def _action_intimidate_rival(bb):
@@ -700,7 +755,6 @@ class WorldClock:
                 ))
             return Status.SUCCESS
 
-
         def _action_investigate_player(bb):
             npc, room, room_id = _npc_ctx(bb)
             if not npc or not room_id:
@@ -723,6 +777,49 @@ class WorldClock:
                     other.suspicion = max(0, other.suspicion - SUSPICION_INVESTIGATE_RELIEF)
             return Status.SUCCESS
         
+        def _action_shutter_shop(bb):
+            npc, room, room_id = _npc_ctx(bb)
+            if not npc or not room_id:
+                return Status.FAILURE
+            world_tension = (self.shared.ccp_influence + self.shared.gmd_influence) / 2
+            if world_tension < VENDOR_SHUTTER_TENSION:
+                return Status.FAILURE
+            if bb.get("courage", 50) >= 40:
+                return Status.FAILURE
+            self.shared.room_state_overrides[room_id] = {
+                "shop_closed": True,
+                "closed_reason": f"{npc.name} has fled Shanghai, fearing the rising tension.",
+            }
+            self._resolve_decision("vendor_shutter", npc.id, room_id,
+                                   {"room_id": room_id}, "vendor_fled")
+            schedule_rooms = [r for h, r in npc.schedule.items() if r in self.shared.world.rooms]
+            if schedule_rooms:
+                self._move_npc_between_rooms(npc.id, room_id, schedule_rooms[0])
+            for session in self.session_manager.get_players_in_room(room_id):
+                asyncio.create_task(session.send_display(
+                    f"{npc.name} boards up the shop and slips away into the crowd."
+                ))
+            return Status.SUCCESS
+
+        def _action_defect(bb):
+            npc, room, room_id = _npc_ctx(bb, require_room=False)
+            if not npc:
+                return Status.FAILURE
+            old_faction = npc.faction
+            new_faction = "gmd" if old_faction == "ccp" else "ccp"
+            npc.faction = new_faction
+            self.shared.npc_dispositions.pop(npc.id, None)
+            self._resolve_decision("defection", npc.id, room_id or "",
+                                   {"old_faction": old_faction, "new_faction": new_faction})
+            for nid, other in self.shared.world.npcs.items():
+                if nid != npc.id and other.faction == old_faction:
+                    disp = self.shared.npc_dispositions.setdefault(nid, {"disillusionment": 0})
+                    disp["disillusionment"] = min(100, disp["disillusionment"] + 5)
+            asyncio.create_task(self._broadcast_display(
+                f"Rumour spreads: {npc.name} has abandoned the {old_faction.upper()} for the {new_faction.upper()}."
+            ))
+            return Status.SUCCESS
+
         return {
             "patrol_random_exit": _action_move,
             "investigate_sound": _action_investigate_sound,
@@ -741,6 +838,9 @@ class WorldClock:
             "stay_put": _action_idle,
             "flee_to_safe_room": _action_flee,
             "flee_from_authority": _action_flee,
+            "investigate_player": _action_investigate_player,
+            "shutter_shop": _action_defect,
+            "defect": _action_defect,
             "idle": _action_idle,
         }
     
