@@ -48,6 +48,8 @@ class SessionManager:
                 room.players.append(session.username)
 
         await self._send_room_players(session)
+        await self._begin_tutorial_if_new(session)
+        await session.send_prompt()
         try:
             async for message in websocket:
                 text = message.strip()
@@ -65,7 +67,10 @@ class SessionManager:
                     continue
 
                 if session.player.active_storylet:
-                    await resolve_storylet_choice(self._make_context(session), text)
+                    if text.strip().lower() in ("help", "?", "h"):
+                        await self.command_registry["help"](self._make_context(session), parse("help"))
+                    else:
+                        await resolve_storylet_choice(self._make_context(session), text)
                     if session.running:
                         await session.send_prompt()
                     continue
@@ -96,9 +101,11 @@ class SessionManager:
                     continue
 
                 handler = self.command_registry.get(cmd.verb, self.command_registry.get("unknown"))
-                await handler(self._make_context(session), cmd)
+                ctx = self._make_context(session)
+                await handler(ctx, cmd)
 
                 if session.running:
+                    await session.send_completions(build_completions(ctx))
                     await session.send_prompt()
 
         except Exception as exc:
@@ -186,8 +193,9 @@ class SessionManager:
         )
 
         await websocket.send(f'{{"type":"display","payload":"Connected as {username}. Welcome to occupied Shanghai."}}')
-        await websocket.send(f'{{"type":"display","payload":"You are {player.name}. {player.flags}"}}')
-        await websocket.send(f'{{"type":"display","payload":"Use \\"help\\" for commands, \\"look\\" to see your surroundings."}}')
+        await websocket.send(f'{{"type":"display","payload":"You are {player.name}."}}')
+        await websocket.send(f'{{"type":"display","payload":"{loc("greeting.brief")}"}}')
+        await websocket.send(f'{{"type":"display","payload":"Use \\"help\\" (or \\"help start\\") for commands, \\"look\\" to see your surroundings."}}')
 
         return session
 
@@ -230,6 +238,24 @@ class SessionManager:
         players = [s.player.name for s in self.get_players_in_room(room.id) if s.username != session.username]
         await session.send_room_players(players)
 
+    async def _begin_tutorial_if_new(self, session: Session) -> None:
+        player = session.player
+        if "tutorial_step_1" in player.flags or player.active_storylet:
+            return
+        storylet = self.storylet_manager.storylets.get("tutorial_01_ration_card")
+        if not storylet:
+            return
+        from .storylets import ActiveStorylet
+        player.active_storylet = ActiveStorylet(
+            storylet_id=storylet.id,
+            narrative=storylet.narrative,
+            options=storylet.options,
+        )
+        lines = [storylet.narrative]
+        for idx, opt in enumerate(storylet.options, start=1):
+            lines.append(f"{idx}. {opt.text}")
+        await session.send_display("\n".join(lines))
+        
     def get_players_in_room(self, room_id: str) -> List[Session]:
         return [s for s in self.sessions.values() if s.player.current_room == room_id]
 
