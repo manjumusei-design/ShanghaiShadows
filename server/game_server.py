@@ -55,11 +55,14 @@ class GameServer:
         from .game_world import SharedWorldState
         from .milestones import load_milestones, MilestoneManager
         from .game_world import build_market_tracker
+        from .rumors import seed_active_rumors
 
         scheduler = EventScheduler()
         scheduler.load_from_yaml(EVENTS_PATH)
         trust_rules = load_trust_rules(TRUST_RULES_PATH)
         milestones = load_milestones(MILESTONES_PATH)
+
+        _active = seed_active_rumors(1)
 
         return SharedWorldState(
             world=world,
@@ -73,6 +76,8 @@ class GameServer:
             rumour_mill=[],
             milestone_manager=MilestoneManager(milestones),
             market_rooms=build_market_tracker(world),
+            death_journals={},
+            active_rumors=_active,
         )
     
     async def tick_loop(self):
