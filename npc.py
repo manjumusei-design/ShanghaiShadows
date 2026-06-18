@@ -25,9 +25,10 @@ class Npc:
     perception: int = 50
     hp: int = 100
     is_historical_figure: bool = False
-    death_infleunce: Dict[str, int] = field(default_factory=dict)
+    death_influence: Dict[str, int] = field(default_factory=dict)
     bt_archetype: str = ""
     suspicion: int = 0
+
 
 def load_npcs(path: str) -> Dict[str, Npc]:
     with open(path, "r", encoding="utf-8") as f:
@@ -72,6 +73,11 @@ def get_contextual_dialogue(npc: Npc, player_trust: TrustMap, context_type: str 
 
     if context_type == "gossip":
         line = _pick_line(npc, "gossip")
+        if line:
+            return line
+
+    if context_type == "ask":
+        line = _pick_line(npc, "ask")
         if line:
             return line
 
