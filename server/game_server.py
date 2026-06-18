@@ -23,14 +23,18 @@ from .world import World
 
 
 class GameServer:
-    def __init__(self):
+    def __init__(self, fresh_world: bool = False):
         load_dotenv()
         load_locale(get_setting("LOCALE", "en"))
         SAVES_DIR.mkdir(parents=True, exist_ok=True)
 
-        self.shared = load_world_state() or self._create_shared_world()
+        self.shared = (
+            self._create_shared_world()
+            if fresh_world
+            else (load_world_state() or self._create_shared_world())
+        )
         self.disguises = load_disguises(DISGUISES_PATH)
-        self.stealtg = StealthSystem(self.disguises)
+        self.stealth = StealthSystem(self.disguises)
 
         storylets = load_storylets(STORYLETS_PATH)
         self.storylet_manager = StoryletManager(storylets)
@@ -59,7 +63,7 @@ class GameServer:
 
         return SharedWorldState(
             world=world,
-            game_time=GameTime(),
+            game_time=GameTime(minute=480),
             scheduler=scheduler,
             trust_rules=trust_rules,
             ccp_influence=10,
