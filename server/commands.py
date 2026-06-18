@@ -7,10 +7,10 @@ from typing import Any, Awaitable, Callable, Dict, List, NamedTuple, Optional, T
 import yaml
 
 from .config import get_setting, load_dotenv
-from .journal import collect_recent_events, format_journal, format_life_retrospective
+from .journal import collect_recent_events, format_journal, format_life_retrospective, absorb_death_journal
 from .locales import get as loc
 from .locales import load_locale
-from .npc import Npc, get_contextual_dialogue
+from .npc import Npc, get_contextual_dialogue, match_topic, get_topic_dialogue, npc_ask_topics
 from .parser import Command, parse
 from .player_data import PlayerData, _reset_player_defaults, grow_stat
 from .auth import set_safehouse
@@ -73,11 +73,22 @@ def find_item_by_name(name: str, items: List[Item]) -> Optional[Item]:
     return None
 
 
+def _normalize_text(s: str) -> str:
+    import re
+    s = re.sub(r"\b(the|a|an)\b", " ", (s or "").lower())
+    s = re.sub(r"[^a-z0-9 ]", " ", s)
+    return " ".join(s.split())
+
+
 def find_npc_by_name(ctx: CommandContext, name: str, npc_ids: List[str]) -> Optional[str]:
-    q = name.lower().strip()
+    q = _normalize_text(name)
+    if not q:
+        return None
     for npc_id in npc_ids:
         npc = ctx.shared.world.npcs.get(npc_id)
-        if npc and (q in npc.name.lower() or q in npc.id.lower()):
+        if not npc:
+            continue
+        if q in _normalize_text(npc.name) or q in npc_id.lower() or _normalize_text(npc_id) in q:
             return npc_id
     return None
 
@@ -85,6 +96,120 @@ def find_npc_by_name(ctx: CommandContext, name: str, npc_ids: List[str]) -> Opti
 def resolve_npc(ctx: CommandContext, name: str) -> Optional[str]:
     room = _room(ctx)
     return find_npc_by_name(ctx, name, room.npcs if room else [])
+
+
+def _short_name(name: str) -> str:
+    return (name or "").split(",")[0].strip()
+
+
+def _current_objective(ctx: CommandContext) -> str:
+    p = ctx.session.player
+    if "tutorial_complete" not in p.flags:
+        if "tutorial_step_2" in p.flags:
+            return "Deliver the folded note to Sister Mei at the chapel in the French Concession."
+        if "tutorial_step_1" in p.flags:
+            return "Find Old Wu at his noodle stand in the Old City (north to the Commercial district, then south into the Old City)."
+        return "Take the ration card the stranger on the Bund offers."
+    if p.active_missions:
+        mm = ctx.shared.mission_manager
+        mission = mm.missions.get(p.active_missions[0].get("mission_id")) if mm else None
+        if mission:
+            return f"Mission: {mission.title}."
+    return "Find work: seek a faction contact (MISSIONS AVAILABLE) and build trust to sway the Liberation."
+
+
+def _topic_hint(npc) -> str:
+    topics = npc_ask_topics(npc)
+    return ", ".join(topics) if topics else "the city, the war, or work"
+
+
+def _story_direction(ctx: CommandContext, npc) -> str:
+    p = ctx.session.player
+    if "tutorial_complete" not in p.flags:
+        return ""
+    if not p.active_missions and not p.completed_missions:
+        short = _short_name(npc.name)
+        return (
+            f'{short} glances both ways and lowers their voice. "Look. The city chews up '
+            f'people who stand still. If you want to matter, there are people hiring. Factions. '
+            f"The underground, Chungking's people, even the Green Gang. Find their contacts in "
+            f'the teahouses and back rooms. Ask for work. The occupation will not end on its own."'
+        )
+    return ""
+
+
+def _room_action_hint(ctx: CommandContext, room) -> str:
+    hints = []
+    if room.npcs:
+        npc = ctx.shared.world.npcs.get(room.npcs[0])
+        if npc:
+            hints.append(f"TALK TO or ASK {_short_name(npc.name)} ABOUT something")
+    if room.items:
+        hints.append("TAKE an item here")
+    pending = ctx.shared.active_room_storylets.get(room.id)
+    if pending and not pending.get("resolved"):
+        hints.append("respond to the situation here (type a number)")
+    if room.exits:
+        hints.append("GO " + "/".join(room.exits.keys()))
+    hints.append("SEARCH")
+    hints.append("STATUS")
+    return "You can: " + ", ".join(hints) + "."
+
+
+def _item_tag(item) -> str:
+    if item.food_value > 0:
+        return "food: EAT"
+    if item.is_weapon:
+        return "weapon: ATTACK"
+    if item.is_armour:
+        return "armour: WEAR"
+    if item.is_container:
+        return "container: OPEN"
+    if item.is_key:
+        return "key: UNLOCK"
+    if item.is_map:
+        return "map: READ"
+    if item.is_money:
+        return "money"
+    return "DROP/SELL"
+
+
+def _item_action_hint(item, carried: bool) -> str:
+    acts = []
+    if not carried:
+        acts.append("TAKE it")
+    if item.food_value > 0:
+        acts.append("EAT it")
+    if item.is_weapon:
+        acts.append("use it in ATTACK")
+    if item.is_armour:
+        acts.append("WEAR/REMOVE it")
+    if item.is_container:
+        acts.append("OPEN/PUT IN/TAKE FROM it")
+    if item.is_map and item.map_districts:
+        acts.append("READ it to reveal " + ", ".join(item.map_districts))
+    if carried:
+        acts.append("DROP or SELL it")
+    return ("You can: " + ", ".join(acts) + ".") if acts else ""
+
+
+def _option_text(option) -> str:
+    return option.text if hasattr(option, "text") else option.get("text", "")
+
+
+def _pending_room_event(ctx: CommandContext, room) -> str:
+    rs = ctx.shared.active_room_storylets.get(room.id)
+    if not rs or rs.get("resolved"):
+        return ""
+    narrative = rs.get("narrative")
+    if not narrative and rs.get("storylet_id"):
+        storylet = ctx.storylet_manager.storylets.get(rs["storylet_id"])
+        if storylet:
+            narrative = storylet.narrative
+    lines = [narrative] if narrative else ["Something is afoot here."]
+    for idx, option in enumerate(rs.get("options", []), start=1):
+        lines.append(f"{idx}. {_option_text(option)}")
+    return "\n".join(lines)
 
 
 def _bfs_find_path(world: World, start_room_id: str, target_room_id: str) -> List[str]:
@@ -155,11 +280,30 @@ def disguise_bonus(ctx: CommandContext) -> int:
     return disguise.bonus if disguise else 0
 
 
-def apply_action_trust(ctx: CommandContext, action: str, visible_room_npcs: Optional[List[str]] = None):
+def _trust_tier_message(key: str, old: int, new: int) -> str:
+    def tier(v):
+        if v < 30:
+            return "hostile"
+        if v < 70:
+            return "neutral"
+        return "friendly"
+    if tier(old) == tier(new):
+        return ""
+    faction = key.split(".", 1)[0].upper().replace("_", " ")
+    if tier(new) == "friendly":
+        return loc("trust.up.friendly").format(faction=faction)
+    if tier(new) == "hostile":
+        return loc("trust.down.hostile").format(faction=faction)
+    if tier(old) == "friendly":
+        return loc("trust.down.friendly").format(faction=faction)
+    return loc("trust.up.hostile").format(faction=faction)
+
+
+async def apply_action_trust(ctx: CommandContext, action: str, visible_room_npcs: Optional[List[str]] = None):
     rule = ctx.shared.trust_rules.get(action)
     if not rule:
         return
-    apply_trust_delta(ctx.session.player.trust, rule)
+    changed = apply_trust_delta(ctx.session.player.trust, rule)
     if getattr(rule, "visible", False):
         for npc_id in visible_room_npcs or []:
             npc = ctx.shared.world.npcs.get(npc_id)
@@ -167,6 +311,11 @@ def apply_action_trust(ctx: CommandContext, action: str, visible_room_npcs: Opti
                 memory = f"Observed player action: {action}"
                 if memory not in npc.memory:
                     npc.memory.append(memory)
+    for key, new_val in changed.items():
+        delta = int(rule.deltas.get(key, 0))
+        msg = _trust_tier_message(key, new_val - delta, new_val)
+        if msg:
+            await post_display(ctx, msg)
 
 
 async def broadcast_state(ctx: CommandContext):
@@ -299,19 +448,32 @@ def _find_player_in_room(ctx: CommandContext, name: str) -> Optional[Session]:
 _CACHED_VERBS: Optional[List[str]] = None
 
 
-def build_completions(ctx: CommandContext) -> List[str]:
+def _dedup(seq):
+    seen = set()
+    return [x for x in seq if not (x in seen or seen.add(x))]
+
+
+def build_completions(ctx: CommandContext) -> Dict[str, List[str]]:
     global _CACHED_VERBS
     if _CACHED_VERBS is None:
         _CACHED_VERBS = [v for v in build_command_registry().keys() if v not in ("unknown", "stub")]
-    verbs = list(_CACHED_VERBS)
+    npcs: List[str] = []
+    items: List[str] = []
+    exits: List[str] = []
     room = _room(ctx)
     if room:
-        verbs.extend(room.exits.keys())
+        exits = list(room.exits.keys())
         for npc_id in room.npcs:
             npc = ctx.shared.world.npcs.get(npc_id)
-            if npc:
-                verbs.append(npc.name.lower())
-    return verbs
+            if npc and npc.name:
+                npcs.append(npc.name.lower())
+        for item in room.items:
+            if item.name:
+                items.append(item.name.lower())
+    for item in ctx.session.player.inventory:
+        if item.name:
+            items.append(item.name.lower())
+    return {"verbs": list(_CACHED_VERBS), "npcs": _dedup(npcs), "items": _dedup(items), "exits": _dedup(exits)}
 
 
 def _get_npc_dialogue(ctx: CommandContext, npc: Npc, context_type: str = "talk") -> str:
@@ -410,6 +572,11 @@ async def handle_player_death(ctx: CommandContext, death_message: str, last_word
     from .serialization import serialize_item
     if ctx.session.player.inventory:
         deposit_stash(ctx.session.username, [serialize_item(item) for item in ctx.session.player.inventory])
+    from .journal import build_death_journal_entry
+    room_id = ctx.session.player.current_room
+    if room_id:
+        entry = build_death_journal_entry(ctx.session.player, ctx.shared.game_time.day, death_message, last_words)
+        ctx.shared.death_journals.setdefault(room_id, []).append(entry)
     end_screen = f"""THE END
 
 {death_message}
@@ -466,6 +633,30 @@ def _effects_as_list(val):
     if isinstance(val, list):
         return val
     return [val] if val else []
+
+
+def _normalize_effects(effects):
+    if isinstance(effects, list):
+        canon: Dict[str, object] = {}
+        for entry in effects:
+            if not isinstance(entry, dict):
+                continue
+            kind = entry.get("type")
+            if kind == "flag":
+                canon.setdefault("set_flag", []).append(entry.get("flag"))
+            elif kind == "item":
+                canon.setdefault("add_item", []).append(entry.get("item_id") or entry.get("id"))
+            elif kind in ("health", "morale", "courage"):
+                canon[kind] = int(canon.get(kind, 0)) + int(entry.get("value", 0))
+        return canon
+
+    canon = dict(effects) if isinstance(effects, dict) else {}
+    if "flag" in canon:
+        canon.setdefault("set_flag", []).extend(_effects_as_list(canon.pop("flag")))
+    for alias, canonical in (("trust", "change_trust"), ("influence", "change_influence")):
+        if isinstance(canon.get(alias), dict):
+            canon.setdefault(canonical, {}).update(canon.pop(alias))
+    return canon
 
 
 def _apply_effect_flags(player: PlayerData, effects: Dict[str, object]) -> None:
@@ -527,16 +718,26 @@ def _apply_effect_influence(shared: SharedWorldState, effects: Dict[str, object]
         _adjust_shared_influence(shared, faction_key, int(delta))
 
 
+def _apply_effect_stats(player: PlayerData, effects: Dict[str, object]) -> None:
+    for stat in ("health", "morale"):
+        if stat in effects:
+            setattr(player, stat, max(0, min(100, getattr(player, stat) + int(effects[stat]))))
+    if "courage" in effects:
+        grow_stat(player, "courage", int(effects["courage"]))
+
+
 async def apply_storylet_effects(ctx: CommandContext, effects: Dict[str, object]):
     player = ctx.session.player
     shared = ctx.shared
     world = shared.world
+    effects = _normalize_effects(effects)
 
     _apply_effect_flags(player, effects)
     _apply_effect_trust(player, effects)
     _apply_effect_items(player, world, effects)
     _apply_effect_events(ctx, effects)
     _apply_effect_npcs(world, effects)
+    _apply_effect_stats(player, effects)
 
     if await _apply_effect_specials(ctx, effects):
         return
@@ -545,7 +746,7 @@ async def apply_storylet_effects(ctx: CommandContext, effects: Dict[str, object]
 
 
 async def maybe_trigger_storylet(ctx: CommandContext):
-    active = ctx.storylet_manager.maybe_trigger(ctx.shared)
+    active = ctx.storylet_manager.maybe_trigger_for_player(ctx.session.player, ctx.shared)
     if not active:
         return
     ctx.session.player.active_storylet = active
@@ -559,16 +760,35 @@ async def resolve_storylet_choice(ctx: CommandContext, text: str):
     active = ctx.session.player.active_storylet
     if not active:
         return
+    raw = text.strip()
+    choice = None
     try:
-        choice = int(text.strip())
+        n = int(raw)
+        if 1 <= n <= len(active.options):
+            choice = n
     except ValueError:
-        await ctx.session.send_prompt(loc("storylet.choose").format(max=len(active.options)))
-        return
-    if choice < 1 or choice > len(active.options):
+        q = raw.lower()
+        for idx, opt in enumerate(active.options, start=1):
+            if q and q in opt.text.lower():
+                choice = idx
+                break
+    if choice is None:
+        lines = [active.narrative]
+        for idx, opt in enumerate(active.options, start=1):
+            lines.append(f"{idx}. {opt.text}")
+        await post_display(ctx, "\n".join(lines))
         await ctx.session.send_prompt(loc("storylet.choose").format(max=len(active.options)))
         return
     option = active.options[choice - 1]
     await apply_storylet_effects(ctx, option.effects)
+    flags = ctx.session.player.flags
+    if "tutorial_complete" in flags and "tutorial_handoff_shown" not in flags:
+        flags.append("tutorial_handoff_shown")
+        handoff = loc("tutorial.handoff")
+        room = ctx.shared.world.get_room(ctx.session.player.current_room)
+        if room and getattr(room, "safe_room", False):
+            handoff += "\n" + loc("tutorial.handoff.claim")
+        await post_display(ctx, handoff)
     ctx.session.player.storylet_history.append(active.storylet_id)
     followup = option.followup_storylet
     ctx.session.player.active_storylet = None
@@ -592,7 +812,11 @@ async def cmd_look(ctx: CommandContext, cmd: Command):
     if not room:
         await post_display(ctx, loc("cmd_look.nowhere"))
         return
-    room_text = ctx.shared.world.format_room(room.id, getattr(ctx.shared, "room_state_overrides", None))
+    room_text = ctx.shared.world.format_room(
+        room.id,
+        getattr(ctx.shared, "room_state_overrides", None),
+        getattr(ctx.shared, "death_journals", None),
+    )
 
     visible_players = []
     hidden_players_detected = []
@@ -618,13 +842,18 @@ async def cmd_look(ctx: CommandContext, cmd: Command):
         names = ", ".join(visible_players)
         room_text += f"\n\nAlso here: {names}."
 
+    room_text += "\n" + _room_action_hint(ctx, room)
+    pending = _pending_room_event(ctx, room)
+    if pending:
+        room_text += "\n\n" + pending
+    room_text += "\nObjective: " + _current_objective(ctx)
     await post_display(ctx, room_text)
 
     if hidden_players_detected:
         for name in hidden_players_detected:
-            await ctx.session.send_display(f"You notice {name} hiding in the shadows.\n")
+            await ctx.session.send_display(loc("perception.hidden_player").format(name=name) + "\n")
     elif someone_watching:
-        await ctx.session.send_display("You sense someone watching you.\n")
+        await ctx.session.send_display(loc("perception.someone_watching") + "\n")
 
     if room.tags and any("police" in t.lower() or "kempeitai" in t.lower() for t in room.tags):
         for session in ctx.session_manager.sessions.values():
@@ -641,35 +870,21 @@ async def cmd_look(ctx: CommandContext, cmd: Command):
             if "ccp_safehouse" in tag_lower:
                 ccp_inf = ctx.shared.ccp_influence
                 if ccp_inf >= 80:
-                    await ctx.session.send_display(
-                        "The safehouse is well-equipped. A nurse tends to patients in the corner. "
-                        "A workbench holds tools for weapon modification. A map on the wall shows "
-                        "Kempeitai patrol routes marked in red ink.\n"
-                    )
+                    key = "safehouse.ccp.high"
                 elif ccp_inf >= 60:
-                    await ctx.session.send_display(
-                        "The safehouse has a cot and a jug of water. Someone has scratched a crude "
-                        "map of nearby streets into the wall.\n"
-                    )
+                    key = "safehouse.ccp.mid"
                 else:
-                    await ctx.session.send_display(
-                        "The safehouse is bare - a single candle flickering, a thin blanket, the smell of damp concrete.\n"
-                    )
+                    key = "safehouse.ccp.bare"
+                await ctx.session.send_display(loc(key) + "\n")
             elif "gmd_safehouse" in tag_lower:
                 gmd_inf = ctx.shared.gmd_influence
                 if gmd_inf >= 80:
-                    await ctx.session.send_display(
-                        "The safehouse bristles with organization. A radio operator transmits in the back room. "
-                        "A weapons rack holds cleaned rifles. Charts on the wall track Japanese troop movements.\n"
-                    )
+                    key = "safehouse.gmd.high"
                 elif gmd_inf >= 60:
-                    await ctx.session.send_display(
-                        "The safehouse has a desk with papers and a radio hidden under a floorboard.\n"
-                    )
+                    key = "safehouse.gmd.mid"
                 else:
-                    await ctx.session.send_display(
-                        "The safehouse is barely furnished: a chair, a table, blackout curtains.\n"
-                    )
+                    key = "safehouse.gmd.bare"
+                await ctx.session.send_display(loc(key) + "\n")
 
     await ctx.session.send_completions(build_completions(ctx))
 
@@ -699,13 +914,13 @@ async def cmd_go(ctx: CommandContext, cmd: Command):
         if target_room:
             path = _bfs_find_path(ctx.shared.world, room.id, target_room.id)
             if path:
-                await post_display(ctx, f"Auto-pathing to {target_room.title}... ({len(path)} steps)")
+                await post_display(ctx, loc("movement.auto_path.start").format(title=target_room.title, steps=len(path)))
                 for step in path:
                     if ctx.session.player.health <= 0:
-                        await post_display(ctx, "Too injured to continue.")
+                        await post_display(ctx, loc("movement.auto_path.halt_injured"))
                         break
                     if ctx.session.player.hunger < 10:
-                        await post_display(ctx, "Too hungry to continue.")
+                        await post_display(ctx, loc("movement.auto_path.halt_hungry"))
                         break
 
                     current_room = _room(ctx)
@@ -713,7 +928,7 @@ async def cmd_go(ctx: CommandContext, cmd: Command):
                         for npc_id in current_room.npcs:
                             npc = ctx.shared.world.npcs.get(npc_id)
                             if npc and npc.faction == "kempeitai":
-                                await post_display(ctx, "Hostile forces block your path.")
+                                await post_display(ctx, loc("movement.auto_path.halt_hostile"))
                                 return
 
                     step_cmd = Command(verb="go", direct_obj=step, raw=f"go {step}")
@@ -750,7 +965,7 @@ async def cmd_take(ctx: CommandContext, cmd: Command):
     ctx.session.player.inventory.append(item)
     log_event(ctx, f"You took {item.name}.")
     await _handle_mission_objectives(ctx, "collect_item", item.id)
-    await post_display(ctx, f"You take {item.name}.")
+    await post_display(ctx, loc("cmd_take.success").format(name=item.name))
     await maybe_trigger_storylet(ctx)
 
 
@@ -767,7 +982,7 @@ async def cmd_drop(ctx: CommandContext, cmd: Command):
     if room:
         room.items.append(item)
     log_event(ctx, f"You dropped {item.name}.")
-    await post_display(ctx, f"You drop {item.name}.")
+    await post_display(ctx, loc("cmd_drop.success").format(name=item.name))
 
 
 async def cmd_inventory(ctx: CommandContext, cmd: Command):
@@ -776,7 +991,7 @@ async def cmd_inventory(ctx: CommandContext, cmd: Command):
         return
     lines = [loc("cmd_inventory.header")]
     for item in ctx.session.player.inventory:
-        lines.append(f"- {item.name}")
+        lines.append(f"- {item.name} [{_item_tag(item)}]")
     await post_display(ctx, "\n".join(lines))
 
 
@@ -790,9 +1005,12 @@ async def cmd_talk_to(ctx: CommandContext, cmd: Command):
         return
     npc = ctx.shared.world.npcs[npc_id]
     line = _get_npc_dialogue(ctx, npc, "greeting")
-    await post_display(ctx, f'{npc.name} says, "{line}"')
+    await post_display(ctx, f'{npc.name} says, "{line}"\n\nYou could ASK {_short_name(npc.name)} ABOUT {_topic_hint(npc)}.')
+    direction = _story_direction(ctx, npc)
+    if direction:
+        await post_display(ctx, direction)
     record_conversation(ctx, npc_id, f"Hello, {npc.name}.", line)
-    apply_action_trust(ctx, f"talk_to_{npc.faction}.{npc.role}", room_npcs(ctx))
+    await apply_action_trust(ctx, f"talk_to_{npc.faction}.{npc.role}", room_npcs(ctx))
     log_event(ctx, f"You spoke with {npc.name}.")
     await _handle_mission_objectives(ctx, "deliver_to_npc", npc_id)
     await maybe_trigger_storylet(ctx)
@@ -808,12 +1026,21 @@ async def cmd_ask_about(ctx: CommandContext, cmd: Command):
         return
     npc = ctx.shared.world.npcs[npc_id]
     topic = cmd.indirect_obj
-    line = _get_npc_dialogue(ctx, npc, "ask")
-    await post_display(ctx, f'{npc.name} says, "{line}"')
-    record_conversation(ctx, npc_id, f"Tell me about {topic}.", line)
-    apply_action_trust(ctx, f"ask_about_{npc.faction}.{npc.role}", room_npcs(ctx))
-    log_event(ctx, f"You asked {npc.name} about {topic}.")
-    await maybe_trigger_storylet(ctx)
+    topic_key = match_topic(topic)
+    known = npc_ask_topics(npc)
+    short = _short_name(npc.name)
+    hint = _topic_hint(npc)
+    if topic_key and topic_key in known:
+        line = get_topic_dialogue(npc, topic_key)
+        await post_display(ctx, f'{npc.name} says, "{line}"')
+        record_conversation(ctx, npc_id, f"Tell me about {topic}.", line)
+        await apply_action_trust(ctx, f"ask_about_{npc.faction}.{npc.role}", room_npcs(ctx))
+        log_event(ctx, f"You asked {npc.name} about {topic}.")
+        await maybe_trigger_storylet(ctx)
+    elif topic_key:
+        await post_display(ctx, f'{short} shrugs. "Wouldn\'t know about {topic}. Ask me about {hint}."')
+    else:
+        await post_display(ctx, f'{short} looks blank. "What about? I know about {hint}."')
 
 
 async def _advance_time_manual(ctx: CommandContext, minutes: int):
@@ -837,14 +1064,16 @@ async def cmd_wait(ctx: CommandContext, cmd: Command):
     minutes = max(1, min(minutes, 240))
     await _advance_time_manual(ctx, minutes)
     log_event(ctx, f"You waited {minutes} minutes.")
-    await post_display(ctx, f"You wait {minutes} minutes. It is now {time_str(ctx.shared.game_time)}.")
+    await post_display(ctx, loc("cmd_wait.done").format(minutes=minutes, time=time_str(ctx.shared.game_time)))
 
 
 async def cmd_status(ctx: CommandContext, cmd: Command):
     disguise = ctx.disguises.get(ctx.session.player.disguise)
     lines = [time_str(ctx.shared.game_time)]
+    lines.append("Season: " + _season_from_day(ctx.shared.game_time.day).capitalize())
+    lines.append("Objective: " + _current_objective(ctx))
     lines.append(f"Health: {ctx.session.player.health}/100")
-    lines.append(f"Hunger: {ctx.session.player.hunger}/100")
+    lines.append(f"Hunger: {int(ctx.session.player.hunger)}/100")
     lines.append(f"Morale: {ctx.session.player.morale}/100")
     lines.append(f"Courage: {ctx.session.player.courage}")
     lines.append(f"Money: {ctx.session.player.money_silver} silver, {ctx.session.player.money_fabi} fabi")
@@ -854,19 +1083,21 @@ async def cmd_status(ctx: CommandContext, cmd: Command):
         armour = _get_worn_armour(ctx.session.player)
         if armour:
             lines.append(f"Armour: {armour.name} (def {armour.defense_value}, dur {armour.durability})")
+    if ctx.session.player.wanted_level > 0:
+        chance = 15 + min(WANTED_LEVEL_MAX, ctx.session.player.wanted_level) * 20
+        lines.append(loc("status.wanted").format(level=ctx.session.player.wanted_level, chance=chance))
     lines.append("Trust:")
     lines.extend(summary_trust_lines(ctx))
-    progress = compute_progress(ctx.shared.game_time.day)
-    days_left = max(0, DAY_LIBERATION - ctx.shared.game_time.day)
     ccp_inf = ctx.shared.ccp_influence
     gmd_inf = ctx.shared.gmd_influence
+    leader, leader_val = ("CCP", ccp_inf) if ccp_inf >= gmd_inf else ("GMD", gmd_inf)
     _ENDING_TIDE = {
         "ccp_uprising": "The tide favours the Communist underground.",
         "gmd_return": "The tide favours the Nationalist return.",
         "unity": "The factions walk a knife's edge toward unity.",
         "balance": "The outcome hangs in the balance.",
     }
-    lines.append(f"Liberation: {progress}% ({days_left} days remain)")
+    lines.append(f"Liberation draws near: {leader} stands at {leader_val}/100 influence.")
     lines.append(f"CCP influence: {ccp_inf}  GMD influence: {gmd_inf}")
     lines.append(_ENDING_TIDE[predict_ending(ccp_inf, gmd_inf)])
     if ctx.session.player.flags:
@@ -901,7 +1132,7 @@ async def cmd_disguise_as(ctx: CommandContext, cmd: Command):
         return
     ctx.session.player.disguise = disguise.id
     log_event(ctx, f"You adopted the disguise of {disguise.name}.")
-    await post_display(ctx, f"You settle into the role of {disguise.name}. {disguise.description}")
+    await post_display(ctx, loc("cmd_disguise_as.success").format(name=disguise.name, description=disguise.description))
 
 
 async def cmd_tail(ctx: CommandContext, cmd: Command):
@@ -916,7 +1147,7 @@ async def cmd_tail(ctx: CommandContext, cmd: Command):
     ctx.session.player.tailing_state.last_checked_minute = (ctx.shared.game_time.day - 1) * 1440 + ctx.shared.game_time.minute
     target = ctx.shared.world.npcs[npc_id]
     log_event(ctx, f"You began tailing {target.name}.")
-    await post_display(ctx, f"You fall in behind {target.name} and try not to be remembered.")
+    await post_display(ctx, loc("cmd_tail.start").format(name=target.name))
 
 
 async def cmd_hide(ctx: CommandContext, cmd: Command):
@@ -931,12 +1162,12 @@ async def cmd_hide(ctx: CommandContext, cmd: Command):
     ctx.session.player.hidden = success
     if success:
         log_event(ctx, "You found a place to hide.")
-        await post_display(ctx, "You slip into shadow and become part of the room's silence.")
+        await post_display(ctx, loc("cmd_hide.success"))
         grow_stat(ctx.session.player, "stealth_skill", STAT_GAIN_STEALTH_HIDE)
     else:
         _raise_nearby_suspicion(ctx, SUSPICION_FAILED_STEALTH)
         log_event(ctx, "You failed to hide cleanly.")
-        await post_display(ctx, "You try to hide, but too many eyes still know where you stand.")
+        await post_display(ctx, loc("cmd_hide.fail"))
 
 
 async def cmd_plant(ctx: CommandContext, cmd: Command):
@@ -959,12 +1190,41 @@ async def cmd_plant(ctx: CommandContext, cmd: Command):
         }
     )
     log_event(ctx, f"You planted {item.name} for {target or 'whoever finds it'}.")
-    await post_display(ctx, f"You leave {item.name} where someone else will one day pay for noticing it.")
+    await post_display(ctx, loc("cmd_plant.success").format(name=item.name))
+
+
+async def _read_death_journal(ctx: CommandContext, cmd: Command):
+    room = ctx.room
+    entries = ctx.shared.death_journals.get(room.id, []) if room else []
+    if not entries:
+        await post_display(ctx, loc("cmd_read.no_journal"))
+        return
+    query = _normalize_text(cmd.direct_obj.replace("journal", " ").replace("notebook", " "))
+    if query:
+        matches = [e for e in entries if query in _normalize_text(e["character_name"])]
+        if len(matches) == 1:
+            chosen = matches[0]
+        elif len(matches) > 1:
+            names = ", ".join(f"{e['character_name']} (Day {e['day_of_death']})" for e in matches)
+            await post_display(ctx, loc("cmd_read.journal_ambiguous").format(names=names))
+            return
+        else:
+            await post_display(ctx, loc("cmd_read.journal_no_match").format(name=cmd.direct_obj))
+            return
+    else:
+        chosen = entries[-1]
+    added = absorb_death_journal(ctx.session.player.conversation_history, chosen)
+    log_event(ctx, f"You read the journal of {chosen['character_name']}, recovering {added} notes.")
+    await post_display(ctx, loc("cmd_read.journal_absorbed").format(name=chosen["character_name"], n=added))
 
 
 async def cmd_read(ctx: CommandContext, cmd: Command):
     if not cmd.direct_obj:
         await post_display(ctx, loc("cmd_read.no_target"))
+        return
+    target = cmd.direct_obj.lower()
+    if "journal" in target or "notebook" in target:
+        await _read_death_journal(ctx, cmd)
         return
     item = find_item_by_name(cmd.direct_obj, ctx.session.player.inventory)
     if not item:
@@ -982,7 +1242,7 @@ async def cmd_journal(ctx: CommandContext, cmd: Command):
         character_name = cmd.direct_obj
         archived = get_archived_journal(character_name, ctx.shared)
         if not archived:
-            await post_display(ctx, f"No archived journal found for {character_name}.")
+            await post_display(ctx, loc("cmd_journal.no_archive").format(name=character_name))
             return
         lines = [f"=== Archived Journal: {character_name} ===", ""]
         for event in archived[-20:]:
@@ -1011,10 +1271,105 @@ async def cmd_journal(ctx: CommandContext, cmd: Command):
                 journal_lines.append(f"[{mission.id}] {mission.title}")
                 journal_lines.extend(progress_lines)
 
+    if ctx.session.player.conversation_history:
+        journal_lines.append("\n\n=== Recent Conversations ===")
+        for conv in list(ctx.session.player.conversation_history)[-10:]:
+            if conv.get("npc_id") == "_rumor":
+                cname = "street talk"
+            else:
+                npc_obj = ctx.shared.world.npcs.get(conv.get("npc_id", ""))
+                cname = _short_name(npc_obj.name) if npc_obj else conv.get("npc_id", "?")
+            cresp = conv.get("npc_response", "")
+            journal_lines.append(f'Day {conv.get("day", "?")}, {cname}: "{cresp[:140]}"')
+
     await post_display(ctx, "\n".join(journal_lines))
 
 
+_USAGE = {
+    "look": "LOOK, or EXAMINE <npc/item> for detail and what you can do with it.",
+    "go": "GO <direction> (n/s/e/w/u/d), or GO <room name> to auto-walk. Follow the Routes line between districts.",
+    "map": "MAP shows where you have been, grouped by district.",
+    "take": "TAKE <item>.",
+    "drop": "DROP <item>.",
+    "inventory": "INVENTORY (i) lists what you carry, each with its use.",
+    "talk to": "TALK TO <name> greets someone and shows what to ASK them about.",
+    "ask about": "ASK <name> ABOUT <topic> (try: the city, the war, work, the Kempeitai, the factions).",
+    "give": "GIVE <item> TO <name>.",
+    "bond": "BOND WITH <name> USING <item> to build trust.",
+    "say": "SAY <message> speaks aloud to the room.",
+    "whisper": "WHISPER <name> <message>.",
+    "yell": "YELL <message> broadcasts to nearby rooms, and draws attention.",
+    "hide": "HIDE conceals you. Moving or loud actions break it.",
+    "tail": "TAIL <name> follows someone secretly.",
+    "disguise as": "DISGUISE AS <faction role> to pass as one of them.",
+    "pickpocket": "PICKPOCKET <name> (risky; raises suspicion if caught).",
+    "plant": "PLANT <item> ON <name> to frame them.",
+    "search": "SEARCH <detail> finds hidden exits or dead drops.",
+    "examine": "EXAMINE <npc/item> for detail and what you can do with it.",
+    "wear": "WEAR <armour>.",
+    "remove": "REMOVE <armour>.",
+    "open": "OPEN <container>.",
+    "close": "CLOSE <container>.",
+    "unlock": "UNLOCK <container> (needs the matching key).",
+    "lock": "LOCK <container>.",
+    "put in": "PUT <item> IN <container>.",
+    "take from": "TAKE <item> FROM <container>.",
+    "take trishaw": "TAKE TRISHAW TO <place> fast-travels somewhere you have visited (5 fabi, daytime).",
+    "eat": "EAT <food> staves off hunger.",
+    "sleep": "SLEEP until dawn (needs a safe, indoor room).",
+    "rest": "REST a short while (restores a little morale).",
+    "visit nurse": "VISIT NURSE heals 30 health for 20 fabi.",
+    "status": "STATUS shows your condition, objective, season, and the Liberation influence tide.",
+    "missions": "MISSIONS shows active work; MISSIONS AVAILABLE lists jobs; MISSIONS ACCEPT/COMPLETE/ABANDON <id>.",
+    "attack": "ATTACK <name> (courage-based; killing notable figures shifts influence).",
+    "buy": "BUY <item> from a vendor.",
+    "sell": "SELL <item> for fabi.",
+    "flee": "FLEE to a random exit (costs morale).",
+    "claim": "CLAIM makes this safe room your respawn safehouse.",
+    "retrieve": "RETRIEVE gear stashed at your safehouse.",
+    "help": "HELP lists everything; HELP <command> shows how to use one; HELP START for the basics.",
+}
+
+
+def _help_targets(ctx: CommandContext, verb: str) -> str:
+    room = _room(ctx)
+    if not room:
+        return ""
+    npc_names = [_short_name(ctx.shared.world.npcs[n].name) for n in room.npcs if ctx.shared.world.npcs.get(n)]
+    room_items = [i.name for i in room.items if i.name]
+    inv_items = [i.name for i in ctx.session.player.inventory if i.name]
+    exits = list(room.exits.keys())
+
+    if verb in ("attack", "talk to", "ask", "ask about", "pickpocket", "tail", "disguise as", "bond", "whisper", "plant"):
+        return ("Here: " + ", ".join(npc_names) + ".") if npc_names else "No one here to do that with."
+    if verb == "give":
+        if not inv_items:
+            return "You carry nothing to give."
+        return "You could give: " + ", ".join(inv_items) + ("" if not npc_names else ", to: " + ", ".join(npc_names) + ".")
+    if verb in ("take", "take from", "search"):
+        return ("Here: " + ", ".join(room_items) + ".") if room_items else "Nothing here to take."
+    if verb in ("eat", "wear", "remove", "drop", "sell", "read", "open", "mod weapon"):
+        return ("You carry: " + ", ".join(inv_items) + ".") if inv_items else "You carry nothing."
+    if verb in ("go", "flee"):
+        return ("Exits: " + ", ".join(exits) + ".") if exits else "No way out from here."
+    return ""
+
+
 async def cmd_help(ctx: CommandContext, cmd: Command):
+    arg = cmd.raw.lower().strip()
+    arg = arg[4:].strip() if arg.startswith("help") else ""
+    if arg == "start":
+        await post_display(ctx, loc("cmd_help.start"))
+        return
+    if arg:
+        match = next((k for k in sorted(_USAGE, key=len, reverse=True) if arg.startswith(k)), None)
+        if match:
+            text = f"{match.upper()} - {_USAGE[match]}"
+            targets = _help_targets(ctx, match)
+            if targets:
+                text += "\n" + targets
+            await post_display(ctx, text)
+            return
     await post_display(ctx, loc("cmd_help.text"))
 
 
@@ -1030,7 +1385,7 @@ async def cmd_quit(ctx: CommandContext, cmd: Command):
 
 
 async def cmd_stub(ctx: CommandContext, cmd: Command):
-    await post_display(ctx, loc("cmd_stub.not_implemented").format(verb=cmd.verb.upper()))
+    await post_display(ctx, loc("cmd_stub.not_implemented").format(verb=(cmd.raw.strip() or cmd.verb)))
 
 
 async def cmd_eat(ctx: CommandContext, cmd: Command):
@@ -1050,7 +1405,7 @@ async def cmd_eat(ctx: CommandContext, cmd: Command):
     ctx.session.player.hunger = min(100, ctx.session.player.hunger + food_value)
     ctx.session.player.morale = min(100, ctx.session.player.morale + morale_restore)
     log_event(ctx, f"You ate {item.name}.")
-    await post_display(ctx, f"You eat {item.name}. It settles your stomach.")
+    await post_display(ctx, loc("cmd_eat.success").format(name=item.name))
 
 
 async def cmd_sleep(ctx: CommandContext, cmd: Command):
@@ -1065,13 +1420,13 @@ async def cmd_sleep(ctx: CommandContext, cmd: Command):
     ctx.session.player.hunger = max(0, ctx.session.player.hunger - 20)
     await _advance_time_manual(ctx, minutes)
     log_event(ctx, "You slept for several hours.")
-    await post_display(ctx, f"You sleep for {hours} hours and wake refreshed. It is now {time_str(ctx.shared.game_time)}.")
+    await post_display(ctx, loc("cmd_sleep.done").format(hours=hours, time=time_str(ctx.shared.game_time)))
 
 
 async def cmd_rest(ctx: CommandContext, cmd: Command):
     ctx.session.player.morale = min(100, ctx.session.player.morale + 5)
     await _advance_time_manual(ctx, 15)
-    await post_display(ctx, "You rest quietly for fifteen minutes, catching your breath.")
+    await post_display(ctx, loc("cmd_rest.done"))
 
 
 async def cmd_bond(ctx: CommandContext, cmd: Command):
@@ -1093,22 +1448,22 @@ async def cmd_bond(ctx: CommandContext, cmd: Command):
         ctx.session.player.inventory.remove(food)
         _modify_relationship(ctx, npc_id, {"friendship": 15, "indebtedness": 5})
         log_event(ctx, f"You shared a meal with {ctx.shared.world.npcs[npc_id].name}.")
-        await post_display(ctx, f"You share {food.name}. They seem grateful for the company.")
+        await post_display(ctx, loc("cmd_bond.shared_meal").format(name=food.name))
 
 
 async def cmd_say(ctx: CommandContext, cmd: Command):
     message = cmd.raw[4:] if cmd.raw.startswith("say ") else ""
     if not message:
-        await post_display(ctx, "Say what?")
+        await post_display(ctx, loc("cmd_say.no_message"))
         return
-    await broadcast_to_room(ctx, f"{ctx.session.player.name} says: {message}", exclude_username=ctx.session.username)
-    await post_display(ctx, f"You say: {message}")
+    await broadcast_to_room(ctx, loc("social.say").format(name=ctx.session.player.name, message=message), exclude_username=ctx.session.username)
+    await post_display(ctx, loc("social.say_self").format(message=message))
 
 
 async def cmd_whisper(ctx: CommandContext, cmd: Command):
     parts = cmd.raw.split()
     if len(parts) < 3:
-        await post_display(ctx, "Whisper to whom?")
+        await post_display(ctx, loc("cmd_whisper.no_target"))
         return
 
     target_name = parts[1]
@@ -1120,14 +1475,14 @@ async def cmd_whisper(ctx: CommandContext, cmd: Command):
         await post_display(ctx, f"{target_name} is not here.")
         return
 
-    await target_session.send_display(f"{ctx.session.player.name} whispers: {message}")
-    await post_display(ctx, f"You whisper to {target_session.player.name}: {message}")
+    await target_session.send_display(loc("social.whisper").format(name=ctx.session.player.name, message=message))
+    await post_display(ctx, loc("social.whisper_self").format(name=target_session.player.name, message=message))
 
 
 async def cmd_give(ctx: CommandContext, cmd: Command):
     parts = cmd.raw.split()
     if len(parts) < 4 or "to" not in parts:
-        await post_display(ctx, "Give what to whom?")
+        await post_display(ctx, loc("cmd_give.usage"))
         return
     to_index = parts.index("to")
     item_name = parts[1]
@@ -1145,8 +1500,8 @@ async def cmd_give(ctx: CommandContext, cmd: Command):
     ctx.session.player.inventory.remove(item)
     target_session.player.inventory.append(item)
     log_event(ctx, f"You gave {item.name} to {target_session.player.name}.")
-    await post_display(ctx, f"You give {item.name} to {target_session.player.name}.")
-    await target_session.send_display(f"{ctx.session.player.name} hands you {item.name}.")
+    await post_display(ctx, loc("cmd_give.success").format(item=item.name, target=target_session.player.name))
+    await target_session.send_display(loc("cmd_give.received").format(name=ctx.session.player.name, item=item.name))
 
 
 async def cmd_attack(ctx: CommandContext, cmd: Command):
@@ -1219,7 +1574,7 @@ async def _apply_historical_kill(ctx: CommandContext, npc) -> None:
     if flag not in ctx.session.player.flags:
         ctx.session.player.flags.append(flag)
     grow_stat(ctx.session.player, "morale", 10)
-    await post_display(ctx, f"{npc.name} falls. The news races through Shanghai: {', '.join(parts)}.")
+    await post_display(ctx, loc("combat.npc_falls").format(name=npc.name, parts=', '.join(parts)))
 
 
 async def _attack_npc(ctx: CommandContext, npc_id: str):
@@ -1248,14 +1603,14 @@ async def _attack_npc(ctx: CommandContext, npc_id: str):
         npc.hp = max(0, npc.hp - result.target_damage)
         if npc.hp <= 0:
             log_event(ctx, f"You eliminated {npc.name}.")
-            apply_action_trust(ctx, f"kill_{npc.faction}.{npc.role}", room_npcs(ctx))
+            await apply_action_trust(ctx, f"kill_{npc.faction}.{npc.role}", room_npcs(ctx))
             if npc.faction == "kempeitai":
                 ctx.session.player.wanted_level = min(WANTED_LEVEL_MAX, ctx.session.player.wanted_level + 1)
                 _adjust_shared_influence(ctx.shared, "ccp", 2)
                 log_event(ctx, "The occupation will not forget this. Your face is remembered.")
             if npc.faction in COMBAT_GROWTH_FACTIONS:
                 grow_stat(player, "courage", STAT_GAIN_COURAGE_COMBAT)
-                await post_display(ctx, "The fight hardens you. (+1 courage)")
+                await post_display(ctx, loc("combat.hardened"))
             if npc.is_historical_figure:
                 await _apply_historical_kill(ctx, npc)
                 ctx.shared.world.npcs.pop(npc_id, None)
@@ -1270,7 +1625,7 @@ async def _attack_npc(ctx: CommandContext, npc_id: str):
                     if apply_milestone_effects(player, m, ctx.shared):
                         await post_display(ctx, f"\n{m.narrative}\n")
         else:
-            await post_display(ctx, f"{npc.name} staggers, wounded. ({npc.hp} hp left)")
+            await post_display(ctx, loc("combat.npc_wounded").format(name=npc.name, hp=npc.hp))
         await _degrade_and_notify_weapon(ctx, weapon, True)
     else:
         if result.attacker_damaged > 0:
@@ -1281,6 +1636,10 @@ async def _attack_npc(ctx: CommandContext, npc_id: str):
 
 
 async def _trigger_death(ctx: CommandContext, death_msg: str) -> None:
+    if "player_died" in ctx.session.player.flags:
+        return
+    if getattr(ctx.session, "awaiting_last_words", False):
+        return
     if "last_words_spoken" not in ctx.session.player.flags:
         await ctx.session.send_display(
             "\nYour vision fades. You have one final breath. Speak your last words:\n"
@@ -1356,14 +1715,14 @@ async def _attack_player(ctx: CommandContext, target_session: Session):
 
     if result.won:
         target.health = max(0, target.health - 20)
-        await broadcast_to_room(ctx, f"{player.name} strikes {target.name}!")
+        await broadcast_to_room(ctx, loc("combat.player_strikes").format(name=player.name, target=target.name))
         log_event(ctx, f"You attacked {target.name}.")
         if target.health <= 0:
             await handle_player_death(ctx, f"You killed {target.name}.")
     else:
         if result.attacker_damaged > 0:
             player.health = max(0, player.health - result.attacker_damaged)
-        await post_display(ctx, f"Your attack on {target.name} fails.")
+        await post_display(ctx, loc("combat.attack_fails").format(name=target.name))
 
     await _degrade_and_notify_weapon(ctx, weapon, result.won)
 
@@ -1456,15 +1815,15 @@ async def cmd_pickpocket(ctx: CommandContext, cmd: Command):
     if success:
         _earn_money(ctx.session.player, amount)
         log_event(ctx, f"You pickpocketed {npc.name} for {amount} fabi.")
-        apply_action_trust(ctx, f"pickpocket_{npc.faction}.{npc.role}", room_npcs(ctx))
+        await apply_action_trust(ctx, f"pickpocket_{npc.faction}.{npc.role}", room_npcs(ctx))
         await post_display(ctx, loc("cmd_pickpocket.success").format(name=npc.name, amount=amount))
     else:
         _raise_nearby_suspicion(ctx, SUSPICION_FAILED_STEALTH)
         log_event(ctx, f"You were caught pickpocketing {npc.name}.")
-        apply_action_trust(ctx, f"caught_pickpocket_{npc.faction}.{npc.role}", room_npcs(ctx))
+        await apply_action_trust(ctx, f"caught_pickpocket_{npc.faction}.{npc.role}", room_npcs(ctx))
         ctx.session.player.hidden = False
         await post_display(ctx, loc("cmd_pickpocket.caught").format(name=npc.name))
-        await broadcast_to_room(ctx, f"{ctx.session.player.name} is caught pickpocketing {npc.name}!")
+        await broadcast_to_room(ctx, loc("cmd_pickpocket.caught_broadcast").format(name=ctx.session.player.name, target=npc.name))
 
 
 async def cmd_equip(ctx: CommandContext, cmd: Command):
@@ -1551,12 +1910,15 @@ async def _award_mission_rewards(ctx: CommandContext, mission):
         reward_lines.append(f"+{reward.health_restore} health")
     if reward.morale_restore > 0:
         reward_lines.append(f"+{reward.morale_restore} morale")
+    if reward.influence:
+        parts = [f"{delta:+d} {faction.upper()}" for faction, delta in reward.influence.items()]
+        reward_lines.append("influence " + ", ".join(parts))
     if reward.trust:
         reward_lines.append("trust improved")
     reward_text = ", ".join(reward_lines) if reward_lines else "nothing tangible"
 
     log_event(ctx, f"Mission complete: {mission.title}")
-    await post_display(ctx, f"Mission complete: {mission.title}\nRewards: {reward_text}")
+    await post_display(ctx, loc("mission.complete").format(title=mission.title, rewards=reward_text))
 
 
 async def cmd_missions(ctx: CommandContext, cmd: Command):
@@ -1573,7 +1935,11 @@ async def cmd_missions(ctx: CommandContext, cmd: Command):
             return
         lines = [loc("cmd_missions.available_header")]
         for m in available:
-            lines.append(f"  [{m.id}] {m.title} (faction: {m.faction}, min trust: {m.min_trust})")
+            giver = ""
+            if m.giver_npc_hint:
+                npc = ctx.shared.world.npcs.get(m.giver_npc_hint)
+                giver = f" (seek {npc.name})" if npc else f" (seek {m.giver_npc_hint})"
+            lines.append(f"  [{m.id}] {m.title} (faction: {m.faction}, min trust: {m.min_trust}){giver}")
         await post_display(ctx, "\n".join(lines))
     elif sub == "accept":
         mission_id = cmd.indirect_obj or ""
@@ -1625,34 +1991,9 @@ async def cmd_missions(ctx: CommandContext, cmd: Command):
         await post_display(ctx, "\n".join(lines))
 
 
-async def cmd_search(ctx: CommandContext, cmd: Command):
-    room = _room(ctx)
-    if not room:
-        return
-
-    found_hidden = False
-    if room.hidden_exits:
-        for direction, dest_room_id in room.hidden_exits.items():
-            if direction in room.exits:
-                continue
-            difficulty = 50
-            if ctx.session.player.perception >= difficulty:
-                room.exits[direction] = dest_room_id
-                await post_display(ctx, f"You discover a hidden passage leading {direction}.")
-                found_hidden = True
-            else:
-                await post_display(ctx, f"You sense something to the {direction} but can't find it.")
-
-    if room.hiding_spots and not ctx.session.player.hidden:
-        await post_display(ctx, "This room has hiding spots. You could HIDE here.")
-
-    if not found_hidden and not room.hiding_spots:
-        await post_display(ctx, "You search the room but find nothing of interest.")
-
-
 async def cmd_examine(ctx: CommandContext, cmd: Command):
     if not cmd.direct_obj:
-        await post_display(ctx, "Examine what?")
+        await post_display(ctx, loc("cmd_examine.no_target"))
         return
 
     room = _room(ctx)
@@ -1660,6 +2001,10 @@ async def cmd_examine(ctx: CommandContext, cmd: Command):
         return
 
     item = find_item_by_name(cmd.direct_obj, room.items if room else [])
+    carried = False
+    if not item:
+        item = find_item_by_name(cmd.direct_obj, ctx.session.player.inventory)
+        carried = True
     if item:
         lines = [f"You examine {item.name}."]
         if item.is_weapon:
@@ -1684,6 +2029,9 @@ async def cmd_examine(ctx: CommandContext, cmd: Command):
         elif item.is_key:
             if item.opens_container:
                 lines.append(f"Key that opens: {item.opens_container}")
+        hint = _item_action_hint(item, carried)
+        if hint:
+            lines.append(hint)
         await post_display(ctx, "\n".join(lines))
         return
 
@@ -1698,211 +2046,228 @@ async def cmd_examine(ctx: CommandContext, cmd: Command):
                 lines.append(f"Authority: {npc.authority}")
             else:
                 lines.append("You can't assess their authority.")
+            short = _short_name(npc.name)
+            lines.append(f"You can: TALK TO {short}, ASK {short} ABOUT <topic>, ATTACK, PICKPOCKET.")
             await post_display(ctx, "\n".join(lines))
             return
 
-    await post_display(ctx, f"You don't see that here.")
+    await post_display(ctx, loc("cmd_examine.not_found"))
 
 
 async def cmd_map(ctx: CommandContext, cmd: Command):
+    from collections import OrderedDict
+    from .world import DISTRICT_LABELS
+
     visited = set(ctx.session.player.map_revealed)
     if not visited:
-        await post_display(ctx, "You haven't explored enough to draw a map.")
+        await post_display(ctx, loc("cmd_map.not_explored"))
         return
 
-    current_room = ctx.shared.world.get_room(ctx.session.player.current_room)
-    if not current_room:
-        return
-
-    lines = ["Visited areas:"]
+    current = ctx.session.player.current_room
+    groups = OrderedDict()
     for room_id in sorted(visited):
         room = ctx.shared.world.get_room(room_id)
-        if room:
-            marker = "HERE" if room_id == ctx.session.player.current_room else ""
-            lines.append(f"- {room.title}{marker}")
+        if not room:
+            continue
+        groups.setdefault(room.district, []).append(room)
 
-    if ctx.session.player.maps_purchased:
-        lines.append("\nPurchased maps:")
-        for district in ctx.session.player.maps_purchased:
-            lines.append(f"- {district}")
+    lines = ["Map of explored Shanghai:", ""]
+    for district, rooms in groups.items():
+        lines.append(DISTRICT_LABELS.get(district, district.title()).title() + ":")
+        boxes = []
+        for idx, room in enumerate(rooms, 1):
+            mark = "*" if room.id == current else " "
+            boxes.append(f"[{idx:02d}{mark}]")
+        lines.append("  " + "-".join(boxes))
+        connectors = []
+        for room in rooms:
+            for direction, dest_id in room.exits.items():
+                dest = ctx.shared.world.get_room(dest_id)
+                if dest and dest.district != district and direction in ("north", "south", "up", "down"):
+                    arrow = {"north": "^", "south": "v", "up": "^", "down": "v"}[direction]
+                    dlabel = DISTRICT_LABELS.get(dest.district, dest.district).title()
+                    connectors.append(f"{arrow}{direction}: {dlabel}")
+        if connectors:
+            lines.append("  " + "  ".join(connectors))
+        lines.append("")
 
     await post_display(ctx, "\n".join(lines))
 
 
 async def cmd_open(ctx: CommandContext, cmd: Command):
     if not cmd.direct_obj:
-        await post_display(ctx, "Open what?")
+        await post_display(ctx, loc("cmd_open.no_target"))
         return
 
     item = _find_container(ctx, cmd.direct_obj)
     if not item:
-        await post_display(ctx, "That's not a container.")
+        await post_display(ctx, loc("container.not_container"))
         return
 
     if item.locked:
-        await post_display(ctx, "It's locked.")
+        await post_display(ctx, loc("container.locked"))
         return
 
-    await post_display(ctx, f"You open {item.name}.")
+    await post_display(ctx, loc("container.opened").format(name=item.name))
     if item.container_items:
         contents = ", ".join(ci.name for ci in item.container_items)
-        await post_display(ctx, f"Inside: {contents}")
+        await post_display(ctx, loc("container.contents").format(items=contents))
     else:
-        await post_display(ctx, "It's empty.")
+        await post_display(ctx, loc("container.empty"))
 
 
 async def cmd_close(ctx: CommandContext, cmd: Command):
     if not cmd.direct_obj:
-        await post_display(ctx, "Close what?")
+        await post_display(ctx, loc("cmd_close.no_target"))
         return
 
     item = _find_container(ctx, cmd.direct_obj)
     if not item:
-        await post_display(ctx, "That's not a container.")
+        await post_display(ctx, loc("container.not_container"))
         return
 
-    await post_display(ctx, f"You close {item.name}.")
+    await post_display(ctx, loc("container.closed").format(name=item.name))
 
 
 async def cmd_lock(ctx: CommandContext, cmd: Command):
     if not cmd.direct_obj:
-        await post_display(ctx, "Lock what?")
+        await post_display(ctx, loc("cmd_lock.no_target"))
         return
 
     item = _find_container(ctx, cmd.direct_obj)
     if not item:
-        await post_display(ctx, "That's not a container.")
+        await post_display(ctx, loc("container.not_container"))
         return
 
     if not item.key_id:
-        await post_display(ctx, "This container doesn't have a lock.")
+        await post_display(ctx, loc("container.no_lock"))
         return
 
     if not _has_key_for_container(ctx.session.player, item):
-        await post_display(ctx, "You don't have the key.")
+        await post_display(ctx, loc("container.no_key"))
         return
 
     item.locked = True
-    await post_display(ctx, f"You lock {item.name}.")
+    await post_display(ctx, loc("container.locked_done").format(name=item.name))
 
 
 async def cmd_unlock(ctx: CommandContext, cmd: Command):
     if not cmd.direct_obj:
-        await post_display(ctx, "Unlock what?")
+        await post_display(ctx, loc("cmd_unlock.no_target"))
         return
 
     item = _find_container(ctx, cmd.direct_obj)
     if not item:
-        await post_display(ctx, "That's not a container.")
+        await post_display(ctx, loc("container.not_container"))
         return
 
     if not item.key_id:
-        await post_display(ctx, "This container doesn't have a lock.")
+        await post_display(ctx, loc("container.no_lock"))
         return
 
     if not _has_key_for_container(ctx.session.player, item):
-        await post_display(ctx, "You don't have the key.")
+        await post_display(ctx, loc("container.no_key"))
         return
 
     item.locked = False
-    await post_display(ctx, f"You unlock {item.name}.")
+    await post_display(ctx, loc("container.unlocked_done").format(name=item.name))
 
 
 async def cmd_put_in(ctx: CommandContext, cmd: Command):
     if not cmd.direct_obj or not cmd.indirect_obj:
-        await post_display(ctx, "Put what in what?")
+        await post_display(ctx, loc("cmd_put_in.usage"))
         return
 
     item = find_item_by_name(cmd.direct_obj, ctx.session.player.inventory)
     if not item:
-        await post_display(ctx, "You don't have that.")
+        await post_display(ctx, loc("cmd_generic.not_held"))
         return
 
     container = _find_container(ctx, cmd.indirect_obj)
     if not container:
-        await post_display(ctx, "That's not a container.")
+        await post_display(ctx, loc("container.not_container"))
         return
 
     if container.locked:
-        await post_display(ctx, "It's locked.")
+        await post_display(ctx, loc("container.locked"))
         return
 
     ctx.session.player.inventory.remove(item)
     container.container_items.append(item)
-    await post_display(ctx, f"You put {item.name} in {container.name}.")
+    await post_display(ctx, loc("container.put").format(item=item.name, container=container.name))
 
 
 async def cmd_take_from(ctx: CommandContext, cmd: Command):
     if not cmd.direct_obj or not cmd.indirect_obj:
-        await post_display(ctx, "Take what from what?")
+        await post_display(ctx, loc("cmd_take_from.usage"))
         return
 
     container = _find_container(ctx, cmd.indirect_obj)
     if not container:
-        await post_display(ctx, "That's not a container.")
+        await post_display(ctx, loc("container.not_container"))
         return
 
     if container.locked:
-        await post_display(ctx, "It's locked.")
+        await post_display(ctx, loc("container.locked"))
         return
 
     item = find_item_by_name(cmd.direct_obj, container.container_items)
     if not item:
-        await post_display(ctx, "That's not in there.")
+        await post_display(ctx, loc("container.not_in_there"))
         return
 
     container.container_items.remove(item)
     ctx.session.player.inventory.append(item)
-    await post_display(ctx, f"You take {item.name} from {container.name}.")
+    await post_display(ctx, loc("container.take").format(item=item.name, container=container.name))
 
 
 async def cmd_wear(ctx: CommandContext, cmd: Command):
     if not cmd.direct_obj:
-        await post_display(ctx, "Wear what?")
+        await post_display(ctx, loc("cmd_wear.no_target"))
         return
 
     item = find_item_by_name(cmd.direct_obj, ctx.session.player.inventory)
     if not item:
-        await post_display(ctx, "You don't have that.")
+        await post_display(ctx, loc("cmd_generic.not_held"))
         return
 
     if not item.is_armour:
-        await post_display(ctx, "You can't wear that.")
+        await post_display(ctx, loc("cmd_wear.cant"))
         return
 
     if ctx.session.player.worn_armour_id:
         old_armour = _get_worn_armour(ctx.session.player)
         if old_armour and old_armour.id == item.id:
-            await post_display(ctx, "You're already wearing that.")
+            await post_display(ctx, loc("cmd_wear.already"))
             return
 
     ctx.session.player.worn_armour_id = item.id
-    await post_display(ctx, f"You put on {item.name}. Defense: +{item.defense_value}.")
+    await post_display(ctx, loc("cmd_wear.success").format(name=item.name, defense=item.defense_value))
 
 
 async def cmd_remove(ctx: CommandContext, cmd: Command):
     if not cmd.direct_obj:
         if not ctx.session.player.worn_armour_id:
-            await post_display(ctx, "You aren't wearing anything.")
+            await post_display(ctx, loc("cmd_remove.nothing"))
             return
     else:
         item = find_item_by_name(cmd.direct_obj, ctx.session.player.inventory)
         if not item or item.id != ctx.session.player.worn_armour_id:
-            await post_display(ctx, "You aren't wearing that.")
+            await post_display(ctx, loc("cmd_remove.not_worn"))
             return
 
     armour = _get_worn_armour(ctx.session.player)
     ctx.session.player.worn_armour_id = ""
     if armour:
-        await post_display(ctx, f"You take off {armour.name}.")
+        await post_display(ctx, loc("cmd_remove.success").format(name=armour.name))
     else:
-        await post_display(ctx, "You remove your armour.")
+        await post_display(ctx, loc("cmd_remove.generic"))
 
 
 async def cmd_write_note(ctx: CommandContext, cmd: Command):
     text = cmd.indirect_obj or ""
     if not text:
-        await post_display(ctx, "Write what on the note?")
+        await post_display(ctx, loc("cmd_write_note.no_text"))
         return
 
     from .world import Item
@@ -1915,12 +2280,12 @@ async def cmd_write_note(ctx: CommandContext, cmd: Command):
         note_text=text,
     )
     ctx.session.player.inventory.append(note)
-    await post_display(ctx, "You write a note.")
+    await post_display(ctx, loc("cmd_write_note.done"))
 
 
 async def cmd_leave_note(ctx: CommandContext, cmd: Command):
     if not cmd.direct_obj or cmd.direct_obj != "note":
-        await post_display(ctx, "Leave what note?")
+        await post_display(ctx, loc("cmd_leave_note.usage"))
         return
 
     note_item = None
@@ -1930,7 +2295,7 @@ async def cmd_leave_note(ctx: CommandContext, cmd: Command):
             break
 
     if not note_item:
-        await post_display(ctx, "You don't have a note to leave.")
+        await post_display(ctx, loc("cmd_leave_note.no_note"))
         return
 
     room = _room(ctx)
@@ -1939,63 +2304,62 @@ async def cmd_leave_note(ctx: CommandContext, cmd: Command):
 
     ctx.session.player.inventory.remove(note_item)
     room.items.append(note_item)
-    await post_display(ctx, "You leave the note here.")
+    await post_display(ctx, loc("cmd_leave_note.done"))
 
 
 async def cmd_flee(ctx: CommandContext, cmd: Command):
     if ctx.session.player.hidden:
-        await post_display(ctx, "You can't flee while hidden.")
+        await post_display(ctx, loc("cmd_flee.hidden"))
         return
 
     room = _room(ctx)
     if not room or not room.exits:
-        await post_display(ctx, "There's nowhere to flee!")
+        await post_display(ctx, loc("cmd_flee.nowhere"))
         return
 
     direction = random.choice(list(room.exits.keys()))
     ctx.session.player.morale = max(0, ctx.session.player.morale - 5)
-    await post_display(ctx, "You panic and run!")
+    await post_display(ctx, loc("cmd_flee.done"))
     await cmd_go(ctx, cmd)
 
 
 async def cmd_take_trishaw(ctx: CommandContext, cmd: Command):
     if cmd.verb == "take trishaw" and cmd.preposition == "to" and cmd.indirect_obj:
-        target_district = cmd.indirect_obj.lower()
+        target = cmd.indirect_obj.lower()
     else:
-        await post_display(ctx, "Take trishaw to where?")
-        return
-
-    room = _room(ctx)
-    if not room or not room.trishaw_stand:
-        await post_display(ctx, "There's no trishaw stand here.")
+        await post_display(ctx, loc("cmd_trishaw.to_where"))
         return
 
     hour = ctx.shared.game_time.minute // 60
     if hour < 6 or hour >= 20:
-        await post_display(ctx, "Trishaws only run during daytime (6:00-20:00).")
+        await post_display(ctx, loc("cmd_trishaw.hours"))
+        return
+    if not _check_money(ctx.session.player, 5):
+        await post_display(ctx, loc("cmd_trishaw.no_fare"))
         return
 
-    if not _check_money(ctx.session.player, 5):
-        await post_display(ctx, "You can't afford the fare (5 fabi).")
-        return
+    dest = None
+    for rid in set(ctx.session.player.map_revealed):
+        r = ctx.shared.world.get_room(rid)
+        if r and (target in r.title.lower() or target in r.id.lower()):
+            dest = r
+            break
+    if dest is None:
+        candidates = [
+            r for r in ctx.shared.world.rooms.values()
+            if r.tags and target in [t.lower() for t in r.tags]
+        ]
+        if not candidates:
+            await post_display(ctx, loc("movement.trishaw.no_district").format(district=target))
+            return
+        dest = random.choice(candidates)
 
     _spend_money(ctx.session.player, 5)
-
-    target_rooms = [
-        r for r in ctx.shared.world.rooms.values()
-        if r.tags and target_district in [t.lower() for t in r.tags]
-    ]
-    if not target_rooms:
-        await post_display(ctx, f"No rooms found in {target_district}.")
-        return
-
-    dest_room = random.choice(target_rooms)
-    old_room_id = ctx.session.player.current_room
-    ctx.session.player.current_room = dest_room.id
+    ctx.session.player.current_room = dest.id
     ctx.session.player.hidden = False
-    log_event(ctx, f"You took a trishaw to {dest_room.title}.")
+    log_event(ctx, f"You took a trishaw to {dest.title}.")
 
-    await post_display(ctx, f"You pay 5 fabi and take a trishaw to {dest_room.title}.")
+    await post_display(ctx, loc("movement.trishaw.ride").format(title=dest.title))
     await _advance_time_manual(ctx, 30)
 
     await cmd_look(ctx, Command(verb="look"))
@@ -2004,7 +2368,7 @@ async def cmd_take_trishaw(ctx: CommandContext, cmd: Command):
 
 async def cmd_yell(ctx: CommandContext, cmd: Command):
     if not cmd.direct_obj:
-        await post_display(ctx, "Yell what?")
+        await post_display(ctx, loc("cmd_yell.no_message"))
         return
 
     from .pathfinding import propagate_sound, SOUND_YELL
@@ -2021,7 +2385,7 @@ async def cmd_yell(ctx: CommandContext, cmd: Command):
         game_time=ctx.shared.game_time,
     )
 
-    await broadcast_to_room(ctx, f"{player_name} yells: \"{message}\"!")
+    await broadcast_to_room(ctx, loc("social.yell").format(name=player_name, message=message))
 
     for heard_room_id, perceived_intensity in heard_rooms:
         heard_room = ctx.shared.world.rooms.get(heard_room_id)
@@ -2053,18 +2417,18 @@ async def cmd_sound(ctx: CommandContext, cmd: Command):
     arg = (cmd.direct_obj or cmd.preposition or "").lower()
     if arg in ("on", "yes", "true"):
         ctx.session.audio_enabled = True
-        await post_display(ctx, "Ambient audio enabled. Type SOUND OFF to disable.")
+        await post_display(ctx, loc("cmd_sound.on"))
     elif arg in ("off", "no", "false"):
         ctx.session.audio_enabled = False
-        await post_display(ctx, "Ambient audio disabled.")
+        await post_display(ctx, loc("cmd_sound.off"))
     else:
         current = getattr(ctx.session, 'audio_enabled', False)
-        await post_display(ctx, f"Ambient audio: {'ON' if current else 'OFF'}. Use SOUND ON/OFF.")
+        await post_display(ctx, loc("cmd_sound.status").format(state="ON" if current else "OFF"))
 
 
 async def cmd_mod_weapon(ctx: CommandContext, cmd: Command):
     if not cmd.direct_obj or not cmd.indirect_obj:
-        await post_display(ctx, "Mod weapon with what? Usage: mod weapon <weapon> with <mod>")
+        await post_display(ctx, loc("cmd_mod.usage"))
         return
 
     weapon_name = cmd.direct_obj
@@ -2072,19 +2436,19 @@ async def cmd_mod_weapon(ctx: CommandContext, cmd: Command):
 
     weapon = find_item_by_name(weapon_name, ctx.session.player.inventory)
     if not weapon or not weapon.is_weapon:
-        await post_display(ctx, "You don't have that weapon.")
+        await post_display(ctx, loc("cmd_mod.no_weapon"))
         return
 
     mod = find_item_by_name(mod_name, ctx.session.player.inventory)
     if not mod or not mod.is_mod:
-        await post_display(ctx, "You don't have that mod.")
+        await post_display(ctx, loc("cmd_mod.no_mod"))
         return
 
     weapon.mods = getattr(weapon, 'mods', [])
     weapon.mod_slots = getattr(weapon, 'mod_slots', [])
 
     if len(weapon.mods) >= len(weapon.mod_slots):
-        await post_display(ctx, "That weapon has no free mod slots.")
+        await post_display(ctx, loc("cmd_mod.no_slot"))
         return
 
     def apply_courage_bonus(w, v):
@@ -2113,14 +2477,14 @@ async def cmd_mod_weapon(ctx: CommandContext, cmd: Command):
 
     ctx.session.player.inventory.remove(mod)
     log_event(ctx, f"You added {mod.name} to {weapon.name}.")
-    await post_display(ctx, f"You attach the {mod.name} to your {weapon.name}. {mod.mod_type} increased by {mod.mod_bonus}.")
+    await post_display(ctx, loc("cmd_mod.success").format(mod=mod.name, weapon=weapon.name, type=mod.mod_type, bonus=mod.mod_bonus))
 
 
 async def cmd_hide_for(ctx: CommandContext, cmd: Command):
     raw = cmd.raw
     parts = raw.split()
     if len(parts) < 6 or "in" not in [p.lower() for p in parts]:
-        await post_display(ctx, "Usage: hide for <player> <item> in <signal>")
+        await post_display(ctx, loc("cmd_hide_for.usage"))
         return
 
     in_idx = next(i for i, p in enumerate(parts) if p.lower() == "in")
@@ -2129,7 +2493,7 @@ async def cmd_hide_for(ctx: CommandContext, cmd: Command):
     signal = " ".join(parts[in_idx + 1:])
 
     if not item_name or not signal:
-        await post_display(ctx, "Specify what to hide and the recognition signal.")
+        await post_display(ctx, loc("cmd_hide_for.no_detail"))
         return
 
     room = _room(ctx)
@@ -2138,7 +2502,7 @@ async def cmd_hide_for(ctx: CommandContext, cmd: Command):
 
     item = find_item_by_name(item_name, ctx.session.player.inventory)
     if not item:
-        await post_display(ctx, f"You don't have {item_name}.")
+        await post_display(ctx, loc("cmd_hide_for.no_item").format(item=item_name))
         return
 
     from .world import replace as copy_item
@@ -2150,13 +2514,13 @@ async def cmd_hide_for(ctx: CommandContext, cmd: Command):
         "hider": ctx.session.player.name,
     })
     ctx.session.player.inventory.remove(item)
-    await post_display(ctx, f"You hide {item.name} carefully. Only someone who knows to look for '{signal}' will find it.")
+    await post_display(ctx, loc("cmd_hide_for.success").format(name=item.name, signal=signal))
 
 
 async def cmd_search(ctx: CommandContext, cmd: Command):
     detail = cmd.direct_obj
     if not detail:
-        await post_display(ctx, "Search what? Usage: search <detail>")
+        await post_display(ctx, loc("cmd_search.usage"))
         return
 
     room = _room(ctx)
@@ -2175,7 +2539,7 @@ async def cmd_search(ctx: CommandContext, cmd: Command):
                 item = drop["item"]
                 ctx.session.player.inventory.append(item)
                 room.dead_drops.remove(drop)
-                await post_display(ctx, f"Hidden behind '{detail}', you find {item.name}!")
+                await post_display(ctx, loc("cmd_search.found_drop").format(detail=detail, name=item.name))
                 return
 
     if room.hidden_exits:
@@ -2185,23 +2549,23 @@ async def cmd_search(ctx: CommandContext, cmd: Command):
                 if perception_roll >= 25:
                     room.exits[direction] = dest_id
                     grow_stat(ctx.session.player, "perception", STAT_GAIN_PERCEPTION_OBSERVE)
-                    await post_display(ctx, f"You discover a hidden passage leading {direction}. Your eye sharpens. (+1 perception)")
+                    await post_display(ctx, loc("cmd_search.found_exit").format(direction=direction))
                     return
                 else:
-                    await post_display(ctx, f"You sense something to the {direction} but can't find it.")
+                    await post_display(ctx, loc("perception.hidden_exit_sense").format(direction=direction))
                     return
 
-    await post_display(ctx, f"You search the {detail} but find nothing.")
+    await post_display(ctx, loc("cmd_search.nothing").format(detail=detail))
 
 
 async def cmd_memorial(ctx: CommandContext, cmd: Command):
     if not ctx.shared.legacy_book:
-        await post_display(ctx, "The legacy book is empty.")
+        await post_display(ctx, loc("cmd_memorial.empty"))
         return
 
     entries = ctx.shared.legacy_book[-20:]
     if not entries:
-        await post_display(ctx, "No entries in the legacy book.")
+        await post_display(ctx, loc("cmd_memorial.no_entries"))
         return
 
     lines = ["Memorial", ""]
@@ -2221,29 +2585,43 @@ async def cmd_memorial(ctx: CommandContext, cmd: Command):
 
 
 async def cmd_rumors(ctx: CommandContext, cmd: Command):
+    lines = []
+    active = list(getattr(ctx.shared, "active_rumors", []))
+    if active:
+        from .rumors import load_rumors
+        catalog = load_rumors("server/data/custom/rumors.yaml")
+        heard = []
+        lines += ["Street talk:", ""]
+        for rid in active:
+            r = catalog.get(rid)
+            if r:
+                lines.append(f"  {r.text}")
+                heard.append(r.text)
+        if heard:
+            record_conversation(ctx, "_rumor", "What's the word on the street?", " | ".join(heard))
     decisions = getattr(ctx.shared, "world_decisions", None)
-    if not decisions:
-        await post_display(ctx, "The city is quiet. No rumours reach your ears.")
+    recent = [d for d in decisions if d["day"] >= ctx.shared.game_time.day - 1] if decisions else []
+    if recent:
+        if lines:
+            lines.append("")
+        lines += ["Notable events:", ""]
+        for d in recent[-10:]:
+            dtype = d["decision_type"]
+            actor = ctx.shared.world.npcs.get(d["actor_npc_id"])
+            name = actor.name if actor else "Someone"
+            if dtype == "vendor_shutter":
+                lines.append(f"  {name} shuttered their shop on Day {d['day']}; some say they fled the city.")
+            elif dtype == "defection":
+                old = d.get("effects", {}).get("old_faction", "")
+                new = d.get("effects", {}).get("new_faction", "")
+                lines.append(f"  {name} has abandoned the {old.upper()} for the {new.upper()}.")
+            elif dtype == "extortion":
+                lines.append(f"  {name} was seen shaking down a civilian for protection money.")
+            else:
+                lines.append(f"  {name}, {dtype} on Day {d['day']}.")
+    if not lines:
+        await post_display(ctx, loc("cmd_rumors.quiet"))
         return
-    recent = [d for d in decisions if d["day"] >= ctx.shared.game_time.day - 1]
-    if not recent:
-        await post_display(ctx, "No new rumours circulate today.")
-        return
-    lines = ["Rumours on the wind:", ""]
-    for d in recent[-10:]:
-        dtype = d["decision_type"]
-        actor = ctx.shared.world.npcs.get(d["actor_npc_id"])
-        name = actor.name if actor else "Someone"
-        if dtype == "vendor_shutter":
-            lines.append(f"  {name} shuttered their shop on Day {d['day']}; some say they fled the city.")
-        elif dtype == "defection":
-            old = d.get("effects", {}).get("old_faction", "")
-            new = d.get("effects", {}).get("new_faction", "")
-            lines.append(f"  {name} has abandoned the {old.upper()} for the {new.upper()}.")
-        elif dtype == "extortion":
-            lines.append(f"  {name} was seen shaking down a civilian for protection money.")
-        else:
-            lines.append(f"  {name}, {dtype} on Day {d['day']}.")
     await post_display(ctx, "\n".join(lines))
 
 
@@ -2268,7 +2646,7 @@ async def advance_time_one_minute(ctx: CommandContext):
         if mm:
             expired = mm.check_expiry(ctx.session.player, ctx.shared.game_time.day)
             for mid in expired:
-                await post_display(ctx, f"Mission {mid} has expired.")
+                await post_display(ctx, loc("mission.expired").format(id=mid))
     process_survival_tick(ctx)
 
     is_dead, death_message = check_death_conditions(ctx)
@@ -2370,13 +2748,13 @@ async def process_tailing(ctx: CommandContext):
     if not success and tail.distance <= 0:
         ctx.session.player.tailing_state = None
         log_event(ctx, f"{target.name} spotted you while you were tailing them.")
-        await post_display(ctx, f"{target.name} glances over a shoulder, slows, and knows exactly what you are doing.")
+        await post_display(ctx, loc("cmd_tail.spotted").format(name=target.name))
         return
     target_room = ctx.shared.world.npc_locations.get(target.id)
     if success and target_room and ctx.session.player.current_room != target_room:
         ctx.session.player.current_room = target_room
         ctx.session.player.hidden = False
-        await post_display(ctx, f"You shadow {target.name} and keep them in sight.")
+        await post_display(ctx, loc("cmd_tail.shadowing").format(name=target.name))
 
 
 async def check_curfew_penalty(ctx: CommandContext):
@@ -2386,7 +2764,7 @@ async def check_curfew_penalty(ctx: CommandContext):
         return
     room = _room(ctx)
     if room and not room.indoors:
-        apply_action_trust(ctx, "out_after_curfew", room.npcs)
+        await apply_action_trust(ctx, "out_after_curfew", room.npcs)
         ctx.session.player.last_curfew_penalty_day = ctx.shared.game_time.day
         log_event(ctx, "You were seen outside after curfew.")
         await post_display(ctx, loc("curfew.warning"))
@@ -2405,13 +2783,13 @@ def process_survival_tick(ctx: CommandContext):
 async def cmd_claim(ctx: CommandContext, cmd: Command):
     room = _room(ctx)
     if not room:
-        await post_display(ctx, "There is nothing here to claim.")
+        await post_display(ctx, loc("cmd_claim.nothing"))
         return
     if not getattr(room, "safe_room", False):
-        await post_display(ctx, "Only a safe room can be claimed as a safehouse: a place beyond the curfew's reach.")
+        await post_display(ctx, loc("cmd_claim.not_safe"))
         return
     set_safehouse(ctx.session.username, room.id)
-    await post_display(ctx, f"You claim {room.title} as your safehouse. Should you fall, your next life begins here.")
+    await post_display(ctx, loc("cmd_claim.success").format(title=room.title))
 
 
 async def cmd_retrieve(ctx: CommandContext, cmd: Command):
@@ -2421,11 +2799,11 @@ async def cmd_retrieve(ctx: CommandContext, cmd: Command):
     safehouse = resolve_spawn_room(ctx.session.username)
     room = _room(ctx)
     if not safehouse or not room or room.id != safehouse:
-        await post_display(ctx, "You can only recover stowed gear at your own safehouse.")
+        await post_display(ctx, loc("cmd_retrieve.wrong_place"))
         return
     stash = withdraw_stash(ctx.session.username)
     if not stash:
-        await post_display(ctx, "Nothing has been stowed here.")
+        await post_display(ctx, loc("cmd_retrieve.empty"))
         return
     recovered = []
     for data in stash:
@@ -2433,7 +2811,7 @@ async def cmd_retrieve(ctx: CommandContext, cmd: Command):
         ctx.session.player.inventory.append(item)
         recovered.append(item.name)
     save_player(ctx.session.player)
-    await post_display(ctx, f"You recover stowed gear: {', '.join(recovered)}.")
+    await post_display(ctx, loc("cmd_retrieve.success").format(items=', '.join(recovered)))
 
 
 _COMMAND_REGISTRY = None
@@ -2460,7 +2838,7 @@ def build_command_registry() -> Dict[str, Callable]:
             "plant": cmd_plant,
             "read": cmd_read,
             "journal": cmd_journal,
-            "ask": cmd_stub,
+            "ask": cmd_ask_about,
             "whisper": cmd_whisper,
             "give": cmd_give,
             "use": cmd_stub,
