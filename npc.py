@@ -1,6 +1,6 @@
 import random
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 import yaml
 
 from .trust import TrustMap, get_role_trust
@@ -17,7 +17,7 @@ class Npc:
     personality: str
     awareness: int
     schedule: Dict[int, str] = field(default_factory=dict)
-    dialogue: Dict[str, List[str]] = field(default_factory=dict)
+    dialogue: Dict[str, Any] = field(default_factory=dict)
     faction_leader: bool = False
     memory: List[str] = field(default_factory=list)
     authority: int = 50
@@ -44,6 +44,39 @@ def load_npcs(path: str) -> Dict[str, Npc]:
 def _pick_line(npc: Npc, bucket: str) -> Optional[str]:
     lines = npc.dialogue.get(bucket, [])
     return random.choice(lines) if lines else None
+
+
+CANON_TOPICS = {
+    "work": ("work", "job", "money", "earn", "employ", "labor", "hire", "pay"),
+    "kempeitai": ("kempeitai", "japanese", "soldier", "patrol", "military", "gendarmerie", "garrison", "devil"),
+    "city": ("city", "shanghai", "bund", "street", "here", "place", "town", "district", "where"),
+    "people": ("people", "contact", "who", "friend", "resistance", "underground", "faction", "ccp", "gmd", "chen", "xu"),
+    "family": ("family", "daughter", "son", "wife", "husband", "mother", "father", "home", "child", "kid"),
+    "prices": ("price", "rice", "food", "cost", "fabi", "silver", "hungry", "eat", "ration", "market", "coal"),
+    "danger": ("danger", "safe", "curfew", "arrest", "hide", "fear", "trouble", "caught", "informer"),
+    "war": ("war", "fight", "resistance", "bomb", "front", "army", "liberation", "chungking", "nationalist"),
+    "gangs": ("gang", "green", "mafia", "smuggle", "opium", "triad", "madam", "broker"),
+    "foreigners": ("british", "french", "foreign", "concession", "german", "west", "american", "english"),
+}
+
+
+def match_topic(raw: str) -> Optional[str]:
+    t = (raw or "").lower()
+    for topic, keywords in CANON_TOPICS.items():
+        if any(k in t for k in keywords):
+            return topic
+        return None
+    
+
+def get_topic_dialogue(npc: Npc, topic_key: str) -> Optional [str]:
+    ask = npc.dialogue.get("ask")
+    lines = ask.get(topic_key) if instance(ask, dict) else None
+    return random.choice(lines) if lines else None
+
+
+def npc_ask_topics(npc: Npc) -> List[str]:
+    ask = npc.dialogue.get("ask")
+    return list(ask.keys()) if isinstance(ask, dict) else []
 
 
 def get_dialogue(npc: Npc, player_trust: TrustMap) -> str:
@@ -76,11 +109,6 @@ def get_contextual_dialogue(npc: Npc, player_trust: TrustMap, context_type: str 
         if line:
             return line
 
-    if context_type == "ask":
-        line = _pick_line(npc, "ask")
-        if line:
-            return line
-
     if trust_score < 30:
         afraid = _pick_line(npc, "afraid")
         if afraid:
@@ -93,12 +121,6 @@ def get_contextual_dialogue(npc: Npc, player_trust: TrustMap, context_type: str 
         friendly = _pick_line(npc, "friendly")
         if friendly:
             return friendly
-
-    if context_type == "ask":
-        for bucket in ("gossip", "neutral", "greeting"):
-            line = _pick_line(npc, bucket)
-            if line:
-                return line
 
     line = _pick_line(npc, "neutral") or _pick_line(npc, "greeting")
     return line or "..."
