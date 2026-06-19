@@ -16,6 +16,7 @@ class Account:
     characters: List[str] = field(default_factory=list)
     primary_safehouse: str = ""
     stash: List[dict] = field(default_factory = list)
+    tutorial_complete: bool = False
 
 
 def _ensure_accounts_dir():
