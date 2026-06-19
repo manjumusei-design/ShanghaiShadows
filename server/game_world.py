@@ -60,6 +60,8 @@ class SharedWorldState:
     room_state_overrides: Dict[str, dict] = field(default_factory=dict)
     npc_dispositions: Dict[str, dict] = field(default_factory=dict)
     market_rooms: Dict[str, List[str]] = field(default_factory=dict)
+    death_journals: Dict[str, List[dict]] = field(default_factory=dict)
+    active_rumors: List[str] = field(default_factory=list)
 
     def get_trust_value(self, key: str, player_trust: TrustMap) -> int:
         if "." in key:
@@ -93,6 +95,8 @@ def serialize_world_state(state: SharedWorldState) -> Dict[str, object]:
         "archived_journals": state.archived_journals,
         "server_cycle": state.server_cycle,
         "weather": state.weather,
+        "death_journals": state.death_journals,
+        "active_rumors": state.active_rumors,
     }
     return payload
 
@@ -139,6 +143,11 @@ def deserialize_world_state(data: Dict[str, object], world: World) -> SharedWorl
     archived_journals = dict(data.get("archived_journals", {}))
     server_cycle = int(data.get("server_cycle", 1))
     weather = str(data.get("weather", "clear"))
+    death_journals = dict(data.get("death_journals", {}))
+    active_rumors = list(data.get("active_rumors", []))
+    if not active_rumors:
+        from .rumors import seed_active_rumors
+        active_rumors = seed_active_rumors(game_time.day)
 
     return SharedWorldState(
         world=world,
@@ -152,6 +161,8 @@ def deserialize_world_state(data: Dict[str, object], world: World) -> SharedWorl
         archived_journals=archived_journals,
         server_cycle=server_cycle,
         weather=weather,
+        death_journals=death_journals,
+        active_rumors=active_rumors,
     )
 
 
