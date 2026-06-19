@@ -14,49 +14,91 @@ class CombatResult:
     silent: bool = False
     disarmed: bool = False
     weapon_broken: bool = False
+    instant_kill: bool = False
     attacker_damaged: int = 0
     target_damage: int = 0
     messages: List[str] = field(default_factory=list)
+    breakdown: str = ""
+
+
+_HIT_LINES = [
+    "Your strike finds its mark.",
+    "You press the opening and land a clean blow.",
+    "The hit connects and they stagger back.",
+    "You commit to the strike and it pays off.",
+]
+_SILENT_KILL_LINES = [
+    "You close the distance unseen and strike before they can cry out.",
+    "From the shadow, one motion. They crumple without a sound.",
+    "Your blade finds them quietly and they drop.",
+]
+_DISARM_LINES = [
+    "Your attack is deflected and your weapon spins away!",
+    "They catch your wrist and tear the weapon from your grip!",
+    "You overcommit; they turn it and send your weapon clattering off.",
+]
+_FAIL_LINES = [
+    "Your attack falters. They counter and you take {dmg} damage.",
+    "The struggle turns against you. You take {dmg} damage and give ground.",
+    "You miss, and a blow comes back. You take {dmg} damage.",
+]
 
 
 def resolve_attack(
         attacker_courage: int,
         attacker_weapon: Optional["Item"],
         target_authority: int,
-        target_armour: Optional["Item"],
-        attacker_hidden: bool = False,
-        attacker_morale: int = 100,
+    target_armour: Optional["Item"],
+    attacker_hidden: bool = False,
+    attacker_morale: int = 100,
+    disguise_bonus: int = 0,
 ) -> CombatResult:
     result = CombatResult()
 
     effective_courage = attacker_courage
     weapon_type = attacker_weapon.weapon_type if attacker_weapon else ""
-    if attacker_weapon:
-        effective_courage += attacker_weapon.courage_bonus
-    if attacker_hidden:
-        effective_courage += STEALTH_KILL_BONUS
-        result.silent = weapon_type == "stealth"
+    parts = [f"Courage ({attacker_courage})"]
 
+    def add(label: str, delta: int) -> None:
+        nonlocal effective_courage
+        effective_courage += delta
+        parts.append(f"{label} ({delta:+d})")
+
+    if attacker_weapon:
+        add(attacker_weapon.name, attacker_weapon.courage_bonus)
+    if attacker_hidden:
+        add("stealth", STEALTH_KILL_BONUS)
+        result.silent = weapon_type == "stealth"
     defence = target_armour.defense_value if target_armour else 0
-    effective_courage -= defence
-    if attacker_morale < MORALE_LOW_THRESHOLD:
-        effective_courage -= min(MORALE_PENALTY_MAX, MORALE_LOW_THRESHOLD - attacker_morale)
+    if defence:
+        add("armour", -defence)
+    morale_pen = min(MORALE_PENALTY_MAX, MORALE_LOW_THRESHOLD - attacker_morale) if attacker_morale < MORALE_LOW_THRESHOLD else 0
+    if morale_pen:
+        add("shaken", -morale_pen)
+    if disguise_bonus:
+        add("disguise", disguise_bonus)
+    result.breakdown = " ".join(parts) + f" = {effective_courage} vs authority ({target_authority})."
 
     if effective_courage >= target_authority:
         result.won = True
+        result.instant_kill = True
         base = WEAPON_TYPE_BASE_DAMAGE.get(weapon_type, 20)
         if attacker_hidden and weapon_type == "stealth":
             base += STEALTH_DAMAGE_BONUS
         result.target_damage = max(1, base + random.randint(0, 10) - defence)
-        result.messages.append("Your strike finds its mark.")
+        if result.silent:
+            result.messages.append(random.choice(_SILENT_KILL_LINES))
+            result.messages.append("[Silent kill — no alarm raised.]")
+        else:
+            result.messages.append(random.choice(_HIT_LINES))
     else:
         disarm_chance = min((target_authority - effective_courage) * 2, DISARM_CHANCE_CAP)
         if random.randint(1, 100) <= disarm_chance:
             result.disarmed = True
-            result.messages.append("Your attack is deflected and you are disarmed!")
+            result.messages.append(random.choice(_DISARM_LINES))
         else:
             result.attacker_damaged = random.randint(5, 15)
-            result.messages.append(f"Your attack fails. You take {result.attacker_damaged} damage in the struggle.")
+            result.messages.append(random.choice(_FAIL_LINES).format(dmg=result.attacker_damaged))
 
     return result
 
