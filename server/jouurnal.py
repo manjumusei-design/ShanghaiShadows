@@ -48,10 +48,10 @@ def _collapse_events(events: List[Dict]) -> List[str]:
 def format_journal(event_log: List[Dict], game_time: GameTime) -> str:
     recent = collect_recent_events(event_log, game_time)
     if not recent:
-        return "Day {}. You remember nothing. The hours passed unnoticed." .format(game_time.day)
+        return "Day {}. You remember nothing. The hours passed without mark.".format(game_time.day)
     lines = [f"Day {game_time.day}. You remember:"]
-    for event in recent[-20]:
-        lines.append(f"- {event['text']}")
+    for text in _collapse_events(recent[-20:]):
+        lines.append(f"- {text}")
     return "\n".join(lines)
 
 
@@ -60,8 +60,8 @@ def format_life_retrospective(event_log: List[Dict], player_name: str) -> str:
     if not entries:
         return f"{player_name} lived and died in occupied Shanghai. The city endures, and so does their memory."
     lines = [f"The life of {player_name}, in brief:"]
-    for e in entries[-30:]:
-        lines.append(f"- {e['text']}")
+    for text in _collapse_events(entries[-30:]):
+        lines.append(f"- {text}")
     return "\n".join(lines)
 
 
