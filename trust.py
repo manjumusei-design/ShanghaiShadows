@@ -76,10 +76,15 @@ def change_trust(trust: TrustMap, key: str, delta: int) -> int:
     return changed_total
 
 
-def apply_trust_delta(player_trust: TrustMap, rule: TrustRule) -> Dict[str, int]:
+def apply_trust_delta(player_trust: TrustMap, rule: TrustRule, dynamic_vars: Optional[Dict[str, str]] = None) -> Dict[str, int]:
     changed: Dict[str, int] = {}
+    dynamic_vars = dynamic_vars or {}
     for key, delta in rule.deltas.items():
-        changed[key] = change_trust(player_trust, key, int(delta))
+        if "{" in key:
+            resolved_key = key.format(**dynamic_vars)
+        else:
+            resolved_key = key
+        changed[resolved_key] = change_trust(player_trust, resolved_key, int(delta))
     return changed
 
 
