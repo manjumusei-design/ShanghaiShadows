@@ -2,7 +2,7 @@ import json
 from collections import deque
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Tuple
 
 import yaml
 
@@ -62,6 +62,9 @@ class SharedWorldState:
     market_rooms: Dict[str, List[str]] = field(default_factory=dict)
     death_journals: Dict[str, List[dict]] = field(default_factory=dict)
     active_rumors: List[str] = field(default_factory=list)
+    room_codes: Dict[str, List[dict]] = field(default_factory=list)
+    code_to_room: Dict[str, str] = field(default_factory=dict)
+    room_layout_coords: Dict[str, Tuple[int, int]] = field(default_factory=dict)
 
     def get_trust_value(self, key: str, player_trust: TrustMap) -> int:
         if "." in key:
@@ -72,6 +75,7 @@ class SharedWorldState:
 
 def serialize_world_state(state: SharedWorldState) -> Dict[str, object]:
     from .serialization import serialize_item as _serialize_item
+    from .economy import serialize_economy_state
 
     room_items = {
         room_id: [_serialize_item(item) for item in room.items]
@@ -81,12 +85,27 @@ def serialize_world_state(state: SharedWorldState) -> Dict[str, object]:
     npc_locations = state.world.npc_locations
     npc_memory = {npc_id: npc.memory for npc_id, npc in state.world.npcs.items()}
 
+    npc_player_memories = {}
+    for npc_id, npc in state.world.npcs.items():
+        if hasattr(npc, 'player_memories') and npc.player_memories:
+            npc_player_memories[npc_id] = {
+                player_name: {
+                    'trust_mod': mem.trust_mod,
+                    'relationship_type': mem.relationship_type,
+                    'last_interaction_day': mem.last_interaction_day,
+                    'interactions': mem.interactions[-10:],
+                    'remembered_events': mem.remembered_events,  # BUG FIX: was missing
+                }
+                for player_name, mem in npc.player_memories.items()
+            } 
+                
     payload = {
         "time": {"day": state.game_time.day, "minute": state.game_time.minute},
         "room_items": room_items,
         "npc_locations": npc_locations,
         "npc_memory": npc_memory,
         "scheduler": state.scheduler.to_payload(),
+        "npc_player_memories": npc_player_memories,
         "rumour_mill": state.rumour_mill,
         "event_log": state.event_log,
         "legacy_book": state.legacy_book,
@@ -97,6 +116,7 @@ def serialize_world_state(state: SharedWorldState) -> Dict[str, object]:
         "weather": state.weather,
         "death_journals": state.death_journals,
         "active_rumors": state.active_rumors,
+        "economy": serialize_economy_state(),
     }
     return payload
 
@@ -135,6 +155,22 @@ def deserialize_world_state(data: Dict[str, object], world: World) -> SharedWorl
         if npc:
             npc.memory = list(memories)
 
+    npc_player_memories = data.get("npc_player_memories", {})
+    if isinstance(npc_player_memories, dict):
+        for npc_id, player_mems in npc_player_memories.items():
+            npc = world.npcs.get(npc_id)
+            if npc and hasattr(npc, 'player_memories'):
+                from .npc_memory import PlayerMemory
+                for player_name, mem_data in player_mems.items():
+                    npc.player=memories[player_name] = PlayerMemory(
+                        player_name=player_name,
+                        interactions=mem_data.get('interactions', []),
+                        trust_mod=mem_data.get('trust_mod', 0),
+                        relationship_type=mem_data.get('relationship_type', 'neutral'),
+                        last_interaction_day=mem_data.get('last_interaction_day', 0),
+                        remembered_events=mem_data.get('remembered_events', [])
+                    )
+                    
     rumour_mill = dict(data.get("rumour_mill", {}))
     event_log = list(data.get("event_log", []))
     legacy_book = list(data.get("legacy_book", []))
@@ -148,6 +184,11 @@ def deserialize_world_state(data: Dict[str, object], world: World) -> SharedWorl
     if not active_rumors:
         from .rumors import seed_active_rumors
         active_rumors = seed_active_rumors(game_time.day)
+    
+    economy_data = data.get("economy", {})
+    if economy_data:
+        from .economy import load_economy_state
+        load_economy_state(economy_data)
 
     return SharedWorldState(
         world=world,
