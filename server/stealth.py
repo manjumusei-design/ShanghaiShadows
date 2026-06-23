@@ -44,6 +44,7 @@ class StealthSystem:
         score = stealth_skill + disguise_bonus + (10 if room_indoors else 0) - (observer_pressure // 2)
         return roll <= max(15, score), roll
     
+
     def tail_check(
         self,
         state: TailingState,
@@ -61,3 +62,15 @@ class StealthSystem:
         else:
             state.distance = max(0, state.distance - 1)
         return success, roll
+    
+    @staticmethod
+    def _perception_contest(npc: Npc, defense_stat: int, base_difficulty: int) -> bool:
+        return random.randint(1, 100) + npc.perception >= base_difficulty + defense_stat
+    
+    def digsuise_piece_check(self, npc: Npc, disguise_bonus: int, wanted_level: int = 0) -> bool:
+        wanted_penalty = wanted_level * 10
+        return self._perception_contest(npc, disguise_bonus + wanted_penalty, 50)
+
+    def passive_detection_check(self, npc: Npc, player_stealth: int) -> bool:
+        return self.perception_contest(npc, player_stealth, 40)
+    
