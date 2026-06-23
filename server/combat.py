@@ -2,7 +2,7 @@ import random
 from dataclasses import dataclass, field
 from typing import List, Optional, TYPE_CHECKING
 
-from .constants import DISARM_CHANCE_CAP, MORALE_LOW_THRESHOLD, MORALE_PENALTY_MAX, STEALTH_KILL_BONUS
+from .constants import DISARM_CHANCE_CAP, MORALE_LOW_THRESHOLD, MORALE_PENALTY_MAX, STEALTH_KILL_BONUS, WEAPON_TYPE_BASE_DAMAGE, STEALTH_DAMAGE_BONUS
 
 if TYPE_CHECKING:
     from .world import Item
@@ -29,7 +29,7 @@ _HIT_LINES = [
 ]
 _SILENT_KILL_LINES = [
     "You close the distance unseen and strike before they can cry out.",
-    "From the shadow, one motion. They crumple without a sound.",
+    "From the shadow, one motion. They fold without a sound.",
     "Your blade finds them quietly and they drop.",
 ]
 _DISARM_LINES = [
@@ -45,9 +45,9 @@ _FAIL_LINES = [
 
 
 def resolve_attack(
-        attacker_courage: int,
-        attacker_weapon: Optional["Item"],
-        target_authority: int,
+    attacker_courage: int,
+    attacker_weapon: Optional["Item"],
+    target_authority: int,
     target_armour: Optional["Item"],
     attacker_hidden: bool = False,
     attacker_morale: int = 100,
@@ -103,10 +103,10 @@ def resolve_attack(
     return result
 
 
-def degrade_weapon(weapon: "Item", attack_suceeded: bool) -> bool:
+def degrade_weapon(weapon: "Item", attack_succeeded: bool) -> bool:
     if weapon.durability == -1:
         return False
-    weapon.durability -= 5 if attack_suceeded else 2
+    weapon.durability -= 5 if attack_succeeded else 2
     if weapon.durability <= 0:
         weapon.durability = 0
         return True
