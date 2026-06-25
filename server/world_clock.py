@@ -11,6 +11,7 @@ from .constants import (
     HUNGER_DECAY_RATE,
     HUNGER_HEALTH_DAMAGE,
     LOW_HUNGER_THRESHOLD,
+    HUNGER_WARNING_THRESHOLD,
     MORALE_DECAY_PER_HOUR,
     STAT_GAIN_STEALTH_TAIL,
     WANTED_LEVEL_MAX,
@@ -24,6 +25,8 @@ from .constants import (
     DISILLUSIONMENT_PER_TICK,
     SEASONAL_FOOD_SHORTAGE,
     FOOD_RESTOCK_INTERVAL,
+    RUMORS_PATH,
+    MessageType,
 )
 from .player_data import grow_stat
 from .trust import exchange_gossip
@@ -47,6 +50,7 @@ from .commands import (
 )
 from .session import Session
 from .game_world import SharedWorldState
+from .locales import get as loc
 
 if TYPE_CHECKING:
     from .session_manager import SessionManager
@@ -86,6 +90,8 @@ class WorldClock:
             self._respawn_dead_npcs()
         if self.shared.game_time.minute % FOOD_RESTOCK_INTERVAL == 0:
             self._restock_market_food()
+        if self.shared.game_time.minute % 30 == 0:
+            self._process_ambient_sounds()
         await self._check_death_and_victory()
 
     def _advance_time_one_minute(self):
@@ -93,9 +99,13 @@ class WorldClock:
         if self.shared.game_time.minute >= 1440:
             self.shared.game_time.minute = 0
             self.shared.game_time.day += 1
+            self._rotate_rumors()
+            from .economy import economy_system
+            economy_system.update_market_conditions(self.shared.game_time.day, self.shared)
         self.shared.scheduler.process(
             self.shared.game_time,
             lambda msg: asyncio.create_task(self._broadcast_display(msg)),
+            self.shared,
         )
 
     def _move_npcs_if_hour_changed(self):
@@ -129,13 +139,13 @@ class WorldClock:
             for session in self.session_manager.get_players_in_room(old_room_id):
                 direction = self._get_direction(old_room_id, new_room_id)
                 if direction:
-                    asyncio.create_task(session.send_display(f"{npc.name} walks {direction}."))
+                    asyncio.create_task(session.send_display(loc("ambient.npc_walks").format(name=npc.name, direction=direction), msg_type=MessageType.NPC_AMBIENT))
 
         if new_room:
             for session in self.session_manager.get_players_in_room(new_room_id):
                 direction = self._get_direction(new_room_id, old_room_id)
                 if direction:
-                    asyncio.create_task(session.send_display(f"{npc.name} arrives from {direction}."))
+                    asyncio.create_task(session.send_display(loc("ambient.npc_arrives").format(name=npc.name, direction=direction), msg_type=MessageType.NPC_AMBIENT))
 
     def _get_direction(self, from_room: str, to_room: str) -> str:
         from_room_obj = self.shared.world.rooms.get(from_room)
@@ -150,6 +160,8 @@ class WorldClock:
         for room in self.shared.world.rooms.values():
             npc_ids = room.npcs
             if len(npc_ids) < 2:
+                continue
+            if not self.session_manager.get_players_in_room(room.id):
                 continue
             for i in range(len(npc_ids) - 1):
                 a = self.shared.world.npcs.get(npc_ids[i])
@@ -166,6 +178,10 @@ class WorldClock:
                                 other = self.shared.world.npcs.get(nid)
                                 if other:
                                     other.suspicion = min(100, other.suspicion + 5)
+
+    def _rotate_rumors(self):
+        from .rumors import seed_active_rumors
+        self.shared.active_rumors = seed_active_rumors(self.shared.game_time.day)
 
     async def _process_planted_evidence_all_sessions(self):
         for session in self.session_manager.sessions.values():
@@ -186,8 +202,9 @@ class WorldClock:
                         continue
                     if not target or target in npc.faction.lower() or target in npc.role.lower() or target in npc.name.lower():
                         event_text = f"Your planted {planted['item_name']} in {room.title} has stirred suspicion."
+                        if not isinstance(session.player.world_events, deque):
+                            session.player.world_events = deque(session.player.world_events, maxlen=WORLD_EVENTS_MAXLEN)
                         session.player.world_events.append(event_text)
-                        session.player.world_events = session.player.world_events[-50:]
                         self.shared.event_log.append({
                             "day": self.shared.game_time.day,
                             "minute": self.shared.game_time.minute,
@@ -217,7 +234,6 @@ class WorldClock:
         target = self.shared.world.npcs.get(tail.target_npc_id)
         if not target:
             session.player.tailing_state = None
-            from .locales import get as loc
             asyncio.create_task(session.send_display(loc("cmd_tail.target_vanished")))
             return
         success, _ = self.stealth.tail_check(
