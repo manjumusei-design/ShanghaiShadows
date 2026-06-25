@@ -1,3 +1,20 @@
+from enum import Enum
+class Messagetype(Enum):
+    TUTORIAL = "tutorial"
+    NPC_AMBIENT = "npc_ambient"
+    NPC_DIALOGUE = "npc_dialogue"
+    ROOM_DESCRIPTION = "room_description"
+    ROOM_items = "room_items"
+    ROOM_NPCS = "room_npcs"
+    SYSTEM = "system"
+    COMBAT = "combat"
+    SOCIAL = "social"
+    EVENT = "event"
+    AMBIENT = "ambient"
+    PLAYER_ACTION = "player_action"
+    PLAYER_STATUS = "player_status"
+    DISCOVERY = "discovery"
+
 CURFEW_MINUTE = 1200
 EVENT_LOG_MAXLEN = 500
 WORLD_EVENTS_MAXLEN = 50
@@ -6,8 +23,9 @@ NPC_MEMORY_MAXLEN = 30
 HUNGER_DECAY_RATE = 0.05
 HUNGER_HEALTH_DAMAGE = 1
 LOW_HUNGER_THRESHOLD = 20
-INFLUENCE_THRESHOLD = 100
-UNITY_INFLUENCE = 90
+HUNGER_WARNING_THRESHOLD = 30
+INFLUENCE_THRESHOLD = 80
+UNITY_INFLUENCE = 60
 INFLUENCE_LEAD = 10
 STATE_BROADCAST_INTERVAL = 5
 
@@ -22,12 +40,7 @@ MILESTONES_PATH = "server/data/milestones.yaml"
 RUMORS_PATH = "server/data/custom/rumors.yaml"
 RUMOR_WINDOW = 20
 RUMOR_STEP = 3
-RUMOR_AMBIENT_BROADCAST_CHANCE = 0.15
 
-BASE_COURAGE_RANGE = (30, 50)
-AUTHORITY_CIVILIAN_RANGE = (5, 20)
-AUTHORITY_SOLDIER_RANGE = (40, 60)
-AUTHORITY_KEMPEITAI_RANGE = (60, 85)
 DISARM_CHANCE_CAP = 80
 STEALTH_KILL_BONUS = 25
 
@@ -48,8 +61,6 @@ WEAPON_TYPE_BASE_DAMAGE = {"firearm": 40, "stealth": 25, "melee": 20}
 STEALTH_DAMAGE_BONUS = 10
 
 TRUST_DECAY_PER_DAY = 2
-BETRAYAL_PENALTY = 15
-BETRAYAL_SPREAD_DAYS = 3
 
 RICE_BOWL_COST = 2
 BAOZI_COST = 1
@@ -66,8 +77,6 @@ WANTED_LEVEL_MAX = 3
 DAY_LIBERATION = 2835
 UNITY_RANGE = 15
 
-WEATHER_RAIN_CHANCE = {30: 30, 10: 10}
-WEATHER_CHANGE_INTERVAL = 60
 DEGRADE_RAIN_RATE = 1
 
 SUSPICION_DECAY_PER_TICK = 2
@@ -84,4 +93,14 @@ DISILLUSIONMENT_PER_TICK = 2
 
 SEASONAL_FOOD_SHORTAGE = {"winter": 0.5, "summer": 0.8}
 SEASONAL_PRICE_MULTIPLIER = {"winter": 1.5, "summer": 1.2, "spring": 1.0, "autumn": 1.0}
+SEASON_MONTHS = {"winter": [11, 0, 1], "spring": [2, 3, 4], "summer": [5, 6, 7], "autumn": [8, 9, 10]}
+
+def get_season(game_day: int) -> str:
+    month = (game_day // 30) % 12
+    for season, months in SEASON_MONTHS.items():
+        if month in months:
+            return season
+    return "spring" 
+
 FOOD_RESTOCK_INTERVAL = 360
+BLACK_MARKET_LISTING_EXPIRE_DAYS = 7
