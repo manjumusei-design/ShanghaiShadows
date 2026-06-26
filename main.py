@@ -1,4 +1,5 @@
 import asyncio
+import logging
 import os
 import sys
 import threading
@@ -9,6 +10,15 @@ import websockets
 from server.config import get_setting
 from server.game_server import GameServer
 
+logging.basicConfig(
+    level=logging.INFO,
+    format='[%(asctime)s] %(levelname)s %(name)s: %(message)s',
+    datefmt='%H:%M:%S',
+)
+logger = logging.getLogger('main')
+
+
+import json as _json
 
 class ClientHandler(SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
