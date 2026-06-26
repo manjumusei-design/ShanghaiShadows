@@ -25,7 +25,38 @@ class ClientHandler(SimpleHTTPRequestHandler):
         super().__init__(*args, directory=os.path.join(os.path.dirname(__file__), "client"), **kwargs)
 
     def log_message(self, format, *args):
-        pass # Supress noise for now so i can troubleshoot it easie     r later, need to remove soon after i get a MVP done
+        pass 
+
+    def end_headers(self):
+        self.send_header('Cache-Control', 'no-cache, no-store, must-revalidate')
+        self.send_header('Pragma', 'no-cache')
+        self.send_header('Expires', '0')
+
+
+    def do_GET(self):
+        if self.path == "/health":
+            try:
+                from server.game_server import GameServer
+                game = getattr(GameServer, '_last_instance', None)
+                player_count = len(game.session_manager.sessions) if game else 0
+                status = {
+                    "status": "ok",
+                    "players": player_count,
+                }
+                body = _json.dumps(status).encode("utf-8")
+                self.send_response(200)
+                self.send_header("Content-Type", "application/json")
+                self.send_header("Content-Length", str(len(body)))
+                self.end_headers()
+                self.wfile.write(body)
+            except Exception as exc:
+                body = _json.dumps({"status": "error", "message": str(exc)}).encode("utf-8")
+                self.send_response(500)
+                self.send_header("Content-Type", "application/json")
+                self.end_headers()
+                self.wfile.write(body)
+            return
+        super().do_GET()
 
 
 def start_http_server(host: str = "127.0.0.1", port: int = 8080):
@@ -38,6 +69,7 @@ def start_http_server(host: str = "127.0.0.1", port: int = 8080):
 
 async def start_websocket_server(host: str = "127.0.0.1", port: int = 8765):
     game = GameServer()
+    GameServer._last_instance = game  #graceful store
     asyncio.create_task(game.tick_loop())
     stop = asyncio.Future()
 
@@ -49,7 +81,7 @@ async def start_websocket_server(host: str = "127.0.0.1", port: int = 8765):
 
 
 def main():
-    http_host = get_setting("HTTP_HOST", "127.0.0.1") #TODO: FALLBACK!!!!!!!!!!!!!!!!!!!!
+    http_host = get_setting("HTTP_HOST", "127.0.0.1") 
     http_port = int(get_setting("HTTP_PORT", "8080"))
     ws_host = get_setting("WS_HOST", "127.0.0.1")
     ws_port = int(get_setting("WS_PORT", "8765"))
@@ -59,6 +91,16 @@ def main():
         asyncio.run(start_websocket_server(ws_host, ws_port))
     except KeyboardInterrupt:
         print("Shutting down server")
+    except Exception as exc:
+        print(f"\nFatal error: {exc}")
+    finally:
+        print("Graceful save of world state before exit...")
+        try:
+            from server.save_manager import save_world_state
+            from server.game_server import GameServer
+            save_world_state(GameServer._last_instance.shared if hasattr(GameServer, '_last_instance') else None)
+        except Exception as save_err:
+            print(f"Could not save world state: {save_err}")
         sys.exit(0)
 
 
