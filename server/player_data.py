@@ -10,6 +10,23 @@ from .world import Item
 from .constants import CONVERSATION_HISTORY_MAXLEN, STAT_CAP
 
 
+def get_condition_descriptor(durability: int, max_durability: int = 100) -> str:
+    if max_durability <= 0:
+        return "unknown"
+    percentage = (durability / max_durability) * 100
+
+    if percentage >= 80:
+        return "pristine"
+    elif percentage >=60:
+        return "good condition"
+    elif percentage >=40:
+        return "worn"
+    elif percentage >=20:
+        return "damaged"
+    else:
+        return "broken"
+    
+    
 @dataclass
 class PlayerData:
     username: str = ""
@@ -24,7 +41,7 @@ class PlayerData:
     world_events: List[str] = field(default_factory=list)
     newspapers: List[Dict[str, object]] = field(default_factory=list)
     health: int = 100
-    hunger: int = 100
+    hunger: int = 60 # This is for the tutoorial so that when player eats the baozi they visibly see their hunger meter go up
     morale: int = 80
     arrested: bool = False
     relationships: Dict[str, Dict[str, int]] = field(default_factory=dict)
@@ -40,13 +57,21 @@ class PlayerData:
     money_fabi: int = 0
     money_silver: int = 0
     map_revealed: List[str] = field(default_factory=list)
-    maps_purchased: List[str] = field(default_factory=list)
     worn_armour_id: str = ""
     active_missions: List[dict] = field(default_factory=list)
     completed_missions: List[str] = field(default_factory=list)
     abandoned_missions: List[str] = field(default_factory=list)
-    visited_rooms: List[str] = field(default_factory=list)
+
     wanted_level: int = 0
+    wanted_decay_day: int = 0 
+    asked_topics: Dict[str, List[str]] = field(default_factory=dict)
+    tutorial_stage: int = 0 
+    in_tutorial: bool = False
+    revealed_exits: Dict[str, List[str]] = field(default_factory=dict)
+    observed_rumors: List[str] = field(default_factory=list)
+    curfew_hidden_until_minute: int = -1
+    curfew_hidden_day: int = -1
+
 
 def _reset_player_defaults(player: PlayerData, name: str, spawn_room: str = "bund_dawn") -> None:
     from collections import deque
@@ -54,13 +79,18 @@ def _reset_player_defaults(player: PlayerData, name: str, spawn_room: str = "bun
     player.name = name or "Newcomer"
     player.current_room = spawn_room
     player.inventory = []
+    from .serialization import deserialize_item
+    player.inventory.append(deserialize_item({
+        "id": "rice_bowl", "name": "a bowl of rice", "description": "Plain short grained rice from the Northeastern part of China, now overrun by the Imperial Japanese troops, highly prized for its fresh taste and nutrition which everyone needs more of nowadays.",
+        "takeable": True, "food_value": 20, "morale_restore": 3,
+    }))
     player.disguise = ""
     player.stealth_skill = 55
     player.hidden = False
     player.flags = []
     player.world_events = []
     player.newspapers = []
-    player.health = 100
+    player.health = 60
     player.hunger = 100
     player.morale = 80
     player.arrested = False
@@ -77,8 +107,8 @@ def _reset_player_defaults(player: PlayerData, name: str, spawn_room: str = "bun
     player.courage = 50
     player.perception = 30
     player.map_revealed = [spawn_room]
-    player.maps_purchased = []
     player.worn_armour_id = ""
+    player.equipped_weapon_id = ""
     player.active_missions = []
     player.completed_missions = []
     player.abandoned_missions = []
@@ -90,6 +120,11 @@ def grow_stat(player: PlayerData, attr: str, amount: int, cap: int = STAT_CAP) -
 
 
 def serialize_player(player: PlayerData) -> Dict[str, object]:
+    from collections import deque
+    world_events = player.world_events
+    if isinstance(world_events, deque):
+        world_events = list(world_events)
+
     payload = {
         "username": player.username,
         "name": player.name,
@@ -100,7 +135,7 @@ def serialize_player(player: PlayerData) -> Dict[str, object]:
         "stealth_skill": player.stealth_skill,
         "hidden": player.hidden,
         "flags": player.flags,
-        "world_events": player.world_events,
+        "world_events": world_events,
         "newspapers": player.newspapers,
         "health": player.health,
         "hunger": player.hunger,
@@ -124,13 +159,16 @@ def serialize_player(player: PlayerData) -> Dict[str, object]:
         "money_fabi": player.money_fabi,
         "money_silver": player.money_silver,
         "map_revealed": player.map_revealed,
-        "maps_purchased": player.maps_purchased,
         "worn_armour_id": player.worn_armour_id,
+        "equipped_weapon_id": player.equipped_weapon_id,
         "active_missions": player.active_missions,
         "completed_missions": player.completed_missions,
         "abandoned_missions": player.abandoned_missions,
-        "visited_rooms": player.visited_rooms,
         "wanted_level": player.wanted_level,
+        "asked_topics": {nid: sorted(ts) for nid, ts in player.asked_topics.items()},
+        "tutorial_stage": player.tutorial_stage,
+        "curfew_hidden_until_minute": player.curfew_hidden_until_minute,
+        "curfew_hidden_day": player.curfew_hidden_day,
     }
     return payload
 
@@ -165,14 +203,17 @@ def deserialize_player(data: Dict[str, object], storylet_manager=None) -> Player
     player.money_fabi = int(data.get("money_fabi", 0))
     player.money_silver = int(data.get("money_silver", 0))
     player.map_revealed = list(data.get("map_revealed", []))
-    player.maps_purchased = list(data.get("maps_purchased", []))
     player.worn_armour_id = str(data.get("worn_armour_id", ""))
+    player.equipped_weapon_id = str(data.get("equipped_weapon_id", ""))
     player.active_missions = list(data.get("active_missions", []))
     player.completed_missions = list(data.get("completed_missions", []))
     player.abandoned_missions = list(data.get("abandoned_missions", []))
-    player.visited_rooms = list(data.get("visited_rooms", []))
     player.wanted_level = int(data.get("wanted_level", 0))
-
+    player.asked_topics = {nid: list(ts) for nid, ts in data.get("asked_topics", {}).items()}
+    player.tutorial_stage = int(data.get("tutorial_stage", 0))
+    player.curfew_hidden_until_minute = int(data.get("curfew_hidden_until_minute", -1))
+    player.curfew_hidden_day = int(data.get("curfew_hidden_day", -1))
+    
     if storylet_manager:
         storylet_id = data.get("active_storylet", "")
         if storylet_id and storylet_id in storylet_manager.storylets:
