@@ -1,46 +1,44 @@
 import asyncio
 import random
 from collections import deque
-from dataclasses import dataclass
+from copy import replace
 from pathlib import Path
-from typing import Any, Awaitable, Callable, Dict, List, NamedTuple, Optional, TYPE_CHECKING
-import yaml
+from typing import Any, Callable, Dict, List, NamedTuple, Optional, TYPE_CHECKING
 
-from .config import get_setting, load_dotenv
 from .journal import collect_recent_events, format_journal, format_life_retrospective, absorb_death_journal
 from .locales import get as loc
-from .locales import load_locale
 from .npc import Npc, get_contextual_dialogue, match_topic, get_topic_dialogue, npc_ask_topics
+from .npc_memory import npc_memory_system
 from .parser import Command, parse
-from .player_data import PlayerData, _reset_player_defaults, grow_stat
+from .player_data import PlayerData, grow_stat
 from .auth import set_safehouse
 from .serialization import _load_yaml, deserialize_item, serialize_item
 from .session import Session
-from .stealth import Disguise, StealthSystem, TailingState
 from .storylets import ActiveStorylet, StoryletManager, load_storylets
-from .time_system import EventScheduler, GameTime, time_str
-from .trust import (apply_trust_delta, change_trust, exchange_gossip, get_role_trust, load_trust_rules, migrate_resistance_to_ccp_gmd, summarize_faction_trust,)
-from .victory import (check_victory_conditions, compile_legacy_narrative, compute_progress, generate_liberation_ending, adjust_influence, predict_ending, fabi_inflation_multiplier, _season_from_day, DAY_LIBERATION,)
+from .trust import change_trust, apply_trust_delta, summarize_faction_trust, exchange_gossip
+from .time_system import time_str
+from .victory import check_victory_conditions, apply_time_skip, compute_progress, _season_from_day, _select_template, adjust_influence, fabi_inflation_multiplier, predict_ending
 from .world import Item, World, replace
 from .game_world import SharedWorldState
 from .combat import resolve_attack, degrade_weapon, degrade_armour
 from .constants import (
-    EVENTS_PATH, TRUST_RULES_PATH, DISGUISES_PATH, STORYLETS_PATH,
-    OBITUARY_PATH, BACKGROUNDS_PATH, CURFEW_MINUTE, STATE_BROADCAST_INTERVAL,
-    EVENT_LOG_MAXLEN, WORLD_EVENTS_MAXLEN, CONVERSATION_HISTORY_MAXLEN,
+    OBITUARY_PATH, BACKGROUNDS_PATH, CURFEW_MINUTE,
+    EVENT_LOG_MAXLEN, WORLD_EVENTS_MAXLEN,
     HUNGER_DECAY_RATE, HUNGER_HEALTH_DAMAGE, LOW_HUNGER_THRESHOLD,
     RICE_BOWL_COST, BAOZI_COST, TEA_COST, PICKPOCKET_BASE,
-    MISSION_FABI_RANGE, NURSE_COST, NURSE_HEAL,
+    NURSE_COST, NURSE_HEAL,
     STAT_GAIN_COURAGE_COMBAT, STAT_GAIN_STEALTH_HIDE, STAT_GAIN_PERCEPTION_OBSERVE,
     COMBAT_GROWTH_FACTIONS, WANTED_LEVEL_MAX, SUSPICION_FAILED_STEALTH,
-    SEASONAL_PRICE_MULTIPLIER,
+    SEASONAL_PRICE_MULTIPLIER, BLACK_MARKET_LISTING_EXPIRE_DAYS,
+    MessageType,
 )
+from .economy import economy_system, DISTRICT_TO_REGION
+from .tutorial import advance_tutorial
 
 if TYPE_CHECKING:
     from .session_manager import SessionManager
 
 SAVES_DIR = Path("server/data/saves")
-
 
 class CommandContext(NamedTuple):
     session: Session
@@ -51,16 +49,82 @@ class CommandContext(NamedTuple):
     storylet_manager: StoryletManager
     room: Optional[Any]
 
-
 def _sanitize_slot_name(raw: str) -> str:
     import re
     cleaned = re.sub(r"[^a-zA-Z0-9_-]+", "_", raw.strip().lower()).strip("_")
     return cleaned or "default"
 
-
 def _room(ctx: CommandContext):
     return ctx.shared.world.get_room(ctx.session.player.current_room) if ctx.shared else None
 
+def _npc_source(ctx: CommandContext):
+    return ctx.shared.world.npcs if ctx.shared else {}
+
+from .pathfinding import vector_to_compass as _vector_to_compass
+
+async def _auto_go(ctx: CommandContext, room_id: str):
+    ctx.session.player.current_room = room_id
+    if room_id not in getattr(ctx.session.player, 'map_revealed', []):
+        ctx.session.player.map_revealed.append(room_id)
+    ctx.session.player.hidden = False
+    await cmd_look(ctx, Command(verb="look"))
+    if getattr(ctx.session.player, 'in_tutorial', False) and not room_id.startswith("refugee_entry_"):
+        ctx.session.player.in_tutorial = False
+        ctx.session.player.tutorial_stage = 41
+        ctx.session.player.health = 100
+        ctx.session.player.hunger = 100
+        ctx.session.player.morale = 100
+        if "tutorial_complete" not in ctx.session.player.flags:
+            ctx.session.player.flags.append("tutorial_complete")
+        from .auth import set_tutorial_complete
+        try:
+            set_tutorial_complete(ctx.session.username)
+        except Exception:
+            pass
+        _strip_to_rice(ctx)
+        log_event(ctx, "Tutorial complete. Welcome to Shanghai.")
+
+def _strip_to_rice(ctx: CommandContext):
+    player = ctx.session.player
+    player.inventory = []
+    rice = ctx.shared.world.item_catalog.get("rice_bowl")
+    if rice:
+        player.inventory.append(replace(rice))
+
+def _notify_tutorial_confirmation(ctx: CommandContext, item_id: Optional[str] = None):
+    player = ctx.session.player
+    if not getattr(player, 'in_tutorial', False):
+        return
+
+    from .tutorial import tutorial_set_confirmation, STAGE_ACTIONS
+    stage = getattr(player, 'tutorial_stage', 0)
+    action = STAGE_ACTIONS.get(stage, {})
+
+    if action.get('require_both'):
+        if not hasattr(player, '_tutorial_items_obtained'):
+            player._tutorial_items_obtained = {}
+        obtained = player._tutorial_items_obtained.setdefault(stage, [])
+
+        if item_id:
+            normalized = _normalize_text(item_id)
+            for existing in obtained:
+                if _normalize_text(existing) == normalized:
+                    return  # Already tracked
+            obtained.append(item_id)
+        needed = [action.get('target'), action.get('alt_target')]
+        needed_normalized = [_normalize_text(n) for n in needed if n]
+        obtained_normalized = [_normalize_text(o) for o in obtained]
+        matched = 0
+        for need in needed_normalized:
+            for got in obtained_normalized:
+                if need in got or got in need:
+                    matched += 1
+                    break
+
+        if matched >= len(needed_normalized):
+            tutorial_set_confirmation(player, stage)
+    else:
+        tutorial_set_confirmation(player, stage)
 
 def find_item_by_name(name: str, items: List[Item]) -> Optional[Item]:
     q = name.lower().strip()
