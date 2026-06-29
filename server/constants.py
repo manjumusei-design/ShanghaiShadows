@@ -4,7 +4,10 @@ class Messagetype(Enum):
     NPC_AMBIENT = "npc_ambient"
     NPC_DIALOGUE = "npc_dialogue"
     ROOM_DESCRIPTION = "room_description"
-    ROOM_items = "room_items"
+    ROOM_TITLE = "room_title"
+    ROOM_TAGS = "room_tags"
+    ROOM_EXITS = "room_exits"
+    ROOM_ITEMS = "room_items"
     ROOM_NPCS = "room_npcs"
     SYSTEM = "system"
     COMBAT = "combat"
@@ -14,6 +17,7 @@ class Messagetype(Enum):
     PLAYER_ACTION = "player_action"
     PLAYER_STATUS = "player_status"
     DISCOVERY = "discovery"
+    MAP_MENU = "map_menu"
 
 CURFEW_MINUTE = 1200
 EVENT_LOG_MAXLEN = 500
@@ -40,6 +44,7 @@ MILESTONES_PATH = "server/data/milestones.yaml"
 RUMORS_PATH = "server/data/custom/rumors.yaml"
 RUMOR_WINDOW = 20
 RUMOR_STEP = 3
+AMBIENT_EVENTS_PATH = "server/data/ambient_events.yaml"
 
 DISARM_CHANCE_CAP = 80
 STEALTH_KILL_BONUS = 25
@@ -47,6 +52,8 @@ STEALTH_KILL_BONUS = 25
 HUNGER_DECAY_PER_HOUR = 3
 HEALTH_DECAY_HUNGRY = 2
 MORALE_DECAY_PER_HOUR = 1
+MORALE_WARNING_THRESHOLD = 40
+MORALE_LOW_THRESHOLD = 30 
 
 STAT_GAIN_COURAGE_COMBAT = 1
 STAT_GAIN_STEALTH_HIDE = 1
@@ -104,3 +111,7 @@ def get_season(game_day: int) -> str:
 
 FOOD_RESTOCK_INTERVAL = 360
 BLACK_MARKET_LISTING_EXPIRE_DAYS = 7
+
+
+AUTO_SAVE_WORLD_INTERVAL = 600 #BUGGING
+AUTO_SAVE_PLAYER_INTERVAL = 300 #BUGGING NEED TO REMOVE
