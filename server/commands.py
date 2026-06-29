@@ -126,6 +126,12 @@ def _notify_tutorial_confirmation(ctx: CommandContext, item_id: Optional[str] = 
     else:
         tutorial_set_confirmation(player, stage)
 
+def _topic_hint(npc, asked: List[str] = None, in_tutorial: bool = False, tutorial_stage: int = 0) -> str:
+    topics = npc_ask_topics(npc, in_tutorial=in_tutorial, tutorial_stage=tutorial_stage)
+    if asked: 
+        topics = [t for t in topics if t not in asked]
+    return ", ".join(topics) if topics else "the city, the war, or work"
+
 def find_item_by_name(name: str, items: List[Item]) -> Optional[Item]:
     q = name.lower().strip()
     for item in items:
