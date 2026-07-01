@@ -118,3 +118,13 @@ class EconomySystem:
         category = self.get_item_category(item_id)
         return self.FACTION_PRICES.get(faction, {}).get(category, 1,0)
     
+    def get_scarcity_modifier(self, item_id: str, region: str) -> float:
+        key = f"{region}_{item_id}"
+        condition = self.market_conditions.get(key)
+        if not condition:
+            return 1.0
+        if condition.availability < 0.3:
+            return 1.5
+        if condition.availability < 0.5:
+            return 1.2
+        return 1.0
