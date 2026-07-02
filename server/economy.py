@@ -219,3 +219,83 @@ class EconomySystem:
     def claim_credits(self, player_name: str) -> int:
         amount = self.pending_credits.pop(player_name, 0)
         return amount
+    
+
+economy_system = EconomySystem()
+
+DISTRICT_TO_REGION = {
+    'hidden_shanghai': 'ccp',
+    'residential': 'residential',
+    'warehouse': 'docks',
+    'church': 'old_city',
+    'school': 'commercial',
+    'refugee_entry': 'commercial',
+    'bund': 'bund',
+    'commercial': 'commercial',
+    'old_city': 'old_city',
+    'hongkou': 'hongkou',
+    'french': 'french_concession',
+    'docks': 'docks',
+    'ccp_base': 'ccp',
+    'gmd_office': 'gmd',
+}
+
+
+def serialize_economy_state() -> dict:
+    return {
+        "market_conditions": [
+            {
+                "region": mc.region,
+                "item_category": mc.item_category,
+                "price_modifier": mc.price_modifier,
+                "availability": mc.availability,
+                "scarcity_reason": mc.scarcity_reason,
+            }
+            for mc in economy_system.market_conditions.values()
+        ],
+        "black_market_listings": [
+            {
+                "seller_id": bml.seller_id,
+                "seller_name": bml.seller_name,
+                "item_id": bml.item_id,
+                "price": bml.price,
+                "currency": bml.currency,
+                "risk_level": bml.risk_level,
+                "available_until": bml.available_until,
+            }
+            for bml in economy_system.black_market_listings
+        ],
+        "last_update_day": economy_system.last_update_day,
+        "pending_credits": dict(economy_system.pending_credits),
+        "listing_counter": economy_system._listing_counter,
+    }
+
+
+def load_economy_state(data: dict) -> None:
+    economy_system.market_conditions.clear()
+    economy_system.black_market_listings.clear()
+    economy_system.pending_credits.clear()
+    for mc_data in data.get("market_conditions", []):
+        mc = MarketCondition(
+            region=mc_data["region"],
+            item_category=mc_data["item_category"],
+            price_modifier=mc_data.get("price_modifier", 1.0),
+            availability=mc_data.get("availability", 1.0),
+            scarcity_reason=mc_data.get("scarcity_reason"),
+        )
+        key = f"{mc.region}_{mc.item_category}"
+        economy_system.market_conditions[key] = mc
+    for bml_data in data.get("black_market_listings", []):
+        bml = BlackMarketListing(
+            seller_id=bml_data["seller_id"],
+            seller_name=bml_data.get("seller_name", bml_data["seller_id"]),
+            item_id=bml_data["item_id"],
+            price=bml_data["price"],
+            currency=bml_data["currency"],
+            risk_level=bml_data["risk_level"],
+            available_until=bml_data["available_until"],
+        )
+        economy_system.black_market_listings.append(bml)
+    economy_system.last_update_day = data.get("last_update_day", 0)
+    economy_system.pending_credits = data.get("pending_credits", {})
+    economy_system._listing_counter = data.get("listing_counter", 0)
