@@ -10,6 +10,9 @@ def check_money(player, fabi_cost: int) -> bool:
 
 
 def spend_money(player, fabi_amount: int) -> None:
+    total_fabi = player.money_fabi + player.money_silver * 10
+    if total_fabi < fabi_amount:
+        return
     if player.money_fabi >= fabi_amount:
         player.money_fabi -= fabi_amount
     else:
@@ -23,7 +26,7 @@ def spend_money(player, fabi_amount: int) -> None:
 def earn_money(player, fabi_amount: int) -> None:
     player.money_fabi += fabi_amount
     silver_to_add = player.money_fabi // 10
-    player.money_fabi %=10
+    player.money_fabi %= 10
     player.money_silver += silver_to_add
 
 
@@ -32,19 +35,19 @@ class MarketCondition:
     region: str
     item_category: str
     price_modifier: float = 1.0
-    availability: float = 1.0
+    availability: float = 1.0  
     scarcity_reason: Optional[str] = None
 
 
 @dataclass
 class BlackMarketListing:
-    seller_id: str
-    seller_name: str
+    seller_id: str  
+    seller_name: str 
     item_id: str
     price: int
-    currency: str
-    risk_level: int
-    available_until: str
+    currency: str  
+    risk_level: int 
+    available_until: int  
 
 
 class EconomySystem:
@@ -61,10 +64,10 @@ class EconomySystem:
     }
 
     FACTION_PRICES = {
-        'kempeitai': {'weapons': 2.0, 'contraband': 3.0, 'food': 1.5},  # Hostile pricing
-        'green_gang': {'contraband': 0.7, 'weapons': 0.9},  # Good prices for illegal goods
-        'ccp': {'weapons': 0.8, 'food': 0.9},  # Support the resistance
-        'civilian': {},  # Standard prices
+        'kempeitai': {'weapons': 2.0, 'contraband': 3.0, 'food': 1.5},  
+        'green_gang': {'contraband': 0.7, 'weapons': 0.9}, 
+        'ccp': {'weapons': 0.8, 'food': 0.9},  
+        'civilian': {}, 
         'gmd': {'weapons': 0.9, 'information': 0.8},
     }
 
@@ -109,15 +112,15 @@ class EconomySystem:
 
     def get_item_category(self, item_id: str) -> str:
         return self.ITEM_CATEGORIES.get(item_id, 'general')
-    
+
     def get_regional_modifier(self, item_id: str, region: str) -> float:
         category = self.get_item_category(item_id)
         return self.REGIONAL_PRICES.get(region, {}).get(category, 1.0)
-    
+
     def get_faction_modifier(self, item_id: str, faction: str) -> float:
         category = self.get_item_category(item_id)
-        return self.FACTION_PRICES.get(faction, {}).get(category, 1,0)
-    
+        return self.FACTION_PRICES.get(faction, {}).get(category, 1.0)
+
     def get_scarcity_modifier(self, item_id: str, region: str) -> float:
         key = f"{region}_{item_id}"
         condition = self.market_conditions.get(key)
@@ -128,36 +131,36 @@ class EconomySystem:
         if condition.availability < 0.5:
             return 1.2
         return 1.0
-    
+
     def get_item_price(self, item_base_cost: int, item_id: str, region: str,
                        npc_faction: str, inflation_rate: float = 1.0,
                        season_multiplier: float = 1.0, trust_score: int = 50) -> int:
         if item_base_cost <= 0:
             return 0
-        
+
         if trust_score < 30:
             trust_tier_mod = 1.5 
         elif trust_score < 50:
-            trust_tier_mod = 1.0
+            trust_tier_mod = 1.0  
         elif trust_score < 70:
-            trust_tier_mod = 0.9
+            trust_tier_mod = 0.9 
         else:
-            trust_tier_mod = 0.8
+            trust_tier_mod = 0.8  
 
         regional_mod = self.get_regional_modifier(item_id, region)
         faction_mod = self.get_faction_modifier(item_id, npc_faction)
         scarcity_mod = self.get_scarcity_modifier(item_id, region)
 
         key = f"{region}_{item_id}"
-        condition = self.market.market_conditions.get(key)
+        condition = self.market_conditions.get(key)
         condition_price_mod = condition.price_modifier if condition else 1.0
 
         final_price = int(item_base_cost * regional_mod * faction_mod *
                          scarcity_mod * condition_price_mod * inflation_rate *
                          season_multiplier * trust_tier_mod)
-        
+
         return max(1, final_price)
-    
+
     def get_trust_tier(self, trust_score: int) -> str:
         if trust_score < 30:
             return "outsider"
@@ -167,10 +170,10 @@ class EconomySystem:
             return "trusted"
         else:
             return "connected"
-        
+
     def update_market_conditions(self, day: int, shared_state=None) -> None:
         self.last_update_day = day
-        
+
         for region in self.REGIONAL_PRICES:
             for category in self.DEFAULT_AVAILABILITY:
                 key = f"{region}_{category}"
@@ -187,3 +190,32 @@ class EconomySystem:
                         availability=base_availability,
                     )
 
+    def create_listing(self, seller_id: str, seller_name: str, item_id: str, price: int,
+                       currency: str, risk_level: int, available_until: int) -> int:
+        self._listing_counter += 1
+        listing = BlackMarketListing(
+            seller_id=seller_id,
+            seller_name=seller_name,
+            item_id=item_id,
+            price=price,
+            currency=currency,
+            risk_level=risk_level,
+            available_until=available_until,
+        )
+        self.black_market_listings.append(listing)
+        return self._listing_counter
+
+    def remove_listing(self, index: int) -> Optional[BlackMarketListing]:
+        if 0 <= index < len(self.black_market_listings):
+            return self.black_market_listings.pop(index)
+        return None
+
+    def credit_player(self, player_name: str, amount: int) -> None:
+        if player_name in self.pending_credits:
+            self.pending_credits[player_name] += amount
+        else:
+            self.pending_credits[player_name] = amount
+
+    def claim_credits(self, player_name: str) -> int:
+        amount = self.pending_credits.pop(player_name, 0)
+        return amount
