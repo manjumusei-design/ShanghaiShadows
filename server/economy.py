@@ -128,3 +128,62 @@ class EconomySystem:
         if condition.availability < 0.5:
             return 1.2
         return 1.0
+    
+    def get_item_price(self, item_base_cost: int, item_id: str, region: str,
+                       npc_faction: str, inflation_rate: float = 1.0,
+                       season_multiplier: float = 1.0, trust_score: int = 50) -> int:
+        if item_base_cost <= 0:
+            return 0
+        
+        if trust_score < 30:
+            trust_tier_mod = 1.5 
+        elif trust_score < 50:
+            trust_tier_mod = 1.0
+        elif trust_score < 70:
+            trust_tier_mod = 0.9
+        else:
+            trust_tier_mod = 0.8
+
+        regional_mod = self.get_regional_modifier(item_id, region)
+        faction_mod = self.get_faction_modifier(item_id, npc_faction)
+        scarcity_mod = self.get_scarcity_modifier(item_id, region)
+
+        key = f"{region}_{item_id}"
+        condition = self.market.market_conditions.get(key)
+        condition_price_mod = condition.price_modifier if condition else 1.0
+
+        final_price = int(item_base_cost * regional_mod * faction_mod *
+                         scarcity_mod * condition_price_mod * inflation_rate *
+                         season_multiplier * trust_tier_mod)
+        
+        return max(1, final_price)
+    
+    def get_trust_tier(self, trust_score: int) -> str:
+        if trust_score < 30:
+            return "outsider"
+        elif trust_score < 50:
+            return "neutral"
+        elif trust_score < 70:
+            return "trusted"
+        else:
+            return "connected"
+        
+    def update_market_conditions(self, day: int, shared_state=None) -> None:
+        self.last_update_day = day
+        
+        for region in self.REGIONAL_PRICES:
+            for category in self.DEFAULT_AVAILABILITY:
+                key = f"{region}_{category}"
+                base_availability = self.DEFAULT_AVAILABILITY.get(category, 0.7)
+                if key in self.market_conditions:
+                    mc = self.market_conditions[key]
+                    mc.availability = max(0.1, min(1.0, base_availability + random.uniform(-0.15, 0.15)))
+                    mc.price_modifier = max(0.5, min(2.0, 1.0 + (1.0 - mc.availability) * 0.5))
+                else:
+                    self.market_conditions[key] = MarketCondition(
+                        region=region,
+                        item_category=category,
+                        price_modifier=1.0,
+                        availability=base_availability,
+                    )
+
