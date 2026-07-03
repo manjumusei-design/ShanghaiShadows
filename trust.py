@@ -6,13 +6,13 @@ import yaml
 
 
 FACTION_ROLES: Dict[str, List[str]] = {
-    "ccp": ["guerilla", "organizer", "courier"],
+    "ccp": ["guerrilla", "organizer", "courier", "operative", "healer"],
     "gmd": ["officer", "spy", "smuggler"],
-    "kempeitai": ["informant", "officer", "patrol"],
+    "kempeitai": ["informant", "officer", "patrol", "guard"],
     "green_gang": ["broker", "enforcer", "smuggler"],
     "french_concession": ["clerks", "police", "merchant"],
     "british": ["dockmaster", "consul", "merchant"],
-    "civilian": ["resident", "worker", "vendor"],
+    "civilian": ["resident", "worker", "vendor", "guide"],
 }
 
 
