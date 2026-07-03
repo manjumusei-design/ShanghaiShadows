@@ -44,3 +44,77 @@ def _hash_password(oassword: str) -> str:
     salt = os.urandom(16).hex()
     hash_value = hashlib.sha256((salt + password).encode()).hexdigest()
     return f"{salt}${hash_value}"
+
+
+def _verify_password(password: str, stored_hash: str) -> bool:
+    if not stored_hash:
+        return False
+    
+    if stored_hash.startswith("$S2"):
+        try:
+            return bcrypt.checkpw(password.encode("utf-8"), stored_hash.encode("utf-8"))
+        except Exception:
+            return False
+        
+    if "$" in stored_hash:
+        salt, hash_value = stored_hash.split("$", 1)
+        pw = password.lower()
+        return hashlib.sha256((salt + pw).encode()).hexdigest() == hash_value
+
+    return False
+
+
+def get_account(username: str) -> Optional[Account]:
+    key = username.strip().lower()
+    cache = _load_cache()
+    return cache.get(key)
+
+
+def create_account(username: str, password: str) -> Account:
+    username = username.strip().lower()
+    if not username:
+        raise ValueError("Username cannot be empty")
+    cache = _load_cache()
+    if username in cache:
+        raise ValueError(f"Account '{username}' already exists")
+    password_hash = _hash_password(password)
+    account = Account(username=username, password_hash=password_hash)
+    _get_db().create_account(username, password_hash)
+    cache[username] = account
+    return account
+
+
+def verify_password(username: str, password: str) -> Optional [Account]:
+    key = username.strip().lower()
+    cache = _load_cache()
+    account = cache.get(key)
+    if not account:
+        return None
+    if _verify_password(password, account.password_hash):
+        return account
+    return None
+
+
+def add_character_to_account(username: str, character_slot: str) -> None:
+    key = username.strip().lower()
+    cache = _load_cache()
+    account = cache.get(key)
+    if not account:
+        raise Valueerror(f"Account '{username}' does not exist")
+    if charater_slot not in account.characters:
+        account.characters.append(character_slot)
+        _get_db().add_character(key, character_slot)
+
+
+def list_characters(username: str) -> List[str]:
+    account = get_account(username)
+    if not account:
+        return []
+    return account.characters.copy()
+
+
+def resolve_spawn_room(username: str) -> str:
+    account = get_account(username)
+    if account and account.primary_safehouse:
+        return account.primary_safehouse
+    return ""
