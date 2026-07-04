@@ -118,3 +118,40 @@ def resolve_spawn_room(username: str) -> str:
     if account and account.primary_safehouse:
         return account.primary_safehouse
     return ""
+
+
+def set_safehouse(username: str, room_id: str) -> None:
+    key = username.strip().lower()
+    cache = _load_cache()
+    account = cache.get(key)
+    if not account:
+        raise ValueError(f"Account '{username}' does not exist")
+    account.primary_safehouse = room_id
+    _get_db().set_safehouse(key, room_id)
+
+
+def set_tutorial_complete(username: str, value: bool = True) -> None:
+    key = username.strip().lower()
+    cache = _load_cache()
+    account = cache.get(key)
+    if not account:
+        raise ValueError(f"Account '{username}' does not exist")
+    account.tutorial_complete =value
+    _get_db().set_tutorial_complete(key, value)
+
+
+def deposit_stash(username: str, items: List[dict]) -> None:
+    key = username.strip().lower()
+    db = _get_db()
+    stash = db.get_stash(key)
+    stash.extend(items)
+    db.set_stash(key, stash)
+
+
+def withdraw_stash(username: str) -> List[dict]:
+    key = username.strip().lower()
+    db = _get_db()
+    stash = db.get_stash(key)
+    if stash:
+        db.set_stash(key, [])
+    return stash
