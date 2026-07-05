@@ -57,3 +57,51 @@ def load_ambient_events(path: str) -> list[AmbientEvent]:
         return [_parse_event(e) for e in data]
     except FileNotFoundError:
         return []
+
+
+def _parse_event(data: dict) -> AmbientEvent:
+    time_range = None
+    if 'time_range' in data:
+        tr = data['time_range']
+        if isinstance(tr, list) and len(tr) == 2:
+            time_range = (int(tr[0]), int(tr[1]))
+
+    return AmbientEvent(
+        id=data.get('id', ''),
+        text=data.get('text', ''),
+        tags=data.get('tags', []),
+        time_range=time_range,
+        districts=data.get('districts', []),
+        room_types=data.get('room_types', []),
+        min_perception=data.get('min_perception', 0),
+        probability=data.get('probability', 0.1),
+        sound_range=data.get('sound_range'),
+        cooldown_ticks=data.get('cooldown_ticks', 0),
+    )
+
+
+def check_ambient_trigger(events: list[AmbientEvent], room_id: str,
+                          room_tags: list[str], district: str,
+                          current_tick: int, player_perception: int = 0,
+                          current_minute: Optional[int] = None) -> Optional[AmbientEvent]:
+    eligible = []
+    for event in events:
+        if event.is_eligible(room_id, room_tags, district, current_tick, player_perception):
+            if event.time_range:
+                if current_minute is None:
+                    continue
+                start, end = event.time_range
+                if start <= end:
+                    if not (start <= current_minute < end):
+                        continue
+                    else:
+                        if not (current_minute >= start or current_minute < end):
+                        continue
+            eligible.append(event)
+
+    if not eligible:
+        return None
+
+    chosen = random.choice(eligible)
+    chosen.last_triggered[room_id] = current_tick
+    return chosen
