@@ -89,6 +89,25 @@ def _describe_relationship(rel_type: str, strength: int) -> str:
         return "skeptically"
     return "casually"
 
+#this functions prompt was ai generated 
+async def _ai_enhance_gossip(ai_client: Optional["AIClient"], npc_a_name: str, npc_b_name: str, rumor: str, relationship_context: str = "") -> str:
+    if not ai_client:
+        return None
+    
+    context = f" Their relationship is {relationship_context}." if relationship_context else ""
+    prompt = f"""You are writing NPC dialogue for a 1930s Shanghai RPG. Two NPCs, {npc_a_name} and {npc_b_name}, are gossiping.{context}
+Create a brief (1-2 sentences max) piece of dialogue where {npc_a_name} tells {npc_b_name} about: "{rumor}"
+
+Write only the spoken words in quotes. Use period-appropriate slang sparingly if at all. Stay under 50 words."""
+
+    try:
+        enhanced = await ai_client.chat_text([{"role": "user", "content": prompt}], timeout_seconds=3.0)
+        if ehnahced and len(enhanced) < 300:
+            return enhanced.strip()
+    except Exception:
+        pass
+    return None
+ 
 class WorldClock:
     def __init__(self, shared: SharedWorldState, session_manager: "SessionManager", disguises, stealth, storylet_manager):
         self.shared = shared
