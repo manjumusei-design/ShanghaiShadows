@@ -108,6 +108,83 @@ Write only the spoken words in quotes. Use period-appropriate slang sparingly if
         pass
     return None
  
+
+AMBIENT_SOUNDS = {
+    "storm": [
+        (5, 6, "thunder", "Thunder cracks overhead and the sky opens wide with tears.",
+         "Lightning flashes, casting sharp shadows across the wet cobblestones."),
+        (3, 4, "wind_howl", "Wind screams through the narrow lanes.",
+         "Debris tumbles past, caught in the gale."),
+        (2, 3, "glass_breaks", "Something shatters in the wind.",
+         "A shutter tears loose and crashes against the pavement."),
+        (4, 5, "distant_gunshot", "A gunshot is lost in the thunder.", None),
+    ],
+    "fog": [
+        (1, 2, "muffled_bell", "A bell tolls somewhere in the fog, direction impossible to place.",
+         "Mist coils through the alley, swallowing distances."),
+        (1, 2, "footsteps", "Footsteps approach and fade, their owner invisible.",
+         "The fog thickens. Shapes become suggestions."),
+        (1, 2, "distant_voice", "Someone calls out, the words swallowed by the thick mist.", None),
+    ],
+    "rain": [
+        (2, 3, "distant_siren", "A siren wails through the rain.",
+         "Rain streaks the window. The streets glisten wet."),
+        (1, 2, "tram_bell", "A tram bell rings muffled by the downpour.",
+         "Water pools in the uneven cobblestones, reflecting grey sky."),
+    ],
+    "night": [
+        (3, 5, "siren", "A siren wails in the distance, cutting through the night.", None),
+        (2, 4, "distant_gunshot", "A single gunshot echoes from somewhere in the city.", None),
+        (1, 3, "shouting", "Faint shouting drifts from the direction of the Bund.", None),
+        (1, 3, "patrol_boots", "The heavy tread of boots on pavement, fading away.", None),
+    ],
+    "day": [
+        (1, 3, "market_noise", "Distant market noise - voices, haggling, the sound of commerce.", None),
+        (1, 2, "tram_bell", "A tram bell rings, followed by the rumble of wheels.", None),
+        (1, 2, "street_vendor", "A street vendor's cry, too far to understand the words.", None),
+    ],
+}
+
+AMBIENT_VISUALS = {
+    "rain": [
+        (0, 0, "rain_visual", "Rain streaks the window. The streets glisten wet."),
+        (1, 2, "puddle", "Water pools in the uneven cobblestones, reflecting grey sky."),
+        (1, 2, "umbrella", "Umbrellas bloom like dark flowers along the street."),
+    ],
+    "storm": [
+        (0, 0, "storm_visual", "Lightning flashes. Shadows twist and snap."),
+        (2, 3, "wind_gust", "Wind throws debris down the narrow lane."),
+        (1, 2, "flickering_lights", "Streetlights flicker and die momentarily."),
+    ],
+    "fog": [
+        (0, 0, "fog_visual", "Mist coils through the alley, swallowing distances."),
+        (1, 2, "fog_thickens", "The fog thickens. Shapes become suggestions."),
+        (1, 2, "fog_breath", "Your breath visible in the cold, damp air."),
+    ],
+    "snow": [
+        (0, 0, "snow_visual", "Snow drifts softly against doorframes."),
+        (1, 2, "frost", "Frost creeps across windowpanes in delicate patterns."),
+        (1, 2, "snow_footprints", "Fresh footprints in the snow quickly fill."),
+    ],
+    "clear": [
+        (0, 0, "clear_visual", "Sunlight catches the dust motes in the air."),
+        (1, 2, "shadow_shift", "Shadows shift as clouds pass overhead."),
+    ],
+}
+
+
+def _get_weather_msg_type(weather: str):
+    from .constants import MessageType
+    mapping = {
+        "rain": MessageType.WEATHER_RAIN,
+        "storm": MessageType.WEATHER_STORM,
+        "fog": MessageType.WEATHER_FOG,
+        "snow": MessageType.WEATHER_SNOW,
+        "clear": MessageType.WEATHER_CLEAR,
+    }
+    return mapping.get(weather)
+
+
 class WorldClock:
     def __init__(self, shared: SharedWorldState, session_manager: "SessionManager", disguises, stealth, storylet_manager):
         self.shared = shared
