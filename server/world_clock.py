@@ -1,8 +1,8 @@
 import asyncio
 import random
 import time
-from collections import deque
-from typing import TYPE_CHECKING
+from collections import deque, defaultdict
+from typing import TYPE_CHECKING, Optional
 
 from .constants import (
     CURFEW_MINUTE,
@@ -10,9 +10,11 @@ from .constants import (
     WORLD_EVENTS_MAXLEN,
     HUNGER_DECAY_RATE,
     HUNGER_HEALTH_DAMAGE,
-    LOW_HUNGER_THRESHOLD,
     HUNGER_WARNING_THRESHOLD,
+    LOW_HUNGER_THRESHOLD,
     MORALE_DECAY_PER_HOUR,
+    MORALE_WARNING_THRESHOLD,
+    MORALE_LOW_THRESHOLD,
     STAT_GAIN_STEALTH_TAIL,
     WANTED_LEVEL_MAX,
     HIDDEN_DECAY_CHANCE,
@@ -20,17 +22,29 @@ from .constants import (
     SUSPICION_THRESHOLD_INVESTIGATE,
     SUSPICION_INVESTIGATE_RELIEF,
     VENDOR_SHUTTER_TENSION,
+    VENDOR_REOPEN_TENSION,
     DEFECTION_DISILLUSIONMENT_THRESHOLD,
     DEFECTION_DAILY_CHANCE,
     DISILLUSIONMENT_PER_TICK,
     SEASONAL_FOOD_SHORTAGE,
     FOOD_RESTOCK_INTERVAL,
     RUMORS_PATH,
+    AMBIENT_EVENTS_PATH,
     MessageType,
+    AUTO_SAVE_WORLD_INTERVAL,
+    AUTO_SAVE_PLAYER_INTERVAL,
 )
+from .ambient_events import load_ambient_events, check_ambient_trigger
+from .pathfinding import propagate_sound
 from .player_data import grow_stat
 from .trust import exchange_gossip
 from .victory import _season_from_day
+from .combat import strip_article
+from .constants import (
+    SEASONAL_MORALE_MODIFIER, SEASONAL_STEALTH_MODIFIER,
+    SEASONAL_PERCEPTION_MODIFIER, SEASONAL_CURFEW_MODIFIER,
+    SEASONAL_PATROL_DENSITY,
+)
 from .commands import (
     apply_action_trust,
     advance_time_one_minute,
@@ -54,7 +68,26 @@ from .locales import get as loc
 
 if TYPE_CHECKING:
     from .session_manager import SessionManager
+    from .ai_client import AIClient
 
+def _describe_relationship(rel_type: str, strength: int) -> str:
+    if rel_type == "friend":
+        if strength >= 70:
+            return "warmly"
+        elif strength >= 40:
+            return "with concern"
+        return "in a friendly way"
+    elif rel_type in ("close_friend", "family"):
+        return "intimately"
+    elif rel_type == "enemy":
+        if strength >= 60:
+            return "mockingly"
+        elif strength >= 30:
+            return "coldly"
+        return "with disdain"
+    elif rel_type == "rival":
+        return "skeptically"
+    return "casually"
 
 class WorldClock:
     def __init__(self, shared: SharedWorldState, session_manager: "SessionManager", disguises, stealth, storylet_manager):
