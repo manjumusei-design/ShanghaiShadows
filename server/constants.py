@@ -18,6 +18,13 @@ class Messagetype(Enum):
     PLAYER_STATUS = "player_status"
     DISCOVERY = "discovery"
     MAP_MENU = "map_menu"
+    INTERNAL_MONOLOGUE = "internal_monologue"
+    STORYLET_FRAME = "storylet_frame"
+    WEATHER_RAIN = "weather_rain"
+    WEATHER_STORM = "weather_storm"
+    WEATHER_FOG = "weather_fog"
+    WEATHER_SNOW = "weather_snow"
+    WEATHER_CLEAR = "weather_clear"
 
 CURFEW_MINUTE = 1200
 EVENT_LOG_MAXLEN = 500
@@ -31,7 +38,7 @@ HUNGER_WARNING_THRESHOLD = 30
 INFLUENCE_THRESHOLD = 80
 UNITY_INFLUENCE = 60
 INFLUENCE_LEAD = 10
-STATE_BROADCAST_INTERVAL = 5
+STATE_BROADCAST_INTERVAL = 3
 
 EVENTS_PATH = "server/data/events.yaml"
 TRUST_RULES_PATH = "server/data/trust_rules.yaml"
@@ -60,9 +67,12 @@ STAT_GAIN_STEALTH_HIDE = 1
 STAT_GAIN_STEALTH_TAIL = 1
 STAT_GAIN_PERCEPTION_OBSERVE = 1
 STAT_CAP = 100
-MORALE_LOW_THRESHOLD = 30
 MORALE_PENALTY_MAX = 20
 COMBAT_GROWTH_FACTIONS = ("kempeitai", "gmd", "green_gang")
+
+MORALE_MONOLOGUE_COOLDOWN_MINUTES = 120
+STORYLET_FRAME_WIDTH = 78
+DISPLAY_WRAP_WIDTH = 78
 
 WEAPON_TYPE_BASE_DAMAGE = {"firearm": 40, "stealth": 25, "melee": 20}
 STEALTH_DAMAGE_BONUS = 10
@@ -94,12 +104,20 @@ SUSPICION_INVESTIGATE_RELIEF = 10
 
 DECISION_LEDGER_MAXLEN = 100
 VENDOR_SHUTTER_TENSION = 60
+VENDOR_REOPEN_TENSION = 40
 DEFECTION_DISILLUSIONMENT_THRESHOLD = 70
 DEFECTION_DAILY_CHANCE = 0.1
 DISILLUSIONMENT_PER_TICK = 2
 
 SEASONAL_FOOD_SHORTAGE = {"winter": 0.5, "summer": 0.8}
 SEASONAL_PRICE_MULTIPLIER = {"winter": 1.5, "summer": 1.2, "spring": 1.0, "autumn": 1.0}
+
+SEASONAL_MORALE_MODIFIER = {"winter": -1, "spring": 0, "summer": 0, "autumn": -0.5}
+SEASONAL_STEALTH_MODIFIER = {"winter": 0, "spring": 0, "summer": -5, "autumn": 5}
+SEASONAL_PERCEPTION_MODIFIER = {"winter": -5, "spring": 0, "summer": 0, "autumn": 5}
+SEASONAL_CURFEW_MODIFIER = {"winter": 30, "spring": 0, "summer": 0, "autumn": 0}
+SEASONAL_PATROL_DENSITY = {"winter": 1.2, "spring": 1.0, "summer": 0.8, "autumn": 1.1}
+
 SEASON_MONTHS = {"winter": [11, 0, 1], "spring": [2, 3, 4], "summer": [5, 6, 7], "autumn": [8, 9, 10]}
 
 def get_season(game_day: int) -> str:
@@ -107,11 +125,12 @@ def get_season(game_day: int) -> str:
     for season, months in SEASON_MONTHS.items():
         if month in months:
             return season
-    return "spring" 
+    return "spring"
 
 FOOD_RESTOCK_INTERVAL = 360
 BLACK_MARKET_LISTING_EXPIRE_DAYS = 7
 
+RICKSHAW_NPC_IDS = ["liu_wei", "rickshaw_ah_fook"]
 
-AUTO_SAVE_WORLD_INTERVAL = 600 #BUGGING
-AUTO_SAVE_PLAYER_INTERVAL = 300 #BUGGING NEED TO REMOVE
+AUTO_SAVE_WORLD_INTERVAL = 600
+AUTO_SAVE_PLYER_INTERVAL = 300
