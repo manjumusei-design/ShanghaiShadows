@@ -25,7 +25,7 @@ class Disguise:
 
 
 class StealthSystem:
-    def _init_(self, disguises: Dict[str. Disguise]):
+    def _init_(self, disguises: Dict[str, Disguise]):
         self.disguises = disguises
 
     def apply_disguise(self, disguise_id: str) -> Optional[Disguise]:
