@@ -81,3 +81,136 @@ Gossip version:"""
     except Exception:
         pass
     return _distort_rumor(rumor, distortion_level)
+
+
+def _disort_rumor(rumor_text: str, disortion_level: float = 0.3) -> str:
+    words = rumor_text.split()
+    if len(words) < 5:
+        return rumor_text
+    
+    distortions = [
+        ("says", "claims"),
+        ("seen", "reportedly seen"),
+        ("was", "may have been"),
+        ("is", "is said to be"),
+        ("took", "allegedly took"),
+        ("found", "reportedly found"),
+    ]
+
+    distorted = words.copy()
+    for i, word in enumerate(distorted):
+        if random.random() < disortion_level:
+            lower = word.lower().rstrip(".,")
+            for old, new in distortions:
+                if lower == old:
+                    distorted[i] = new + (word[-1] if word[-1] in ".," else "")
+                    break
+
+    return "".join(distorted)
+
+
+def _select_rumors_for_newspaper(
+    all_rumors: List[Dict[str, Any]],
+    active_rumor_ids: List[str],
+    player_district: str,
+    max_rumors: int = 5,
+) -> List[Dict[str, Any]]:
+    if not all_rumors:
+        return []
+    
+    scored_rumors = []
+    for rumor in all_rumors:
+        rumor_id = rumor.get("id", "")
+        score = 0
+        if rumor_id in active_rumor_ids:
+            score += 10
+        
+        districts = rumor.get("districts", [])
+        if player_district in districts:
+            score += 5
+        score += random.randint(0, 3)
+        scored_rumors.append((score, rumor))
+    scored_rumors.sort(key=lambda x: x[0], reverse=True)
+    return [r for _, r in scored_rumors[:max_rumors]]
+
+
+async def generate_newspaper(
+    game_day: int,
+    player_district: str,
+    all_rumors: List[Dict[str, Any]],
+    active_rumor_ids: List[str],
+    world_decisions: List[Dict[str, Any]],
+    rumor_mill: Dict[str, List[str]],
+    ai_client: Optional["AIClient"] = None,
+) -> Dict[str, Any]:
+    selected_rumors = _select_rumors_for_newspaper(
+        all_rumors, active_rumor_ids, player_district, max_rumors = 5
+    )
+
+    teahouse_talk = []
+    for rumor in selected_rumors[:2]:
+        original = rumor.get("text", "")
+        enhanced = await _ai_enhance_rumor(ai_client, original, distortion_level=0.4)
+        teahouse_talk.append(enhanced)
+
+    notable_incidents = []
+    for decision in world_decisions[-5:]:
+        incident = _format_world_decision(decision)
+        if incident and incident not in notable_incidents:
+            enhanced = await _ai_enhance_incident(ai_client, incident, game_day)
+            if enhanced and enhanced not in notable_incidents:
+                notable_incidents.append(enhanced)
+    notable_incidents = notable_incidents[:3]
+    
+    lane_whispers = []
+    all_street_rumors = []
+    for faction, rumors in rumour_mill.items():
+        all_street_rumors.extend(rumors)
+
+    if all_street_rumors:
+        sampled = random.sample(all_street_rumors, min(3, len(all_street_rumors)))
+        for rumor in sampled:
+            enhanced = await _ai_enhance_rumor(ai_client, rumor, distortion_level=0.5)
+            lane_whispers.append(f"Heard that {enhanced.lower()}")
+
+    newspaper = {
+        "day": game_day,
+        "masthead": NEWSPAPER_MASTHEAD,
+        "subtitle": NEWSPAPER_SUBTITLE,
+        "date": NEWSPAPER_DATE_FORMAT.format(day=game_day),
+        "teahouse_talk": teahouse_talk,
+        "notable_incidents": notable_incidents,
+        "lane_whispers": lane_whispers,
+        "purchased_at": datetime.now().isoformat(),
+    }
+    return newspaper
+
+
+def format_newspaper_for_display(newspaper: Dict[str, Any]) -> str:
+    lines = []
+    
+    lines.append(f"  {newspaper['masthead']}")
+    lines.append(f"  {newspaper['subtitle']}")
+    lines.append(f"  {newspaper['date']}")
+    lines.append("")
+    
+    if newspaper.get("teahouse_talk"):
+        lines.append("TEAHOUSE TALK")
+        for item in newspaper["teahouse_talk"]:
+            lines.append(f"  • {item}")
+        lines.append("")
+    
+    if newspaper.get("notable_incidents"):
+        lines.append("NOTABLE INCIDENTS")
+        for item in newspaper["notable_incidents"]:
+            lines.append(f"  • {item}")
+        lines.append("")
+    
+    if newspaper.get("lane_whispers"):
+        lines.append("RUMORS FROM THE ALLEYS")
+        for item in newspaper["lane_whispers"]:
+            lines.append(f"  • {item}")
+        lines.append("")
+    
+    
+    return "\n".join(lines)
