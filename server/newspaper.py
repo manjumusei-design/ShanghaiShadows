@@ -28,3 +28,20 @@ def _get_district_display(district: str) -> str:
     return district_names.get(district, district)
 
 
+def _format_world_decision(decision: Dict[str, Any]) -> Optional[str]:
+    decision_type = decision.get("decision_type", "")
+    actor_npc_id = decision.get("actor_npc_id", "someone")
+    effects = decision.get("effects", {})
+
+    if decision_type == "npc_killed":
+        victim = effects.get("victim_id", "someone")
+        return f"Violence in the lanes. {victim.replace('_', ' ').title()} found dead."
+    elif decision_type == "vendor_shutter":
+        return f"A shopkeeper on {_get_district_display(effects.get('district', 'unknown'))} closes early. Tension rises."
+    elif decision_type == "defection":
+        return f"Word is {actor_npc_id.replace('_', ' ').title()} has made new arrangements."
+    elif decision_type == "extortion":
+        return f"Protection money collected on {_get_district_display(effects.get('district', 'unknown'))}."
+    return None
+
+
