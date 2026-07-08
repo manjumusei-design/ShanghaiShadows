@@ -45,3 +45,39 @@ def _format_world_decision(decision: Dict[str, Any]) -> Optional[str]:
     return None
 
 
+async def _ai_enhance_incident(ai_client: Optional["AIClient"], incident: str, game_day: int) -> str:
+    if not ai_client:
+        return incident
+    
+    prompt = f"""You are a newspaper editor in 1930s Shanghai. Enhance this brief incident report with atmospheric period detail. Keep it concise (1-2 sentences max). Maintain the original meaning but add flavor.
+
+Original: {incident}
+
+Enhanced version:"""
+
+    try:
+        enhanced = await ai_client.chat_text([{"role": "user", "content": prompt}], timeout_seconds=3.0)
+        if enhanced and len(enhanced) < 300:
+            return enhanced.strip()
+    except Exception:
+        pass
+    return incident
+
+
+async def _ai_enhance_rumor(ai_client: Optional["AIClient"], rumor: str, distortion_level: float = 0.3) -> str:
+    if not ai_client:
+        return _distort_rumor(rumor, distortion_level)
+    
+    prompt = f"""You are a gossip columnist for a Shanghai tabloid in the 1930s. Rewrite this rumor with an air of mystery and hearsay. Add phrases like "word is", "they say", "reportedly", or "some claim". Keep the core meaning but make it sound like whispered gossip. Stay under 40 words.
+
+Original: {rumor}
+
+Gossip version:"""
+
+    try:
+        enhanced = await ai_client.chat_text([{"role": "user", "content": prompt}], timeout_seconds=3.0)
+        if enhanced and len(enhanced) < 250:
+            return enhanced.strip()
+    except Exception:
+        pass
+    return _distort_rumor(rumor, distortion_level)
