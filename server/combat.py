@@ -8,6 +8,30 @@ if TYPE_CHECKING:
     from .world import Item
 
 
+def strip_article(name: str) -> str:
+    if name.lower().startswith("an "):
+        return name[3:]
+    if name.lower().startswith("a "):
+        return name[2:]
+    return name
+
+
+def with_article(name: str) -> str:
+    name_lower = name.lower().strip()
+    if name_lower.startswith("a ") or name_lower.startswith("an "):
+        return name
+    
+    plural_suffixes = ("s", "files", "records", "documents", "cables", "lists", 
+                       "drafts", "beads", "noodles", "provisions")
+    if name_lower.endswith(plural_suffixes):
+        return name
+
+    vowel_starts = ("a", "e", "i", "o", "u")
+    if name_lower[0] in vowel_starts:
+        return f"an {name}"
+    
+    return f"a {name}"
+    
 @dataclass
 class CombatResult:
     won: bool = False
