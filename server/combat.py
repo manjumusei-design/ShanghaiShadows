@@ -120,12 +120,13 @@ def resolve_attack(
         else:
             result.messages.append(random.choice(_HIT_LINES))
     else:
-        disarm_chance = min((target_authority - effective_courage) * 2, DISARM_CHANCE_CAP)
+        gap = target_authority - effective_courage
+        result.attacker_damaged = max(5, min(25, 5 + gap // 5))
+        disarm_chance = min(gap * 2, DISARM_CHANCE_CAP)
         if random.randint(1, 100) <= disarm_chance:
             result.disarmed = True
             result.messages.append(random.choice(_DISARM_LINES))
         else:
-            result.attacker_damaged = random.randint(5, 15)
             result.messages.append(random.choice(_FAIL_LINES).format(dmg=result.attacker_damaged))
 
     return result
