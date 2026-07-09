@@ -132,15 +132,23 @@ def resolve_attack(
     return result
 
 
-def degrade_weapon(weapon: "Item", attack_succeeded: bool) -> bool:
+def degrade_weapon(weapon: "Item", attack_succeeded: bool) -> tuple:
     if weapon.durability == -1:
-        return False
+        return False, ""
+    old_durability = weapon.durability
     weapon.durability -= 5 if attack_succeeded else 2
+
     if weapon.durability <= 0:
         weapon.durability = 0
-        return True
-    return False
-
+        return True, f"Your {strip_article(weapon.name)} has broken!"
+    
+    pct = int((weapon.durability / weapon.max_durability) * 100) if weapon.max_durability > 0 else 0
+    if pct <= 20 and pct > 0:
+        return False, f"Your {strip_article(weapon.name)} is nearly broken ({pct}% durability)."
+    elif pct <= 40:
+        return False, f"Your {strip_article(weapon.name)} is showing severe wear ({pct}% durability)."
+    
+    return False, ""
 
 def degrade_armour(armour: "Item") -> bool:
     if armour.durability == -1:
