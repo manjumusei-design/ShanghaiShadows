@@ -134,3 +134,5 @@ RICKSHAW_NPC_IDS = ["liu_wei", "rickshaw_ah_fook"]
 
 AUTO_SAVE_WORLD_INTERVAL = 600
 AUTO_SAVE_PLYER_INTERVAL = 300
+
+FLAGS_HIDDEN_FROM_STATUS = frozenset({"tutorial_complete", "tutorial_skip"})
