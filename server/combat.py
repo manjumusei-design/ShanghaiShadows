@@ -32,6 +32,7 @@ def with_article(name: str) -> str:
     
     return f"a {name}"
     
+
 @dataclass
 class CombatResult:
     won: bool = False
@@ -90,6 +91,9 @@ def resolve_attack(
 
     if attacker_weapon:
         add(attacker_weapon.name, attacker_weapon.courage_bonus)
+        mod_stealth = getattr(attacker_weapon, 'stealth_bonus', 0)
+        if attacker_hidden and mod_stealth:
+            add("silencer", mod_stealth)
     if attacker_hidden:
         add("stealth", STEALTH_KILL_BONUS)
         result.silent = weapon_type == "stealth"
