@@ -120,28 +120,3 @@ class GameServer:
             except Exception as e:
                 print(f"Fail loading NPC relationships: {e}")
 
-    async def tick_loop(self):
-        while True:
-            await asyncio.sleep(1)
-            await self.clock.tick()
-
-            for session in list(self.session_manager.sessions.values()):
-                session.seconds_since_autosave += 1
-                if session.seconds_since_autosave >= 300:
-                    save_player(session.player)
-                    session.seconds_since_autosave = 0
-
-                session.seconds_since_state_broadcast += 1
-                if session.seconds_since_state_broadcast >= STATE_BROADCAST_INTERVAL:
-                    from.commands import CommandContext
-                    ctx = CommandContext(
-                        session=session,
-                        shared=self.shared,
-                        session_manager=self.session_manager,
-                        disguises=self.disguises,
-                        stealth=self.stealth,
-                        storylet_manager=self.storylet_manager,
-                        room=self.shared.world.get_room(session.player.current_room),
-                    )
-                    await broadcast_state(ctx)
-                    session.seconds_since_state_broadcast = 0
