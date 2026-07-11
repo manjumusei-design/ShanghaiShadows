@@ -81,6 +81,7 @@ class Room:
     nurse_available: bool = False
     nurse_hours: List[int] = field(default_factory=list)
     dead_drops: List[dict] = field(default_factory=list)
+    district: str = ""
 
 
 def load_items(path: str) -> Dict[str, Item]:
@@ -126,12 +127,14 @@ def _load_generated_rooms(data: Dict[str, object], items: Dict[str, Item]) -> Di
         item_cycle = district.get("item_cycle", [])
         special_names = district.get("special_names", {})
         special_ids = district.get("special_ids", {})
+        special_descriptions = district.get("special_descriptions", {})
         for idx in range(count):
             room_index = idx + 1
             room_id = special_ids.get(str(room_index), f"{room_prefix}_{room_index:02d}")
             title = special_names.get(str(room_index), f"{title_prefix} {room_index}")
-            template = description_templates[idx % len(description_templates)] if description_templates else "The city waits here."
-            description = template.format(index=room_index, title=title)
+            description = special_descriptions.get(str(room_index)) or (
+                description_templates[idx % len(description_templates)] if description_templates else "The city waits here."
+            ).format(index=room_index, title=title)
             exits: Dict[str, str] = {}
             if idx > 0:
                 prev_id = special_ids.get(str(room_index - 1), f"{room_prefix}_{room_index - 1:02d}")
@@ -158,6 +161,7 @@ def _load_generated_rooms(data: Dict[str, object], items: Dict[str, Item]) -> Di
                 npcs=[],
                 indoors=bool(indoors_pattern and room_index % int(indoors_pattern) == 0),
                 tags=tags + [prefix],
+                district=prefix,
             )
     return rooms
 
@@ -195,6 +199,10 @@ def _apply_room_properties(rooms: Dict[str, Room], props_path: Path) -> None:
             for tag in entry["tags"]:
                 if tag not in room.tags:
                     room.tags.append(tag)
+        if "exits" in entry:
+            for exit_entry in entry["exts"]:
+                if isinstance(exit_entry, dict) and "direction" in exit_entry and "to" in exit_entry:
+                    room.exits[exit_entry["direction"]] = exit_entry["to"]
 
 
 class World:
@@ -238,7 +246,7 @@ class World:
             self.rooms[room_id].npcs.append(npc_id)
             self.npc_locations[npc_id] = room_id
 
-    def format_room(self, room_id: str, room_state_overrides: dict = None) -> str:
+    def format_room(self, room_id: str, room_state_overrides: dict = None, death_journals: dict = None) -> str:
         room = self.get_room(room_id)
         if not room:
             return "You are nowhere."
@@ -251,11 +259,25 @@ class World:
                 if npc:
                     lines.append(npc.name + " is here.")
         if room.exits:
-            lines.append("Exits: " + ", ".join(room.exits.keys()))
+            exit_parts = []
+            for direction, dest_id in room.exits.items():
+                dest = self.get_room(dest_id)
+                dest_name = dest.title if dest else dest_id
+                exit_parts.append(f"{direction} ({dest_name})")
+            lines.append("Exits: " + ", ".join(exit_parts))
         if room_state_overrides:
             override = room_state_overrides.get(room_id)
             if override and override.get("shop_closed"):
                 lines.append(override.get("closed_reason", "This shop has closed."))
+        if death_journals:
+            journals = death_journals.get(room_id, [])
+            if journals:
+                if len(journals) == 1:
+                    j = journals[0]
+                    lines.append(f"A tattered journal lies here ({j['character_name']}, Day {j['day_of_death']}).")
+                else:
+                    names = ", ".join(f"{j['character_name']} (Day {j['day_of_death']})" for j in journals)
+                    lines.append(f"{len(journals)} tattered journals lie here: {names}.")
         return "\n".join(lines) + "\n"
 
 
