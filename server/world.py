@@ -9,6 +9,22 @@ from .dataclass_utils import filter_to_dataclass
 
 CUSTOM_DIR = Path("server/data/custom")
 
+DISTRICT_LABELS = {
+    "bund": "Bund",
+    "commercial": "Commercial District",
+    "old_city": "Old City",
+    "hongkou" : "Hongkou",
+    "french": "French Concession",
+    "docks": "Huangpu Docks",
+    "hidden_shanghai": "Hidden Shanghai",
+    "residential": "Residential Lane",
+    "warehouse": "Warehouse District",
+    "church": "Church District",
+    "school": "School Distrcts",
+    "ccp_base": "Underground Base",
+    "gmd_office": "Intelligence Office",
+}
+
 
 @dataclass
 class Item:
