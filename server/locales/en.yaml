@@ -25,18 +25,29 @@ cmd_plant.success: "You planted {item} for {target}."
 cmd_read.no_target: "Read what?"
 cmd_read.not_held: "You don't have that."
 cmd_read.nothing_written: "There is nothing useful written on it."
+cmd_read.no_newspaper: "You don't have a newspaper. Use BUY NEWSPAPER to purchase one."
+cmd_read.no_journal: "There is no journal here."
+cmd_read.journal_ambiguous: "Multiple journals match: {names}. Be more specific."
+cmd_read.journal_no_match: "No journal found for {name}."
+cmd_read.journal_absorbed: "You read the journal of {name}, recovering {n} notes."
+cmd_buy_newspaper.success: "You buy a newspaper for {cost} fabi."
+cmd_buy_newspaper.no_money: "You need {cost} fabi, but you only have {fabi} fabi."
+cmd_buy_newspaper.already_bought: "You already bought a newspaper today."
+cmd_buy_newspaper.no_vendor: "There's no newspaper vendor here."
 cmd_journal.blank: "Your journal would be blank tonight."
 cmd_quit.goodbye: "Goodbye."
 cmd_eat.no_target: "Eat what?"
 cmd_eat.not_held: "You don't have that."
 cmd_eat.not_food: "That's not food."
-cmd_sleep.no_shelter: "You need shelter to rest safely."
 cmd_bond.no_target: "Bond with whom?"
 cmd_bond.not_here: "They aren't here."
 cmd_bond.no_food: "You have no food to share."
 cmd_bond.no_gift: "Gift what item?"
 cmd_bond.usage: "Bond actions: SHARE MEAL, GIFT <item>"
+cmd_bonds.shared_meal: "You shared {name} with them."
+cmd_bond.burden_received: "They have entrusted you with something precious."
 cmd_unknown.format: "I don't understand '{raw}'. Try HELP."
+cmd_help.start: "First steps: Use LOOK to see your surroundings, GO <direction> to move, and TALK TO <npc> to interact with people. Type HELP for a full command list."
 cmd_help.text: "MOVEMENT:
   LOOK - Examine your surroundings
   GO <direction|room> - Move in a direction or auto-path to a known room
@@ -80,8 +91,6 @@ ITEMS:
 
 SURVIVAL:
   EAT <item> - Consume food
-  SLEEP - Sleep until dawn
-  REST - Rest for a short time
   VISIT NURSE - Receive medical treatment (costs 20 fabi)
   JOURNAL [character] - View your journal or an archived journal
   STATUS - View your character's condition
@@ -92,7 +101,10 @@ COMBAT:
 
 ECONOMY:
   BUY <item> - Purchase items from vendors
+  BUY FROM <npc> - Open NPC shop menu
+  BUY NEWSPAPER - Purchase today's newspaper(3 fabi, commercial areas)
   SELL <item> - Sell items for fabi
+  READ NEWSPAPER - Read the newspaper you bought
 
 MISSIONS:
   MISSIONS - View active missions
