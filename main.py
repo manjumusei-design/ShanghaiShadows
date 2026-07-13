@@ -10,6 +10,8 @@ import websockets
 from server.config import get_setting
 from server.game_server import GameServer
 
+_sessions_lock = threading.Lock()
+
 logging.basicConfig(
     level=logging.INFO,
     format='[%(asctime)s] %(levelname)s %(name)s: %(message)s',
@@ -37,8 +39,9 @@ class ClientHandler(SimpleHTTPRequestHandler):
         if self.path == "/health":
             try:
                 from server.game_server import GameServer
-                game = getattr(GameServer, '_last_instance', None)
-                player_count = len(game.session_manager.sessions) if game else 0
+                with _sessions_lock:
+                    game = getattr(GameServer, '_last_instance', None)
+                    player_count = len(game.session_manager.sessions) if game else 0
                 status = {
                     "status": "ok",
                     "players": player_count,
