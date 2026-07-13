@@ -89,6 +89,24 @@ def main():
     ws_host = get_setting("WS_HOST", "127.0.0.1")
     ws_port = int(get_setting("WS_PORT", "8765"))
 
+    import signal
+    import atexit
+
+    def _perform_shutdown_save():
+        try:
+            from server.save_manager import save_world_state, save_player
+            game = getattr(GameServer, '_last_instance', None)
+            if game:
+                for session in list(game.session_manager.sessions.values()):
+                    save_player(session.player)
+                save_world_state(game.shared)
+                print("World and players saved.")
+        except Exception as e:
+            print(f"Shutdown save error: {e}")
+
+    signal.signal(signal.SIGTERM, lambda s, f: (_perform_shutdown_save(), sys.exit(0)))
+    atexit.register(_perform_shutdown_save)
+    
     start_http_server(http_host, http_port)
     try: 
         asyncio.run(start_websocket_server(ws_host, ws_port))
