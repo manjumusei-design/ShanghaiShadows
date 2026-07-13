@@ -106,25 +106,19 @@ def main():
 
     signal.signal(signal.SIGTERM, lambda s, f: (_perform_shutdown_save(), sys.exit(0)))
     atexit.register(_perform_shutdown_save)
-    
+
     start_http_server(http_host, http_port)
-    try: 
+    try:
         asyncio.run(start_websocket_server(ws_host, ws_port))
     except KeyboardInterrupt:
-        print("Shutting down server")
+        print("\nShutting down...")
     except Exception as exc:
         print(f"\nFatal error: {exc}")
     finally:
-        print("Graceful save of world state before exit...")
-        try:
-            from server.save_manager import save_world_state
-            from server.game_server import GameServer
-            save_world_state(GameServer._last_instance.shared if hasattr(GameServer, '_last_instance') else None)
-        except Exception as save_err:
-            print(f"Could not save world state: {save_err}")
+        print("Saving world state before exit...")
+        _perform_shutdown_save()
         sys.exit(0)
 
 
 if __name__ == "__main__":
     main()
-    
