@@ -12,42 +12,30 @@ cmd_talk_to.no_target: "Talk to whom?"
 cmd_talk_to.not_here: "They aren't here."
 cmd_ask_about.no_target: "Ask whom about what?"
 cmd_ask_about.not_here: "They aren't here."
+cmd_wait.no_duration: "Wait how long?"
+cmd_wait.invalid: "You must wait a number of minutes."
 cmd_disguise_as.no_target: "Disguise as what?"
 cmd_disguise_as.not_found: "That disguise is not prepared for you."
 cmd_tail.no_target: "Tail whom?"
 cmd_tail.not_here: "They aren't here."
 cmd_tail.target_vanished: "Your target has vanished into the city's folds."
-cmd_hide.success: "You blend into the shadows."
-cmd_hide.fail: "You couldn't find a good hiding spot."
 cmd_plant.no_target: "Plant what?"
 cmd_plant.not_held: "You don't have that."
-cmd_plant.success: "You planted {item} for {target}."
 cmd_read.no_target: "Read what?"
 cmd_read.not_held: "You don't have that."
 cmd_read.nothing_written: "There is nothing useful written on it."
-cmd_read.no_newspaper: "You don't have a newspaper. Use BUY NEWSPAPER to purchase one."
-cmd_read.no_journal: "There is no journal here."
-cmd_read.journal_ambiguous: "Multiple journals match: {names}. Be more specific."
-cmd_read.journal_no_match: "No journal found for {name}."
-cmd_read.journal_absorbed: "You read the journal of {name}, recovering {n} notes."
-cmd_buy_newspaper.success: "You buy a newspaper for {cost} fabi."
-cmd_buy_newspaper.no_money: "You need {cost} fabi, but you only have {fabi} fabi."
-cmd_buy_newspaper.already_bought: "You already bought a newspaper today."
-cmd_buy_newspaper.no_vendor: "There's no newspaper vendor here."
 cmd_journal.blank: "Your journal would be blank tonight."
 cmd_quit.goodbye: "Goodbye."
 cmd_eat.no_target: "Eat what?"
 cmd_eat.not_held: "You don't have that."
 cmd_eat.not_food: "That's not food."
+cmd_sleep.no_shelter: "You need shelter to rest safely."
 cmd_bond.no_target: "Bond with whom?"
 cmd_bond.not_here: "They aren't here."
 cmd_bond.no_food: "You have no food to share."
 cmd_bond.no_gift: "Gift what item?"
 cmd_bond.usage: "Bond actions: SHARE MEAL, GIFT <item>"
-cmd_bonds.shared_meal: "You shared {name} with them."
-cmd_bond.burden_received: "They have entrusted you with something precious."
 cmd_unknown.format: "I don't understand '{raw}'. Try HELP."
-cmd_help.start: "First steps: Use LOOK to see your surroundings, GO <direction> to move, and TALK TO <npc> to interact with people. Type HELP for a full command list."
 cmd_help.text: "MOVEMENT:
   LOOK - Examine your surroundings
   GO <direction|room> - Move in a direction or auto-path to a known room
@@ -91,6 +79,8 @@ ITEMS:
 
 SURVIVAL:
   EAT <item> - Consume food
+  SLEEP - Sleep until dawn
+  REST - Rest for a short time
   VISIT NURSE - Receive medical treatment (costs 20 fabi)
   JOURNAL [character] - View your journal or an archived journal
   STATUS - View your character's condition
@@ -101,10 +91,7 @@ COMBAT:
 
 ECONOMY:
   BUY <item> - Purchase items from vendors
-  BUY FROM <npc> - Open NPC shop menu
-  BUY NEWSPAPER - Purchase today's newspaper(3 fabi, commercial areas)
   SELL <item> - Sell items for fabi
-  READ NEWSPAPER - Read the newspaper you bought
 
 MISSIONS:
   MISSIONS - View active missions
@@ -125,25 +112,13 @@ TIPS:
 - Multiple perception checks reveal hidden details
 - Building trust unlocks missions and resources
 - Rain degrades weapons and armour when outdoors
-  - Use JOURNAL <name> to read archived journals of fallen characters"
+- Use JOURNAL <name> to read archived journals of fallen characters"
 cmd_look.nowhere: "You are nowhere."
 cmd_stub.not_implemented: "{verb} has not been implemented."
-cmd_rumors.quiet: "The streets are quiet. No rumors to share."
-cmd_journal.no_archive: "No archived journal found for {name}."
-cmd_claim.nothing: "You have nothing to claim here."
-cmd_claim.not_safe: "You can only claim a safe room as your safehouse."
-cmd_claim.success: "You claim {title} as your safehouse."
-cmd_retrieve.not_safe: "You need to be at at your safehouse to retrieve items."
-cmd_retrieve.empty: "You stash is empty."
-cmd_retrieve.success: "You retrieve: {items}."
 death.health: "You collapse in the cold alley, too weak to continue. The city claims another life."
 death.arrest: "The Kempeitai don't believe your story. They drag you to Bridge House Prison. You will not return."
 death.arrest_message: "Armed officers surround you. 'You're coming with us.'"
 death.legacy: "Your legacy in Shanghai will be remembered by those who knew you."
-trust.up.friendly: "The {faction} now count you as a friend."
-trust.up.friendly_npc: "The {faction} no longer trust you as they once did."
-trust.up.hostile: "The {faction} have softened their stance."
-trust.down.hostile: "The {faction} have turned against you."
 curfew.warning: "The curfew is in force. Faces turn away from you in the dark as everyone hurriedly scurries back to their residence."
 hunger.cramps: "Your stomach cramps with hunger."
 newspaper.delivery: "At dawn a newspaper runner slips a fresh edition into your hands."
@@ -152,7 +127,6 @@ newspaper.fallback_prefix: "Headline"
 storylet.choose: "Choose 1-{max}: "
 
 greeting: "Shanghai Shadows\nEnter save slot codename to continue.\n"
-greeting.brief: "Use \"help\" (or \"help start\") for commands, \"look\" to see your surroundings."
 slot_prompt: "slot> "
 loaded: "Loaded slot '{slot}'.\n"
 new_chapter: "A NEW CHAPTER BEGINS"
@@ -176,9 +150,13 @@ cmd_buy.not_here: "That is not available here."
 cmd_buy.not_for_sale: "That is not for sale."
 cmd_buy.no_money: "You cannot afford that. It costs {cost} fabi."
 cmd_buy.success: "You buy {name} for {cost} fabi."
-cmd_buy.vendor_not_here: "You don't see {vendor} fabi"
-cmd_buy.not_vendor: "{npc} doesn't sell anything."
-cmd_buy.no_stock: "{npc} has nothing for sale right now."
+
+cmd_buy_from.no_vendor: "Buy from whom?"
+cmd_buy_from.not_here: "They aren't here."
+cmd_buy_from.no_stock: "{vendor} has nothing to sell."
+cmd_buy_from.shop_prompt: "{vendor}'s wares:"
+
+shop_menu.cancel: "Cancel"
 
 cmd_sell.no_target: "Sell what?"
 cmd_sell.not_held: "You don't have that."
