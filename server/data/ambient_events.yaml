@@ -21,3 +21,81 @@
   probability: 0.04
   sound_range: 3
   cooldown_ticks: 24
+
+- id: market_haggle
+  text: "Two vendors argue over rice measures in low voices, each word clipped short when strangers pass too near."
+  tags: [market, civilian, scarcity]
+  room_types: [market, civilian, residential]
+  districts: [residential]
+  time_range: [360, 1080]
+  probability: 0.12
+  cooldown_ticks: 8
+
+- id: warehouse_crane
+  text: "A crane cable groans under weight, then shudders slack. Men below it curse softly and get back to work."
+  tags: [labor, industrial, sound]
+  room_types: [warehouse, industrial, labor]
+  districts: [warehouse]
+  time_range: [420, 1140]
+  probability: 0.14
+  cooldown_ticks: 8
+
+- id: radio_static_hidden
+  text: "For a breath, radio static scratches behind a wall. A voice forms almost a word before the set is cut dead."
+  tags: [resistance, hidden, signal]
+  room_types: [hidden, resistance, secret]
+  districts: [hidden_shanghai]
+  min_perception: 35
+  probability: 0.09
+  cooldown_ticks: 16
+
+- id: church_bell_muted
+  text: "A church bell gives a single muted note, more memory than music, and pigeons lift from the roofline."
+  tags: [church, civilian, mourning]
+  room_types: [church, safe]
+  districts: [church]
+  time_range: [360, 1080]
+  probability: 0.10
+  cooldown_ticks: 12
+
+  - id: school_recitation
+  text: "Children recite a lesson in uneven voices. The teacher corrects them gently, then lowers her voice at a knock."
+  tags: [school, civilian, occupation]
+  room_types: [school, civilian]
+  districts: [school]
+  time_range: [480, 960]
+  probability: 0.11
+  cooldown_ticks: 10
+
+- id: rain_on_tiles
+  text: "Rain ticks against roof tiles and drains through a cracked gutter, tapping out an anxious little rhythm."
+  tags: [weather, sound, city]
+  probability: 0.06
+  sound_range: 1
+  cooldown_ticks: 10
+
+- id: whispered_names
+  text: "Someone nearby whispers two names and a street address. The answer comes too quietly to catch."
+  tags: [gossip, resistance, civilian]
+  room_types: [residential, civilian, hidden]
+  min_perception: 45
+  probability: 0.06
+  sound_range: 1
+  cooldown_ticks: 18
+
+- id: truck_convoy
+  text: "A convoy grinds past in low gear, canvas sides dark with damp. No one on the street looks directly at it."
+  tags: [military, occupation, danger]
+  room_types: [street, checkpoint, warehouse]
+  probability: 0.05
+  sound_range: 3
+  cooldown_ticks: 20
+
+- id: ration_queue_murmur
+  text: "A ration queue mutters like a tired animal. Someone laughs once, too loudly, and the sound dies at once."
+  tags: [scarcity, civilian, morale]
+  room_types: [market, residential, civilian]
+  districts: [residential]
+  time_range: [420, 780]
+  probability: 0.10
+  cooldown_ticks: 12
