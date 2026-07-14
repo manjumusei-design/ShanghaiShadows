@@ -31,3 +31,14 @@ class InteractionPreconditions:
     requires_item: Optional[str] = None
     requires_goal: Optional[str] = None
 
+
+@dataclass
+class NpcInteraction:
+    id: str
+    action: List[str]
+    narrative_templates: List[str]
+    effects: InteractionEffects
+    actor_faction: List[str] = field(default_factory=list)
+    target_faction: List[str] = field(default_factory=list)
+    preconditions: Optional[InteractionPreconditions] = None
+    weight: float = 1.0
