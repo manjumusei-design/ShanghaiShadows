@@ -112,3 +112,67 @@ class NpcInteractionManager:
             preconditions=preconditions,
             weight=data.get("weight", 1.0),
         )
+    
+    def _index_interaction(self, interaction: NpcInteraction) -> None:
+        for action in interaction.action:
+            if action not in self._action_index:
+                self._action_index[action] = []
+            self._action_index[action].append(interaction.id)
+
+        for faction in interaction.actor_faction:
+            if faction not in self._faction_index:
+                self._faction_index[faction] = []
+            if interaction.id not in self._faction_index[faction]:
+                self._faction_index[faction].append(interaction.id)
+
+    def get_interactions_for_action(self, action: str) -> List[NpcInteraction]:
+        ids = self._action_index.get(action, [])
+        return [self._interactions[i] for i in ids if i in self._interactions]
+    
+    def get_interactions_for_faction(self, faction: str) -> List[NpcInteraction]:
+        ids = self._faction_index.get(faction, [])
+        return [self._interactions[i] for i in ids if i in self._interactions]
+    
+    def check_preconditions(self, interaction: NpcInteraction, actor, target,
+                           world_state) -> bool:
+        precond = interaction.preconditions
+        if not precond:
+            return True
+        
+        if precond.min_world_tension is not None:
+            tension = getattr(world_state, 'world_tension', 0)
+            if tension < precond.min_world_tension:
+                return False
+            
+        if precond.max_world_tension is not None:
+            tension = getattr(world_state, 'world_tension', 0)
+            if tension > precond.max_world_tension:
+                return False
+            
+        if precond.opposite_factions:
+            if actor.faction == target.faction:
+                return False
+
+        if precond.leader_status:
+            if not getattr(actor, 'faction_leader', False):
+                return False
+
+        if precond.min_relationship is not None:
+            rel = actor.relationships.get(target.id)
+            if not rel or rel.strength < precond.min_relationship:
+                return False
+
+        if precond.max_relationship is not None:
+            rel = actor.relationships.get(target.id)
+            if rel and rel.strength > precond.max_relationship:
+                return False
+
+        if precond.requires_item:
+            if precond.requires_item not in getattr(actor, 'inventory', []):
+                return False
+
+        if precond.requires_goal:
+            if precond.requires_goal not in getattr(actor, 'goals', []):
+                return False
+
+        return True
