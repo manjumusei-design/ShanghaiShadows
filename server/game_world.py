@@ -33,6 +33,7 @@ def load_disguises(path: str) -> Dict[str, Disguise]:
             apparent_faction=row["apparent_faction"],
             bonus=int(row.get("bonus", 0)),
             description=row.get("description", ""),
+            curfew_detection_modifier=int(row.get("curfew_detection_modifier", 0)),
         )
         disguises[disguise.id] = disguise
     return disguises
@@ -84,7 +85,12 @@ def serialize_world_state(state: SharedWorldState) -> Dict[str, object]:
 
     npc_locations = state.world.npc_locations
     npc_memory = {npc_id: npc.memory for npc_id, npc in state.world.npcs.items()}
-
+    npc_tracked_rumors = {
+        npc_id: npc.tracked_rumors
+        for npc_id, npc in state.world.npcs.items()
+        if getattr(npc, 'tracked_rumors', None)
+    }
+    
     npc_player_memories = {}
     for npc_id, npc in state.world.npcs.items():
         if hasattr(npc, 'player_memories') and npc.player_memories:
@@ -104,8 +110,9 @@ def serialize_world_state(state: SharedWorldState) -> Dict[str, object]:
         "room_items": room_items,
         "npc_locations": npc_locations,
         "npc_memory": npc_memory,
-        "scheduler": state.scheduler.to_payload(),
+        "npc_tracked_rumors": npc_tracked_rumors,
         "npc_player_memories": npc_player_memories,
+        "scheduler": state.scheduler.to_payload(),
         "rumour_mill": state.rumour_mill,
         "event_log": state.event_log,
         "legacy_book": state.legacy_book,
@@ -155,6 +162,11 @@ def deserialize_world_state(data: Dict[str, object], world: World) -> SharedWorl
         if npc:
             npc.memory = list(memories)
 
+    for npc_id, tracked in data.get("npc_tracked_rumors", {}).items():
+        npc = world.npcs.get(npc_id)
+        if npc and hasattr(npc, 'tracked_rumors'):
+            npc.tracked_rumors = list(tracked)
+            
     npc_player_memories = data.get("npc_player_memories", {})
     if isinstance(npc_player_memories, dict):
         for npc_id, player_mems in npc_player_memories.items():
