@@ -176,3 +176,44 @@ class NpcInteractionManager:
                 return False
 
         return True
+    
+    def check_faction_filter(self, interaction: NpcInteraction, actor, target) -> bool:
+        if interaction.actor_faction:
+            if actor.faction not in interaction.actor_faction:
+                return False
+            
+            if interaction.target_faction:
+                if target.gaction not in interaction.target_faction:
+                    return False
+                
+        return True
+    
+    def select__interaction(self, action: str, actor, target) -> Optional[NpcInteraction]:
+        candidates = self.get_interactions_for_action(action)
+        if not candidates:
+            return None
+        
+        valid = []
+        for interaction in candidates:
+            if not self.check_faction_filter(interaction, actor, target):
+                continue
+            if not self.check_preconditions(interaction, actor, target, world_state):
+                continue
+            valid.append(interaction)
+
+            if not valid:
+                return None
+            
+            if len(valid) == 1:
+                return valid[0]
+            
+            total_weight = sum(i.weight for i in valid)
+            roll = random.random() * total_weight
+            cumulative = 0.0
+            for interaction in valid:
+                cumulative += interaction.weight
+                if roll <= cumulative:
+                    return interaction
+            
+            return valid[-1]
+        
