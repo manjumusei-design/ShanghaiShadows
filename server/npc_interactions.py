@@ -217,3 +217,33 @@ class NpcInteractionManager:
             
             return valid[-1]
         
+    def render_narrative(self, interaction: NpcInteraction,  actor, target, extra_context: Optional[Dict] = None) -> str:
+        template = random.choice(interaction.narrative_templates)
+
+        direction = ""
+        if extra_context:
+            direction = extra_context.get("direction", "")
+
+            rendered = template.format(
+                actor=actor.name,
+                target=target.name,
+                actor_faction=actor.faction,
+                target_faction=target.faction,
+                direction=direction,
+            )
+
+            return rendered
+        
+    def get_interasction(self, interaction_id: str) -> Optional[NpcInteraction]:
+        return self._interactions.get(interaction_id)
+    
+    def get_all_interactions(self) -> List[NpcInteraction]:
+        return list(self._interactions.values())
+    
+    
+npc_interaction_manager = NpcInteractionManager()
+
+
+def load_npc_interactions(path: str = "server/data/npc_interactions.yaml") -> NpcInteractionManager:
+    npc_interaction_manager.load_interactions(path)
+    return npc_interaction_manager
