@@ -101,6 +101,8 @@ class EconomySystem:
         'prayer_beads': 'traditional', 'jade_talisman': 'traditional',
 
         'japanese_cigarettes': 'japanese_goods', 'japanese_textbook': 'japanese_goods',
+        'japanese_rice': 'japanese_goods', 'japanese_medicine': 'japanese_goods',
+        'kempeitai_ration': 'japanese_goods', 'japanese_travel_pass': 'japanese_goods',
     }
 
     def __init__(self):
@@ -134,18 +136,26 @@ class EconomySystem:
 
     def get_item_price(self, item_base_cost: int, item_id: str, region: str,
                        npc_faction: str, inflation_rate: float = 1.0,
-                       season_multiplier: float = 1.0, trust_score: int = 50) -> int:
+                       season_multiplier: float = 1.0, trust_score: int = 50,
+                       player_morale: int = 50) -> int:
         if item_base_cost <= 0:
             return 0
 
-        if trust_score < 30:
-            trust_tier_mod = 1.5 
-        elif trust_score < 50:
-            trust_tier_mod = 1.0  
-        elif trust_score < 70:
-            trust_tier_mod = 0.9 
+        if player_morale < 30:
+            morale_mod = 1.15  
+        elif player_morale < 50:
+            morale_mod = 1.05  
         else:
-            trust_tier_mod = 0.8  
+            morale_mod = 1.0 
+
+        if trust_score < 30:
+            trust_tier_mod = 1.5
+        elif trust_score < 50:
+            trust_tier_mod = 1.0
+        elif trust_score < 70:
+            trust_tier_mod = 0.9
+        else:
+            trust_tier_mod = 0.8
 
         regional_mod = self.get_regional_modifier(item_id, region)
         faction_mod = self.get_faction_modifier(item_id, npc_faction)
@@ -157,7 +167,7 @@ class EconomySystem:
 
         final_price = int(item_base_cost * regional_mod * faction_mod *
                          scarcity_mod * condition_price_mod * inflation_rate *
-                         season_multiplier * trust_tier_mod)
+                         season_multiplier * trust_tier_mod * morale_mod)
 
         return max(1, final_price)
 
