@@ -279,6 +279,7 @@ class SessionManager:
             narrative=storylet.narrative,
             options=storylet.options,
         )
+        player.in_tutorial = True
         lines = [storylet.narrative]
         for idx, opt in enumerate(storylet.options, start=1):
             lines.append(f"{idx}. {opt.text}")
