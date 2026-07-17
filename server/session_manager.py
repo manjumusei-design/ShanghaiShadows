@@ -63,7 +63,8 @@ class SessionManager:
                     session.player.flags.append("last_words_spoken")
                     await session.send_display(f'\nYour last words echo in the cold air: "{last_words}"\n')
                     from .commands import handle_player_death
-                    await handle_player_death(self._make_context(session), "You have spoken your final words.", last_words=last_words)
+                    death_msg = getattr(session, '_quit_death_message', "You have spoken your final words.")
+                    await handle_player_death(self._make_context(session), death_msg, last_words=last_words)
                     continue
 
                 if session.player.active_storylet:
@@ -99,6 +100,18 @@ class SessionManager:
                 if cmd.verb == "pass":
                     await session.send_prompt()
                     continue
+
+                if getattr(session.player, 'in_tutorial', False):
+                    from .tutorial import advance_tutorial
+                    ctx_for_tutorial = self._make_context(session)
+                    raw_verb = getattr(cmd, 'raw_verb', cmd.verb)
+                    await advance_tutorial(
+                        ctx_for_tutorial,
+                        verb=cmd.verb,
+                        target=cmd.direct_obj or "",
+                        indirect = cmd.indirect_obj or "",
+                        raw_verb=raw_verb,
+                    )
 
                 handler = self.command_registry.get(cmd.verb, self.command_registry.get("unknown"))
                 ctx = self._make_context(session)
@@ -194,6 +207,16 @@ class SessionManager:
 
         await websocket.send(f'{{"type":"display","payload":"Connected as {username}. Welcome to occupied Shanghai."}}')
         await websocket.send(f'{{"type":"display","payload":"You are {player.name}."}}')
+
+        if hasattr(player, 'legacy_intro') and player.legacy_intro:
+            await websocket.send(f'{{"type":"display","payload":"---"}}')
+            await websocket.send(f'{{"type":"display","payload":"Previous cycles of this world:"}}')
+            
+            for line in player.legacy_intro.split('\n'):
+                if line.strip():
+                    await websocket.send(f'{{"type":"display","payload":"{line}"}}')
+            await websocket.send(f'{{"type":"display","payload":"---"}}')
+
         await websocket.send(f'{{"type":"display","payload":"{loc("greeting.brief")}"}}')
         await websocket.send(f'{{"type":"display","payload":"Use \\"help\\" (or \\"help start\\") for commands, \\"look\\" to see your surroundings."}}')
 
@@ -204,6 +227,7 @@ class SessionManager:
         from .trust import default_trust
         from .commands import _generate_character_name, _reset_player_defaults
         from .auth import resolve_spawn_room
+        from .victory import compile_legacy_narrative
 
         spawn_room = resolve_spawn_room(username) or "bund_dawn"
         if not self.shared.world.get_room(spawn_room):
@@ -213,6 +237,10 @@ class SessionManager:
         player.username = username
         _reset_player_defaults(player, _generate_character_name(), spawn_room)
         player.trust = default_trust()
+
+        if self.shared.legacy_book:
+            legacy = compile_legacy_narrative(self.shared.legacy_book)
+            player.legacy_intro = legacy #todo: I need to revalute thsi in the future before shipping 
 
         save_player(player)
         return player
