@@ -1,5 +1,6 @@
-from dataclasses import dataclass
-from typing import Dict, List
+from dataclasses import dataclass, field
+from typing import Dict, List, Optional, Tuple
+import hashlib
 import random
 
 import yaml
@@ -15,114 +16,38 @@ FACTION_ROLES: Dict[str, List[str]] = {
     "civilian": ["resident", "worker", "vendor", "guide"],
 }
 
-
-TrustMap = Dict[str, Dict[str, int]]
+ALL_FACTIONS = list(FACTION_ROLES.keys())
 
 
 @dataclass
-class TrustRule:
-    action: str
-    deltas: Dict[str, int]
-    visible: bool = False
+class TrackedRumor:
+    id: str
+    text: str
+    origin_faction: str = ""
+    current_faction: str = ""
+    source_npc: str = ""
+    hop_count: int = 0
+    day_created: int = 1
 
-
-def default_trust() -> TrustMap:
-    return {
-        faction: {role: 50 for role in roles}
-        for faction, roles in FACTION_ROLES.items()
-    }   
-
-
-def load_trust_rules(path: str) -> Dict[str, TrustRule]:
-    with open(path, "r", encoding="utf-8") as f:
-        data = yaml.safe_load(f) or {}
-    rules: Dict[str, TrustRule] = {}
-    for row in data.get("rules", []):
-        action = row.get("action")
-        if not action:
-            continue
-        rules[action] = TrustRule(
-            action=action,
-            deltas=row.get("deltas", {}),
-            visible=bool(row.get("visible", False)),
+    def to_dict(self) -> dict:
+        return {
+            "id": self.id,
+            "text": self.text,
+            "origin_faction": self.origin_faction,
+            "current_faction": self.current_faction,
+            "source_npc": self.source_npc,
+            "hop_count": self.hop_count,
+            "day_created": self.day_created,
+        }
+    
+    @classmethod
+    def from_dict(cls, data: dict) -> "TrackedRumor":
+        return cls(
+            id=data.get("id", ""),
+            text=data.get("text", ""),
+            origin_faction=data.get("origin_faction", ""),
+            current_faction=data.get("current_faction", ""),
+            source_npc=data.get("source_npc", ""),
+            hop_count=data.get("hop_count", 0),
+            day_created=data.get("day_created", 1),
         )
-    return rules
-
-
-def get_role_trust(trust: TrustMap, faction: str, role: Optional[str] = None) -> int:
-    roles = trust.get(faction, {})
-    if not roles:
-        return 50
-    if role and role in roles:
-        return roles[role]
-    return int(sum(roles.values()) / max(1, len(roles)))
-    
-
-def change_trust(trust: TrustMap, key: str, delta: int) -> int:
-    if "." in key:
-        faction, role = key.split(".", 1)
-        if faction not in trust:
-            trust[faction] = {}
-        prev = trust[faction].get(role, 50)
-        trust[faction][role] = max(0, min(100, prev + int(delta)))
-        return trust[faction][role] - prev
-    
-    if key not in trust:
-        trust[key] = {}
-    changed_total = 0
-    for role, prev in trust[key].items():
-        trust[key][role] = max(0, min(100, prev + int(delta)))
-        changed_total += trust[key][role] - prev
-    return changed_total
-
-
-def apply_trust_delta(player_trust: TrustMap, rule: TrustRule, dynamic_vars: Optional[Dict[str, str]] = None) -> Dict[str, int]:
-    changed: Dict[str, int] = {}
-    dynamic_vars = dynamic_vars or {}
-    for key, delta in rule.deltas.items():
-        if "{" in key:
-            resolved_key = key.format(**dynamic_vars)
-        else:
-            resolved_key = key
-        changed[resolved_key] = change_trust(player_trust, resolved_key, int(delta))
-    return changed
-
-
-def summarize_faction_trust(trust: TrustMap) -> Dict[str, int]:
-    return {
-        faction: get_role_trust(trust, faction)
-        for faction in trust
-    }
-
-
-def exchange_gossip(mem_a: List[str], mem_b: List[str], chance: float = 0.2) -> bool:
-    if random.random() >= chance:
-        return False
-    source = None
-    target = None
-    if mem_a and mem_b:
-        source, target = (mem_a, mem_b) if random.random() < 0.5 else (mem_b, mem_a)
-    elif mem_a:
-        source, target = mem_a, mem_b
-    elif mem_b:
-        source, target = mem_b, mem_a
-    else:
-        return False
-    memory = random.choice(source)
-    if "heard that" not in memory and random.random() < 0.4:
-        memory = f"Heard that {memory[0].lower() + memory[1:]}"
-    if memory not in target:
-        target.append(memory)
-        return True
-    return False
-
-
-def migrate_resistance_to_ccp_gmd(trust: TrustMap) -> TrustMap:
-    resistance = trust.pop("resistance", {})
-    if resistance:
-        avg = sum(resistance.values()) // max(1, len(resistance))
-    else:
-        avg = 50
-    trust["ccp"] = {role: avg for role in FACTION_ROLES["ccp"]}
-    trust["gmd"] = {role: avg for role in FACTION_ROLES["gmd"]}
-    return trust
