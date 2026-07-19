@@ -104,7 +104,6 @@ KNOWN_VERBS = {
     "assess", 
     "skip tutorial",
 }
-}
 
 
 def _strip_articles(tokens: List[str]) -> List[str]:
@@ -149,6 +148,11 @@ def parse(text: str) -> Command:
         rest = _strip_articles(tokens[2:])
         direct = " ".join(rest) if rest else None
         return Command(verb="ask about", direct_obj=direct, raw=raw)
+    
+    if first == "buy" and len(tokens) > 2 and tokens[1].lower() == "from":
+        rest = _strip_articles(tokens[2:])
+        direct = " ".join(rest) if rest else None
+        return Command(verb="buy from", direct_obj=direct, raw=raw)
     
     if first == "whisper" and len(tokens) > 2:
         direct = tokens[1]
@@ -211,11 +215,14 @@ def parse(text: str) -> Command:
     if first == "visit" and len(tokens) > 1 and tokens[1].lower() == "nurse":
         return Command(verb="visit nurse", direct_obj="nurse", raw=raw)
 
+    if first == "hide" and len(tokens) > 2 and tokens[1].lower() == "for":
+        return Command(verb="skip tutorial", raw=raw)
+    
     verb = _resolve_verb(first)
     rest = tokens[1:]
 
     if verb == "go" and first in DIRECTIONS:
-        return Command(verb="go", direct_obj=first, raw=raw)
+        return Command(verb="go", direct_obj=first, raw=raw, raw_verb=first)
 
     prep_idx = next(
         (i for i, t in enumerate(rest) if t.lower() in PREPOSITIONS), None
@@ -233,7 +240,8 @@ def parse(text: str) -> Command:
             preposition=prep,
             indirect_obj=indirect,
             raw=raw,
+            raw_verb=first,
         )
     else:
         direct = " ".join(_strip_articles(rest)) if rest else None
-        return Command(verb=verb, direct_obj=direct, raw=raw)
+        return Command(verb=verb, direct_obj=direct, raw=raw, raw_verb=first)
