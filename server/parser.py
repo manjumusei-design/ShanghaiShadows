@@ -10,6 +10,8 @@ class Command:
     indirect_obj: Optional[str] = None
     preposition: Optional[str] = None]
     raw: str = ""
+    raw_verb: str = ""
+    suppress_render: bool = False
 
 
 ARTICLES = {"the", "a", "an"}
@@ -17,11 +19,7 @@ PREPOSITIONS = {"to", "at", "on", "with", "in", "from", "about"}
 DIRECTIONS = {"north", "south", "east", "west", "up", "down", "n", "s", "e", "w", "u", "d"}
 
 VERB_ALIASES = {
-    "l": "look",
-    "x": "look",
     "examine" : "look",
-    "i": "inventory",
-    "inv": "inventory",
     "get": "take",
     "grab": "take",
     "discard": "drop",
@@ -35,8 +33,6 @@ VERB_ALIASES = {
     "?": "help",
     "stat": "status",
     "run": "flee",
-    "equip": "wear",
-    "unequip": "remove",
 }   
 
 KNOWN_VERBS = {
@@ -55,20 +51,21 @@ KNOWN_VERBS = {
     "plant",
     "disguise as",
     "hide",
+    "unhide",
+    "listen",
     "read",
     "use",
-    "wait",
-    "sleep",
     "eat",
-    "rest",
     "journal",
     "status",
     "tail",
+    "trust",
     "bond",
     "say",
     "attack",
     "flee",
     "search",
+    "season",
     "examine",
     "map",
     "pickpocket",
@@ -82,10 +79,31 @@ KNOWN_VERBS = {
     "memorial",
     "yell",
     "buy",
+    "buy from",
     "sell",
     "equip",
     "heal",
     "sound",
+    "claim",
+    "retrieve",
+    "repair",
+    "rumors",
+    "rumours",
+    "take trishaw",
+    "put in",
+    "take from",
+    "mod weapon",
+    "write note",
+    "leave note",
+    "visit nurse",
+    "abandon mission",
+    "bribe",
+    "favor",
+    "wanted",
+    "buy newspaper",
+    "assess", 
+    "skip tutorial",
+}
 }
 
 
