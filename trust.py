@@ -271,3 +271,61 @@ def summarize_faction_trust(trust: TrustMap) -> Dict[str, int]:
         faction: get_role_trust(trust, faction)
         for faction in trust
     }
+
+
+def exchange_gossip(
+    mem_a: List[str],
+    mem_b: List[str],
+    chance: float = 0.2,
+    tracked_a: Optional[List[dict]] = None,
+    tracked_b: Optional[List[dict]] = None,
+    game_day: int = 1,
+    npc_a: "Npc" = None,
+    npc_b: "Npc" = None,
+) -> bool:
+    if random.random() >= chance:
+        return False
+    source = None
+    target = None
+    source_tracked = None
+    target_tracked = None
+    source_npc = None
+
+    if mem_a and mem_b:
+        if random.random() < 0.5:
+            source, target = mem_a, mem_b
+            source_tracked, target_tracked = tracked_a, tracked_b
+            source_npc = npc_a
+        else:
+            source, target = mem_b, mem_a
+            source_tracked, target_tracked = tracked_b, tracked_a
+            source_npc = npc_b
+    elif mem_a:
+        source, target = mem_a, mem_b
+        source_tracked, target_tracked = tracked_a, tracked_b
+        source_npc = npc_a
+    elif mem_b:
+        source, target = mem_b, mem_a
+        source_tracked, target_tracked = tracked_b, tracked_a
+        source_npc = npc_b
+    else:
+        return False
+
+    memory = random.choice(source)
+    if "heard that" not in memory and random.random() < 0.4:
+        memory = f"Heard that {memory[0].lower() + memory[1:]}"
+
+    if memory not in target:
+        target.append(memory)
+
+        if source_tracked is not None and target_tracked is not None:
+            personality = getattr(source_npc, 'personality', '') if source_npc else ''
+            for tr_dict in source_tracked:
+                tr = TrackedRumor.from_dict(tr_dict)
+                if tr.text in memory or memory in tr.text:
+                    distorted = distort_rumor(tr, game_day, personality=personality)
+                    target_tracked.append(distorted.to_dict())
+                    break
+
+        return True
+    return False
