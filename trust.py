@@ -181,3 +181,93 @@ def get_role_trust(trust: TrustMap, faction: str, role: Optional[str] = None) ->
         return roles[role]
     return int(sum(roles.values()) / max(1, len(roles)))
 
+
+def change_trust(
+    trust: TrustMap,
+    key: str,
+    delta: int,
+    last_trust_interaction: Optional[Dict[str, int]] = None,
+    current_day: Optional[int] = None,
+    player_flags: Optional[List[str]] = None,
+) -> Tuple[int, List[str]]:
+    notifications: List[str] = []
+
+    if last_trust_interaction is not None and current_day is not None:
+        record_trust_interaction(trust, last_trust_interaction, key, current_day)
+
+    faction = key.split(".", 1)[0] if "." in key else key
+    was_below_connected = False
+    was_at_connected = False
+    if faction in FACTION_PERKS:
+        prev_score = get_role_trust(trust, faction)
+        was_below_connected = prev_score < TRUST_TIER_CONNECTED
+        was_at_connected = prev_score >= TRUST_TIER_CONNECTED
+
+    if "." in key:
+        faction, role = key.split(".", 1)
+        if faction not in trust:
+            trust[faction] = {}
+        prev = trust[faction].get(role, 50)
+        trust[faction][role] = max(0, min(100, prev + int(delta)))
+        actual = trust[faction][role] - prev
+    else:
+        if key not in trust:
+            trust[key] = {}
+        actual = 0
+        for role, prev in trust[key].items():
+            trust[key][role] = max(0, min(100, prev + int(delta)))
+            actual += trust[key][role] - prev
+
+    if faction in FACTION_PERKS and was_below_connected:
+        new_score = get_role_trust(trust, faction)
+        if new_score >= TRUST_TIER_CONNECTED:
+            perk = FACTION_PERKS[faction]
+            notifications.append(f"perk_unlocked:{faction}:{perk['name']}")
+            if faction == "kempeitai" and player_flags is not None:
+                if "kempeitai_perk_applied" not in player_flags:
+                    apply_kempeitai_perk_penalty(trust)
+                    player_flags.append("kempeitai_perk_applied")
+
+    if faction in FACTION_PERKS and was_at_connected:
+        new_score = get_role_trust(trust, faction)
+        if new_score < TRUST_TIER_CONNECTED:
+            perk = FACTION_PERKS[faction]
+            notifications.append(f"perk_lost:{faction}:{perk['name']}")
+
+    return (actual, notifications)
+
+
+def apply_trust_delta(
+    player_trust: TrustMap,
+    rule: TrustRule,
+    dynamic_vars: Optional[Dict[str, str]] = None,
+    last_trust_interaction: Optional[Dict[str, int]] = None,
+    current_day: Optional[int] = None,
+    player_flags: Optional[List[str]] = None,
+) -> Tuple[Dict[str, int], List[str]]:
+    changed: Dict[str, int] = {}
+    all_notifications: List[str] = []
+    dynamic_vars = dynamic_vars or {}
+    for key, delta in rule.deltas.items():
+        if "{" in key:
+            resolved_key = key.format(**dynamic_vars)
+        else:
+            resolved_key = key
+        actual, notifications = change_trust(
+            player_trust,
+            resolved_key,
+            int(delta),
+            last_trust_interaction=last_trust_interaction,
+            current_day=current_day,
+            player_flags=player_flags,
+        )
+        changed[resolved_key] = actual
+        all_notifications.extend(notifications)
+    return (changed, all_notifications)
+
+
+def summarize_faction_trust(trust: TrustMap) -> Dict[str, int]:
+    return {
+        faction: get_role_trust(trust, faction)
+        for faction in trust
+    }
