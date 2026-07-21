@@ -36,10 +36,10 @@ HUNGER_HEALTH_DAMAGE = 1
 LOW_HUNGER_THRESHOLD = 20
 HUNGER_WARNING_THRESHOLD = 30
 
-HUNGER_TIER_SATISFIED = 71
+HUNGER_TIER_SATISFIED = 81
 HUNGER_TIER_PECKISH = 51
-HUNGER_TIER_HUNGRY = 31
-HUNGER_TIER_FAMISHED = 11
+HUNGER_TIER_HUNGRY = 21
+HUNGER_TIER_FAMISHED = 1
 HUNGER_TIER_STARVING = 0
 
 INFLUENCE_THRESHOLD = 80
@@ -51,6 +51,7 @@ EVENTS_PATH = "server/data/events.yaml"
 TRUST_RULES_PATH = "server/data/trust_rules.yaml"
 DISGUISES_PATH = "server/data/disguises.yaml"
 STORYLETS_PATH = "server/data/storylets.yaml"
+NARRATIVE_CHAINS_PATH = "server/data/narrative_chains.yaml"
 OBITUARY_PATH = "server/data/obituary_templates.yaml"
 BACKGROUNDS_PATH = "server/data/character_backgrounds.yaml"
 MISSIONS_PATH = "server/data/missions.yaml"
@@ -86,9 +87,6 @@ STEALTH_DAMAGE_BONUS = 10
 
 TRUST_DECAY_PER_DAY = 2
 
-RICE_BOWL_COST = 2
-BAOZI_COST = 1
-TEA_COST = 1
 PICKPOCKET_BASE = 5
 MISSION_FABI_RANGE = (10, 50)
 NURSE_COST = 20
@@ -143,6 +141,8 @@ BLACK_MARKET_MULTIPLIER = 1.3
 
 RICKSHAW_NPC_IDS = ["liu_wei", "rickshaw_ah_fook"]
 
+STORYLET_QUEUE_MAX = 2
+
 AUTO_SAVE_WORLD_INTERVAL = 600
 AUTO_SAVE_PLYER_INTERVAL = 300
 
@@ -163,3 +163,11 @@ CORPSE_DECAY_DAYS = 1
 
 TENSION_HIGH_THRESHOLD = 120       
 TENSION_HIGH_PATROL_BONUS = 1.5     
+
+YELL_THREAT_KEYWORDS = frozenset({"kill", "die", "destroy", "curse", "murder", "death"})
+YELL_RESISTANCE_KEYWORDS = frozenset({"resistance", "freedom", "liberation", "revolution", "rebel", " ccp", "communist"})
+YELL_WARNING_KEYWORDS = frozenset({"watch out", "danger", "run", "hide", "police", "patrol", "soldier", "kempeitai"})
+
+RICE_BOWL_COST = 5
+BAOZI_COST = 8
+TEA_COST = 3
