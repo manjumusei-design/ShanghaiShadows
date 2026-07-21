@@ -65,6 +65,14 @@ def load_storylets(path: str) -> Dict[str, Storylet]:
         data = yaml.safe_load(f) or {}
     storylets: Dict[str, Storylet] = {}
     for row in data.get("storylets", []):
+        neglect_data = row.get("neglect")
+        neglect = None
+        if neglect_data:
+            neglect = NeglectOutcome(
+                narrative=neglect_data.get("narrative", "The moment passes."),
+                effects=neglect_data.get("effects", {})
+            )
+
         storylets[row["id"]] = Storylet(
             id=row["id"],
             location=row.get("location", []),
@@ -82,8 +90,30 @@ def load_storylets(path: str) -> Dict[str, Storylet]:
             ],
             scope=row.get("scope", "player"),
             resolution=row.get("resolution", "first_choice:"),
+            speaker_npc=row.get("speaker_npc", ""),
+            listener_npc=row.get("listener_npc", ""),
+            is_overheard=row.get("is_overheard", False),
+            timer_seconds=row.get("timer_seconds", 120),
+            blocking=row.get("blocking", False),
+            neglect=neglect,
         )
     return storylets
+
+
+def load_narrative_chains(path: str) -> Dict[str, NarrativeChain]:
+    with open(path, "r", encoding="utf-8") as f:
+        data = yaml.safe_load(f) or {}
+    chains: Dict[str, NarrativeChain] = {}
+    for row in data.get("narrative_chains", []):
+        chains[row["id"]] = NarrativeChain(
+            id=row["id"],
+            trigger=row.get("trigger", "talk_to"),
+            npc=row.get("npc", ""),
+            precondition=row.get("precondition", {}),
+            effects=row.get("effects", {}),
+            feedback=row.get("feedback", ""),
+        )
+    return chains
 
 
 class StoryletManager:
