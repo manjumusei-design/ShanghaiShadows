@@ -2,8 +2,17 @@ from dataclasses import dataclass, field
 from typing import Dict, List, Optional
 import random
 import time 
-
 import yaml
+
+
+@dataclass 
+class NarrativeChain:
+    id: str
+    trigger: str
+    npc: str
+    precondition: Dict[str, object] = field(default_factory=dict)
+    effects: Dict[str, object] = field(default_factory=dict)
+    feed: str = "" 
 
 
 @dataclass
@@ -11,8 +20,14 @@ class StoryletOption:
     text: str
     effects: Dict[str, object] =  field(default_factory=dict)
     followup_storylet: str = ""
+    disabled: bool = False
 
 
+@dataclass
+class NeglectOutcome:
+    narrative: str
+    effects: Dict[str, object] = field(default_factory=dict)
+    
 @dataclass
 class Storylet:
     id: str
