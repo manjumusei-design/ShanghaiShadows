@@ -27,7 +27,8 @@ class StoryletOption:
 class NeglectOutcome:
     narrative: str
     effects: Dict[str, object] = field(default_factory=dict)
-    
+
+
 @dataclass
 class Storylet:
     id: str
@@ -39,6 +40,12 @@ class Storylet:
     options: List[StoryletOption]
     scope: str = "player"
     resolution: str= "first_choice"
+    speaker_npc: str = ""
+    listener_npc: str = ""
+    is_overheard: bool = False
+    timer_seconds: int = 120
+    blocking: bool = False
+    neglect: Optional[NeglectOutcome] = None
 
 
 @dataclass
@@ -49,6 +56,8 @@ class ActiveStorylet:
     triggered_at: float = field(default_factory=time.time)
     resolved: bool = False
     room_id: str = ""
+    timer_duration: int = 120
+    timer_started_at: float = field(default_factory=time.time)
 
 
 def load_storylets(path: str) -> Dict[str, Storylet]:
