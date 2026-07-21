@@ -117,9 +117,9 @@ def load_narrative_chains(path: str) -> Dict[str, NarrativeChain]:
 
 
 class StoryletManager:
-    def __init__(self, storylets: Dict[str, Storylet]):
+    def __init__(self, storylets: Dict[str, Storylet], narrative_chains: Dict[str, NarrativeChain] = None):
         self.storylets = storylets
-
+        self.narrative_chains = narrative_chains or {}
     def _eligible(self, storylet: Storylet, state) -> bool:
         if storylet.scope == "player" and player.active_storylet:
             return False
