@@ -104,3 +104,30 @@ class NpcMemorySystem:
             memory.relationship_type = "friendly"
         elif memory.trust_mod <= -10:
             memory.relationship_type = "hostile"
+
+    def get_player_specific_dialogue(self, npc, player_name: str, bucket: str,
+                                     current_day: int) -> List[str]:
+        memory = npc.player_memories.get(player_name)
+
+        if not memory:
+            return npc.dialogue.get(bucket, [])
+        
+        recent = [i for i in memory.interactions if current_day - i['day'] < 7]
+
+        contextual_lines = []
+        for interaction in recent[-3:]:
+            if interaction['type'] == 'helped':
+                what = interaction['details'].get('what', 'something')
+                contextual_lines.append(f"You helped me with {what} recently. I won't forget.")
+            elif interaction['type'] == 'betrayed':
+                contextual_lines.append("After what you did, I don't trust you.")
+            elif interaction['type'] == 'saved_life':
+                contextual_lines.append("You saved my life. I owe you everything.")
+            elif interaction['type'] == 'gave_gift':
+                gift = interaction['details'].get('item', 'something')
+                contextual_lines.append(f"The {gift} you gave me was thoughtful.")
+
+        bucket_for_relationship = self._get_bucket_for_relationship(memory.relationship_type, bucket)
+        base_dialogue = npc.dialogue.get(bucket_for_relationship, npc.dialogue.get(bucket, []))
+
+        return contextual_lines + base_dialogue
