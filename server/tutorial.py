@@ -143,3 +143,39 @@ _ROOM_TEA_HOUSE = [
      "msg": "[Tutorial] Time to move. Mrs. Lin nods toward the eastern door. 'Chen will be waiting. Do not keep him long,  the patrols change soon.' Type: GO EAST to walk to the Back Alley. Or use GO <Direction> to navigate. For longer journeys, use MAP to bring up the interactive overview — arrow keys to highlight a room, Enter to travel there automatically.",
      "blocked_exits": {"refugee_entry_tea_house": {"east": {"stage": 6, "message": 'A Japanese soldier blocks the east gate. "Pass required to go through here."'}}}},
 ]
+
+_ROOM_BACK_ALLEY = [
+    {"room_id": "refugee_entry_back_alley"},
+    # 2.1 TALK TO COMRADE CHEN
+    {"verb": "talk to", "target": "comrade chen", "hint_level": "explicit",
+     "cmd_hint": "HIDE",
+     "msg": "[Tutorial] Comrade Chen watches from the shadows, his eyes scanning the alley. He looks like a man with a lot to say. The back alley stinks of damp brick and old fish. A pipe drips somewhere above. Type: TALK TO COMRADE CHEN — he has information about the patrol routes and a job that needs doing.",
+     "blocked_exits": {"refugee_entry_back_alley": {"east": {"stage": 7, "message": "A locked gate blocks the eastern passage. Complete the current objective first."}, "west": {"stage": 7, "message": "A locked door blocks your return. You must move forward."}}}, "journal_entry": "Comrade Chen is a CCP agent. He warned me about the patrols and told me to keep my head down."},
+
+    # 2.2  HIDE
+    {"verb": "hide", "hint_level": "explicit",
+     "cmd_hint": "SEARCH LOOSE BRICK",
+     "msg": "[Tutorial] Kempeitai patrol approaching! Chen hisses and gestures to the shadows. Type: HIDE to conceal yourself before they spot you. When hidden, you become invisible to patrols and NPCs in the room. You have about 10 seconds to hide once a patrol is announced, if you fail, they will spot you, raise your wanted level, and potentially arrest or attack. Being spotted also erodes trust with factions who value discretion. Rain and fog boost your hiding ability. Summer heat makes it harder. For the sake of the tutorial, you will have unlimited time to hide."},
+
+    # 2.3 SEARCH (teaching the SEARCH command where Chen hints at where to look)
+    {"verb": "search", "target": "loose brick", "hint_level": "explicit",
+     "cmd_hint": "TAKE A TARNISHED BRASS KEY",
+     "journal_entry": "SEARCH <detail> finds hidden items, exits, and dead drops. Details like loose brick, chalk mark, hollow statue, or lattice often hide secrets. I found a brass key and a note behind a loose brick.",
+     "msg": "[Tutorial] The patrol passes. The alley falls silent. Chen nods at a loose brick in the wall that looks ever so slightly darker than the others with the mortar crumbled. 'Check it,' he whispers. Type: SEARCH LOOSE BRICK to find what is hidden there. SEARCH requires a specific detail such as something in the room description that hints at a hiding spot, usually told by an NPC. Loose bricks, chalk marks, hollow statues, lattice screens, floorboards... anything described as odd or worn may conceal items, dead drops from other players, or possible secret passages."},
+
+    #2.4 TAKE BRASS KEY (After search reveals the items then the items must be taken to proceed)
+    {"verb": "take", "target": "tarnished brass key", "alt_target": "refugee_brass_key", "hint_level": "explicit",
+     "cmd_hint": "TAKE A CRUMPLED NOTE",
+     "msg": "[Tutorial] Behind the brick you find a small cavity. Inside: a tarnished brass key, heavy and old, and something else. Type: TAKE A TARNISHED BRASS KEY to pick it up. Items found via SEARCH appear in the room and you should TAKE them to add them to your inventory. Loot everything, you never know what choices the items will bring."},
+
+    # 2.5 TAKE NOTE
+    {"verb": "take", "target": "crumpled note", "alt_target": "refugee_folded_note", "hint_level": "explicit",
+     "cmd_hint": "EXAMINE A CRUMPLED NOTE",
+     "msg": "[Tutorial] A crumpled note lies beside the key, the paper yellowed and soft at the folds. Type: TAKE A CRUMPLED NOTE to pick it up."},
+
+    # 2.6 EXAMINE NOTE
+    {"verb": "examine", "target": "crumpled note", "hint_level": "explicit",
+     "cmd_hint": "ASK COMRADE CHEN ABOUT LETTER",
+     "msg": "[Tutorial] You have both items. The note is covered in cramped handwriting that faintly reads a message in code. Type: EXAMINE A CRUMPLED NOTE to read it closely. EXAMINE <ITEM> reveals hidden details, secret writing, or properties you would miss at a glance. A letter may have a hidden message between the lines. A watch may have a false back. A uniform may have a label that tells you a lot more than the cloth does."},
+
+     
