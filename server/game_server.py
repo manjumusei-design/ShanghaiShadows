@@ -117,32 +117,43 @@ class GameServer:
         )
 
     async def tick_loop(self):
+        import traceback as _tb
         while True:
-            await asyncio.sleep(1)
-            await self.clock.tick()
+            try:
+                await asyncio.sleep(1)
+                await self.clock.tick()
 
-            for session in list(self.session_manager.sessions.values()):
-                session.seconds_since_autosave += 1
-                if session.seconds_since_autosave >= 300:
-                    save_player(session.player)
-                    session.seconds_since_autosave = 0
+                for session in list(self.session_manager.sessions.values()):
+                    session.seconds_since_autosave += 1
+                    if session.seconds_since_autosave >= 300:
+                        save_player(session.player)
+                        session.seconds_since_autosave = 0
 
-                session.seconds_since_state_broadcast += 1
-                if session.seconds_since_state_broadcast >= STATE_BROADCAST_INTERVAL:
-                    from .commands import CommandContext
-                    ctx = CommandContext(
-                        session=session,
-                        shared=self.shared,
-                        session_manager=self.session_manager,
-                        disguises=self.disguises,
-                        stealth=self.stealth,
-                        storylet_manager=self.storylet_manager,
-                        room=self.shared.world.get_room(session.player.current_room),
-                    )
-                    await broadcast_state(ctx)
-                    session.seconds_since_state_broadcast = 0
+                    session.seconds_since_state_broadcast += 1
+                    if session.seconds_since_state_broadcast >= STATE_BROADCAST_INTERVAL:
+                        from .commands import CommandContext
+                        ctx = CommandContext(
+                            session=session,
+                            shared=self.shared,
+                            session_manager=self.session_manager,
+                            disguises=self.disguises,
+                            stealth=self.stealth,
+                            storylet_manager=self.storylet_manager,
+                            room=self.shared.world.get_room(session.player.current_room),
+                        )
+                        await broadcast_state(ctx)
+                        session.seconds_since_stage_broadcast = 0
 
-            self._world_seconds_since_save += 1
-            if self._world_seconds_since_save >= 1800:
+                self._world_seconds_since_save += 1
+                if self._world_seconds_since_save >= 1800:
+                    save_world_state(self.shared)
+                    self._world_seconds_since_save = 0
+            except Exception:
+                logger.critical(f"tick_loop crashed: {_tb.format_exc()}")
+                for session in list(self.session_manager.sessions.values()):
+                    try:
+                        save_player(session.player)
+                    except Exception:
+                        pass
                 save_world_state(self.shared)
-                self._world_seconds_since_save = 0
+                raise
