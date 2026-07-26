@@ -109,11 +109,18 @@ def propagate_sound(
     weather: str = "clear",
     game_time=None,
     weapon=None,
+    range_multiplier: float = 1.0,
 ) -> List[Tuple[str, int]]:
-    if weapon and "silencer" in weapon.mods:
-        return []
+    if weapon:
+        weapon_type = getattr(weapon, 'weapon_type', '') or getattr(weapon, 'type', '')
+        if weapon_type == 'melee':
+            return []
+        if "silencer" in weapon.mods:
+            return []
     
     effective_max = max_distance
+    if range_multiplier != 1.0:
+        effective_max = max(1, int(max_distance * range_multiplier))
     if weather == "rain":
         effective_max = max(1, int(max_distance * 0.6))
     if game_time:
