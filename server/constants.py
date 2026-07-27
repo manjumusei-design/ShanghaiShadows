@@ -1,8 +1,8 @@
 from enum import Enum
-class Messagetype(Enum):
+class MessageType(Enum):
     TUTORIAL = "tutorial"
-    NPC_AMBIENT = "npc_ambient"
     NPC_DIALOGUE = "npc_dialogue"
+    NPC_AMBIENT = "npc_ambient"
     ROOM_DESCRIPTION = "room_description"
     ROOM_TITLE = "room_title"
     ROOM_TAGS = "room_tags"
@@ -61,14 +61,14 @@ RUMOR_WINDOW = 20
 RUMOR_STEP = 3
 AMBIENT_EVENTS_PATH = "server/data/ambient_events.yaml"
 
-DISARM_CHANCE_CAP = 80
+DISARM_CHANCE_CAP = 80 
 STEALTH_KILL_BONUS = 25
 
 HUNGER_DECAY_PER_HOUR = 3
 HEALTH_DECAY_HUNGRY = 2
 MORALE_DECAY_PER_HOUR = 1
 MORALE_WARNING_THRESHOLD = 40
-MORALE_LOW_THRESHOLD = 30 
+MORALE_LOW_THRESHOLD = 30
 
 STAT_GAIN_COURAGE_COMBAT = 1
 STAT_GAIN_STEALTH_HIDE = 1
@@ -90,7 +90,7 @@ WEATHER_STORM = "storm"
 
 WEATHER_STEALTH_MODIFIER = {"fog": 10, "snow": 5, "storm": 5, "rain": 0, "clear": 0}
 WEATHER_PERCEPTION_MODIFIER = {"fog": -10, "snow": 0, "storm": 0, "rain": 0, "clear": 0}
-WEATHER_SOUND_RANGE_MODIFIER = {"fog": 0.7, "snow": 1.0, "storm": 1.5, "rain": 1.0, "clear": 1.0}
+WEATHER_SOUND_RANGE_MODIFIER = {"fog": 0.7, "snow": 1.0, "storm": 2.0, "rain": 1.0, "clear": 1.0}
 WEATHER_HUNGER_MULTIPLIER = {"snow": 1.3, "rain": 1.0, "storm": 1.0, "fog": 1.0, "clear": 1.0}
 
 WEAPON_TYPE_BASE_DAMAGE = {"firearm": 40, "stealth": 25, "melee": 20}
@@ -106,9 +106,9 @@ MISSION_FABI_RANGE = (10, 50)
 
 CURFEW_START_HOUR = 20
 CURFEW_END_HOUR = 6
-CURFEW_IMMUNITY_DURATION_MINUTES = 30
+CURFEW_IMMUNITY_DURATION_MINUTES = 30  
 WANTED_LEVEL_MAX = 3
-WANTED_DECAY_INTERVAL_DAYS = 3
+WANTED_DECAY_INTERVAL_DAYS = 3  
 
 UNITY_RANGE = 15
 
@@ -144,28 +144,29 @@ def get_season(game_day: int) -> str:
     for season, months in SEASON_MONTHS.items():
         if month in months:
             return season
-    return "spring"
+    return "spring" 
 
 FOOD_RESTOCK_INTERVAL = 360
 BLACK_MARKET_LISTING_EXPIRE_DAYS = 7
-BLACK_MARKET_DETECTION_CHANCE = 30
-BLACK_MARKET_MULTIPLIER = 1.3
+BLACK_MARKET_DETECTION_CHANCE = 30  
+BLACK_MARKET_MULTIPLIER = 1.3 
 
 RICKSHAW_NPC_IDS = ["liu_wei", "rickshaw_ah_fook"]
 
 STORYLET_QUEUE_MAX = 2
 
 AUTO_SAVE_WORLD_INTERVAL = 600
-AUTO_SAVE_PLYER_INTERVAL = 300
+AUTO_SAVE_PLAYER_INTERVAL = 300
 
-FLAGS_HIDDEN_FROM_STATUS = frozenset({"tutorial_complete", "tutorial_skip"})
+FLAGS_HIDDEN_FROM_STATUS = frozenset({"tutorial_complete", "tutorial_skip", "tutorial_skip_pending"})
 
 MAX_INVENTORY = 12
 
-PATROL_INTERVAL_KEMPEITAI = 10      
-PATROL_INTERVAL_OCCUPIED = 15     
-PATROL_INTERVAL_CCP_GMD = 20      
-PATROL_INTERVAL_CIVILIAN = 30       
+PATROL_SPAWN_CHANCE = 0.3
+PATROL_INTERVAL_KEMPEITAI = 10
+PATROL_INTERVAL_OCCUPIED = 15
+PATROL_INTERVAL_CCP_GMD = 20
+PATROL_INTERVAL_CIVILIAN = 30
 PATROL_INTERVAL_INTERNATIONAL = 25  
 
 NPC_INTERACTIONS_PATH = "server/data/npc_interactions.yaml"
@@ -175,11 +176,11 @@ DISTRESS_WANTED_INCREASE_CHANCE = 10
 
 
 CRIME_SCENE_PATROL_MODIFIER = 2.0
-CRIME_SCENE_DURATION_DAYS = 2     
-CORPSE_DECAY_DAYS = 1              
+CRIME_SCENE_DURATION_DAYS = 2
+CORPSE_DECAY_DAYS = 1
 
-TENSION_HIGH_THRESHOLD = 120       
-TENSION_HIGH_PATROL_BONUS = 1.5     
+TENSION_HIGH_THRESHOLD = 120
+TENSION_HIGH_PATROL_BONUS = 1.5
 
 YELL_THREAT_KEYWORDS = frozenset({"kill", "die", "destroy", "curse", "murder", "death"})
 YELL_RESISTANCE_KEYWORDS = frozenset({"resistance", "freedom", "liberation", "revolution", "rebel", " ccp", "communist"})
