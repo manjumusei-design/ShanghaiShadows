@@ -1,6 +1,7 @@
 from enum import Enum
 class MessageType(Enum):
     TUTORIAL = "tutorial"
+    TUTORIAL_NPC = "tutorial_npc"
     NPC_DIALOGUE = "npc_dialogue"
     NPC_AMBIENT = "npc_ambient"
     ROOM_DESCRIPTION = "room_description"
@@ -90,8 +91,9 @@ WEATHER_STORM = "storm"
 
 WEATHER_STEALTH_MODIFIER = {"fog": 10, "snow": 5, "storm": 5, "rain": 0, "clear": 0}
 WEATHER_PERCEPTION_MODIFIER = {"fog": -10, "snow": 0, "storm": 0, "rain": 0, "clear": 0}
-WEATHER_SOUND_RANGE_MODIFIER = {"fog": 0.7, "snow": 1.0, "storm": 2.0, "rain": 1.0, "clear": 1.0}
+WEATHER_SOUND_RANGE_MODIFIER = {"fog": 0.7, "snow": 1.0, "storm": 2.0, "rain": 0.6, "clear": 1.0}
 WEATHER_HUNGER_MULTIPLIER = {"snow": 1.3, "rain": 1.0, "storm": 1.0, "fog": 1.0, "clear": 1.0}
+WEATHER_MORALE_HOURLY = {"snow": -1, "rain": 0, "storm": -2, "fog": -1, "clear": 0}
 
 WEAPON_TYPE_BASE_DAMAGE = {"firearm": 40, "stealth": 25, "melee": 20}
 STEALTH_DAMAGE_BONUS = 10
@@ -116,7 +118,7 @@ DEGRADE_RAIN_RATE = 1
 
 SUSPICION_DECAY_PER_TICK = 2
 SUSPICION_THRESHOLD_INVESTIGATE = 50
-HIDDEN_DECAY_CHANCE = 0
+HIDDEN_DECAY_CHANCE = 0.1
 PATROL_PERCEPTION_BASE = 35
 SUSPICION_FAILED_STEALTH = 20
 SUSPICION_INVESTIGATE_RELIEF = 10
