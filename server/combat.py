@@ -3,6 +3,8 @@ from dataclasses import dataclass, field
 from typing import List, Optional, TYPE_CHECKING
 
 from .constants import DISARM_CHANCE_CAP, MORALE_LOW_THRESHOLD, MORALE_PENALTY_MAX, STEALTH_KILL_BONUS, WEAPON_TYPE_BASE_DAMAGE, STEALTH_DAMAGE_BONUS
+from .formatting import format_bold
+print("[DEBUG] combat.py: imported format_bold from formatting")
 
 if TYPE_CHECKING:
     from .world import Item
@@ -68,6 +70,9 @@ _FAIL_LINES = [
     "You miss, and a blow comes back. You take {dmg} damage.",
 ]
 
+COMBAT_DAMAGE_TEMPLATE = "You take {dmg} damage."
+COMBAT_DAMAGE_BOLD_TEMPLATE = "You take <b>{dmg}</b> damage."
+
 
 def resolve_attack(
     attacker_courage: int,
@@ -77,10 +82,31 @@ def resolve_attack(
     attacker_hidden: bool = False,
     attacker_morale: int = 100,
     disguise_bonus: int = 0,
+    courage_multiplier: float = 1.0,
 ) -> CombatResult:
     result = CombatResult()
 
+    if attacker_weapon and hasattr(attacker_weapon, 'durability'):
+        weapon_type = getattr(attacker_weapon, 'weapon_type', '') or ''
+        if weapon_type == 'firearm':
+            max_durability = max(1, getattr(attacker_weapon, 'max_durability', 1))
+            wear_ratio = max(0.0, min(1.0, attacker_weapon.durability / max_durability))
+            jam_chance = 0.5 if attacker_weapon.durability <= 0 else 0.02 + (1.0 - wear_ratio) * 0.28
+            if random.random() < jam_chance:
+                backfire = random.random() < 0.05
+                dmg = random.randint(5, 10) if backfire else 0
+                msg = "Your weapon jams. The firing pin clicks on an empty chamber."
+                if backfire:
+                    msg = "The weapon backfires! Hot metal burns your hand."
+                return CombatResult(won=False, instant_kill=False, silent=False, attacker_damaged=dmg,breakdown=f"Your {attacker_weapon.name} jams! (broken)", disarmed=False)
+        elif attacker_weapon.durability <= 0:
+            if random.random() < 0.20:
+                return CombatResult(won=False, instant_kill=False, silent=False,
+                                    breakdown=f"Your {attacker_weapon.name} fails! (broken)", disarmed=False)
+
     effective_courage = attacker_courage
+    if courage_multiplier != 1.0:
+        effective_courage = int(attacker_courage * courage_multiplier)
     weapon_type = attacker_weapon.weapon_type if attacker_weapon else ""
     parts = [f"Courage ({attacker_courage})"]
 
@@ -97,7 +123,10 @@ def resolve_attack(
     if attacker_hidden:
         add("stealth", STEALTH_KILL_BONUS)
         result.silent = weapon_type == "stealth"
-    defence = target_armour.defense_value if target_armour else 0
+    if target_armour and hasattr(target_armour, 'durability') and target_armour.durability <= 0:
+        defence = 0
+    else:
+        defence = target_armour.defense_value if target_armour else 0
     if defence:
         add("armour", -defence)
     morale_pen = min(MORALE_PENALTY_MAX, MORALE_LOW_THRESHOLD - attacker_morale) if attacker_morale < MORALE_LOW_THRESHOLD else 0
@@ -105,6 +134,8 @@ def resolve_attack(
         add("shaken", -morale_pen)
     if disguise_bonus:
         add("disguise", disguise_bonus)
+    if attacker_weapon and hasattr(attacker_weapon, 'durability') and attacker_weapon.durability <= 0:
+        add("broken_weapon", -10)
     result.breakdown = " ".join(parts) + f" = {effective_courage} vs authority ({target_authority})."
 
     if effective_courage >= target_authority:
@@ -116,7 +147,7 @@ def resolve_attack(
         result.target_damage = max(1, base + random.randint(0, 10) - defence)
         if result.silent:
             result.messages.append(random.choice(_SILENT_KILL_LINES))
-            result.messages.append("[Silent kill — no alarm raised.]")
+            result.messages.append("[Silent kill - no alarms were raised.]")
         else:
             result.messages.append(random.choice(_HIT_LINES))
     else:
@@ -127,7 +158,9 @@ def resolve_attack(
             result.disarmed = True
             result.messages.append(random.choice(_DISARM_LINES))
         else:
-            result.messages.append(random.choice(_FAIL_LINES).format(dmg=result.attacker_damaged))
+            dmg_formatted = format_bold(str(result.attacker_damaged))
+            print(f"DEBUG combat.resolve_attack: formatted damage '{result.attacker_damaged}' -> '{dmg_formatted}'")
+            result.messages.append(random.choice(_FAIL_LINES).format(dmg=dmg_formatted))
 
     return result
 
@@ -136,7 +169,10 @@ def degrade_weapon(weapon: "Item", attack_succeeded: bool) -> tuple:
     if weapon.durability == -1:
         return False, ""
     old_durability = weapon.durability
-    weapon.durability -= 5 if attack_succeeded else 2
+    if "stock" in weapon.mods:
+        weapon.durability -= random.randint(1, 2)
+    else:
+        weapon.durability -= 5 if attack_succeeded else 2
 
     if weapon.durability <= 0:
         weapon.durability = 0
