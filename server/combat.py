@@ -186,23 +186,16 @@ def degrade_weapon(weapon: "Item", attack_succeeded: bool) -> tuple:
     
     return False, ""
 
-def degrade_armour(armour: "Item") -> bool:
-    if armour.durability == -1:
-        return False
-    armour.durability -= 3
-    if armour.durability <= 0:
-        armour.durability = 0
-        return True
-    return False
-
 def degrade_armour(armour: "Item") -> tuple:
     if armour.durability == -1:
         return False, ""
+    
     armour.durability -= 3
-
+    
     if armour.durability <= 0:
         armour.durability = 0
         return True, f"Your {strip_article(armour.name)} has been destroyed!"
     pct = int((armour.durability / armour.max_durability) * 100) if armour.max_durability > 0 else 0
     if pct <= 20 and pct > 0:
-        return False, ""
+        return False, f"Your {strip_article(armour.name)} is nearly destroyed ({pct}% durability)."
+    return False, ""
