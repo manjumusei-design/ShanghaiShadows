@@ -137,7 +137,7 @@ class EconomySystem:
     def get_item_price(self, item_base_cost: int, item_id: str, region: str,
                        npc_faction: str, inflation_rate: float = 1.0,
                        season_multiplier: float = 1.0, trust_score: int = 50,
-                       player_morale: int = 50) -> int:
+                       player_morale: int = 50, item_rarity: str = "common") -> int:
         if item_base_cost <= 0:
             return 0
 
@@ -152,7 +152,7 @@ class EconomySystem:
             trust_tier_mod = 1.5
         elif trust_score < 50:
             trust_tier_mod = 1.0
-        elif trust_score < 70:
+        elif trust_score < 80:
             trust_tier_mod = 0.9
         else:
             trust_tier_mod = 0.8
@@ -165,9 +165,16 @@ class EconomySystem:
         condition = self.market_conditions.get(key)
         condition_price_mod = condition.price_modifier if condition else 1.0
 
+        rarity_multiplier = {
+            "common": 1.0,
+            "uncommon": 1.05,
+            "rare": 1.10,
+            "legendary": 1.20,
+        }.get(item_rarity.lower(), 1.0)
+
         final_price = int(item_base_cost * regional_mod * faction_mod *
                          scarcity_mod * condition_price_mod * inflation_rate *
-                         season_multiplier * trust_tier_mod * morale_mod)
+                         season_multiplier * trust_tier_mod * morale_mod * rarity_multiplier)
 
         return max(1, final_price)
 
@@ -176,7 +183,7 @@ class EconomySystem:
             return "outsider"
         elif trust_score < 50:
             return "neutral"
-        elif trust_score < 70:
+        elif trust_score < 80:
             return "trusted"
         else:
             return "connected"
