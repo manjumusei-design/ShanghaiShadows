@@ -95,6 +95,9 @@ def load_storylets(path: str) -> Dict[str, Storylet]:
                     text=opt["text"],
                     effects=opt.get("effects", {}),
                     followup_storylet=opt.get("followup_storylet", ""),
+                    disabled=opt.get("disabled", False),
+                    disabled_reason=opt.get("disabled_reason", ""),
+                    response_msg=opt.get("response_msg", "")
                 )
                 for opt in row.get("options", [])
             ],
@@ -104,6 +107,7 @@ def load_storylets(path: str) -> Dict[str, Storylet]:
             listener_npc=row.get("listener_npc", ""),
             is_overheard=row.get("is_overheard", False),
             timer_seconds=row.get("timer_seconds", 120),
+            turns=list(row.get("turns", [])),
             blocking=row.get("blocking", False),
             neglect=neglect,
         )
@@ -126,29 +130,44 @@ def load_narrative_chains(path: str) -> Dict[str, NarrativeChain]:
     return chains
 
 
+
 class StoryletManager:
     def __init__(self, storylets: Dict[str, Storylet], narrative_chains: Dict[str, NarrativeChain] = None):
         self.storylets = storylets
         self.narrative_chains = narrative_chains or {}
-    def _eligible(self, storylet: Storylet, state) -> bool:
-        if storylet.scope == "player" and player.active_storylet:
+
+    def _eligible(self, storylet: Storylet, player, shared) -> bool:
+        from .constants import STORYLET_QUEUE_MAX
+        if storylet.scope == "player" and len(player.active_storylets) >= STORYLET_QUEUE_MAX:
             return False
-        if storylet.id in state.storylet_history:
+        if storylet.id in player.storylet_history:
             return False
-        room = state.world.get_room(state.player.current_room)
+        
+        if getattr(player, 'in_tutorial', False) and storylet.id != "tutorial_choice":
+            return False
+        
+        room = shared.world.get_room(player.current_room)
         if not room:
             return False
         if storylet.location and room.id not in storylet.location:
             return False
         if storylet.location_tags and not set(storylet.location_tags).intersection(room.tags):
             return False
-        
+
+        if storylet.is_overheard:
+            if storylet.speaker_npc and storylet.speaker_npc not in room.npcs:
+                return False
+            if storylet.listener_npc and storylet.listener_npc not in room.npcs:
+                return False
+        elif storylet.speaker_npc and storylet.speaker_npc not in room.npcs:
+            return False
+
         if storylet.scope == "room":
             if room.id in shared.active_room_storylets:
                 existing = shared.active_room_storylets[room.id]
                 if not existing.get("resolved", True):
                     return False
-        
+
         pre = storylet.preconditions
         for flag in pre.get("flags_required", []):
             if flag not in player.flags:
@@ -187,21 +206,4 @@ class StoryletManager:
         random.shuffle(eligible)
         for storylet in eligible:
             if random.random() < storylet.trigger_chance:
-                if story.scope == "room":
-                    room = shared.world.get_room(player.current_room)
-                    if room:
-                        shared.active_room_storylets[room.id] = {
-                            "storylet_id": storylet.id,
-                            "triggered_at": time.time(),
-                            "resolved": False,
-                            "options": storylet.options,
-                            "narrative": storylet.narrative,
-                        }
-                return ActiveStorylet(
-                    storylet_id=storylet.id,
-                    narrative=storylet.narrative,
-                    options=storylet.options,
-                    room_id=player.current_room if storylet.scope == "room" else "",
-                )
-        return None
-    
+                narrative = storylet.narrative
