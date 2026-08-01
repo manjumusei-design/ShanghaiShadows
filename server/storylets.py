@@ -21,6 +21,8 @@ class StoryletOption:
     effects: Dict[str, object] =  field(default_factory=dict)
     followup_storylet: str = ""
     disabled: bool = False
+    disabled_reason: str = ""
+    response_msg: str = ""
 
 
 @dataclass
@@ -43,6 +45,7 @@ class Storylet:
     speaker_npc: str = ""
     listener_npc: str = ""
     is_overheard: bool = False
+    turns: List[Dict[str, str]] = field(default_factory=list)
     timer_seconds: int = 120
     blocking: bool = False
     neglect: Optional[NeglectOutcome] = None
@@ -58,7 +61,14 @@ class ActiveStorylet:
     room_id: str = ""
     timer_duration: int = 120
     timer_started_at: float = field(default_factory=time.time)
-
+    speaker_npc: str = ""
+    listener_npc: str = ""
+    turns: List[Dict[str, str]] = field(default_factory=list)
+    blocking: bool = False
+    scope: str = "player"
+    owner_username: str = ""
+    expires_at: float = 0.0
+    resolution_started: bool = False
 
 def load_storylets(path: str) -> Dict[str, Storylet]:
     with open(path, "r", encoding="utf-8") as f:
