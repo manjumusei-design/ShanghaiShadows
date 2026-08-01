@@ -296,3 +296,14 @@ class StoryletManager:
         
         return True
         return None
+
+
+def is_storylet_expired(active: ActiveStorylet) -> bool:
+    if active.resolved:
+        return False
+    if active.blocking:
+        return False
+    if active.timer_duration <= 0:
+        return False
+    expires_at = active.expires_at or active.timer_started_at + active.timer_duration
+    return time.time() >= expires_at
