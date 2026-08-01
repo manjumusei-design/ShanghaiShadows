@@ -207,3 +207,92 @@ class StoryletManager:
         for storylet in eligible:
             if random.random() < storylet.trigger_chance:
                 narrative = storylet.narrative
+                turns = list(storylet.turns)
+                if storylet.is_overheard and storylet.speaker_npc:
+                    speaker = shared.world.npcs.get(storylet.speaker_npc)
+                    listener = shared.world.npcs.get(storylet.listener_npc) if storylet.listener_npc else None
+                    speaker_name = speaker.name if speaker else storylet.speaker_npc
+                    listener_name = listener.name if listener else storylet.listener_npc
+                    if turns:
+                        turns = [
+                            {
+                                "speaker_npc": turn.get("speaker_npc", ""),
+                                "speaker": (shared.world.npcs.get(turn.get("speaker_npc", "")) or turn).name
+                                if shared.world.npcs.get(turn.get("speaker_npc", ""))
+                                else turn.get("speaker", turn.get("speaker_npc", "")),
+                                "text": turn.get("text", ""),
+                            }
+                            for turn in turns
+                        ]
+                    elif listener:
+                        listener_name = listener.name
+                        narrative = f'{speaker_name} says to {listener_name}, "{narrative}"'
+                    else:
+                        narrative = f'{speaker_name} says, "{narrative}"'
+
+                if storylet.scope == "room":
+                    room = shared.world.get_room(player.current_room)
+                    if room:
+                        shared.active_room_storylets[room.id] = {
+                            "storylet_id": storylet.id,
+                            "triggered_at": time.time(),
+                            "resolved": False,
+                            "options": storylet.options,
+                            "narrative": narrative,
+                            "turns": turns,
+                            "owner_username": player.username,
+                            "expires_at": time.time() + storylet.timer_seconds,
+                        }
+                timer_started_at = time.time()
+                active = ActiveStorylet(
+                    storylet_id=storylet.id,
+                    narrative=narrative,
+                    options=storylet.options,
+                    room_id=player.current_room,
+                    timer_duration=storylet.timer_seconds,
+                    timer_started_at=timer_started_at,
+                    speaker_npc=storylet.speaker_npc,
+                    listener_npc=storylet.listener_npc,
+                    turns=turns,
+                    blocking=storylet.blocking,
+                    scope=storylet.scope,
+                    owner_username=player.username,
+                    expires_at=timer_started_at + storylet.timer_seconds,
+                )
+                player.active_storylets.append(active)
+                return active
+
+    def check_narrative_chain(self, npc_id: str, player, shared) -> Optional[NarrativeChain]:
+        for chain in self.narrative_chains.values():
+            if chain.trigger != "talk_to":
+                continue
+            if chain.npc != npc_id:
+                continue
+            if self._check_chain_preconditions(chain, player, shared):
+                return chain
+        return None
+
+    def _check_chain_preconditions(self, chain: NarrativeChain, player, shared) -> bool:
+
+        pre = chain.precondition
+        trust_min = pre.get("trust_min", {})
+        for faction, min_val in trust_min.items():
+            from .trust import get_role_trust
+            if "." in faction:
+                faction_key, role = faction.split(".", 1)
+                current = get_role_trust(player.trust, faction_key, role)
+            else:
+                current = get_role_trust(player.trust, faction)
+            if current < min_val:
+                return False
+        
+        for flag in pre.get("flags_required", []):
+            if flag not in player.flags:
+                return False
+        
+        for flag in pre.get("flags_missing", []):
+            if flag in player.flags:
+                return False
+        
+        return True
+        return None
