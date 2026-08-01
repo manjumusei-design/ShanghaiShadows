@@ -52,7 +52,6 @@ KNOWN_VERBS = {
     "disguise as",
     "hide",
     "unhide",
-    "listen",
     "read",
     "use",
     "eat",
