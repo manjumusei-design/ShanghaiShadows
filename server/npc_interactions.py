@@ -178,6 +178,8 @@ class NpcInteractionManager:
     
     def check_preconditions(self, interaction: NpcInteraction, actor, target,
                            world_state) -> bool:
+        if interaction.districts and getattr(world_state, "district", "") not in interaction.districts:
+            return False
         precond = interaction.preconditions
         if not precond:
             return True
@@ -290,3 +292,7 @@ npc_interaction_manager = NpcInteractionManager()
 def load_npc_interactions(path: str = "server/data/npc_interactions.yaml") -> NpcInteractionManager:
     npc_interaction_manager.load_interactions(path)
     return npc_interaction_manager
+
+
+from .constants import NPC_INTERACTIONS_PATH
+load_npc_interactions(NPC_INTERACTIONS_PATH)
