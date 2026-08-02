@@ -5,6 +5,12 @@ import yaml
 from pathlib import Path
 
 
+def _optional_nonnegative_int(value: Any) -> Optional[int]:
+    if value is None:
+        return None
+    return max(0, int(value))
+
+
 @dataclass
 class InteractionEffects:
     relationship_change: int = 0
@@ -40,8 +46,23 @@ class NpcInteraction:
     effects: InteractionEffects
     actor_faction: List[str] = field(default_factory=list)
     target_faction: List[str] = field(default_factory=list)
+    districts: List[str] = field(default_factory=list)
     preconditions: Optional[InteractionPreconditions] = None
     weight: float = 1.0
+    consequence_class: str = "ambient"
+    consequence_category: str = ""
+    consequence_duration: int = 0
+    follow_up_key: Optional[str] = None
+    consequence_cooldown: Optional[int] = None
+    consequence_room_cap: Optional[int] = None
+    consequence_district_cap: Optional[int] = None
+    consequence_rumour: Optional[str] = None
+    consequence_room_manifestation: Optional[str] = None
+    consequence_ask_topic: Optional[str] = None
+    consequence_ask_response: Optional[str] = None
+    follow_up_delay: int = 30
+    consequence_visibility: str = "local"
+    follow_up_trust_ranges: Dict[str, List[int]] = field(default_factory=dict)
 
 
 class NpcInteractionManager:
@@ -102,6 +123,13 @@ class NpcInteractionManager:
                 requires_goal=precond_data.get("requires_goal"), 
             )
 
+        consequence_class = str(data.get("consequence_class", "ambient")).lower()
+        if consequence_class not in {"ambient", "persistent", "actionable"}:
+            consequence_class = "ambient"
+        consequence_visibility = str(data.get("consequence_visibility", "local")).lower()
+        if consequence_visibility not in {"local", "rumour", "hidden":
+            consequence_visibility = "local"
+
         return NpcInteraction(
             id=interaction_id,
             action=action,
@@ -109,8 +137,23 @@ class NpcInteractionManager:
             effects=effects,
             actor_faction=data.get("actor_faction", []),
             target_faction=data.get("target_faction", []),
+            districts=data.get("districts", []),
             preconditions=preconditions,
             weight=data.get("weight", 1.0),
+            consequence_class=consequence_class,
+            consequence_category=str(data.get("consequence_category", "")),
+            consequence_duration=max(0, int(data.get("consequence_duration", 0) or 0)),
+            follow_up_key=data.get("follow_up_key"),
+            consequence_cooldown=_optional_nonnegative_int(data.get("consequence_cooldown")),
+            consequence_room_cap=_optional_nonnegative_int(data.get("consequence_room_cap")),
+            consequence_district_cap=_optional_nonnegative_int(data.get("consequence_district_cap")),
+            consequence_rumour=data.get("consequence_rumour"),
+            consequence_room_manifestation=data.get("consequence_room_manifestation"),
+            consequence_ask_topic=data.get("consequence_ask_topic"),
+            consequence_ask_response=data.get("consequence_ask_response"),
+            follow_up_delay=max(0, int(data.get("follow_up_delay", 30) or 0)),
+            consequence_visibility=consequence_visibility,
+            follow_up_trust_ranges={key: list(bounds) for key, bounds in data.get("follow_up_trust_ranges", {}).items()},
         )
     
     def _index_interaction(self, interaction: NpcInteraction) -> None:
