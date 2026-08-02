@@ -1,6 +1,9 @@
 import asyncio
+import logging
 import random
 from pathlib import Path
+
+logger = logging.getLogger(__name__)
 
 from .config import get_setting, load_dotenv
 from .game_world import (
