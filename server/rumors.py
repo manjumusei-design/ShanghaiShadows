@@ -107,3 +107,42 @@ def push_gossip_to_rumor_panel(session, speaker_name: str, listener_name: str, l
         for index, line in enumerate(lines[:2])
     ]
     push_panel_entry(session, "gossip", {"speaker": speaker_name, "listener": listener_name, "turns": turns})
+
+
+def create_rumour_seed(
+    event_type: str,
+    location: str,
+    district: str = "",
+    witnesses: Optional[List[str]] = None,
+    faction_context: str = "",
+    description: str = "",
+    shared=None,
+) -> Optional[RumourSeed]:
+    if shared is None:
+        return None
+
+    seed = RumourSeed(
+        id=f"seed_{event_type}_{uuid.uuid4().hex[:8]}",
+        event_type=event_type,
+        location=location,
+        district=district,
+        witnesses=witnesses or [],
+        faction_context=faction_context,
+        day_created=shared.game_time.day if hasattr(shared, 'game_time') else 1,
+        description=description,
+    )
+
+    if not hasattr(shared, 'rumour_seeds'):
+        shared.rumour_seeds = []
+    shared.rumour_seeds.append(seed)
+    _seeds.append(seed)
+    if faction_context and hasattr(shared, 'rumour_mill'):
+        short_desc = description or f"Something happened in {district or location}"
+        shared.rumour_mill.setdefault(faction_context, [])
+        if short_desc not in shared.rumour_mill[faction_context]:
+            shared.rumour_mill[faction_context].append(short_desc)
+            if len(shared.rumour_mill[faction_context]) > 12:
+                shared.rumour_mill[faction_context] = shared.rumour_mill[faction_context][-12:]
+
+    return seed
+
