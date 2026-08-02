@@ -1,5 +1,7 @@
+import asyncio
 from dataclasses import dataclass, field
-from typing import Dict, List
+from typing import Dict, List, Optional
+import uuid
 import yaml
 
 from .constants import RUMOR_WINDOW, RUMOR_STEP, RUMORS_PATH
@@ -10,11 +12,15 @@ from .dataclass_utils import filter_to_dataclass
 class Rumor:
     id: str
     text: str
-    faction: List[str] = field(default_factory=list)
+    factions: List[str] = field(default_factory=list)
     districts: List[str] = field(default_factory=list)
+    source_npc: Optional[str] = None
+    source_location: Optional[str] = None
+    tags: List[str] = field(default_factory=list)
+    category: str = "street_talk"
+    truth_value: float = 0.8
+    dialogue: Optional[dict] = None
 
-
-_catalog: Dict[str, Rumor] = {}
 
 
 def load_rumors(path: str, refresh: bool = False) -> Dict[str, Rumor]:
