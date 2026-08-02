@@ -4,11 +4,11 @@ from typing import List, Optional
 
 
 @dataclass
-class Command: 
+class Command:
     verb: str
     direct_obj: Optional[str] = None
     indirect_obj: Optional[str] = None
-    preposition: Optional[str] = None]
+    preposition: Optional[str] = None
     raw: str = ""
     raw_verb: str = ""
     suppress_render: bool = False
@@ -19,7 +19,6 @@ PREPOSITIONS = {"to", "at", "on", "with", "in", "from", "about"}
 DIRECTIONS = {"north", "south", "east", "west", "up", "down", "n", "s", "e", "w", "u", "d"}
 
 VERB_ALIASES = {
-    "examine" : "look",
     "get": "take",
     "grab": "take",
     "discard": "drop",
@@ -33,7 +32,7 @@ VERB_ALIASES = {
     "?": "help",
     "stat": "status",
     "run": "flee",
-}   
+}
 
 KNOWN_VERBS = {
     "look",
@@ -46,19 +45,17 @@ KNOWN_VERBS = {
     "talk to",
     "ask",
     "ask about",
-    "whisper"
+    "whisper",
     "give",
     "plant",
     "disguise as",
     "hide",
     "unhide",
     "read",
-    "use",
     "eat",
     "journal",
     "status",
     "tail",
-    "trust",
     "bond",
     "say",
     "attack",
@@ -72,37 +69,32 @@ KNOWN_VERBS = {
     "remove",
     "open",
     "close",
-    "lock",
     "unlock",
     "missions",
-    "memorial",
+    "mission details",
     "yell",
-    "buy",
     "buy from",
     "sell",
     "equip",
-    "heal",
     "sound",
     "claim",
     "retrieve",
     "repair",
     "rumors",
     "rumours",
-    "take trishaw",
-    "put in",
     "take from",
     "mod weapon",
     "write note",
     "leave note",
-    "visit nurse",
     "abandon mission",
     "bribe",
     "favor",
-    "wanted",
     "buy newspaper",
-    "assess", 
-    "skip tutorial",
-}
+	    "assess", 
+	    "skip tutorial",
+	    "trust",
+	    "wanted",
+	}
 
 
 def _strip_articles(tokens: List[str]) -> List[str]:
@@ -152,6 +144,10 @@ def parse(text: str) -> Command:
         rest = _strip_articles(tokens[2:])
         direct = " ".join(rest) if rest else None
         return Command(verb="buy from", direct_obj=direct, raw=raw)
+
+    if first == "mission" and len(tokens) > 2 and tokens[1].lower() == "details":
+        direct = " ".join(tokens[2:])
+        return Command(verb="mission details", direct_obj=direct or None, raw=raw)
     
     if first == "whisper" and len(tokens) > 2:
         direct = tokens[1]
