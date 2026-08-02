@@ -22,6 +22,23 @@ class Rumor:
     dialogue: Optional[dict] = None
 
 
+@dataclass
+class RumourSeed:
+    id: str
+    event_type: str
+    location: str
+    district: str = ""
+    witnesses: List[str] = field(default_factory=list)
+    faction_context: str = ""
+    day_created: int = 1
+    description: str = ""
+    resolved: bool = False
+    seed_rumor_ids: List[str] = field(default_factory=list)
+
+
+_catalog: Dict[str, Rumor] = {}
+_seed: List[RumourSeed] = []
+
 
 def load_rumors(path: str, refresh: bool = False) -> Dict[str, Rumor]:
     if _catalog and not refresh:
@@ -48,4 +65,45 @@ def seed_active_rumors(day: int) -> List[str]:
         return compute_active_rumors(load_rumors(RUMORS_PATH), day)
     except FileNotFoundError:
         return []
-    
+
+
+def get_rumours_for_player(state, player) -> List[Rumor]:
+    return []
+
+
+import time
+import json
+
+PRIORITY_MAP = {
+    "defection": 1, "extortion": 2, "intimidation": 2,
+    "argument": 3, "shuttering": 3, "gossip": 4, "ambient": 5
+}
+
+def push_panel_entry(session, entry_type: str, data: dict) -> None:
+    entry = {
+        "id": f"panel_{uuid.uuid4().hex[:8]}",
+        "type": entry_type,
+        "speaker": data.get("speaker", ""),
+        "listener": data.get("listener", ""),
+        "turns": data.get("turns", []),
+        "priority": data.get("priority", PRIORITY_MAP.get(entry_type, 5)),
+        "timestamp": time.time()
+    }
+    if not hasattr(session, '_panel_queue'):
+        session._panel_queue = []
+    session._panel_queue.append(entry)
+    session._panel_queue.sort(key=lambda e: (e["priority"], e["timestamp"]))
+    session._panel_queue = session._panel_queue[-8:]
+    try:
+        payload = json.dumps({"type": "rumors", "payload": session._panel_queue})
+        asyncio.create_task(session.websocket.send(payload))
+    except Exception:
+        pass
+
+
+def push_gossip_to_rumor_panel(session, speaker_name: str, listener_name: str, lines: List[str]) -> None:
+    turns = [
+        {"speaker": speaker_name if index == 0 else listener_name, "text": line, "delay_ms": 900}
+        for index, line in enumerate(lines[:2])
+    ]
+    push_panel_entry(session, "gossip", {"speaker": speaker_name, "listener": listener_name, "turns": turns})
