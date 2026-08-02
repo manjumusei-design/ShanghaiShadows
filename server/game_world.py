@@ -2,7 +2,7 @@ import json
 from collections import deque
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 import yaml
 
@@ -48,7 +48,6 @@ class SharedWorldState:
     ccp_influence: int = 10
     gmd_influence: int = 15
     event_log: List[Dict] = field(default_factory=list)
-    legacy_book: List[Dict] = field(default_factory=list)
     rumour_mill: Dict[str, List[str]] = field(default_factory=dict)
     archived_journals: Dict[str, List[dict]] = field(default_factory=dict)
     mission_manager: Any = None
@@ -63,9 +62,25 @@ class SharedWorldState:
     market_rooms: Dict[str, List[str]] = field(default_factory=dict)
     death_journals: Dict[str, List[dict]] = field(default_factory=dict)
     active_rumors: List[str] = field(default_factory=list)
-    room_codes: Dict[str, List[dict]] = field(default_factory=list)
+    room_codes: Dict[str, str] = field(default_factory=dict)
     code_to_room: Dict[str, str] = field(default_factory=dict)
     room_layout_coords: Dict[str, Tuple[int, int]] = field(default_factory=dict)
+    tutorial_room_clones: Dict[str, Dict[str, str]] = field(default_factory=dict)
+    cloned_tutorial_rooms: Dict[str, Any] = field(default_factory=dict)  # Room type from world.py
+    tutorial_npc_clones: Dict[str, List[str]] = field(default_factory=dict)
+    district_control: Dict[str, str] = field(default_factory=dict)  # district_id → "ccp"|"gmd"|"kempeitai"|"neutral"
+    district_influence: Dict[str, Dict[str, int]] = field(default_factory=dict)  # district_id → {ccp: int, gmd: int}
+    tracked_rumors: list = field(default_factory=list)
+    rumour_seeds: list = field(default_factory=list)
+    layout_seed: int = 0
+    patrol_density_modifier: Optional[dict] = None
+    temp_stealth_modifier: Optional[dict] = None
+    raid_chance_modifier: Optional[dict] = None
+    relationship_system: Any = None
+    npc_social_schedules: Dict[str, Dict[str, int]] = field(default_factory=dict)
+    social_influence_ledger: Dict[str, int] = field(default_factory=dict)
+    social_consequences: Dict[str, Dict[str, Any]] = field(default_factory=dict)
+    social_consequence_cooldowns: Dict[str, int] = field(default_factory=dict)
 
     def get_trust_value(self, key: str, player_trust: TrustMap) -> int:
         if "." in key:
@@ -90,7 +105,32 @@ def serialize_world_state(state: SharedWorldState) -> Dict[str, object]:
         for npc_id, npc in state.world.npcs.items()
         if getattr(npc, 'tracked_rumors', None)
     }
-    
+    npc_social_state = {
+        npc_id: {
+            "mood": getattr(npc, "mood", "neutral"),
+            "social_visibility": getattr(npc, "social_visibility", "visible"),
+            "needs": getattr(npc, "needs", {}),
+            "inventory": getattr(npc, "inventory", []),
+            "goals": getattr(npc, "goals", []),
+        }
+        for npc_id, npc in state.world.npcs.items()
+    }
+    relationships = []
+    seen_relationships = set()
+    for npc_id, npc in state.world.npcs.items():
+        for other_id, relationship in getattr(npc, "relationships", {}).items():
+            pair = tuple(sorted((npc_id, other_id)))
+            if pair in seen_relationships:
+                continue
+            seen_relationships.add(pair)
+            relationships.append({
+                "npc_1": relationship.npc_id_1,
+                "npc_2": relationship.npc_id_2,
+                "type": relationship.relationship_type,
+                "strength": relationship.strength,
+                "shared_secrets": list(relationship.shared_secrets),
+            })
+
     npc_player_memories = {}
     for npc_id, npc in state.world.npcs.items():
         if hasattr(npc, 'player_memories') and npc.player_memories:
@@ -104,13 +144,28 @@ def serialize_world_state(state: SharedWorldState) -> Dict[str, object]:
                 }
                 for player_name, mem in npc.player_memories.items()
             } 
-                
+
+    from datetime import datetime
     payload = {
+        "_version": 1,
+        "_saved_at": datetime.utcnow().isoformat(),
         "time": {"day": state.game_time.day, "minute": state.game_time.minute},
         "room_items": room_items,
         "npc_locations": npc_locations,
         "npc_memory": npc_memory,
         "npc_tracked_rumors": npc_tracked_rumors,
+                "npc_social_state": npc_social_state,
+        "npc_relationships": relationships,
+        "npc_social_schedules": state.npc_social_schedules,
+        "social_influence_ledger": state.social_influence_ledger,
+        "social_consequences": {
+            consequence_id: state.social_consequences[consequence_id]
+            for consequence_id in sorted(state.social_consequences)
+        },
+        "social_consequence_cooldowns": {
+            cooldown_id: state.social_consequence_cooldowns[cooldown_id]
+            for cooldown_id in sorted(state.social_consequence_cooldowns)
+        },
         "npc_player_memories": npc_player_memories,
         "scheduler": state.scheduler.to_payload(),
         "rumour_mill": state.rumour_mill,
@@ -120,10 +175,33 @@ def serialize_world_state(state: SharedWorldState) -> Dict[str, object]:
         "gmd_influence": state.gmd_influence,
         "archived_journals": state.archived_journals,
         "server_cycle": state.server_cycle,
-        "weather": state.weather,
+        "dead_npcs": sorted(str(npc_id) for npc_id in state.dead_npcs),
+        "world_decisions": list(state.world_decisions),
+        "room_state_overrides": {
+            room_id: state.room_state_overrides[room_id]
+            for room_id in sorted(state.room_state_overrides)
+        },
+        "npc_dispositions": {
+            npc_id: state.npc_dispositions[npc_id]
+            for npc_id in sorted(state.npc_dispositions)
+        },
         "death_journals": state.death_journals,
         "active_rumors": state.active_rumors,
         "economy": serialize_economy_state(),
+        "district_control": state.district_control,
+        "district_influence": state.district_influence,
+        "tracked_rumors": [r.to_dict() if hasattr(r, 'to_dict') else r for r in state.tracked_rumors],
+        "rumour_seeds": [
+            {
+                "id": s.id, "event_type": s.event_type, "location": s.location,
+                "district": s.district, "witnesses": s.witnesses,
+                "faction_context": s.faction_context, "day_created": s.day_created,
+                "description": s.description, "resolved": s.resolved,
+                "seed_rumor_ids": s.seed_rumor_ids,
+            }
+            for s in state.rumour_seeds
+        ],
+        "layout_seed": state.layout_seed,
     }
     return payload
 
@@ -132,7 +210,7 @@ def deserialize_world_state(data: Dict[str, object], world: World) -> SharedWorl
     from .serialization import deserialize_item as _deserialize_item
 
     game_time = GameTime(
-        day=int(data.get("time", {}).get("day", 1)),
+        day=min(int(data.get("time", {}).get("day", 1)), 180),
         minute=int(data.get("time", {}).get("minute", 0))
     )
 
@@ -166,7 +244,21 @@ def deserialize_world_state(data: Dict[str, object], world: World) -> SharedWorl
         npc = world.npcs.get(npc_id)
         if npc and hasattr(npc, 'tracked_rumors'):
             npc.tracked_rumors = list(tracked)
-            
+
+    for npc_id, social_state in data.get("npc_social_state", {}).items():
+        npc = world.npcs.get(npc_id)
+        if npc:
+            npc.mood = str(social_state.get("mood", "neutral"))
+            npc.social_visibility = str(social_state.get("social_visibility", "visible"))
+            npc.needs = dict(social_state.get("needs", {}))
+            npc.inventory = list(social_state.get("inventory", []))
+            npc.goals = list(social_state.get("goals", []))
+
+    relationship_rows = data.get("npc_relationships", [])
+    if relationship_rows:
+        from .npc_memory import NpcRelationshipSystem
+        NpcRelationshipSystem().load_relationships(relationship_rows, world.npcs)
+
     npc_player_memories = data.get("npc_player_memories", {})
     if isinstance(npc_player_memories, dict):
         for npc_id, player_mems in npc_player_memories.items():
@@ -185,22 +277,97 @@ def deserialize_world_state(data: Dict[str, object], world: World) -> SharedWorl
                     
     rumour_mill = dict(data.get("rumour_mill", {}))
     event_log = list(data.get("event_log", []))
-    legacy_book = list(data.get("legacy_book", []))
     ccp_influence = int(data.get("ccp_influence", 10))
     gmd_influence = int(data.get("gmd_influence", 15))
     archived_journals = dict(data.get("archived_journals", {}))
     server_cycle = int(data.get("server_cycle", 1))
     weather = str(data.get("weather", "clear"))
+    raw_dead_npcs = data.get("dead_npcs", [])
+    dead_npcs = {str(npc_id) for npc_id in raw_dead_npcs} if isinstance(raw_dead_npcs, list) else set()
+    raw_world_decisions = data.get("world_decisions", [])
+    world_decisions = deque(
+        (decision for decision in raw_world_decisions if isinstance(decision, dict)),
+        maxlen=DECISION_LEDGER_MAXLEN,
+    ) if isinstance(raw_world_decisions, list) else deque(maxlen=DECISION_LEDGER_MAXLEN)
+    raw_room_overrides = data.get("room_state_overrides", {})
+    room_state_overrides = {
+        str(room_id): dict(override)
+        for room_id, override in raw_room_overrides.items()
+        if isinstance(override, dict)
+    } if isinstance(raw_room_overrides, dict) else {}
+    raw_dispositions = data.get("npc_dispositions", {})
+    npc_dispositions = {
+        str(npc_id): dict(disposition)
+        for npc_id, disposition in raw_dispositions.items()
+        if isinstance(disposition, dict)
+    } if isinstance(raw_dispositions, dict) else {}
     death_journals = dict(data.get("death_journals", {}))
     active_rumors = list(data.get("active_rumors", []))
     if not active_rumors:
         from .rumors import seed_active_rumors
         active_rumors = seed_active_rumors(game_time.day)
     
+    district_control = dict(data.get("district_control", {}))
+    district_influence = {k: dict(v) for k, v in data.get("district_influence", {}).items()}
+    npc_social_schedules = {npc_id: dict(schedule) for npc_id, schedule in data.get("npc_social_schedules", {}).items()}
+    social_influence_ledger = {key: int(value) for key, value in data.get("social_influence_ledger", {}).items()}
+    raw_social_consequences = data.get("social_consequences", {})
+    if not isinstance(raw_social_consequences, dict):
+        raw_social_consequences = {}
+    social_consequences = {
+        str(consequence_id): dict(record)
+        for consequence_id, record in sorted(raw_social_consequences.items())
+        if isinstance(record, dict)
+    }
+    raw_social_consequence_cooldowns = data.get("social_consequence_cooldowns", {})
+    if not isinstance(raw_social_consequence_cooldowns, dict):
+        raw_social_consequence_cooldowns = {}
+    social_consequence_cooldowns = {
+        str(cooldown_id): int(created_at)
+        for cooldown_id, created_at in sorted(raw_social_consequence_cooldowns.items())
+    }
+    
+    from .rumors import RumourSeed
+    rumour_seeds_raw = data.get("rumour_seeds", [])
+    rumour_seeds = []
+    for s in rumour_seeds_raw:
+        rumour_seeds.append(RumourSeed(
+            id=s.get("id", ""),
+            event_type=s.get("event_type", ""),
+            location=s.get("location", ""),
+            district=s.get("district", ""),
+            witnesses=list(s.get("witnesses", [])),
+            faction_context=s.get("faction_context", ""),
+            day_created=int(s.get("day_created", 1)),
+            description=s.get("description", ""),
+            resolved=bool(s.get("resolved", False)),
+            seed_rumor_ids=list(s.get("seed_rumor_ids", [])),
+        ))
+
+    tracked_rumors_raw = data.get("tracked_rumors", [])
+    tracked_rumors = []
+    if tracked_rumors_raw:
+        try:
+            from .trust import TrackedRumor
+            for r in tracked_rumors_raw:
+                if isinstance(r, dict):
+                    tracked_rumors.append(TrackedRumor.from_dict(r))
+                else:
+                    tracked_rumors.append(r)
+        except Exception:
+            tracked_rumors = tracked_rumors_raw
+        
     economy_data = data.get("economy", {})
     if economy_data:
         from .economy import load_economy_state
         load_economy_state(economy_data)
+
+    from .room_codes import generate_room_codes, layout_room, layout_tutorial_rooms
+    layout_seed = int(data.get("layout_seed", 0))
+    room_codes = generate_room_codes(world.rooms)
+    layout_coords = layout_rooms(world.rooms, layout_seed=layout_seed)
+    tutorial_coords = layout_tutorial_rooms(world.rooms)
+    layout_coords.update(tutorial_coords)
 
     return SharedWorldState(
         world=world,
@@ -209,13 +376,30 @@ def deserialize_world_state(data: Dict[str, object], world: World) -> SharedWorl
         ccp_influence=ccp_influence,
         gmd_influence=gmd_influence,
         event_log=event_log,
-        legacy_book=legacy_book,
         rumour_mill=rumour_mill,
         archived_journals=archived_journals,
         server_cycle=server_cycle,
         weather=weather,
+        dead_npcs=dead_npcs,
+        world_decisions=world_decisions,
+        room_state_overrides=room_state_overrides,
+        npc_dispositions=npc_dispositions,
         death_journals=death_journals,
         active_rumors=active_rumors,
+        tutorial_room_clones={},
+        cloned_tutorial_rooms={},
+        district_control=district_control,
+        district_influence=district_influence,
+        npc_social_schedules=npc_social_schedules,
+        social_influence_ledger=social_influence_ledger,
+        social_consequences=social_consequences,
+        social_consequence_cooldowns=social_consequence_cooldowns,
+        tracked_rumors=tracked_rumors,
+        rumour_seeds=rumour_seeds,
+        room_codes=room_codes,
+        code_to_room={code: rid for rid, code in room_codes.items()},
+        room_layout_coords=layout_coords,
+        layout_seed=layout_seed,
     )
 
 
