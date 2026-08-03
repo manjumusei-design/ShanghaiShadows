@@ -146,3 +146,102 @@ def create_rumour_seed(
 
     return seed
 
+
+def exchange_gossip(npc_a, npc_b, shared) -> bool:
+    from .trust import exchange_gossip as _trust_exchange, TrackedRumor
+
+    seeds = getattr(shared, 'rumour_seeds', [])
+    for seed in seeds:
+        if seed.resolved:
+            continue
+        if seed.faction_context and seed.faction_context in (npc_a.faction, npc_b.faction):
+            target_npc = npc_a if seed.faction_context == npc_a.faction else npc_b
+            if not hasattr(target_npc, 'tracked_rumors'):
+                target_npc.tracked_rumors = []
+            seed_rumor = TrackedRumor(
+                id=seed.id,
+                text=seed.description or f"Event in {seed.district or seed.location}",
+                origin_faction=seed.faction_context,
+                current_faction=seed.faction_context,
+                source_npc=seed.witnesses[0] if seed.witnesses else "unknown",
+                hop_count=0,
+                day_created=seed.day_created,
+            )
+            tr_text = seed_rumor.text
+            already_present = any(
+                tr_text in m or m in tr_text
+                for m in target_npc.memory
+            )
+            if not already_present:
+                target_npc.memory.append(tr_text)
+                target_npc.tracked_rumors.append(seed_rumor.to_dict())
+            seed.resolved = True
+
+    return _trust_exchange(
+        npc_a.memory if hasattr(npc_a, 'memory') else [],
+        npc_b.memory if hasattr(npc_b, 'memory') else [],
+        chance=0.25,
+        tracked_a=getattr(npc_a, 'tracked_rumors', None),
+        tracked_b=getattr(npc_b, 'tracked_rumors', None),
+        game_day=shared.game_time.day if hasattr(shared, 'game_time') else 1,
+        npc_a=npc_a,
+        npc_b=npc_b,
+    )
+
+
+def trace_rumour_source(rumour_id: str, npc_id: str, shared) -> Optional[dict]:
+    from .trust import TrackedRumor
+
+    global_rumors = getattr(shared, 'tracked_rumors', [])
+    for item in global_rumors:
+        if hasattr(item, 'id'):
+            tr = item
+        elif isinstance(item, dict):
+            tr = TrackedRumor.from_dict(item)
+        else:
+            continue
+        if tr.id == rumour_id or rumour_id in tr.text or tr.text in rumour_id:
+            return {
+                "origin_faction": tr.origin_faction,
+                "source_npc": tr.source_npc,
+                "hop_count": tr.hop_count,
+                "day_created": tr.day_created,
+                "text": tr.text,
+                "from_seed": tr.id.startswith("seed_"),
+                "seed_event_type": _extract_seed_type(tr.id, shared),
+            }
+
+    for _npc in shared.world.npcs.values():
+        npc_tr_list = getattr(_npc, 'tracked_rumors', None)
+        if not npc_tr_list:
+            continue
+        for item in npc_tr_list:
+            if isinstance(item, dict):
+                tr = TrackedRumor.from_dict(item)
+            else:
+                continue
+            if tr.id == rumour_id or rumour_id in tr.text or tr.text in rumour_id:
+                return {
+                    "origin_faction": tr.origin_faction,
+                    "source_npc": tr.source_npc,
+                    "hop_count": tr.hop_count,
+                    "day_created": tr.day_created,
+                    "text": tr.text,
+                    "from_seed": tr.id.startswith("seed_"),
+                    "seed_event_type": _extract_seed_type(tr.id, shared),
+                }
+
+    seeds = getattr(shared, 'rumour_seeds', [])
+    for seed in seeds:
+        if seed.id == rumour_id or rumour_id in seed.description:
+            return {
+                "origin_faction": seed.faction_context,
+                "source_npc": seed.witnesses[0] if seed.witnesses else "unknown",
+                "hop_count": 0,
+                "day_created": seed.day_created,
+                "text": seed.description,
+                "from_seed": True,
+                "seed_event_type": seed.event_type,
+            }
+
+    return None
