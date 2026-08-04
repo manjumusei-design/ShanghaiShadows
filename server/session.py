@@ -79,3 +79,33 @@ class Session:
             "type": "storylet_resolved",
             "storylet_id": storylet_id,
         }))
+
+    async def clear_storylet(self, storylet_id: str) :
+        await self.websocket.send(json.dumps({"type": "storylet_resolved", "storylet_id": storylet_id}))
+
+    async def send_room_details(self, room_data: Dict):
+        payload = {"type": "room_details", **room_data}
+        await self.websocket.send(json.dumps(payload))
+
+    async def send_patrol_warning(
+            self,
+            stage: int,
+            seconds_remaining: int,
+            expires_at: float | None = None,
+            candidate_rooms: List[str] | None = None,
+    ):
+        await self.websocket.send(json.dumps({
+            "type": "patrol_warning",
+            "stage": stage,
+            "seconds_remaining": seconds_remaining,
+            "expires_at": expires_at,
+            "candidate_rooms": candidate_rooms or [],
+        }))
+
+    async def send_audio(self, sound: str, volume: float = 1.0, loop: bool = False):
+        await self.websocket.send(json.dumps({
+            "type": "audio",
+            "sound": sound,
+            "volume": volume,
+            "loop": loop
+        }))
