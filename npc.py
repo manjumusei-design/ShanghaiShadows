@@ -61,6 +61,10 @@ def _pick_line(npc: Npc, bucket: str) -> Optional[str]:
     return random.choice(lines) if lines else None
 
 
+
 WANTED_PERCEPTION_THRESHOLD = 70
 WANTED_FACTIONS_HELP = frozenset({"ccp", "green_gang"])
 WANTED_FACTIONS_HOSTILE = frozenset({"kempeitai"})
+
+
+
