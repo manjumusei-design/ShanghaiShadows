@@ -245,3 +245,59 @@ def trace_rumour_source(rumour_id: str, npc_id: str, shared) -> Optional[dict]:
             }
 
     return None
+
+
+def _extract_seed_type(rumour_id: str, shared) -> Optional[str]:
+    seeds = getattr(shared, 'rumour_seeds', [])
+    for seed in seeds:
+        if seed.id == rumour_id:
+            return seed.event_type
+    return None
+
+
+def apply_faction_spin(rumor_text: str, faction: str) -> str:
+    spins = {
+        "ccp": _spin_ccp,
+        "gmd": _spin_gmd,
+        "kempeitai": _spin_kempeitai,
+        "civilian": _spin_civilian,
+        "green_gang": _spin_green_gang,
+    }
+    spinner = spins.get(faction, lambda t: t)
+    return spinner(rumor_text)
+
+
+def _spin_ccp(text: str) -> str:
+    replacements = {
+        "Kempeitai": "fascist forces",
+        "kempeitai": "fascist forces",
+        "Japanese": "imperialist aggressors",
+        "japanese": "imperialist aggressors",
+        "arrested": "detained by occupation authorities",
+        "raided": "struck by occupation forces",
+        "resistance": "the people's defense",
+        "Resistance": "the People's Defense",
+    }
+    result = text
+    for old, new in replacements.items():
+        result = result.replace(old, new)
+    if result == text:
+        result = "Word from the underground says: " + text[0].lower() + text[1:]
+    return result
+
+
+def _spin_gmd(text: str) -> str:
+    replacements = {
+        "Kempeitai": "military administration forces",
+        "kempeitai": "military administration forces",
+        "arrested": "taken in for official processing",
+        "raided": "subjected to an authorized inspection",
+        "resistance": "unsanctioned elements",
+        "Resistance": "Unsantioned elements",
+    }
+    result = text
+    for old, new in replacements.items():
+        result = result.replace(old, new)
+    if result == text:
+        result = "Official channels report that " + text[0].lower() + text[1:]
+    return result
