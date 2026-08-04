@@ -1,6 +1,7 @@
 import json
 from dataclasses import dataclass, field
-from typing import List
+from enum import Enum
+from typing import Dict, List, Any
 
 
 @dataclass
@@ -12,18 +13,69 @@ class Session:
     seconds_since_autosave: int = 0
     seconds_since_state_broadcast: int = 0
     manually_advancing: bool = False
+    audio_enabled: bool = True
 
-    async def send_display(self, text: str):
-        await self.websocket.send(json.dumps({"type": "display", "payload": text}))
+    async def send_display(self, text: str, msg_type=None):
+        payload = {"type": "display", "payload": text}
+        if msg_type is not None:
+            if isinstance(msg_type, Enum):
+                payload["msg_type"] = msg_type.value
+            else:
+                payload["msg_type"] = str(msg_type)
+        await self.websocket.send(json.dumps(payload))
 
     async def send_prompt(self, text: str = "> "):
         await self.websocket.send(json.dumps({"type": "prompt", "payload": text}))
 
+    async def send_hint(self, hint_id: str, stage_id: str, payload: str, immediate: bool, room_id: str = ""):
+        await self.websocket.send(json.dumps({
+            "type": "hint",
+            "hint_id": hint_id,
+            "stage_id": stage_id,
+            "room_id": room_id,
+            "payload": payload,
+            "immediate": immediate,
+        }))
+
+    async def send_hint_clear(self):
+        await self.websocket.send(json.dumps({"type": "hint_clear"}))
+
+    async def send_npc_speech(self, speaker_id: str, speaker: str, text: str):
+        await self.websocket.send(json.dumps({
+            "type": "npc_speech",
+            "speaker_id": speaker_id,
+            "speaker": speaker,
+            "text": text,
+        }))
+
     async def send_state(self, payload: dict):
         await self.websocket.send(json.dumps({"type": "state", **payload}))
 
-    async def send_completions(self, items: List[str]):
+    async def send_completions(self, items: Dict[str, List[str]]):
         await self.websocket.send(json.dumps({"type": "completions", "payload": items}))
 
     async def send_room_players(self, players: List[str]):
         await self.websocket.send(json.dumps({"type": "room_players", "payload": players}))
+
+    async def send_map_data(self, map_data: Dict):
+        await self.websocket.send(json.dumps({"type": "map_data", **map_data}))
+
+    async def send_storylet(self, storylet_id: str, narrative: str, options: List[Dict[str, Any]], timer_duration: int = 0, timer_warning: bool = False, expires_at: float = 0.0, read_only: bool = False, turns: List[Dict[str, Any]] | None = None):
+        payload = {
+            "type": "storylet",
+            "storylet_id": storylet_id,
+            "narrative": narrative,
+            "options": options,
+            "timer_duration": timer_duration,
+            "timer_warning": timer_warning,
+            "expires_at": expires_at,
+            "read_only": read_only,
+            "turns": turns or [],
+        }
+        await self.websocket.send(json.dumps(payload))
+
+    async def send_storylet_resolved(self, storylet_id: str) -> None:
+        await self.websocket.send(json.dumps({
+            "type": "storylet_resolved",
+            "storylet_id": storylet_id,
+        }))
