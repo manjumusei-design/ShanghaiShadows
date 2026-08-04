@@ -24,12 +24,45 @@ def _ensure_dirs():
     SAVES_DIR.mkdir(parents=True, exist_ok=True)
 
 
+WORLD_BACKUP_COUNT = 5
+PLAYER_BACKUP_COUNT = 3
+
+
+def _rotate_backups(base_path: Path, keep: int) -> None:
+    for i in range(keep - 1, 0, -1):
+        src = base_path.with_suffix(f".json.{i}")
+        dst = base_path.with_suffix(f".json.{i + 1}")
+        if src.exists():
+            try:
+                src.rename(dst)
+            except Exception:
+                pass
+    if base_path.exists():
+        try:
+            import shutil
+            shutil.copy2(str(base_path), str(base_path.with_suffix(".json.1")))
+        except Exception:
+            pass
+    i = keep + 1
+    while True:
+        p = base_path.with_suffix(f".json.{i}")
+        if p.exists():
+            try:
+                p.unlink()
+            except Exception:
+                pass
+            i += 1
+        else:
+            break
+
+
 def save_world_state(shared: SharedWorldState) -> None:
     _ensure_dirs()
     data = serialize_world_state(shared)
     tmp_path = WORLD_SAVE_PATH.with_suffix(".json.tmp")
     tmp_path.write_text(json.dumps(data, indent=2), encoding="utf-8")
     tmp_path.replace(WORLD_SAVE_PATH)
+    _rotate_backups(WORLD_SAVE_PATH, WORLD_BACKUP_COUNT)    
 
 
 def load_world_state(world: World = None) -> Optional[SharedWorldState]:
@@ -58,6 +91,7 @@ def save_player(player: PlayerData) -> None:
     tmp_path = player_path.with_suffix(".json.tmp")
     tmp_path.write_text(json.dumps(data, indent=2), encoding="utf-8")
     tmp_path.replace(player_path)
+    _rotate_backups(player_path, PLAYER_BACKUP_COUNT)
 
 
 def load_player(username: str, storylet_manager=None) -> Optional[PlayerData]:
@@ -88,7 +122,7 @@ def load_player(username: str, storylet_manager=None) -> Optional[PlayerData]:
         return None
 
     try:
-        return deserialize_player(data, storylet_manager)
+        player = deserialize_player(data, storylet_manager)
     except Exception as e:
         logger.error(f"Failed to deserialize player data for {username}: {e}")
         corrupted_path = player_path.with_suffix(".json.corrupted")
@@ -99,8 +133,20 @@ def load_player(username: str, storylet_manager=None) -> Optional[PlayerData]:
             logger.warning(f"Failed to backup corrupted save: {backup_err}")
         return None
     
+    if player is None:
+        return None
+    _DEFAULTS = {'health': 100, 'hunger': 60, 'morale': 80, 'money_fabi': 50}
+    for field, default_val in _DEFAULTS.items():
+        val = getattr(player, field, None)
+        if val is None:
+            logger.warning(f"Player {username} missing {field}, setting default")
+            setattr(player, field, default_val)
+    if not hasattr(player, 'inventory') or player.inventory is None:
+        logger.warning(f"Player {username} missing inventory, setting empty")
+        player.inventory = []
+    return player
 
-# might need to change to a more robust system later on but this will do for now 
+
 def archive_journal_on_death(player_name: str, shared: SharedWorldState) -> None:
     shared.archived_journals[player_name] = shared.event_log[-100:]
 
