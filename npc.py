@@ -171,3 +171,42 @@ def _get_wanted_aware_dialogue(npc: Npc, wanted_level: int, player_trust: TrustM
 MORALE_DESPERATE_THRESHOLD = 15
 MORALE_LOW_THRESHOLD = 30
 
+
+def _get_low_morale_dialogue(npc: Npc, player_morale: int, player_trust: TrustMap) -> Optional[str]:
+    trust_score = get_role_trust(player_trust, npc.faction, npc.role)
+
+    if trust_score >= 50:
+        line = _pick_line(npc, "desperate_pity")
+        if line:
+            return line
+
+    if trust_score < 30:
+        line = _pick_line(npc, "desperate_exploit")
+        if line:
+            return line
+
+    line = _pick_line(npc, "desperate")
+    if line:
+        return line
+
+    if player_morale < MORALE_DESPERATE_THRESHOLD:
+        line = _pick_line(npc, "afraid")
+        if line:
+            return line
+
+    return None
+
+
+CANON_TOPICS = {
+    "work": ("work", "job", "money", "earn", "employ", "labor", "hire", "pay"),
+    "kempeitai": ("kempeitai", "japanese", "soldier", "patrol", "military", "gendarmerie", "garrison", "devil"),
+    "city": ("city", "shanghai", "bund", "street", "here", "place", "town", "district", "where"),
+    "people": ("people", "contact", "who", "friend", "resistance", "underground", "faction", "ccp", "gmd", "chen", "xu"),
+    "family": ("family", "daughter", "son", "wife", "husband", "mother", "father", "home", "child", "kid"),
+    "prices": ("price", "rice", "food", "cost", "fabi", "silver", "hungry", "eat", "ration", "market", "coal"),
+    "danger": ("danger", "safe", "curfew", "arrest", "hide", "fear", "trouble", "caught", "informer"),
+    "war": ("war", "fight", "resistance", "bomb", "front", "army", "liberation", "chungking", "nationalist"),
+    "gangs": ("gang", "green", "mafia", "smuggle", "opium", "triad", "madam", "broker"),
+    "foreigners": ("british", "french", "foreign", "concession", "german", "west", "american", "english"),
+    "rumor": ("rumor", "rumour", "hear", "gossip", "whisper", "word", "heard"),
+}
