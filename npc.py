@@ -1,4 +1,5 @@
 import random
+import re
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional
 import yaml
@@ -40,9 +41,12 @@ class Npc:
     burden_gift: str = ""
     burden_unlock_friendship: int = 70
     relationships: Dict[str, Any] = field(default_factory=dict)
+    mood: str = "neutral"
+    social_visibility: str = "visible"
+    goals: List[Dict[str, Any]] = field(default_factory=list)
     tutorial_dialogue: Dict[str, Any] = field(default_factory=dict)
-    tutorial_essential: bool = False
     bolted: bool = False
+    ask: Dict[str, Any] = field(default_factory=dict)
 
 
 def load_npcs(path: str) -> Dict[str, Npc]:
@@ -50,6 +54,7 @@ def load_npcs(path: str) -> Dict[str, Npc]:
         data = yaml.safe_load(f)
     npcs = {}
     for npc_data in data.get("npcs", []):
+        _complete_dialogue_content(npc_data)
         schedule = {int(hour): room_id for hour, room_id in npc_data.get("schedule", {}).items()}
         filtered_data = filter_to_dataclass(npc_data, Npc, exclude={"schedule"}, overrides={"schedule": schedule}, warn_unknown=True)
         npcs[npc_data["id"]] = Npc(**filtered_data)
@@ -63,8 +68,16 @@ def _pick_line(npc: Npc, bucket: str) -> Optional[str]:
 
 
 WANTED_PERCEPTION_THRESHOLD = 70
-WANTED_FACTIONS_HELP = frozenset({"ccp", "green_gang"])
+WANTED_FACTIONS_HELP = frozenset({"ccp", "green_gang"})
 WANTED_FACTIONS_HOSTILE = frozenset({"kempeitai"})
 
-
-
+_STANDARD_DIALOGUE = {
+    "greeting": ["Good day. Keep your voice steady; the street has enough ears already.", "You are welcome to stand a moment, provided you do not bring trouble with you.", "Shanghai gives nobody an easy morning, yet we still have work to do.", "I have seen you about. That is not the same as knowing you, but it is a beginning.", "Come in from the weather. A person should not have to face the city alone."],
+    "neutral": ["The day is moving along, whether any of us are ready for it or not.", "There is no certainty here except the next task and the price it demands.", "People manage by noticing what changes and keeping the rest to themselves.", "The streets are busy today. That can mean trade, or it can mean trouble.", "I keep my attention on what is in front of me. It is the safest habit."],
+    "friendly": ["You have treated me fairly. That is remembered in a city where favours are costly.", "Sit a while if you can. Conversation is easier when nobody is rushing away.", "I trust your judgement more than most, though neither of us should grow careless.", "When the day turns hard, it helps to know one familiar face is nearby.", "You have earned a little candour from me. Do not spend it lightly."],
+    "hostile": ["Do not mistake my patience for an invitation. I have work to finish.", "You ask too freely for someone who has not earned an answer.", "This is not your concern. Leave it alone before it becomes your problem.", "I have learned to be cautious around strangers, and you are still one.", "We have nothing to discuss. Please take the hint and move on."],
+    "afraid": ["Please, not here. A careless word can follow a person home.", "Keep your voice down. I cannot afford to be noticed with you.", "I do not know what you want, and I do not want to know in public.", "There are uniforms nearby. Whatever this is, it can wait.", "Forgive me, but I have people depending on me to return safely."],
+    "farewell": ["Take care on the road. Shanghai changes its face quickly after dark.", "Go carefully, and keep your papers close if you have them.", "May your next stop be kinder than your last. That is no small wish today.", "Until next time. I hope we meet under quieter circumstances.", "Mind yourself. The city remembers both kindness and carelessness."],
+    "gossip": ["Rice is even more expensive again, and every stallholder has a different explanation for it.", "People say the patrol route changed near dawn, though nobody agrees who ordered it.", "A shipment arrived late at the docks. That is enough to set half the district talking.", "The market has been quiet in a way that makes experienced people uneasy.", "News travels faster than carts in this city, and it becomes less reliable at every corner."],
+}
+_ASK_TOPICS_BY_ROLE = {"vendor": ("prices", "city", "danger"), "merchant": ("prices", "foreigners", "city"), "worker": ("work", "prices", "danger"), "doctor": ("people", "danger", "war"), "officer": ("city", "danger", "war"), "default": ("city", "work", "danger")}
