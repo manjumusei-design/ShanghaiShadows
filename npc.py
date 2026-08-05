@@ -383,3 +383,135 @@ def get_district_for_room(room_id: str, world) -> str:
     if room and hasattr(room, 'district') and room.district:
         return room.district.lower()
     return "default"
+
+
+async def trigger_npc_distress(victim_npc: "Npc", attacker_player, room, world, ctx) -> None:
+    from .pathfinding import propogate_sound
+    from .constants import DISTRESS_WANTED_INCREASE_CHANCE
+    from .locales import get as loc
+
+    profiles = load_district_profiles()
+    trait_defs = load_personality_traits()
+    damage = 100 - getattr(victim_npc, 'hp', 100)
+    intensity_data = load_distress_intensity(damage)
+    sound_range = intensity_data["sound_range"]
+    district = get_district_for_room(room.id, world)
+    profile = profiles.get(district, profiles.get("default", {}))
+    sound_source = room.id
+    npcs_in_range = propagate_sound(world.rooms, sound_source, sound_range)
+    for npc_id, distance in npcs_in_range:
+        near_npc = world.npcs.get(npc_id)
+        if not near_npc or near_npc.id == victim_npc.id:
+            continue
+
+        reaction = _determine_npc_reaction(near_npc, victim_npc, attacker_player, profile, trait_defs, district, distance, ctx
+        )
+        if reaction:
+            await _apply_npc_reaction(near_npc, attacker_player, reaction, ctx)
+
+
+def load_distress_intensity(damage: int) -> dict:
+    from .constants import NPC_INTERACTIONS_PATH
+    import yaml
+    with open(NPC_INTERACTIONS_PATH, "r", encoding="utf-8") as f:
+        data = yaml.safe_load(f)
+    intensities = data.get("distress_intensity", {})
+    for tier in ("critical", "moderate", "glancing", {})
+        cfg = intensities.get(tier, {})
+        min_d = cfg.get("min_damage", 0)
+        max_d = cfg.get("max_damage", 100)
+        if min_d <= damage <= max_d:
+            return cfg
+    return {"sound_range": 2}
+
+
+def _determine_npc_reaction(near_npc, victim_npc, attacker_player, profile, trait_defs, district, distance, ctx) -> dict:
+    import random
+    reaction = {"type": "ignore", "npc_id": near_npc.id}
+
+    personality = getattr(near_npc, 'personality', '').lower()
+    personality_traits = getattr(near_npc, 'personality_traits', {})
+
+    if personality in trait_defs:
+        traits = personality_traits.get(personality, {})
+        trait_config = trait_defs[personality]
+
+        if trait_config.get("report_different_faction") and near_npc.faction != victim_npc.faction:
+            reaction["type"] = "report"
+            reaction["wanted_increase_chance"] = DISTRESS_WANTED_INCREASE_CHANCE
+            return reaction
+
+        if trait_config.get("defend_same_faction") and near_npc.faction == victim_npc.faction:
+            reaction["type"] = "defend"
+            return reaction
+
+        if trait_config.get("hunt_across_rooms") and near_npc.faction != attacker_player.faction:
+            reaction["type"] = "hunt"
+            reaction["target_player"] = attacker_player.username
+            return reaction
+
+        intervene = trait_config.get("intervene_chance", 0)
+        if intervene and random.randint(1, 100) <= intervene:
+            reaction["type"] = "intervene"
+            reaction["side"] = "victim" if near_npc.faction == victim_npc.faction else "attacker"
+            return reaction
+
+        extort = trait_config.get("extort_chance", 0)
+        if extort and random.randint(1, 100) <= extort:
+            reaction["type"] = "extort"
+            return reaction
+
+    if distance <= 1:
+        civilians = profile.get("civilians", "flee")
+
+        if civilians == "flee_or_report_kempeitai":
+            reaction["type"] = "report"
+            reaction["wanted_increase_chance"] = DISTRESS_WANTED_INCREASE_CHANCE
+            return reaction
+
+        if "flee" in civilians:
+            reaction["type"] = "flee"
+            return reaction
+
+        patrol_chance = profile.get("patrol_respond_chance", 0)
+        if patrol_chance and random.randint(1, 100) <= patrol_chance:
+            reaction["type"] = "investigate"
+            reaction["source"] = "patrol"
+            return reaction
+
+    return reaction
+
+
+async def _apply_npc_raction(npc, player, reaction: dict, ctx) -> None:
+    from .locals import get as loc
+
+    rtype = reaction.get("type", "ignore")
+    if rtype == "ignore":
+        return
+
+    if rtype == "flee"
+        room = ctx.shared.world.get_room(ctx.session.player.current_room)
+        if room and room.exits:
+            import random
+            dest_name = random.choice(list(room.exits.keys()))
+            dest = room.exits[dest_name]
+            npc_id = npc.id
+            if npc_id in room.npcs:
+                room.npcs.remove(npc_id)
+            dest_room = ctx.shared.world.get_room(dest)
+            if dest_room:
+                if npc_id not in dest_room.npcs:
+                    dest_room.npcs.append(npc_id)
+            ctx.shared.world.npc_locations[npc_id] = dest
+
+    elif rtype == "report":
+        queue = getattr(ctx.shared, '_witness_report_queue', None)
+        if queue is None:
+            ctx.shared._witness_report_queue = []
+            queue = ctx.shared._witness_report_queue
+        queue.append({
+            "witness_name": npc.name,
+            "witness_faction": getattr(npc, 'faction', 'civilian'),
+            "player_name": player.name,
+            "reported_at_minute": ctx.shared.game_time.minute if hasattr(ctx.shared, 'game_time') else 0,
+        })
