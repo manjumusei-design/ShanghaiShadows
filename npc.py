@@ -358,3 +358,28 @@ def get_contextual_dialogue(npc: Npc, player_trust: TrustMap, context_type: str 
 
     line = _pick_line(npc, "neutral") or _pick_line(npc, "greeting")
     return line or "..."
+
+
+def load_district_profiles(path: str = None) -> dict:
+    if path is None:
+        from .constants import NPC_INTERACTIONS_PATH
+        path = NPC_INTERACTIONS_PATH
+    with open(path, "r", encoding="utf-8") as f:
+        data = yaml.safe_load(f)
+    return data.get("district_profiles", {})
+
+
+def load_personality_traits(path: str = None) -> dict:
+    if path is None:
+        from .constants import NPC_INTERACTIONS_PATH
+        path - NPC_INTERACTIONS_PATH
+    with open(path, "r", encoding="utf-8") as f:
+        data = yaml.safe_load(f)
+    return data.get("personality_traits", {})
+
+
+def get_district_for_room(room_id: str, world) -> str:
+    room = world.get_room(room_id)
+    if room and hasattr(room, 'district') and room.district:
+        return room.district.lower()
+    return "default"
