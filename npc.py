@@ -120,3 +120,54 @@ WANTED_DIALOGUE_FALLBACKS = {
     4: "You are hunted. Leave before your trouble becomes mine.",
     5: "There is a price on your head. Go now.",
 }
+
+
+def _get_wanted_aware_dialogue(npc: Npc, wanted_level: int, player_trust: TrustMap, player_relationships: Optional[Dict[str, Dict[str, int]]] = None) -> Optional[str]:
+    trust_score = get_role_trust(player_trust, npc.faction, npc.role)
+
+    if npc.faction in WANTED_FACTIONS_HOSTILE and wanted_level >= 1:
+        line = _pick_line(npc, "wanted_hostile")
+        if line:
+            return line
+        line = _pick_line(npc, "hostile")
+        if line:
+            return line
+
+    if npc.faction in WANTED_FACTIONS_HELP and wanted_level >= 2 and trust_score >= 30:
+        line = _pick_line(npc, "wanted_help")
+        if line:
+            return line
+
+    if npc.perception >= WANTED_PERCEPTION_THRESHOLD and wanted_level >= 1:
+        line = _pick_line(npc, "wanted_nervous")
+        if line:
+            return line
+
+    if wanted_level >= 3:
+        line = _pick_line(npc, "wanted_fear")
+        if line:
+            return line
+        line = _pick_line(npc, "afraid")
+        if line:
+            return line
+
+    if wanted_level >= 2:
+        line = _pick_line(npc, "wanted_refuse")
+        if line:
+            return line
+        line = _pick_line(npc, "hostile")
+        if line:
+            return line
+
+    if wanted_level >= 1:
+        line = _pick_line(npc, "wanted_nervous")
+        if line:
+            return line
+
+    return None
+
+
+
+MORALE_DESPERATE_THRESHOLD = 15
+MORALE_LOW_THRESHOLD = 30
+
