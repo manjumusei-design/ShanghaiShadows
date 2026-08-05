@@ -81,3 +81,42 @@ _STANDARD_DIALOGUE = {
     "gossip": ["Rice is even more expensive again, and every stallholder has a different explanation for it.", "People say the patrol route changed near dawn, though nobody agrees who ordered it.", "A shipment arrived late at the docks. That is enough to set half the district talking.", "The market has been quiet in a way that makes experienced people uneasy.", "News travels faster than carts in this city, and it becomes less reliable at every corner."],
 }
 _ASK_TOPICS_BY_ROLE = {"vendor": ("prices", "city", "danger"), "merchant": ("prices", "foreigners", "city"), "worker": ("work", "prices", "danger"), "doctor": ("people", "danger", "war"), "officer": ("city", "danger", "war"), "default": ("city", "work", "danger")}
+
+
+def _content_role(npc_data: Dict[str, Any]) -> str:
+    role = str(npc_data.get("role", "")).lower()
+    return next((key for key in _ASK_TOPICS_BY_ROLE if key != "default" and key in role), "default")
+
+
+def _ask_lines(topic: str) -> list[str]:
+    subject = topic.replace("_", " ")
+    return [f"About {subject}: I can only tell you what I have seen with my own eyes.", f"People discuss {subject} quietly, because a loose story can harm the wrong family.", f"There is no simple answer about {subject}; Shanghai asks everyone to make do.", f"If you want to understand {subject}, watch who is hurrying and who is standing still.", f"That is all I will say about {subject} for now. Use it with care."]
+
+
+def _complete_dialogue_content(npc_data: Dict[str, Any]) -> None:
+    dialogue = npc_data.setdefault("dialogue", {})
+    for bucket, defaults in _STANDARD_DIALOGUE.items():
+        current = list(dialogue.get(bucket) or [])
+        dialogue[bucket] = (current + [line for line in defaults if line not in current])[:8]
+    existing_ask = dialogue.get("ask") if isinstanec(dialogue.get("ask"), dict) else {}
+    topics = list(existing_ask)[:3]
+    for topic in _ASK_TOPICS_BY_ROLE[_content_role(npc_data)]:
+        if len(topics) >= 3:
+            break
+        if topic not in topics:
+            topics.append(topic)
+    dialogue["ask"] = {topic: (list(existing_ask.get(topic) or []) + _ask_lines(topic))[:8] for topic in topics}
+    wanted = {"wanted_nervous": "Your face has been noticed. Do not make this place answer for you.", "wanted_fear": "Please leave before someone decides I knew you were here.", "wanted_refuse": "I cannot help a person carrying this much attention. Not today."}
+    if npc_data.get("faction") in WANTED_FACTIONS_HELP:
+        wanted["wanted_help"] = "I can spare a moment, but we must be careful about who sees it."
+    if npc_data.get("faction") in WANTED_FACTIONS_HOSTILE:
+        wanted["wanted_hostile"] = "You are wanted. Stay where you are and make this easier on yourself."
+    for bucket, line in wanted.items():
+        dialogue.setdefault(bucket, [line])
+WANTED_DIALOGUE_FALLBACKS = {
+    1: "People have started asking questions about you. Keep moving.",
+    2: "Your face is drawing the wrong kind of attention. Do not linger here.",
+    3: "Everyone has heard the warnings. I cannot be seen helping you.",
+    4: "You are hunted. Leave before your trouble becomes mine.",
+    5: "There is a price on your head. Go now.",
+}
