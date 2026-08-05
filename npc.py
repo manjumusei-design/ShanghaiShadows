@@ -242,3 +242,119 @@ def match_topic(raw: str, npc: Optional[Npc] = None) -> Optional[str]:
     if matches:
         return max(matches, key=lambda item: item[1])[0]
     return None
+
+
+def get_topic_dialogue(npc: Npc, topic_key: str) -> Optional[str]:
+    ask = npc.dialogue.get("ask")
+    lines = ask.get(topic_key) if isinstance(ask, dict) else None
+    return random.choice(lines) if lines else None
+
+
+def npc_ask_topics(npc: Npc) -> List[str]:
+    ask = npc.dialogue.get("ask")
+    return list(ask.keys()) if isinstance(ask, dict) else []
+
+
+def get_dialogue(npc: Npc, player_trust: TrustMap) -> str:
+    trust_score = get_role_trust(player_trust, npc.faction, npc.role)
+    if trust_score > 70:
+        key = "friendly" if "friendly" in npc.dialogue else "greeting"
+    elif trust_score < 30:
+        key = "hostile" if "hostile" in npc.dialogue else "neutral"
+    else:
+        key = "greeting" if "greeting" in npc.dialogue else "neutral"
+    lines = npc.dialogue.get(key, ["..."])
+    return random.choice(lines)
+
+
+def get_contextual_dialogue(npc: Npc, player_trust: TrustMap, context_type: str = "talk", player_relationships: Optional[Dict[str, Dict[str, int]]] = None, wanted_level: int = 0, player_morale: int = 50) -> str:
+    if wanted_level > 0:
+        wanted_line = _get_wanted_aware_dialogue(npc, wanted_level, player_trust, player_relationships)
+        if wanted_line:
+            return wanted_line
+
+    if player_morale < 30:
+        morale_line = _get_low_morale_dialogue(npc, player_morale, player_trust)
+        if morale_line:
+            return morale_line
+
+    trust_score = get_role_trust(player_trust, npc.faction, npc.role)
+
+    friendship = 0
+    fear = 0 
+    if player_relationships and npc.id in player_relationships:
+        rel = player_relationships[npc.id]
+        friendship = rel.get("friendship", 0)
+        fear = rel.get("fear", 0)
+
+    if context_type == "greeting":
+        line = _pick_line(npc, "greeting")
+        if line:
+            return line
+
+    if context_type == "farewell":
+        line = _pick_line(npc, "farewell")
+        if line:
+            return line
+
+    if context_type == "gossip":
+        line = _pick_line(npc, "gossip")
+        if line:
+            return line
+
+    high_trust = trust_score >= 70
+    low_trust = trust_score < 30
+    high_friendship = friendship >= 30
+    high_fear = fear >= 30
+
+    if wanted_level >= 1 and npc.perception > 20:
+        wanted_fear = wanted_level * 15
+        high_fear = (fear + wanted_fear) >= 30
+        if wanted_level >= 2:
+            high_trust = False
+            high_friendship = False
+    flee_flag = wanted_level >= 3
+
+    if high_trust and high_friendship and not high_fear:
+        friendly = _pick_line(npc, "friendly")
+        if friendly:
+            return friendly
+
+    if high_trust and high_friendship and high_fear:
+        friendly = _pick_line(npc, "friendly")
+        if friendly:
+            return friendly
+
+    if high_trust and not high_friendship and not high_fear:
+        neutral = _pick_line(npc, "neutral")
+        if neutral:
+            return neutral
+
+    if low_trust and not high_friendship and high_fear:
+        afraid = _pick_line(npc, "afraid")
+        if afraid:
+            return afraid
+        hostile = _pick_line(npc, "hostile")
+        if hostile:
+            return hostile
+
+    if low_trust and not high_friendship and not high_fear:
+        hostile = _pick_line(npc, "hostile")
+        if hostile:
+            return hostile
+
+    if low_trust:
+        afraid = _pick_line(npc, "afraid")
+        if afraid:
+            return afraid
+        hostile = _pick_line(npc, "hostile")
+        if hostile:
+            return hostile
+
+    if high_trust:
+        friendly = _pick_line(npc, "friendly")
+        if friendly:
+            return friendly
+
+    line = _pick_line(npc, "neutral") or _pick_line(npc, "greeting")
+    return line or "..."
