@@ -210,3 +210,35 @@ CANON_TOPICS = {
     "foreigners": ("british", "french", "foreign", "concession", "german", "west", "american", "english"),
     "rumor": ("rumor", "rumour", "hear", "gossip", "whisper", "word", "heard"),
 }
+
+
+def _normalize_topic(raw: str) -> str:
+    return " ".join((raw or "").lower().replace("_", " ").replace("-", " ").split())
+
+
+def _topic_keyword_score(text: str, keywords: tuple[str, ...]) -> int:
+    return sum(len(k) for k in keywords if re.search(rf"\b{re.escape(k)}\b", text))
+
+
+def match_topic(raw: str, npc: Optional[Npc] = None) -> Optional[str]:
+    t = _normalize_topic(raw)
+    if npc:
+        ask = npc.dialogue.get("ask")
+        if isinstance(ask, dict):
+            normalized_topics = [(topic, _normalize_topic(topic)) for topic in ask]
+            for topic in ask:
+                normalized_topic = _normalize_topic(topic)
+                if t == normalized_topic:
+                    return topic
+            partial_matches = [
+                (topic, normalized_topic)
+                for topic, normalized_topic in normalized_topics
+                if normalized_topic in t or t in normalized_topic
+            ]
+            if partial_matches:
+                return max(partial_matches, key=lambda item: len(item[1]))[0]
+    matches = [(topic, _topic_keyword_score(t, keywords)) for topic, keywords in CANON_TOPICS.items()]
+    matches = [(topic, size) for topic, size in matches if size > 0]
+    if matches:
+        return max(matches, key=lambda item: item[1])[0]
+    return None
