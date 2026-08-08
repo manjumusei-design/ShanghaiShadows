@@ -301,3 +301,23 @@ def _spin_gmd(text: str) -> str:
     if result == text:
         result = "Official channels report that " + text[0].lower() + text[1:]
     return result
+
+
+def _spin_kempeitai(text: str) -> str:
+    replacements = {
+        "resistance": "terrorist elements",
+        "Resistance": "Terrorist elements",
+        "rescued": "assaulted a facility and liberated",
+        "fought": "engaged in subversive activities",
+        "attacked": "conducted an act of terror against",
+        "Ambush": "Terrorist attack",
+        "ambush": "terrorist attack",
+        "Kempeitai": "security forces",
+        "kempeitai": "security forces",
+    }
+    result = text
+    for old, new in replacements.items():
+        result = result.replace(old, new)
+    if result == text:
+        result = "Standard procedure continues: " + text[0].lower() + text[1:]
+    return result
