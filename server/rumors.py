@@ -321,3 +321,55 @@ def _spin_kempeitai(text: str) -> str:
     if result == text:
         result = "Standard procedure continues: " + text[0].lower() + text[1:]
     return result
+
+
+def _spin_civilian(text: str) -> str:
+    political_terms = [
+        "fascist forces", "imperialist aggressors", "occupation authorities",
+        "liberation", "resistance", "the cause", "patriotic",
+        "terrorist elements", "subversive", "criminal insurgents",
+        "military administration", "authorized operation",
+    ]
+    result = text
+    for term in political_terms:
+        result = result.replace(term, "they")
+        result = result.replace(term.capitalize(), "They")
+
+    if result != text:
+        result = "I try to stay out of it, but from what I heard: " + result[0].lower() + result[1:]
+    else:
+        result = "Keep your head down, but: " + result[0].lower() + result[1:]
+    return result
+
+
+def _spin_green_gang(text: str) -> str:
+    replacements = {
+        "arrested": "got themselves collected. That's gonna cost someone",
+        "raided": "got hit. Someone didn't pay their dues",
+        "killed": "was made an example of. Bad for business",
+        "rescued": "was rescued. Someone definetly paid well for that",
+    }
+    result = text
+    for old, new in replacements.items():
+        result = result.replace(old, new)
+    if result == text:
+        result = "There's angles to this: " + text[0].lower() + text[1:]
+    return result
+
+
+def reseed_active_rumors(shared, day: int) -> List[str]:
+    active_ids = seed_active_rumors(day)
+    shared.active_rumors = active_ids
+
+    seed = getattr(shared, 'rumour_seeds', [])
+    catalog = load_rumors(RUMORS_PATH)
+    for seed in seeds:
+        if seed.resolved:
+            continue
+        for rid in list(active_ids):
+            rumor = catalog.get(rid)
+            if rumor and seed.faction_context in rumor.factions:
+                if rid not in shared.active_rumors:
+                    shared.active_rumors.append(rid)
+                break
+    return shared.active_rumors
