@@ -14,7 +14,19 @@ class Session:
     seconds_since_state_broadcast: int = 0
     manually_advancing: bool = False
     audio_enabled: bool = True
+    open_popup: Dict[str, Any] | None = None
+    popup_generation: int = 0
 
+    def set_open_popup(self, kind: str, context: Dict[str, Any] | None = None) -> None:
+        self.popup_generation += 1
+        self.open_popup = {"kind": kind, "generation": self.popup_generation, "context": context or {}}
+
+    def clear_open_popup(self) -> None:
+        self.open_popup = None
+
+    async def send_popup_close(self, reason: str) -> None:
+        await self.websocket.send(json.dumps({"type": "popup_close", "payload": {"reason": reason}}))
+        
     async def send_display(self, text: str, msg_type=None):
         payload = {"type": "display", "payload": text}
         if msg_type is not None:
