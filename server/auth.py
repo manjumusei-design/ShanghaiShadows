@@ -140,6 +140,10 @@ def set_tutorial_complete(username: str, value: bool = True) -> None:
     _get_db().set_tutorial_complete(key, value)
 
 
+def get_stash(username: str) -> List[dict]:
+    key = username.strip().lower()
+    return _get_db().get_stash(key)
+
 def deposit_stash(username: str, items: List[dict]) -> None:
     key = username.strip().lower()
     db = _get_db()
