@@ -4,6 +4,12 @@ import random
 from .constants import BLACK_MARKET_LISTING_EXPIRE_DAYS, get_season, SEASONAL_PRICE_MULTIPLIER
 
 
+def _validate_fabi_amount(amount: int) -> int:
+    if not isinstance(amount, int) or amount < 0:
+        raise ValueError("fabi value must be a non neg int")
+    return amount
+
+
 def check_money(player, fabi_cost: int) -> bool:
     total_fabi = player.money_fabi + player.money_silver * 10
     return total_fabi >= fabi_cost
