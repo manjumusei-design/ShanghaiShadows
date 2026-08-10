@@ -66,3 +66,49 @@ def vendor_access(level: int, *, black_market: bool = False) -> VendorAccessResu
 
 def vendor_access_result(level: int, *, black_market: bool = False) -> VendorAccessResult:
     return vendor_access(level, black_market=black_market)
+
+
+def adjust_wanted(player, delta: int, *, day: int | None = None) -> int:
+    current = max(0, min(WANTED_LEVEL_MAX, int(getattr(player, "wanted_level", 0))))
+    player.wanted_level = max(0, min(WANTED_LEVEL_MAX, current + int(delta)))
+    if delta > 0 and day is not None:
+        player.wanted_decay_day = int(day)
+        player.wanted_safe_decay_day = int(day)
+        player.wanted_decay_last_day = int(day)
+    return player.wanted_level
+
+
+def record_crime(player, *, day: int, increase: int = 1) -> int:
+    return adjust_wanted(player, increase, day=day)
+
+
+def apply_crime_free_decay(player, *, day: int, safe_room: bool) -> bool:
+    if getattr(player, "wanted_level", 0) <= 0:
+        return False
+    marker = int(getattr(player, "wanted_decay_day", 0))
+    if marker <= 0:
+        player.wanted_decay_day = day
+        player.wanted_safe_decay_day = day if safe_room else 0
+        player.wanted_daecay_last_day = day
+        return False
+    safe_marker = int(getattr(player, "wanted_safe_decay_day", 0))
+    if not safe_room:
+        safe_marker = 0
+    elif safe_marker <= 0:
+        safe_marker = day
+    player.wanted_safe_decay_day = safe_marker
+    player.wanted_decay_last_day = day
+    ordinary_ready = day - marker >= wanted_consequences(player.wanted_level).decay_days_ordinary
+    safe_ready = safe_room and safe_marker > 0 and day - safe_marker >= wanted_consequences(player.wanted_level).decay_days_safe_room
+    if not ordinary_ready and not safe_ready:
+        return False
+    adjust_wanted(player, -1)
+    player.wanted_decay_day = day
+    player.wanted_safe_decay_day = day if safe_room else 0
+    player.wanted_decay_last_day = day
+    return True
+
+
+def calculate_curfew_arrest_chance(player, room=None, situational_modifier: int = 0) -> int:
+    base = wanted_consequences(getattr(player, "wanted_level", 0)).arrest_chance
+    return max(0, min(100, base))
