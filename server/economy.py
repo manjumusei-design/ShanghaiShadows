@@ -35,33 +35,18 @@ def earn_fabi_value(player, amount: int) -> None:
 def set_wallet_fabi_value(player, amount: int) -> None:
     amount = _validate_fabi_amount(amount)
     player.money_silver, player.money_fabi = divmod(amount, 10)
-    
+
 
 def check_money(player, fabi_cost: int) -> bool:
-    total_fabi = player.money_fabi + player.money_silver * 10
-    return total_fabi >= fabi_cost
+    return can_afford_fabi(player, fabi_cost)
 
 
 def spend_money(player, fabi_amount: int) -> None:
-    total_fabi = player.money_fabi + player.money_silver * 10
-    if total_fabi < fabi_amount:
-        return
-    if player.money_fabi >= fabi_amount:
-        player.money_fabi -= fabi_amount
-    else:
-        remainder = fabi_amount - player.money_fabi
-        player.money_fabi = 0
-        silver_needed = (remainder + 9) // 10
-        player.money_silver = max(0, player.money_silver - silver_needed)
-        player.money_fabi += silver_needed * 10 - remainder
+    spend_fabi_value(player, fabi_amount)
 
 
 def earn_money(player, fabi_amount: int) -> None:
-    player.money_fabi += fabi_amount
-    silver_to_add = player.money_fabi // 10
-    player.money_fabi %= 10
-    player.money_silver += silver_to_add
-
+    earn_fabi_value(player, fabi_amount)
 
 @dataclass
 class MarketCondition:
@@ -115,7 +100,6 @@ class EconomySystem:
     }
 
     ITEM_CATEGORIES = {
-        # Food
         'rice_bowl': 'food', 'baozi': 'food', 'tea': 'food', 'cold_noodles': 'food',
         'dried_fish': 'food', 'street_snack': 'food', 'food_parcel': 'food',
 
@@ -166,6 +150,7 @@ class EconomySystem:
         if condition.availability < 0.5:
             return 1.2
         return 1.0
+
 
     def get_item_price(self, item_base_cost: int, item_id: str, region: str,
                        npc_faction: str, inflation_rate: float = 1.0,
