@@ -10,6 +10,33 @@ def _validate_fabi_amount(amount: int) -> int:
     return amount
 
 
+def wallet_fabi_value(player) -> int:
+    return int(player.money_fabi) + 10 * int(player.money_silver)
+
+
+def can_afford_fabi(player, amount: int) -> bool:
+    return wallet_fabi_value(player) >= _validate_fabi_amount(amount)
+
+
+def spend_fabi_value(player, amount: int) -> bool:
+    amount = _validate_fabi_amount(amount)
+    if not can_afford_fabi(player, amount):
+        return False
+    remaining = wallet_fabi_value(player) - amount
+    player.money_silver, player.money_fabi = divmod(remaining, 10)
+    return True
+
+
+def earn_fabi_value(player, amount: int) -> None:
+    total = wallet_fabi_value(player) + _validate_fabi_amount(amount)
+    player.money_silver, player.money_fabi = divmod(total, 10)
+
+
+def set_wallet_fabi_value(player, amount: int) -> None:
+    amount = _validate_fabi_amount(amount)
+    player.money_silver, player.money_fabi = divmod(amount, 10)
+    
+
 def check_money(player, fabi_cost: int) -> bool:
     total_fabi = player.money_fabi + player.money_silver * 10
     return total_fabi >= fabi_cost
