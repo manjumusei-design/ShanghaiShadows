@@ -6,6 +6,7 @@ from typing import Dict, List, Optional
 import bcrypt
 
 from .account_db import Account, AccountDB
+from .lifecycle import CharacterSlot
 
 _db: Optional[AccountDB] = None
 _accounts_cache: Optional[Dict[str, Account]] = None
