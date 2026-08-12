@@ -1,6 +1,9 @@
 from collections import deque
+from dataclasses import dataclass
 from heapq import heappush, heappop
 from typing import Callable, Dict, List, Optional, Tuple
+
+from .law import is_curfew
 
 SOUND_YELL = 3
 SOUND_GUNSHOT = 5
@@ -8,6 +11,70 @@ SOUND_WHISPER = 1
 SOUND_NPC_ALERT = 2
 SOUND_FOOTSTEP = 1
 SOUND_MELEE = 2
+
+
+@dataclass(frozen=True)
+class SoundEvent:
+    kind: str
+    source_room_id: str
+    base_range: int
+    emit_audio: bool
+    locally_visible: bool
+    surpress_witnesses: bool
+    effective_range: int
+    intensity: int
+    source_actor_id: str = ""
+    investigator_target_room_id: str = ""
+
+
+def _sound_range(base_range: int, weather: str, game_time, range_multiplier: float) -> int:
+    effective = max(0, int(base_range * range_multiplier))
+    from .constants import WEATHER_SOUND_RANGE_MODIFIER
+    effective = max(0, int(effective * WEATHER_SOUND_RANGE_MODIFIER.get(weather, 1.0)))
+    if game_time and (game_time.hour >= 22 or game_time.hour < 6) and effective:
+        effective += 1
+    return effective
+
+
+def emit_sound(
+    source_room_id: str,
+    kind: str,
+    *,
+    intensity: int = 3,
+    weapon=None,
+    hidden: bool = False,
+    weather: str = "clear",
+    game_time=None,
+    range_multiplier: float = 1.0,
+    source_actor_id: str = "",
+    base_range: int | None = None,
+) -> SoundEvent:
+    weapon_type = getattr(weapon, "weapon_type", "") if weapon else ""
+    silenced = bool(weapon and "silencer" in getattr(weapon, "mods", []))
+    if kind == "melee" or weapon_type == "melee":
+        range_base = 0
+        effective = 0
+        audio = False
+    elif kind == "gunshot" or weapon_type == "firearm":
+        range_base = 4 if base_range is None else base_range
+        effective = 0 if silenced else _sound_range(range_base, weather, game_time, range_multiplier)
+        audio = not silenced
+    else:
+        range_base = 3 if base_range is None else base_range
+        effective = _sound_range(range_base, weather, game_time, range_multiplier)
+        audio = True
+    return SoundEvent(
+        kind=kind,
+        source_room_id=source_room_id,
+        base_range=range_base,
+        emit_audio=audio,
+        locally_visible=not (hidden and weapon_type == "firearm" and silenced),
+        suppress_witnesses=bool(hidden and silenced and weapon_type == "firearm"),
+        effective_range=effective,
+        intensity=intensity,
+        source_actor_id=source_actor_id,
+        investigator_target_room_id=source_room_id,
+    )
 
 
 def a_star_find_path(
@@ -75,12 +142,8 @@ def default_edge_cost(
         return cost
 
     if game_time and not getattr(room_b, "indoors", False):
-        hour = game_time.hour
-        if hour >= 20 or hour < 6:
+        if is_curfew(game_time):
             cost += 3.0
-
-    if weather == "rain" and not getattr(room_b, "indoors", False):
-        cost += 1.0
 
     if getattr(room_b, "safe_room", False):
         cost *= 0.7
@@ -101,32 +164,12 @@ def make_cost_fn(rooms: dict, player=None, game_time=None, weather: str = "clear
     return lambda a, b: default_edge_cost(a, b, rooms, player, game_time, weather)
 
 
-def propagate_sound(
-    rooms: dict,
-    origin_room_id: str,
-    intensity: int,
-    max_distance: int = 3,
-    weather: str = "clear",
-    game_time=None,
-    weapon=None,
-    range_multiplier: float = 1.0,
-) -> List[Tuple[str, int]]:
-    if weapon:
-        weapon_type = getattr(weapon, 'weapon_type', '') or getattr(weapon, 'type', '')
-        if weapon_type == 'melee':
-            return []
-        if "silencer" in weapon.mods:
-            return []
-    
-    effective_max = max_distance
-    if range_multiplier != 1.0:
-        effective_max = max(1, int(max_distance * range_multiplier))
-    if weather == "rain":
-        effective_max = max(1, int(max_distance * 0.6))
-    if game_time:
-        hour = game_time.hour
-        if hour >= 22 or hour < 6:
-            effective_max += 1
+def propagate_sound(rooms: dict, event: SoundEvent) -> List[Tuple[str, int]]:
+    if event.effective_range <= 0:
+        return []
+    origin_room_id = event.source_room_id
+    intensity = event.intensity
+    effective_max = event.effective_range
 
     result: List[Tuple[str, int]] = []
     visited = {origin_room_id}
