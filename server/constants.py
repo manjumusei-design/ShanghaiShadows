@@ -136,7 +136,6 @@ SEASONAL_PRICE_MULTIPLIER = {"winter": 1.5, "summer": 1.2, "spring": 1.0, "autum
 SEASONAL_MORALE_MODIFIER = {"winter": -1, "spring": 0, "summer": 0, "autumn": -0.5}
 SEASONAL_STEALTH_MODIFIER = {"winter": 0, "spring": 0, "summer": -5, "autumn": 5}
 SEASONAL_PERCEPTION_MODIFIER = {"winter": -5, "spring": 0, "summer": 0, "autumn": 5}
-SEASONAL_CURFEW_MODIFIER = {"winter": 30, "spring": 0, "summer": 0, "autumn": 0}
 SEASONAL_PATROL_DENSITY = {"winter": 1.2, "spring": 1.0, "summer": 0.8, "autumn": 1.1}
 
 SEASON_MONTHS = {"winter": [11, 0, 1], "spring": [2, 3, 4], "summer": [5, 6, 7], "autumn": [8, 9, 10]}
@@ -163,25 +162,16 @@ FLAGS_HIDDEN_FROM_STATUS = frozenset({"tutorial_complete", "tutorial_skip", "tut
 
 MAX_INVENTORY = 12
 
-PATROL_SPAWN_CHANCE = 0.3
-PATROL_INTERVAL_KEMPEITAI = 10
-PATROL_INTERVAL_OCCUPIED = 15
-PATROL_INTERVAL_CCP_GMD = 20
-PATROL_INTERVAL_CIVILIAN = 30
-PATROL_INTERVAL_INTERNATIONAL = 25  
-
 NPC_INTERACTIONS_PATH = "server/data/npc_interactions.yaml"
 DISTRESS_WITNESS_INTERVAL_MINUTES = 15
 DISTRESS_SOUND_BASE_RANGE = 2
 DISTRESS_WANTED_INCREASE_CHANCE = 10
 
 
-CRIME_SCENE_PATROL_MODIFIER = 2.0
 CRIME_SCENE_DURATION_DAYS = 2
 CORPSE_DECAY_DAYS = 1
 
 TENSION_HIGH_THRESHOLD = 120
-TENSION_HIGH_PATROL_BONUS = 1.5
 
 YELL_THREAT_KEYWORDS = frozenset({"kill", "die", "destroy", "curse", "murder", "death"})
 YELL_RESISTANCE_KEYWORDS = frozenset({"resistance", "freedom", "liberation", "revolution", "rebel", " ccp", "communist"})
