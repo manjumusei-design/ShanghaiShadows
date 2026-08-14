@@ -118,19 +118,35 @@ class Session:
 
     async def send_patrol_warning(
             self,
+            *,
+            patrol_id: str,
             stage: int,
-            seconds_remaining: int,
+            seconds_remaining: int = 0,
             expires_at: float | None = None,
-            candidate_rooms: List[str] | None = None,
-    ):
+    ) -> None:
+        stage = int(stage)
+        if stage == 3:
+            seconds_remaining = int(seconds_remaining)
+        else:
+            seconds_remaining = 0
+            expires_at = None
+        signature = (patrol_id, stage, seconds_remaining, expires_at)
+        if self._patrol_warning_signature == signature:
+            return
+        self._patrol_warning_signature = signature
         await self.websocket.send(json.dumps({
             "type": "patrol_warning",
             "stage": stage,
             "seconds_remaining": seconds_remaining,
             "expires_at": expires_at,
-            "candidate_rooms": candidate_rooms or [],
         }))
 
+    async def clear_patrol_warning(self, *, force: bool = False) -> None:
+        if self._patrol_warning_signature is None and not force:
+            return
+        self._patrol_warning_signature = None
+        await self.websocket.send(json.dumps({"type": "patrol_warning_clear"}))
+        
     async def send_audio(self, sound: str, volume: float = 1.0, loop: bool = False):
         await self.websocket.send(json.dumps({
             "type": "audio",
