@@ -16,6 +16,20 @@ class Session:
     audio_enabled: bool = True
     open_popup: Dict[str, Any] | None = None
     popup_generation: int = 0
+    _patrol_warning_signature: tuple[str, int, int, float | None] | None = field(
+        default=None,
+        init=False,
+        repr=False,
+    )
+    slot_id: str = ""
+    save_key: str = ""
+    rumors_panel_generation: int = 0
+    clean_close_completed: bool = False
+    final_save_completed: bool = False
+    final_save_attempted: bool = False
+    death_projection_completed: bool = False
+    close_attempted: bool = False
+    ephemeral: bool = False
 
     def set_open_popup(self, kind: str, context: Dict[str, Any] | None = None) -> None:
         self.popup_generation += 1
@@ -98,6 +112,9 @@ class Session:
     async def send_room_details(self, room_data: Dict):
         payload = {"type": "room_details", **room_data}
         await self.websocket.send(json.dumps(payload))
+
+    async def send_rumor_web(self, payload: dict) -> None:
+        await self.websocket.send(json.dumps({"type": "rumor_web", "payload": payload}))
 
     async def send_patrol_warning(
             self,
