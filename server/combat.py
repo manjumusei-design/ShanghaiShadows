@@ -4,10 +4,56 @@ from typing import List, Optional, TYPE_CHECKING
 
 from .constants import DISARM_CHANCE_CAP, MORALE_LOW_THRESHOLD, MORALE_PENALTY_MAX, STEALTH_KILL_BONUS, WEAPON_TYPE_BASE_DAMAGE, STEALTH_DAMAGE_BONUS
 from .formatting import format_bold
-print("[DEBUG] combat.py: imported format_bold from formatting")
+from .pathfinding import SoundEvent, emit_sound
 
 if TYPE_CHECKING:
     from .world import Item
+
+
+def counter_damage_for(gap: int) -> int:
+    return max(5, min(25, 5 + max(0, gap) // 5))
+
+
+def compute_effective_courage(
+    attacker_courage: int,
+    attacker_weapon,
+    attacker_hidden: bool,
+    target_armour,
+    attacker_morale: int,
+    disguise_bonus: int = 0,
+    courage_multiplier: float = 1.0,
+): 
+    effective_courage = attacker_courage
+    if courage_multiplier != 1.0:
+        effective_courage = int(attacker_courage * courage_multiplier)
+    parts = [f"Courage ({attacker_courage})"]
+
+    def add(label: str, delta: int) -> None:
+        nonlocal effective_courage
+        effective_courage += delta
+        parts.append(f"{label} ({delta:+d})")
+
+    if attacker_weapon:
+        add(attacker_weapon.name, attacker_weapon.courage_bonus)
+        mod_stealth = getattr(attacker_weapon, 'stealth_bonus', 0)
+        if attacker_hidden and mod_stealth:
+            add("silencer", mod_stealth)
+    if attacker_hidden:
+        add("stealth", STEALTH_KILL_BONUS)
+    if target_armour and hasattr(target_armour, 'durability') and target_armour.durability <= 0:
+        defence = 0
+    else:
+        defence = target_armour.defense_value if target_armour else 0
+    if defence:
+        add("armour", -defence)
+    morale_pen = min(MORALE_PENALTY_MAX, MORALE_LOW_THRESHOLD - attacker_morale) if attacker_morale < MORALE_LOW_THRESHOLD else 0
+    if morale_pen:
+        add("shaken", -morale_pen)
+    if disguise_bonus:
+        add("disguise", disguise_bonus)
+    if attacker_weapon and hasattr(attacker_weapon, 'durability') and attacker_weapon.durability <= 0:
+        add("broken_weapon", -10)
+    return effective_courage, parts, defence, morale_pen
 
 
 def strip_article(name: str) -> str:
@@ -46,6 +92,7 @@ class CombatResult:
     target_damage: int = 0
     messages: List[str] = field(default_factory=list)
     breakdown: str = ""
+    sound_event: Optional["SoundEvent"] = None
 
 
 _HIT_LINES = [
