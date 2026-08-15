@@ -17,7 +17,12 @@ class AmbientEvent:
     sound_range: Optional[int] = None
     cooldown_tiks: int = 0
     last_triggered: dict[str, int] = field(default_factory=dict)
+    hidden_player: bool = False
 
+    @property
+    def is_danger(self) -> bool:
+        return "danger" in self.tags 
+    
     def is_eligible(self, room_id: str, room_tags: list[str], district: str,
                     current_tick: int, player_perception: int = 0) -> bool:
         if player_perception < self.min_perception:
