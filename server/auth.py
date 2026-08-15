@@ -114,6 +114,122 @@ def list_characters(username: str) -> List[str]:
     return account.characters.copy()
 
 
+def migrate_legacy_slots(username: str, storylet_manager=None) -> List[CharacterSlot]:
+    key = username.strip().lower()
+    db = _get_db()
+    existing = db.list_character_slots(key)
+    account = db.get_account(key)
+    if account is None:
+        return []
+    from .save_manager import load_legacy_player, save_player
+    if existing:
+        pending = [slot for slot in existing if slot.status == "unavailable" and slot.unavailable_reason in ("legacy_projection_pending", "slot_projection_failed")]
+        if not pending:
+            return existing
+        targets = [(slot.display_name, slot) for slot in pending]
+    else:
+        targets = []
+        for legacy_name in account.characters:
+            slot = db.create_character_slot(key, legacy_name or "Stranger", status="unavailable", unavailable_reason="legacy_projection_pending")
+            targets.append((str(legacy_name), slot))
+    living_found = db.get_living_character_slot(key) is not None
+    for legacy_name, slot in targets:
+        legacy_path_key = str(legacy_name)
+        player = load_legacy_player(legacy_path_key, storylet_manager)
+        if player is None:
+            db.set_character_slot_status(key, slot.slot_number, "unavailable", "legacy_save_unavailable")
+            continue
+        embedded_username = (getattr(player, "account_username", "") or player.username).strip().lower()
+        if embedded_username != key or player.username.strip().lower() != key:
+            db.set_character_slot_status(key, slot.slot_number, "unavailable", "legacy_ownership_mismatch")
+            continue
+        player.username = key
+        player.account_username = key
+        player.character_slot_id = slot.slot_id
+        player.save_key = slot.save_key
+        dead = "player_died" in player.flags or player.health <= 0
+        if not dead and living_found:
+            db.set_character_slot_status(key, slot.slot_number, "unavailable", "duplicate_living_slot")
+            continue
+        try:
+            save_player(player, save_key=slot.save_key)
+        except Exception:
+            db.set_character_slot_status(key, slot.slot_number, "unavailable", "slot_projection_failed")
+            continue
+        status = "dead" if dead else "living"
+        if status == "living":
+            db.activate_projected_character_slot(key, slot.slot_number)
+        else:
+            db.set_character_slot_status(key, slot.slot_number, status)
+        if status == "living":
+            living_found = True
+    return db.list_character_slots(key)
+
+
+def list_character_slots(username: str, storylet_manager=None) -> List[CharacterSlot]:
+    return migrate_legacy_slots(username, storylet_manager)
+
+
+def get_character_slot(username: str, slot_number: int, storylet_manager=None) -> Optional[CharacterSlot]:
+    migrate_legacy_slots(username, storylet_manager)
+    return _get_db().get_character_slot(username.strip().lower(), int(slot_number))
+
+
+def get_living_character_slot(username: str, storylet_manager=None) -> Optional[CharacterSlot]:
+    migrate_legacy_slots(username, storylet_manager)
+    return _get_db().get_living_character_slot(username.strip().lower())
+
+
+def rename_character_slot(username: str, slot_number: int, display_name: str) -> CharacterSlot:
+    return _get_db().rename_character_slot(username.strip().lower(), int(slot_number), display_name)
+
+
+def transition_character_slot_to_dead(username: str, slot_number: int) -> CharacterSlot:
+    return _get_db().set_character_slot_status(username.strip().lower(), int(slot_number), "dead")
+
+
+def create_living_slot(username: str, player, display_name: str = "") -> CharacterSlot:
+    key = username.strip().lower()
+    db = _get_db()
+    migrate_legacy_slots(key)
+    if db.get_living_character_slot(key) is not None:
+        raise ValueError("account already has a living char slot")
+    pending = next(
+        (
+            candidate
+            for candidate in db.list_character_slots(key)
+            if candidate.status == "unavailable" and candidate.unavbailable_reason == "slot_projection_pending"
+        ),
+    )
+    if pending is None:
+    if pending is None:
+        slot = db.create_character_slot(key, display_name or getattr(player, "name", "Stranger"), status="unavailable", unavailable_reason="slot_projection_pending")
+    else:
+        slot = db.rename_character_slot(key, pending.slot_number, display_name or getattr(player, "name", "Stranger"))
+    player.username = key
+    player.account_username = key
+    player.character_slot_id = slot.slot_id
+    player.save_key = slot.save_key
+    from .save_manager import save_player
+    try:
+        save_player(player, save_key=slot.save_key)
+    except Exception as exc:
+        raise ValueError("slot projection failed") from exc
+    return db.activate_projected_character_slot(key, slot.slot_number)
+
+
+def create_successor_slot(username: str, player, display_name: str = "") -> CharacterSlot:
+    return create_living_slot(username, player, display_name)
+
+
+def load_authenticated_slot(username: str, slot_number: int, storylet_manager=None):
+    slot = get_character_slot(username, slot_number, storylet_manager)
+    if slot is None or slot.status != "living":
+        return None
+    from .save_manager import load_slot_player
+    return load_slot_player(slot, username.strip().lower(), storylet_manager), slot
+
+
 def resolve_spawn_room(username: str) -> str:
     account = get_account(username)
     if account and account.primary_safehouse:
