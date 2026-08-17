@@ -166,23 +166,94 @@ def _reset_shared_world(shared, session_manager) -> None:
     if sessions is not None:
         sessions.clear()
 
-def archive_legacy_cycle(legacy_book: List[Dict], cycle: int) -> None:
-    if not legacy_book:
-        return
-    archive_dir = Path(_DATA_DIR) / "archives"
-    archive_dir.mkdir(parents=True, exist_ok=True)
-    path = archive_dir / f"legacy_cycle_{cycle}.yaml"
-    with open(path, "w", encoding="utf-8") as f:
-        yaml.dump(legacy_book, f, allow_unicode=True, default_flow_style=False)
 
+async def resolve_shared_liberation(shared, session_manager) -> str| None:
+    if getattr(session_manager, "_shared_liberation_in_progress", False) is True:
+        return None
+    session_manager._shared_liberation_in_progress = True
+    try:
+        if getattr(session_manager, "_shared_liberation_pending_reset", False) is True:
+            try:
+                _reset_shared_world(shared, session_manager)
+            except Exception as exc:
+                raise ExceptionGroup("shared liberation reset retry failed", [exc])
+            session_manager._shared_liberation_pending_reset = False
+            return None
 
-def compile_legacy_narrative(legacy_book: List[Dict]) -> str:
-    if not legacy_book:
-        return "No one lived to tell the tale. But the city remembers."
-    lines = []
-    for e in legacy_book:
-        name = e.get("character_name", "Unknown")
-        day = e.get("day_of_death", "?")
-        summary = e.get("summary", "Their story is their own.")
-        lines.append(f"{name} (died day {day}): {summary}")
-    return "\n".join(lines)
+        ending_type = check_victory_conditions(
+            shared.game_time.day,
+            shared.ccp_influence,
+            shared.gmd_influence,
+        )
+        if ending_type is None:
+            return None
+
+        from .locales import get as loc
+        from .save_manager import save_world_state
+
+        sessions = _active_sessions(session_manager)
+        rendered = []
+        for session in sessions:
+            ending_text = generate_liberation_ending(
+                ending_type,
+                session.player.name,
+                shared.ccp_influence,
+                shared.gmd_influence,
+            )
+            end_screen = f"\n{ending_text}\n\n{loc('victory.footer')}\n"
+            rendered.append((session, json.dumps({"type": "ending", "payload": end_screen})))
+
+        errors = []
+        for session, payload in rendered:
+            try:
+                await session.websocket.send(payload)
+            except Exception as exc:
+                errors.append(exc)
+            try:
+                flags = getattr(session.player, "flags", None)
+                if flags is None:
+                    flags = []
+                    session.player.flags = flags
+                if "player_died" not in flags:
+                    flags.append("player_died")
+                from .lifecycle import transition_session_slot_to_dead
+                from .lifecycle import attempt_authorized_session_save
+                if attempt_authorized_session_save(session, death_projection=True):
+                    transition_session_slot_to_dead(session)
+            except Exception as exc:
+                errors.append(exc)
+
+        try:
+            save_world_state(shared)
+        except Exception as exc:
+            errors.append(exc)
+        shared.server_cycle += 1
+        try:
+            await asyncio.sleep(60)
+        except Exception as exc:
+            errors.append(exc)
+
+        reset_msg = "A new timeline begins. Shanghai, November 1937."
+        for session in sessions:
+            try:
+                await session.websocket.send(json.dumps({"type": "server_reset", "payload": reset_msg}))
+            except Exception as exc:
+                errors.append(exc)
+            try:
+                from .lifecycle import close_session_cleanly
+                await close_session_cleanly(session_manager, session)
+            except Exception as exc:
+                errors.append(exc)
+
+        session_manager._shared_liberation_pending_reset = True
+        try:
+            _reset_shared_world(shared, session_manager)
+        except Exception as exc:
+            errors.append(exc)
+        else:
+            session_manager._shared_liberation_pending_reset = False
+        if errors:
+            raise ExceptionGroup("shared liberation commit failures", errors)
+        return ending_type
+    finally:
+        session_manager._shared_liberation_in_progress = False
