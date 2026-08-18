@@ -1069,3 +1069,127 @@ class WorldClock:
                     asyncio.create_task(
                         session.send_display(text + "\n", msg_type=MessageType.AMBIENT)
                     )
+
+        def _process_npc_autonomy(self):
+            if self.shared.game_time.minute % 30 == 0:
+                self._accumulate_dispositions()
+            current_minute = self.shared.game_time.day * 1440 + self.shared.game_time.minute
+            schedules = self.shared.npc_social_schedules
+        for npc_id in self.shared.world.npcs:
+            schedules.setdefault(npc_id, SocialSchedule.initial_for(npc_id, current_minute).to_dict())
+        rooms_with_players = self._rooms_with_players()
+        bt_registry = self._get_bt_registry()
+        due_ids = due_npc_ids(schedules, current_minute)
+        clone_ids = self._tutorial_clone_npc_ids()
+        for npc_id in clone_ids:
+            npc = self.shared.world.npcs.get(npc_id)
+            if not npc or not tutorial_sound_investigator_allowed(npc_id, clone_ids, npc):
+                continue
+            if npc_id not in due_ids:
+                schedules.setdefault(npc_id, {"next_action_minute": current_minute})
+                due_ids.insert(0, npc_id)
+        for npc_id in due_ids:
+            npc = self.shared.world.npcs.get(npc_id)
+            if not npc:
+                continue
+            sound_investigator = tutorial_sound_investigator_allowed(npc_id, clone_ids, npc)
+            if npc_id in clone_ids and not sound_investigator:
+                continue
+            interval_seed = int.from_bytes(npc_id.encode("utf-8"), "little", signed=False) % (SOCIAL_INTERVAL_MINUTES[1] - SOCIAL_INTERVAL_MINUTES[0] + 1)
+            schedules[npc_id]["next_action_minute"] = current_minute + SOCIAL_INTERVAL_MINUTES[0] + interval_seed
+            if is_transient_patrol_id(npc_id):
+                continue
+            if is_named_npc_dead(self.shared, npc_id):
+                continue
+            current_room_id = self.shared.world.npc_locations.get(npc_id)
+            if not current_room_id:
+                continue
+            current_room = self.shared.world.rooms.get(current_room_id)
+            if not current_room:
+                continue
+            npc.suspicion = max(0, npc.suspicion - SUSPICION_DECAY_PER_TICK)
+
+            needs = getattr(npc, 'needs', None)
+            if needs is not None:
+                needs["hunger"] = min(100, needs.get("hunger", 0) + random.randint(1, 3))
+                needs["fatigue"] = min(100, needs.get("fatigue", 0) + random.randint(1, 2))
+                if current_room_id and any(
+                    n.faction in ("kempeitai",) and n.faction != npc.faction
+                    for n in self._get_nearby_npcs(npc_id, current_room)
+                ):
+                    needs["fear"] = min(100, needs.get("fear", 0) + random.randint(2, 5))
+                else:
+                    needs["fear"] = max(0, needs.get("fear", 0) - random.randint(1, 3))
+
+            skip_npc = False
+            for session in self.session_manager.get_players_in_room(current_room_id):
+                if session.manually_advancing:
+                    skip_npc = True
+                    break
+                if tutorial_blocks_world_events(session.player) and not sound_investigator:
+                    skip_npc = True
+                    break
+                active = session.player.active_storylets
+                if active and getattr(active[0], "blocking", True):
+                    if npc_id in active[0].participant_npc_ids():
+                        skip_npc = True
+                        break
+            if skip_npc:
+                continue
+
+            if getattr(npc, 'wounded', False):
+                self._npc_flee_action(npc, current_room_id, current_room, rooms_with_players, reason="wounded")
+                npc.hp = min(100, npc.hp + random.randint(1, 5))
+                if npc.hp >= 80:
+                    npc.wounded = False
+                    npc.wound_type = ""
+                continue
+            archetype = getattr(npc, "bt_archetype", "")
+            if archetype:
+                tree = bt_registry.tree_for(npc_id, archetype)
+                self._refresh_blackboard(tree.blackboard, npc, current_room_id, current_room)
+                tree.tick()
+            else:
+                roll = random.random()
+                if roll < 0.40:
+                    self._npc_move_action(npc, current_room_id, current_room, rooms_with_players)
+                elif roll < 0.60:
+                    self._npc_gossip_action(npc, current_room, rooms_with_players)
+                elif roll < 0.70:
+                    self._npc_argue_action(npc, current_room, rooms_with_players)
+                elif roll < 0.80:
+                    self._npc_flee_action(npc, current_room_id, current_room, rooms_with_players)
+
+    def _move_npc_between_rooms(self, npc_id: str, from_room_id: str, to_room_id: str, direction: str = "", silent: bool = False):
+        old_room = self.shared.world.rooms.get(from_room_id)
+        if old_room and npc_id in old_room.npcs:
+            old_room.npcs.remove(npc_id)
+
+        dest_room = self.shared.world.rooms.get(to_room_id)
+        if dest_room:
+            dest_room.npcs.append(npc_id)
+            self.shared.world.npc_locations[npc_id] = to_room_id
+            return True
+        return False
+
+    def _respawn_dead_npcs(self):
+        retire_recorded_npcs(self.shared)
+
+    def _restock_market_food(self):
+        season = _season_from_day(self.shared.game_time.day)
+        restock_chance = SEASONAL_FOOD_SHORTAGE.get(season, 1.0)
+        for room_id, item_ids in self.shared.market_rooms.items():
+            room = self.shared.world.rooms.get(room_id)
+            if not room:
+                continue
+            override = self.shared.room_state_overrides.get(room_id)
+            if override and override.get("shop_closed"):
+                continue
+            existing_ids = {i.id for i in room.items}
+            for item_id in item_ids:
+                if item_id in existing_ids:
+                    continue
+                if random.random() <= restock_chance:
+                    item = self.shared.world.clone_item(item_id)
+                    if item:
+                        room.items.append(item)
