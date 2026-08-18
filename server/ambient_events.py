@@ -12,19 +12,22 @@ class AmbientEvent:
     time_range: Optional[tuple[int, int]] = None
     districts: list[str] = field(default_factory=list)
     room_types: list[str] = field(default_factory=list)
-    min_perception: int = 0 # Need to change 
+    min_perception: int = 0
     probability: float = 0.1
     sound_range: Optional[int] = None
-    cooldown_tiks: int = 0
+    cooldown_ticks: int = 0
     last_triggered: dict[str, int] = field(default_factory=dict)
     hidden_player: bool = False
 
     @property
     def is_danger(self) -> bool:
-        return "danger" in self.tags 
-    
+        return "danger" in self.tags
+
     def is_eligible(self, room_id: str, room_tags: list[str], district: str,
-                    current_tick: int, player_perception: int = 0) -> bool:
+                    current_tick: int, player_perception: int = 0, player_hidden: bool = False) -> bool:
+        if self.hidden_player and not player_hidden:
+            return False
+
         if player_perception < self.min_perception:
             return False
 
@@ -44,21 +47,21 @@ class AmbientEvent:
             return False
 
         return True
-    
+
     def get_text_for_perception(self, perception: int) -> str:
         if perception >= self.min_perception:
             return self.text
-        elif perception >= self.min_perception - 10:
-            fragments = self.text.split(". ")
+        truncated_threshold = min(50, self.min_perception - 10)
+        if perception >= max(truncated_threshold, 10):
+            fragments = self.text.split('.')
             if len(fragments) > 1:
                 return fragments[0].strip() + '.'
         return ""
-    
+
 
 def load_ambient_events(path: str) -> list[AmbientEvent]:
     try:
-        with open(path, 'r', encoding='utf-8') as f:
-            data = yaml.safe_load(f) or []
+        data = load_strict_yaml(path) or []
         return [_parse_event(e) for e in data]
     except FileNotFoundError:
         return []
@@ -82,16 +85,18 @@ def _parse_event(data: dict) -> AmbientEvent:
         probability=data.get('probability', 0.1),
         sound_range=data.get('sound_range'),
         cooldown_ticks=data.get('cooldown_ticks', 0),
+        hidden_player=data.get('hidden_player', False),
     )
 
 
 def check_ambient_trigger(events: list[AmbientEvent], room_id: str,
                           room_tags: list[str], district: str,
                           current_tick: int, player_perception: int = 0,
-                          current_minute: Optional[int] = None) -> Optional[AmbientEvent]:
+                          current_minute: Optional[int] = None,
+                          player_hidden: bool = False) -> Optional[AmbientEvent]: 
     eligible = []
     for event in events:
-        if event.is_eligible(room_id, room_tags, district, current_tick, player_perception):
+        if event.is_eligible(room_id, room_tags, district, current_tick, player_perception, player_hidden):
             if event.time_range:
                 if current_minute is None:
                     continue
@@ -99,8 +104,8 @@ def check_ambient_trigger(events: list[AmbientEvent], room_id: str,
                 if start <= end:
                     if not (start <= current_minute < end):
                         continue
-                    else:
-                        if not (current_minute >= start or current_minute < end):
+                else:
+                    if not (current_minute >= start or current_minute < end):
                         continue
             eligible.append(event)
 
