@@ -539,3 +539,95 @@ class WorldClock:
                 item for item in room.items
                 if not (item.is_corpse and item.decay_day > 0 and current_day >= item.decay_day)
             ]
+
+    def _apply_trust_decay_all_sessions(self) -> None:
+        from .trust import apply_trust_decay
+        current_day = self.shared.game_time.day
+        for session in list(self.session_manager.sessions.values()):
+            if tutorial_blocks_world_events(session.player):
+                continue
+            decayed = apply_trust_decay(
+                session.player.trust,
+                session.player.last_trust_interaction,
+                current_day,
+            )
+            if decayed:
+                summary = ", ".join(
+                    f"{faction.upper()} ({total_delta})" for faction, total_delta in decayed
+                )
+                asyncio.create_task(
+                    session.send_display(
+                        f"Your standing has faded from neglect: {summary}."
+                    )
+                )
+
+            self._apply_wanted_decay(session, current_day)
+
+    def _apply_wanted_decay(self, session: Session, current_day: int) -> None:
+        from .trust import has_faction_perk
+        from .locales import get as loc
+
+        room = self.shared.world.get_room(session.player.current_room)
+        safe_room = bool(room and room.safe_room)
+        if apply_crime_free_decay(session.player, day=current_day, safe_room=safe_room):
+            asyncio.create_task(session.send_display(loc("wanted.decay")))
+
+    def _move_npcs_if_hour_changed(self):
+        if self.shared.game_time.minute % 60 != 0:
+            return
+        hour = self.shared.game_time.minute // 60
+        for npc_id, npc in self.shared.world.npcs.items():
+            room_id = npc.schedule.get(hour)
+            if room_id and room_id in self.shared.world.rooms:
+                old_room_id = self.shared.world.npc_locations.get(npc_id)
+                if old_room_id:
+                    old_room = self.shared.world.rooms.get(old_room_id)
+                    if old_room and npc_id in old_room.npcs:
+                        old_room.npcs.remove(npc_id)
+                if npc_id not in self.shared.world.rooms.get(room_id, []).npcs:
+                    self.shared.world.rooms[room_id].npcs.append(npc_id)
+                self.shared.world.npc_locations[npc_id] = room_id
+
+                if old_room_id and old_room_id != room_id:
+                    self._broadcast_npc_movement(npc_id, old_room_id, room_id)
+
+    def _broadcast_npc_movement(self, npc_id: str, old_room_id: str, new_room_id: str):
+        npc = self.shared.world.npcs.get(npc_id)
+        if not npc:
+            return
+
+        old_room = self.shared.world.rooms.get(old_room_id)
+        new_room = self.shared.world.rooms.get(new_room_id)
+
+        if old_room:
+            for session in self._visible_sessions(old_room_id):
+                direction = self._get_direction(old_room_id, new_room_id)
+                if direction:
+                    asyncio.create_task(session.send_display(
+                        f"{npc.name} walks {direction}.", msg_type=MessageType.NPC_AMBIENT,
+                    ))
+
+        if new_room:
+            for session in self._visible_sessions(new_room_id):
+                direction = self._get_direction(new_room_id, old_room_id)
+                if direction:
+                    asyncio.create_task(session.send_display(
+                        f"{npc.name} arrives from {direction}.", msg_type=MessageType.NPC_AMBIENT,
+                    ))
+
+    def _get_direction(self, from_room: str, to_room: str) -> str:
+        from_room_obj = self.shared.world.rooms.get(from_room)
+        if not from_room_obj:
+            return ""
+        for direction, dest in from_room_obj.exits.items():
+            if dest == to_room:
+                return direction
+        return ""
+
+    def _process_gossip(self):
+        from .rumors import process_gossip_room
+        for room in self.shared.world.rooms.values():
+            if room.id in self.shared.cloned_tutorial_rooms:
+                continue
+            process_gossip_room(self.shared, room)
+
