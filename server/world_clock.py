@@ -723,4 +723,349 @@ class WorldClock:
         active_storylets = getattr(player, "active_storylets", []) or []
         return any(getattr(storylet, "blocking", True) for storylet in active_storylets)
 
-    
+    async def _process_planted_evidence_all_sessions(self):
+        for session in list(self.session_manager.sessions.values()):
+            if session.player.planted_evidence:
+                await self._check_planted_evidence_for_session(session)
+
+    async def _check_planted_evidence_for_session(self, session: Session):
+        from .commands import CommandContext
+        remaining = []
+        for planted in session.player.planted_evidence:
+            room = self.shared.world.get_room(str(planted["room_id"]))
+            target = str(planted.get("target", "")).lower()
+            triggered = False
+            if room:
+                for npc_id in room.npcs:
+                    npc = self.shared.world.npcs.get(npc_id)
+                    if not npc:
+                        continue
+                    if not target or target in npc.faction.lower() or target in npc.role.lower() or target in npc.name.lower():
+                        event_text = f"Your planted {planted['item_name']} in {room.title} has stirred suspicion."
+                        session.player.world_events.append(event_text)
+                        session.player.world_events = session.player.world_events[-50:]
+                        self.shared.event_log.append({
+                            "day": self.shared.game_time.day,
+                            "minute": self.shared.game_time.minute,
+                            "text": event_text,
+                        })
+                        self.shared.event_log = self.shared.event_log[-500:]
+                        from .rumors import publish_event_rumor
+                        publish_event_rumor(
+                            self.shared,
+                            event_type="planted_evidence",
+                            text=event_text,
+                            location=room.id,
+                            district=getattr(room, "district", ""),
+                            witnesses=[],
+                            faction_context=npc.faction,
+                            created_day=self.shared.game_time.day,
+                        )
+                        asyncio.create_task(session.send_display(event_text))
+                        triggered = True
+                        break
+            if not triggered:
+                remaining.append(planted)
+        session.player.planted_evidence = remaining
+
+    async def _process_tailing_all_sessions(self):
+        for session in list(self.session_manager.sessions.values()):
+            if session.player.tailing_state:
+                await self._process_tailing_for_session(session)
+
+    async def _process_tailing_for_session(self, session: Session):
+        current_total = (self.shared.game_time.day - 1) * 1440 + self.shared.game_time.minute
+        from .equipment import advance_tail_clock, resolve_tail_step
+        tail = advance_tail_clock(session.player, current_total)
+        if not tail:
+            return
+        target = self.shared.world.npcs.get(tail.target_npc_id)
+        from .constants import get_season
+        season = get_season(self.shared.game_time.day)
+        result = resolve_tail_step(
+            session.player,
+            target,
+            tail,
+            self.stealth,
+            self.disguises,
+            wanted_bonus=wanted_consequences(session.player.wanted_level).disguise_perception_bonus,
+            current_room=self.shared.world.get_room(session.player.current_room),
+            target_room=self.shared.world.npc_locations.get(target.id) if target else "",
+            season=season,
+        )
+        from .locales import get as loc
+        if result.outcome == "vanished":
+            asyncio.create_task(session.send_display(loc("cmd_tail.target_vanished")))
+        elif result.outcome == "challenge":
+            asyncio.create_task(session.send_display(f"{target.name} challenges you and the tail ends."))
+        elif result.outcome == "exposed":
+            asyncio.create_task(session.send_display(f"{target.name} sees through your disguise. The disguise is confiscated."))
+        elif result.outcome == "spotted":
+            asyncio.create_task(session.send_display(f"{target.name} glances over a shoulder, slows, and knows exactly what you are doing."))
+        elif result.outcome == "lost":
+            asyncio.create_task(session.send_display(f"You lose {target.name} in the streets."))
+        elif result.outcome == "moved":
+            asyncio.create_task(session.send_display(f"You shadow {target.name} and keep them in sight."))
+            if result.gained_stealth:
+                asyncio.create_task(session.send_display("You learn from their movements. (+1 stealth)"))
+        if result.stage.name == "SUSPICION" and result.outcome in ("continued", "moved"):
+            asyncio.create_task(session.send_display(f"{target.name} studies you but continues on."))
+
+    async def _check_storylets(self):
+        for session in list(self.session_manager.sessions.values()):
+            if tutorial_blocks_world_events(session.player):
+                continue
+            if not session.player.active_storylets:
+                from .commands import CommandContext, _display_storylet
+                active = self.storylet_manager.maybe_trigger_social_follow_up(session.player, self.shared)
+                if not active:
+                    active = self.storylet_manager.maybe_trigger_for_player(session.player, self.shared)
+                if active:
+                    ctx = self.session_manager._make_context(session)
+                    asyncio.create_task(_display_storylet(ctx, active))
+
+
+    async def _check_room_storylet_timeouts(self):
+        expired_rooms = []
+        for room_id, storylet_data in self.shared.active_room_storylets.items():
+            if storylet_data.get("resolved", False):
+                expired_rooms.append(room_id)
+                continue
+            triggered_at = storylet_data.get("triggered_at", 0)
+            if time.time() - triggered_at > 30:
+                options = storylet_data.get("options", [])
+                if options:
+                    first_option = options[0]
+                    await self._resolve_room_storylet(room_id, 0, first_option)
+                else:
+                    expired_rooms.append(room_id)
+
+        for room_id in expired_rooms:
+            if room_id in self.shared.active_room_storylets:
+                del self.shared.active_room_storylets[room_id]
+
+    def _apply_trust_effects(self, player, trust_changes: dict) -> None:
+        from .trust import change_trust
+        for faction, delta in trust_changes.items():
+            change_trust(
+                player.trust,
+                faction,
+                delta,
+                last_trust_interaction=player.last_trust_interaction,
+                current_day=self.shared.game_time.day,
+            )
+
+    def _apply_flag_effects(self, player, flag: str) -> None:
+        player.flags.append(flag)
+
+    def _apply_item_effects(self, player, item_id: str | list[str]) -> None:
+        item_ids = item_id if isinstance(item_id, list) else [item_id]
+        for catalog_item_id in item_ids:
+            grant_catalog_item(self.shared.world, player.inventory, str(catalog_item_id))
+
+    def _apply_health_effects(self, player, health_change: int) -> None:
+        player.health = max(0, min(100, player.health + health_change))
+
+    def _apply_morale_effects(self, player, morale_change: int) -> None:
+        if morale_change < 0:
+            season = _season_from_day(self.shared.game_time.day)
+            seasonal_mod = SEASONAL_MORALE_MODIFIER.get(season, 0)
+            morale_change = morale_change + int(seasonal_mod)
+            morale_change = min(morale_change, 0)
+
+        player.morale = max(0, min(100, player.morale + morale_change))
+
+    def _resolve_decision(self, decision_type: str, npc_id: str, room_id: str, effects: dict, storylet_id: str = "") -> None:
+        npc = self.shared.world.npcs.get(npc_id)
+        entry = {
+            "id": f"{decision_type}_{self.shared.game_time.day}_{self.shared.game_time.minute}_{npc_id}",
+            "day": self.shared.game_time.day,
+            "minute": self.shared.game_time.minute,
+            "actor_npc_id": npc_id,
+            "actor_faction": npc.faction if npc else "",
+            "decision_type": decision_type,
+            "effects": effects,
+            "storylet_id": storylet_id,
+            "resolved": False,
+        }
+        self.shared.world_decisions.append(entry)
+        if storylet_id and room_id:
+            self.shared.active_room_storylets[room_id] = {
+                "storylet_id": storylet_id,
+                "triggered_at": time.time(),
+                "options": [
+                    {"text": "Let events unfold.", "effects": {}},
+                ],
+                "resolved": False,
+                "decision_entry": entry,
+            }
+
+    def _accumulate_dispositions(self) -> None:
+        ccp_inf = self.shared.ccp_influence
+        gmd_inf = self.shared.gmd_influence
+        for npc_id, npc in self.shared.world.npcs.items():
+            if is_transient_patrol_id(npc_id):
+                continue
+            if is_named_npc_dead(self.shared, npc_id):
+                continue
+            if npc.faction in ("ccp", "gmd"):
+                own_inf, rival_inf = (ccp_inf, gmd_inf) if npc.faction == "ccp" else (gmd_inf, ccp_inf)
+                disp = self.shared.npc_dispositions.setdefault(npc_id, {"disillusionment": 0})
+                if own_inf < rival_inf:
+                    disp["disillusionment"] = min(100, disp["disillusionment"] + DISILLUSIONMENT_PER_TICK)
+                elif own_inf > rival_inf + 10:
+                    disp["disillusionment"] = max(0, disp["disillusionment"] - 1)
+            elif npc.faction == "green_gang":
+                world_tension = (ccp_inf + gmd_inf) / 2
+                disp = self.shared.npc_dispositions.setdefault(npc_id, {"disillusionment": 0})
+                if world_tension > 60:
+                    disp["disillusionment"] = min(100, disp["disillusionment"] + DISILLUSIONMENT_PER_TICK)
+                elif world_tension < 30:
+                    disp["disillusionment"] = max(0, disp["disillusionment"] - 1)
+
+    EFFECT_HANDLERS = {
+        "trust": lambda s, p, v: s._apply_trust_effects(p, v),
+        "flag": lambda s, p, v: s._apply_flag_effects(p, v),
+        "item": lambda s, p, v: s._apply_item_effects(p, v),
+        "add_item": lambda s, p, v: s._apply_item_effects(p, v),
+        "give_item": lambda s, p, v: s._apply_item_effects(p, v),
+        "health": lambda s, p, v: s._apply_health_effects(p, v),
+        "morale": lambda s, p, v: s._apply_morale_effects(p, v),
+    }
+
+    async def _resolve_room_storylet(self, room_id: str, option_index: int, option):
+        if room_id not in self.shared.active_room_storylets:
+            return
+
+        storylet_data = self.shared.active_room_storylets[room_id]
+        if storylet_data.get("resolved", False):
+            return
+        effects = option.get("effects", {})
+        for effect_type in ("item", "add_item", "give_item"):
+            item_ids = effects.get(effect_type)
+            if item_ids is None:
+                continue
+            if not isinstance(item_ids, list):
+                item_ids = {item_ids}
+            for item_id in item_ids:
+                validate_catalog_item(self.shared.world, str(item_id))
+        storylet_data["resolved"] = True
+
+        room_storylet_id = storylet_data.get("storylet_id", "")
+        for session in self.session_manager.get_players_in_room(room_id):
+            notified = set()
+            for active in session.player.active_storylets[:]:
+                if active.room_id == room_id:
+                    session.player.active_storylets.remove(active)
+                    notified.add(active.storylet_id)
+            for card_id in notified:
+                asyncio.create_task(session.send_storylet_resolved(card_id))
+            if room_storylet_id and room_storylet_id not in notified:
+                asyncio.create_task(session.send_storylet_resolved(room_storylet_id))
+
+            for effect_type, effect_value in effects.items():
+                handler = self.EFFECT_HANDLERS.get(effect_type)
+                if handler:
+                    handler(self, session.player, effect_value)
+
+            if option_index == 0:
+                asyncio.create_task(session.send_display("The moment passes."))
+            else:
+                asyncio.create_task(session.send_display(f"You chose option {option_index + 1}. The moment passes."))
+
+    def _check_mission_expiry(self):
+        mm = self.shared.mission_manager
+        if not mm:
+            return
+        for session in list(self.session_manager.sessions.values()):
+            expired = mm.check_expiry(session.player, self.shared.game_time.day)
+            for mid in expired:
+                asyncio.create_task(session.send_display(f"Mission {mid} has expired."))
+            failed = mm.check_staleness(session.player, self.shared)
+            for mid in failed:
+                asyncio.create_task(session.send_display(f"Mission {mid} has failed because its required target is no longer available."))
+
+    def _process_survival_all_sessions(self):
+        from .survival import apply_survival_tick
+        season = _season_from_day(self.shared.game_time.day)
+        minute = self.shared.game_time.minute
+        for session in list(self.session_manager.sessions.values()):
+            if tutorial_blocks_world_events(session.player):
+                continue
+            if getattr(session.player, "custody_until", -1) >= 0:
+                continue
+            room = self.shared.world.get_room(session.player.current_room)
+            weather = getattr(self.shared, "weather", "clear")
+            apply_survival_tick(
+                session.player,
+                minute,
+                self.shared.game_time.day,
+                send_display=lambda msg, s=session: asyncio.create_task(s.send_display(msg)),
+            )
+
+            if minute % 60 == 0:
+                self._apply_morale_effects(session.player, -MORALE_DECAY_PER_HOUR)
+                if room and not room.indoors:
+                    self._apply_morale_effects(session.player, WEATHER_MORALE_HOURLY.get(weather, 0))
+
+            if season == "winter" and minute % 60 == 0:
+                if room and not room.indoors:
+                    has_warm = any(i.id in ("winter_coat", "heavy_jacket") for i in session.player.inventory)
+                    if not has_warm:
+                        session.player.health = max(0, session.player.health - 1)
+                        if session.player.health % 10 == 0:
+                            asyncio.create_task(session.send_display(
+                                "The winter cold seeps into your bones.\n"
+                            ))
+
+    def _check_ambient_events_all_sessions(self) -> None:
+        from .ambient_events import check_ambient_trigger
+
+        events = self._get_ambient_events()
+        if not events:
+            return
+
+        current_tick = game_clock_total_minutes(self.shared.game_time)
+        current_minute = self.shared.game_time.minute
+
+        for session in list(self.session_manager.sessions.values()):
+            if tutorial_blocks_world_events(session.player):
+                continue
+
+            room = self.shared.world.get_room(session.player.current_room)
+            if not room:
+                continue
+
+            district = room.district if hasattr(room, 'district') else ""
+            room_tags = room.tags if hasattr(room, 'tags') else []
+            player_perception = getattr(session.player, 'perception', 50)
+            player_hidden = getattr(session.player, 'hidden', False)
+
+            triggered = check_ambient_trigger(
+                events,
+                room.id,
+                room_tags,
+                district,
+                current_tick,
+                player_perception,
+                current_minute,
+                player_hidden,
+            )
+
+            if triggered:
+                text = triggered.get_text_for_perception(player_perception)
+                if text: 
+                    active = session.player.active_storylets
+                    blocking = bool(active and getattr(active[0], "blocking", True))
+                    if not triggered.is_danger and (
+                        session.open_popup is not None or blocking
+                    ):
+                        continue
+                    if not triggered.is_danger:
+                        last_delivery = getattr(session, "ambient_delivered_at_minute", None)
+                        if last_delivery is not None and current_tick - last_delivery < 12:
+                            continue
+                        session.ambient_delivered_at_minute = current_tick
+                    asyncio.create_task(
+                        session.send_display(text + "\n", msg_type=MessageType.AMBIENT)
+                    )
