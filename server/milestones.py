@@ -3,6 +3,7 @@ from typing import Dict, List, TYPE_CHECKING
 from pathlib import Path
 import yaml
 
+
 if TYPE_CHECKING:
     from .player_data import PlayerData
     from .game_world import SharedWorldState
@@ -54,8 +55,7 @@ def load_milestones(path: str) -> List[Milestone]:
     p = Path(path)
     if not p.exists():
         return []
-    with open(p, "r", encoding="utf-8") as f:
-        data = yaml.safe_load(f) or {}
+    data = load_strict_yaml(p) or {}
     milestones = []
     for row in data.get("milestones", []):
         milestones.append(Milestone(
