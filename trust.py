@@ -1,10 +1,8 @@
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Tuple
-import hashlib
 import random
 
 import yaml
-
 
 FACTION_ROLES: Dict[str, List[str]] = {
     "ccp": ["guerrilla", "organizer", "courier", "operative", "healer"],
@@ -19,127 +17,6 @@ FACTION_ROLES: Dict[str, List[str]] = {
 ALL_FACTIONS = list(FACTION_ROLES.keys())
 
 
-@dataclass
-class TrackedRumor:
-    id: str
-    text: str
-    origin_faction: str = ""
-    current_faction: str = ""
-    source_npc: str = ""
-    hop_count: int = 0
-    day_created: int = 1
-
-    def to_dict(self) -> dict:
-        return {
-            "id": self.id,
-            "text": self.text,
-            "origin_faction": self.origin_faction,
-            "current_faction": self.current_faction,
-            "source_npc": self.source_npc,
-            "hop_count": self.hop_count,
-            "day_created": self.day_created,
-        }
-    
-    @classmethod
-    def from_dict(cls, data: dict) -> "TrackedRumor":
-        return cls(
-            id=data.get("id", ""),
-            text=data.get("text", ""),
-            origin_faction=data.get("origin_faction", ""),
-            current_faction=data.get("current_faction", ""),
-            source_npc=data.get("source_npc", ""),
-            hop_count=data.get("hop_count", 0),
-            day_created=data.get("day_created", 1),
-        )
-
-
-def _rumor_seed(rumor_id: str, game_day: int, hop_count: int) -> int:
-    raw = f"{rumor_id}:{game_day}:{hop_count}"
-    return int(hashlib.md5(raw.encode()).hexdigest()[:8], 16)
-
-
-def _personality_distortion_modifier(personality: str) -> float:
-    p = personality.lower()
-    honest_keywords = ["honest", "pious", "devout", "loyal", "dependable",
-                       "discreet", "meticulous", "disciplined", "measured"]
-    
-    corrupt_keywords = ["corrupt", "greedy", "slick", "charming", "calculating",
-                        "ruthless", "cunning", "scheming", "amused"]
-    
-    honest_count = sum(1 for kw in honest_keywords if kw in p)
-    corrupt_count = sum(1 for kw in corrupt_keywords if kw in p)
-
-    if honest_count > corrupt_count:
-        return 0.5
-    elif corrupt_count > honest_count:
-        return 1.5
-    return 1.0
-
-
-def distort_rumor(rumor: TrackedRumor, game_day: int, personality: str = "") -> TrackedRumor:
-    if rumor.hop_count >= 5:
-        garbled = [
-            "Something happened... but the details are lost in the telling.",
-            "There was some kind of incident, or so they say. Maybe.",
-            "I heard something, but honestly I can't remember what anymore.",
-            "A story's going around, though nobody seems to agree on the details.",
-            "People are talking about... something. I've lost track of what.",
-        ]
-        rng_garble = random.Random(_rumor_seed(rumor.id, game_day, rumor.hop_count))
-        new_text = rng_garble.choice(garbled)
-        return TrackedRumor(id=rumor.id, text=new_text, origin_faction=rumor.origin_faction, current_faction=rumor.current_faction, source_npc=rumor.source_npc, hop_count=rumor.hop_count + 1, day_created=rumor.day_created,
-        )
-    
-    rng = random.Random(_rumor_seed(rumor.id, game_day, rumor.hop_count))
-
-    modifier = _personality_distortion_modifier(personality) if personality else 1.0
-
-    new_text = rumor.text
-    new_faction = rumor.current_faction or rumor.origin_faction
-    
-    if rng.random() < 0.30 * modifier:
-        other_factions = [f for f in ALL_FACTIONS if f ! = new_faction]
-        if other_factions:
-            new_faction = rng.choice(other_factions)
-
-    if rng.random() < 0.20 * modifier:
-        exaggerations = [
-            "Word is", "Rumor has it", "People are saying",
-            "It's been whispered that", "They say",
-        ]
-        prefix = rng.choice(exaggerations)
-        # Don't double-prefix
-        if not any(new_text.startswith(p) for p in exaggerations):
-            new_text = f"{prefix} {new_text[0].lower()}{new_text[1:]}"
-
-    if rng.random() < 0.10 * modifier:
-        inversions = [
-            ("killed", "was seen alive after supposedly being"),
-            ("dead", "reportedly still alive, despite claims of being"),
-            ("stolen", "returned, contrary to claims it was"),
-            ("missing", "found, despite reports of being"),
-            ("caught", "apparently never"),
-            ("dangerous", "harmless, despite talk of being"),
-            ("suspicious", "perfectly ordinary, despite claims of being"),
-        ]
-        for old, new in inversions:
-            if old in new_text.lower():
-                new_text = new_text.replace(old, new, 1)
-                break
-        else:
-            new_text = f"Contrary to rumor, {new_text[0].lower()}{new_text[1:]}"
-
-    return TrackedRumor(
-        id=rumor.id,
-        text=new_text,
-        origin_faction=rumor.origin_faction,
-        current_faction=new_faction,
-        source_npc=rumor.source_npc,
-        hop_count=rumor.hop_count + 1,
-        day_created=rumor.day_created,
-    )
-
-
 TrustMap = Dict[str, Dict[str, int]]
 
 
@@ -148,6 +25,7 @@ class TrustRule:
     action: str
     deltas: Dict[str, int]
     visible: bool = False
+    feedback: str = ""
 
 
 def default_trust() -> TrustMap:
@@ -158,8 +36,8 @@ def default_trust() -> TrustMap:
 
 
 def load_trust_rules(path: str) -> Dict[str, TrustRule]:
-    with open(path, "r", encoding="utf-8") as f:
-        data = yaml.safe_load(f) or {}
+    data = load_strict_yaml(path) or {}
+    feedback_by_action = data.get("feedback", {})
     rules: Dict[str, TrustRule] = {}
     for row in data.get("rules", []):
         action = row.get("action")
@@ -169,6 +47,7 @@ def load_trust_rules(path: str) -> Dict[str, TrustRule]:
             action=action,
             deltas=row.get("deltas", {}),
             visible=bool(row.get("visible", False)),
+            feedback=str(row.get("feedback", feedback_by_action.get(action, ""))),
         )
     return rules
 
@@ -277,55 +156,214 @@ def exchange_gossip(
     mem_a: List[str],
     mem_b: List[str],
     chance: float = 0.2,
-    tracked_a: Optional[List[dict]] = None,
-    tracked_b: Optional[List[dict]] = None,
     game_day: int = 1,
     npc_a: "Npc" = None,
     npc_b: "Npc" = None,
+    sessions_in_room: Optional[List] = None,
+    shared=None,
 ) -> bool:
     if random.random() >= chance:
         return False
     source = None
     target = None
-    source_tracked = None
-    target_tracked = None
     source_npc = None
+    target_npc = None
 
     if mem_a and mem_b:
         if random.random() < 0.5:
             source, target = mem_a, mem_b
-            source_tracked, target_tracked = tracked_a, tracked_b
             source_npc = npc_a
+            target_npc = npc_b
         else:
             source, target = mem_b, mem_a
-            source_tracked, target_tracked = tracked_b, tracked_a
             source_npc = npc_b
+            target_npc = npc_a
     elif mem_a:
         source, target = mem_a, mem_b
-        source_tracked, target_tracked = tracked_a, tracked_b
         source_npc = npc_a
+        target_npc = npc_b
     elif mem_b:
         source, target = mem_b, mem_a
-        source_tracked, target_tracked = tracked_b, tracked_a
         source_npc = npc_b
+        target_npc = npc_a
     else:
         return False
 
     memory = random.choice(source)
+    child_id = None
+    if shared is not None and source_npc is not None and target_npc is not None:
+        from .rumors import gossip_hop_for_memory
+        child_id = gossip_hop_for_memory(
+            shared,
+            source_npc,
+            target_npc,
+            memory,
+            game_day,
+            personality=getattr(source_npc, "personality", "") if source_npc else "",
+        )
+    if child_id is not None:
+        child = shared.rumor_records.get(child_id)
+        if child is not None:
+            memory = child.text
+
     if "heard that" not in memory and random.random() < 0.4:
         memory = f"Heard that {memory[0].lower() + memory[1:]}"
 
-    if memory not in target:
-        target.append(memory)
+    if child_id is None and source_npc is not None and target_npc is not None:
+        src_faction = getattr(source_npc, 'faction', '')
+        tgt_faction = getattr(target_npc, 'faction', '')
+        if src_faction and tgt_faction and src_faction != tgt_faction:
+            from .rumors import apply_faction_spin
+            memory = apply_faction_spin(memory, tgt_faction)
 
-        if source_tracked is not None and target_tracked is not None:
-            personality = getattr(source_npc, 'personality', '') if source_npc else ''
-            for tr_dict in source_tracked:
-                tr = TrackedRumor.from_dict(tr_dict)
-                if tr.text in memory or memory in tr.text:
-                    distorted = distort_rumor(tr, game_day, personality=personality)
-                    target_tracked.append(distorted.to_dict())
-                    break
+    if memory in target:
+        return False
+    target.append(memory)
 
-        return True
-    return False
+    if sessions_in_room:
+        src_name = getattr(source_npc, 'name', 'Someone') if source_npc else 'Someone'
+        tgt_name = getattr(target_npc, 'name', 'someone') if target_npc else 'someone'
+        from .rumors import push_gossip_to_rumour_panel
+        for sess in sessions_in_room:
+            push_gossip_to_rumour_panel(sess, src_name, tgt_name, [memory])
+
+    return True
+
+
+DECAY_GRACE_DAYS = 3      
+DECAY_NORMAL = -2        
+DECAY_SEVERE = -3         
+NEGLECT_THRESHOLD = 7    
+
+TRUST_TIER_HOSTILE = 30    
+TRUST_TIER_NEUTRAL = 50    
+TRUST_TIER_CONNECTED = 70  
+
+FACTION_SAFEHOUSE_TRUST = {
+    "ccp_safehouse": ("ccp", TRUST_TIER_NEUTRAL),   
+    "gmd_safehouse": ("gmd", TRUST_TIER_NEUTRAL),   
+    "green_gang_safehouse": ("green_gang", TRUST_TIER_NEUTRAL), 
+    "kempeitai_safehouse": ("kempeitai", TRUST_TIER_NEUTRAL),   
+}
+
+FACTION_PERKS = {
+    "ccp": {
+        "name": "Hidden Safehouse Network",
+        "description": "Additional safe rooms revealed in faction territory.",
+        "reveal_rooms": ["hidden_20", "hidden_30", "hidden_40"],
+    },
+    "gmd": {
+        "name": "Weapon Cache Access",
+        "description": "Free weapon repair at GMD safehouses.",
+    },
+    "green_gang": {
+        "name": "Smuggling Routes",
+        "description": "Bypass certain checkpoints when traveling with Green Gang NPCs.",
+    },
+    "kempeitai": {
+        "name": "Impunity",
+        "description": "Wanted level decays 2x faster.",
+        "cross_faction_penalty": {"ccp": -10, "gmd": -10},
+    },
+}
+
+
+def get_trust_tier(trust_score: int) -> str:
+    if trust_score < TRUST_TIER_HOSTILE:
+        return "hostile"
+    elif trust_score < TRUST_TIER_NEUTRAL:
+        return "neutral"
+    elif trust_score < TRUST_TIER_CONNECTED:
+        return "trusted"
+    else:
+        return "connected"
+
+
+def can_claim_faction_safehouse(
+    trust: TrustMap,
+    room_tags: List[str],
+) -> Tuple[bool, Optional[str]]:
+    for tag in room_tags:
+        if tag in FACTION_SAFEHOUSE_TRUST:
+            faction, min_trust = FACTION_SAFEHOUSE_TRUST[tag]
+            trust_score = get_role_trust(trust, faction, None)
+            if trust_score < min_trust:
+                return (False, f"Your standing with {faction.upper()} is not high enough to claim this safehouse. (Need {min_trust}, have {trust_score})")
+    return (True, None)
+
+
+def get_faction_perks(trust: TrustMap) -> Dict[str, Dict]:
+    unlocked = {}
+    for faction in FACTION_PERKS:
+        trust_score = get_role_trust(trust, faction, None)
+        if trust_score >= TRUST_TIER_CONNECTED:
+            unlocked[faction] = FACTION_PERKS[faction]
+    return unlocked
+
+
+def has_faction_perk(trust: TrustMap, faction: str) -> bool:
+    trust_score = get_role_trust(trust, faction, None)
+    return trust_score >= TRUST_TIER_CONNECTED
+
+
+def apply_kempeitai_perk_penalty(trust: TrustMap) -> Dict[str, int]:
+    if not has_faction_perk(trust, "kempeitai"):
+        return {}
+
+    perk_data = FACTION_PERKS.get("kempeitai", {})
+    cross_penalty = perk_data.get("cross_faction_penalty", {})
+
+    applied = {}
+    for faction, delta in cross_penalty.items():
+        # Only apply if this faction exists in the trust map
+        if faction in trust:
+            for role in trust[faction]:
+                prev = trust[faction][role]
+                trust[faction][role] = max(0, prev + delta)
+            applied[faction] = delta
+
+    return applied
+
+
+def record_trust_interaction(
+    trust: TrustMap,
+    last_trust_interaction: Dict[str, int],
+    key: str,
+    current_day: int,
+) -> None:
+    faction = key.split(".", 1)[0] if "." in key else key
+    if faction in trust:
+        last_trust_interaction[faction] = current_day
+
+
+def apply_trust_decay(
+    trust: TrustMap,
+    last_trust_interaction: Dict[str, int],
+    current_day: int,
+) -> List[Tuple[str, int]]:
+    decayed: List[Tuple[str, int]] = []
+
+    for faction in list(trust.keys()):
+        last_day = last_trust_interaction.get(faction, 0)
+        days_since = current_day - last_day
+
+        if days_since <= DECAY_GRACE_DAYS:
+            continue
+
+        if days_since > NEGLECT_THRESHOLD:
+            per_role_delta = DECAY_SEVERE
+        else:
+            per_role_delta = DECAY_NORMAL
+
+        faction_total_delta = 0
+        for role in list(trust[faction].keys()):
+            prev = trust[faction][role]
+            new_val = max(0, prev + per_role_delta)
+            actual_delta = new_val - prev
+            trust[faction][role] = new_val
+            faction_total_delta += actual_delta
+
+        if faction_total_delta != 0:
+            decayed.append((faction, faction_total_delta))
+
+    return decayed
