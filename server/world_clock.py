@@ -631,3 +631,96 @@ class WorldClock:
                 continue
             process_gossip_room(self.shared, room)
 
+    def _run_authored_meetings(self) -> None:
+        from .npc import get_npc_archetype
+
+        minute_of_day = int(self.shared.game_time.minute)
+        absoulute_minute = game_clock_total_minutes(self.shared.game_time)
+        for pool in self._social_dialogue.dialoue_pools.values():
+            if not isinstance(pool, dict) or not pool.get("exchanges"):
+                continue
+            for meeting in pool.get("meeting_windows", []):
+                if not isinstance(meeting, dict):
+                    continue
+                if not any(
+                    isinstance(window, dict)
+                    and self._meeting_window_is_due(window, minute_of_day)
+                    for window in meeting.get("windows", [])
+                ):
+                    continue
+                npc_ids = meeting.get("npc_ids", [])
+                room_id = meeting.get("room_id", "")
+                if not isinstance(npc_ids, list) or len(npc_ids) != 2:
+                    continue
+                if not isinstance(room_id, str) or not room_id:
+                    continue
+                actor = self.shared.world.npcs.get(npc_ids[0])
+                target = self.shared.world.npcs.get(npc_ids[1])
+                if not actor or not target:
+                    continue
+                if [get_npc_archetype(actor), get_npc_archetype(target)] != pool.get("archetypes"):
+                    continue
+                if self._authored_meeting_blocked(npc_ids, room_id, absolute_minute):
+                    continue
+                room = self.shared.world.get_room(room_id)
+                if not room:
+                    continue
+                self._run_social_interaction(actor, room, "exchange_rumors", target)
+
+    @staticmethod
+    def _meeting_window_is_due(window: dict, minute_of_day: int) -> bool:
+        try:
+            start_minute = int(window["start_minute"])
+            end_minute = int(window["end_minute"])
+        except (KeyError, TypeError, ValueError):
+            return False
+        return 0 <= start_minute <= end_minute < 1440 and minute_of_day == start_minute
+
+    def _authored_meeting_blocked(self, npc_ids: list[str], room_id: str, absolute_minute: int) -> bool:
+        room = self.shared.world.get_room(room_id)
+        if not room or room_id in self.shared.cloned_tutorial_rooms:
+            return True
+        if any(is_transient_patrol_id(npc_id) for npc_id in room.npcs):
+            return True
+        if any(self._meeting_player_blocks(session, absoulute_minute) for session in self.session_manager.get_players_in_room(room_id)):
+            return True
+        schedules = self.shared.npc_social_schedules
+        for npc_id in npc_ids:
+            npc = self.shared.world.npcs.get(npc_id)
+            if not npc or is_named_npc_dead(self.shared, npc_id):
+                return True
+            if self.shared.world.npc_locations.get(npc_id) != room_id or npc_id not in room.npcs:
+                return True
+            if is_transient_patrol_id(npc_id) or getattr(npc, "wounded", False) or int(getattr(npc, "hp", 100)) <= 0:
+                return True
+            if getattr(npc, "suspicion", 0) > SUSPICION_THRESHOLD_INVESTIGATE:
+                return True
+            needs = getattr(npc, "needs", {}) or {}
+            if any(int(needs.get(key, 0)) >= 80 for key in ("hunger", "fatigue", "fear")):
+                return True
+            blackboard = getattr(npc, "_blackboard", None) or {}
+            if any(blackboard.get(key) for key in ("last_heard_sound", "heard_hostile_sound", "danger_nearby", "player_suspicion_nearby")):
+                return True
+            schedule = schedules.get(npc_id)
+            if schedule and int(schedule.get("next_action_minute", absolute_minute + 1)) <= absolute_minute:
+                return True
+        if "crime_scene" in getattr(room, "tags", []):
+            return True
+        nearby = [self.shared.world.npcs.get(npc_id) for npc_id in room.npcs if npc_id not in npc_ids]
+        nearby = [npc for npc in nearby if npc]
+        return any(getattr(npc, "suspicion", 0) > SUSPICION_THRESHOLD_INVESTIGATE for npc in nearby)
+
+    @staticmethod
+    def _meeting_player_blocks(session, absoulute_minute: int) -> bool:
+        if getattr(session, "manually_advancing", False):
+            return True
+        player = getattr(session, "player", None)
+        if not player or tutorial_blocks_world_events(player):
+            return True
+        custody_until = getattr(player, "custody_until", -1)
+        if custody_until >= absoulute_minute:
+            return True
+        active_storylets = getattr(player, "active_storylets", []) or []
+        return any(getattr(storylet, "blocking", True) for storylet in active_storylets)
+
+    
