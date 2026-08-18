@@ -1684,3 +1684,102 @@ class WorldClock:
                 f"Rumour spreads: {npc.name} has abandoned the {old_faction.upper()} for the {new_faction.upper()}."
             ))
             return Status.SUCCESS
+
+        def _action_seek_food(bb):
+            npc, room, room_id = _npc_ctx(bb, require_exits=True)
+            if not npc:
+                return Status.FAILURE
+            needs = getattr(npc, 'needs', None)
+            if needs is not None:
+                needs["hunger"] = max(0, needs.get("hunger", 0) - random.randint(15, 30))
+            for session in self.session_manager.get_players_in_room(room_id):
+                asyncio.create_task(session.send_display(
+                    f"{npc.name} rummages around, looking for something to eat.",
+                    msg_type=MessageType.NPC_AMBIENT,
+                ))
+            self._npc_move_action(npc, room_id, room, self._rooms_with_players())
+            return Status.SUCCESS
+
+        def _action_go_home(bb):
+            npc, room, room_id = _npc_ctx(bb, require_exits=True)
+            if not npc:
+                return Status.FAILURE
+            needs = getattr(npc, 'needs', None)
+            if needs is not None:
+                needs["fatigue"] = max(0, needs.get("fatigue", 0) - random.randint(20, 40))
+            home_room = npc.schedule.get(22, None)
+            if home_room and home_room in self.shared.world.rooms:
+                from .pathfinding import a_star_find_path
+                current_room_obj = self.shared.world.rooms.get(room_id)
+                if current_room_obj and current_room_obj.exits:
+                    path = a_star_find_path(
+                        self.shared.world.rooms, room_id, home_room,
+                        cost_fn=lambda a, b: 1.0,
+                    )
+                    if path:
+                        direction = path[0]
+                        dest_id = current_room_obj.exits.get(direction)
+                        if dest_id:
+                            self._move_npc_between_rooms(npc.id, room_id, dest_id, direction)
+                            rooms_with_players = self._rooms_with_players()
+                            if room_id in rooms_with_players or dest_id in rooms_with_players:
+                                for session in self._visible_sessions(room_id):
+                                    asyncio.create_task(session.send_display(
+                                        f"{npc.name} yawns and heads off to rest.",
+                                        msg_type=MessageType.NPC_AMBIENT,
+                                    ))
+                                for session in self._visible_sessions(dest_id):
+                                    asyncio.create_task(session.send_display(
+                                        f"{npc.name} arrives, looking tired.",
+                                        msg_type=MessageType.NPC_AMBIENT,
+                                    ))
+                            return Status.SUCCESS
+            for session in self._visible_sessions(room_id):
+                asyncio.create_task(session.send_display(
+                    f"{npc.name} stifles a yawn and wanders off to find a place to rest.",
+                    msg_type=MessageType.NPC_AMBIENT,
+                ))
+            self._npc_move_action(npc, room_id, room, self._rooms_with_players())
+            return Status.SUCCESS
+
+        def _action_seek_safety(bb):
+            npc, room, room_id = _npc_ctx(bb)
+            if not npc:
+                return Status.FAILURE
+            needs = getattr(npc, 'needs', None)
+            if needs is not None:
+                needs["fear"] = max(0, needs.get("fear", 0) - random.randint(10, 25))
+            for session in self.session_manager.get_players_in_room(room_id):
+                asyncio.create_task(session.send_display(
+                    f"{npc.name} looks around nervously and hurries away.",
+                    msg_type=MessageType.NPC_AMBIENT,
+                ))
+            self._npc_flee_action(npc, room_id, room, self._rooms_with_players())
+            return Status.SUCCESS
+
+        return {
+            "patrol_random_exit": _action_move,
+            "investigate_sound": _action_investigate_sound,
+            "follow_schedule": _action_follow_schedule,
+            "trade_gossip": _action_social("trade_gossip"),
+            "exchange_rumors": _action_social("exchange_rumors"),
+            "share_intel": _action_share_intel,
+            "gather_rumors": _action_social("exchange_rumors"),
+            "hide_in_shadows": _action_hide_in_shadows,
+            "patrol_quietly": _action_move,
+            "patrol_territory": _action_move,
+            "extort_civilian": _action_extort_civilian,
+            "intimidate_rival": _action_intimidate_rival,
+            "hold_secret_meeting": _action_hold_secret_meeting,
+            "delegate_task": _action_social("delegate_task"),
+            "stay_put": _action_idle,
+            "flee_to_safe_room": _action_flee,
+            "flee_from_authority": _action_flee,
+            "investigate_player": _action_investigate_player,
+            "shutter_shop": _action_shutter_shop,
+            "defect": _action_defect,
+            "idle": _action_idle,
+            "seek_food": _action_seek_food,
+            "go_home": _action_go_home,
+            "seek_safety": _action_seek_safety,
+        }
