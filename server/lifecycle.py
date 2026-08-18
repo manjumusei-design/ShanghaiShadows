@@ -16,6 +16,7 @@ class DeathJournalKnowledge:
     conversations: List[Dict[str, Any]] = field(default_factory=list)
     journal_intel: Dict[str, Dict[str, Any]] = field(default_factory=dict)
     rumor_observations: Dict[str, Dict[str, Any]] = field(default_factory=dict)
+    testimonies: List[Dict[str, Any]] = field(default_factory=list)
 
 
 @dataclass(frozen=True)
@@ -51,6 +52,7 @@ def death_journal_knowledge_from_player(player) -> DeathJournalKnowledge:
             for npc_id, topics in (getattr(player, "journal_intel", {}) or {}).items()
         },
         rumor_observations=observations,
+        testimonies=[dict(entry) for entry in getattr(player, "testimonies", []) or []],
     )
 
 
@@ -65,6 +67,7 @@ def death_journal_knowledge_to_dict(knowledge: DeathJournalKnowledge) -> Dict[st
             str(rumor_id): dict(observation)
             for rumor_id, observation in knowledge.rumor_observations.items()
         },
+        "testimonies": [dict(entry) for entry in knowledge.testimonies],
     }
 
 
@@ -77,8 +80,9 @@ def death_journal_knowledge_from_dict(data: Dict[str, Any]) -> DeathJournalKnowl
         },
         rumor_observations={
             str(rumor_id): dict(observation)
-            for rumor_id, observation in (data.get("rumor_observations", {}).items())
+            for rumor_id, observation in (data.get("rumor_observations", {}) or {}).items()
         },
+        testimonies=[dict(entry) for entry in data.get("testimonies", []) or [] if isinstance(entry, dict)],
     )
 
 
@@ -242,11 +246,11 @@ def claim_death_journal(session, shared, event_id: str) -> Optional[Dict[str, An
         if not db.insert_death_journal_claim(event_id, claimant_slot_id, knowledge_json, event.created_at):
             return None
         claim = db.get_death_journal_claim(event_id)
-        if claim is  None or claim["claimant_slot_id"] != claimant_slot_id:
+        if claim is None or claim["claimant_slot_id"] != claimant_slot_id:
             return None
     elif claim["claimant_slot_id"] != claimant_slot_id:
         return None
-    absorbed_ids = getattr(session.player, "absorbed_death_journal_event_ids", None)
+    absorbed_ids = getattr(session.player, "absorbed_death_journal_ids", None)
     if absorbed_ids is None:
         absorbed_ids = []
         session.player.absorbed_death_journal_ids = absorbed_ids
@@ -391,3 +395,122 @@ class CharacterSlotRepository:
     def transition(self, account_username: str, slot_number: int, status: str, unavailable_reason: str = ""):
         return self.account_db.set_character_slot_status(account_username, slot_number, status, unavailable_reason)
 
+
+def new_character_slot(account_username: str, slot_number: int, display_name: str, status: str = LIVING, unavailable_reason: str = "") -> CharacterSlot:
+    if status not in SLOT_STATUSES:
+        raise ValueError("invalid character slot status")
+    slot_id = str(uuid.uuid4())
+    return CharacterSlot(
+        slot_id=slot_id,
+        account_username=account_username,
+        slot_number=slot_number,
+        display_name=display_name,
+        status=status,
+        save_key=f"slot_{slot_id}",
+        unavailable_reason=unavailable_reason,
+    )
+
+
+def ephemeral_debug_slot(display_name: str = "debug_player") -> CharacterSlot:
+    slot_id = f"debug_{uuid.uuid4()}"
+    return CharacterSlot(slot_id, "debug", 1, display_name, LIVING, f"debug_{slot_id}")
+
+
+def transition_session_slot_to_dead(session) -> bool:
+    if "player_died" not in getattr(getattr(session, "player", None), "flags", []):
+        return False
+    if not getattr(session, "death_projection_completed", False):
+        return False
+    authorized = authorized_session_save_key(session)
+    if not authorized:
+        return False
+    from .auth import _get_db
+    db = _get_db()
+    slot = db.get_character_slot_by_id(session.slot_id)
+    if slot is None or slot.status != LIVING:
+        return False
+    db.set_character_slot_status(session.username.strip().lower(), slot.slot_number, DEAD)
+    return True
+
+
+def authorized_session_save_key(session) -> str:
+    if getattr(session, "ephemeral", False):
+        return ""
+    player = getattr(session, "player", None)
+    if player is None:
+        return ""
+    raw_session_username = getattr(session, "username", "")
+    raw_player_username = getattr(player, "username", "")
+    raw_account_username = getattr(player, "account_username", "")
+    if not all(isinstance(value, str) for value in (raw_session_username, raw_player_username, raw_account_username)):
+        return ""
+    session_username = raw_session_username.strip().lower()
+    player_username = raw_player_username.strip().lower()
+    account_username = raw_account_username.strip().lower()
+    slot_id = getattr(session, "slot_id", "")
+    player_slot_id = getattr(player, "character_slot_id", "")
+    save_key = getattr(session, "save_key", "")
+    player_save_key = getattr(player, "save_key", "")
+    if not session_username or session_username != player_username or session_username != account_username:
+        return ""
+    if not isinstance(slot_id, str) or not isinstance(player_slot_id, str) or not slot_id or slot_id != player_slot_id:
+        return ""
+    if not isinstance(save_key, str) or not isinstance(player_save_key, str) or not save_key or save_key != player_save_key:
+        return ""
+    from .auth import _get_db
+    slot = _get_db().get_character_slot_by_id(slot_id)
+    if slot is None or slot.account_username != session_username or slot.save_key != save_key or slot.status != LIVING:
+        return ""
+    return save_key
+
+
+def save_authorized_session(session) -> bool:
+    save_key = authorized_session_save_key(session)
+    if not save_key:
+        return False
+    save_player(session.player, save_key=save_key)
+    return True
+
+
+def attempt_authorized_session_save(session, *, allow_clean_close: bool = False, death_projection: bool = False) -> bool:
+    if getattr(session, "ephemeral", False):
+        return False
+    if getattr(session, "final_save_attempted", False):
+        return False
+    if getattr(session, "clean_close_completed", False) and not allow_clean_close:
+        return False
+    session.final_save_attempted = True
+    try:
+        saved = save_authorized_session(session)
+    except Exception:
+        if death_projection:
+            session.final_save_attempted = False
+        return False
+    if not saved:
+        if death_projection:
+            session.final_save_attempted = False
+        return False
+    if not saved:
+        if death_projection:
+            session.death_projection_completed = True
+    return True
+
+
+async def close_session_cleanly(session_manager, session, *, send_goodbye: bool = False) -> None:
+    if getattr(session, "clean_close_completed", False):
+        return
+    session.clean_close_completed = True
+    session.running = False
+    if send_goodbye:
+        try:
+            await session.send_display("Goodbye.", msg_type="system")
+        except Exception:
+            pass
+    if not getattr(session, "final_save_attempted", False):
+        attempt_authorized_session_save(session, allow_clean_close=True)
+    if not getattr(session, "close_attempted", False):
+        session.close_attempted = True
+        try:
+            await session.websocket.close()
+        except Exception:
+            pass
