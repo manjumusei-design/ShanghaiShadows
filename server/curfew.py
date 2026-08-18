@@ -179,8 +179,7 @@ async def resolve_curfew_encounter(
     trigger: "CurfewTrigger",
     *,
     randint: Callable[[int, int], int] = random.randint,
-    advance_minutes: Callable[["CommandContext", int], Awaitable[None]] | None = None,
-    execute_player: Callable[["CommandContext", str], Awaitable[None]] | None = None,
+    escape_move: Callable[["CommandContext", str], Awaitable[None]] | None = None,
 ) -> CurfewResolution:
     trigger = CurfewTrigger(trigger)
     player = ctx.session.player
@@ -206,17 +205,16 @@ async def resolve_curfew_encounter(
     if roll > chance:
         return CurfewResolution("miss", trigger, night_key, chance, True)
 
-    status = _outcome_for_trust(player)
-    if status == "execution":
-        execute_handler = execute_player or _default_execute_player
-        await execute_handler(ctx, status)
-        confiscated = ()
-    elif status == "imprisonment":
-        confiscated = _confiscate_inventory(player)
-        advance_handler = advance_minutes or _default_advance_minutes
-        await advance_handler(ctx, 1440)
+    confiscated = _confiscate_inventory(player)
+    directions = _legal_escape_directions(player, room, getattr(ctx.shared, "world", None))
+    if player.escape_charge_available and directions:
+        player.escape_charge_available = False
+        direction = random.choice(directions)
+        move_handler = escape_move or _default_escape_move
+        await move_handler(ctx, direction)
+        resolved_status = "escape"
     else:
-        from .economy import set_wallet_fabi_value
-        set_wallet_fabi_value(player, 0)
-        confiscated = ()
-    return CurfewResolution(status, trigger, night_key, chance, True, confiscated)
+        _begin_custody(player, room, game_time)
+        resolved_status = "custody"
+    await _post_arrest_feedback(ctx, resolved_status, getattr(room, "title", "") or room.id)
+    return CurfewResolution(resolved_status, trigger, night_key, chance, True, confiscated)
