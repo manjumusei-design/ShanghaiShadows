@@ -5,66 +5,187 @@ from collections import deque, defaultdict
 from typing import TYPE_CHECKING, Optional
 
 from .constants import (
-    CURFEW_MINUTE,
-    EVENT_LOG_MAXLEN,
-    WORLD_EVENTS_MAXLEN,
-    HUNGER_DECAY_RATE,
-    HUNGER_HEALTH_DAMAGE,
-    HUNGER_WARNING_THRESHOLD,
-    LOW_HUNGER_THRESHOLD,
+    MessageType,
     MORALE_DECAY_PER_HOUR,
-    MORALE_WARNING_THRESHOLD,
-    MORALE_LOW_THRESHOLD,
     STAT_GAIN_STEALTH_TAIL,
     WANTED_LEVEL_MAX,
-    HIDDEN_DECAY_CHANCE,
+    WANTED_DECAY_INTERVAL_DAYS,
     SUSPICION_DECAY_PER_TICK,
     SUSPICION_THRESHOLD_INVESTIGATE,
     SUSPICION_INVESTIGATE_RELIEF,
     VENDOR_SHUTTER_TENSION,
-    VENDOR_REOPEN_TENSION,
     DEFECTION_DISILLUSIONMENT_THRESHOLD,
     DEFECTION_DAILY_CHANCE,
     DISILLUSIONMENT_PER_TICK,
     SEASONAL_FOOD_SHORTAGE,
     FOOD_RESTOCK_INTERVAL,
-    RUMORS_PATH,
+    SEASONAL_MORALE_MODIFIER,
     AMBIENT_EVENTS_PATH,
-    MessageType,
-    AUTO_SAVE_WORLD_INTERVAL,
-    AUTO_SAVE_PLAYER_INTERVAL,
-)
-from .ambient_events import load_ambient_events, check_ambient_trigger
-from .pathfinding import propagate_sound
-from .player_data import grow_stat
-from .trust import exchange_gossip
-from .victory import _season_from_day
-from .combat import strip_article
-from .constants import (
-    SEASONAL_MORALE_MODIFIER, SEASONAL_STEALTH_MODIFIER,
-    SEASONAL_PERCEPTION_MODIFIER, SEASONAL_CURFEW_MODIFIER,
+    CRIME_SCENE_DURATION_DAYS,
+    CORPSE_DECAY_DAYS,
     SEASONAL_PATROL_DENSITY,
+    WEATHER_MORALE_HOURLY,
+    get_season,
 )
+from .content_validation import load_strict_yaml
+from .player_data import grow_stat
+from .law import (
+    apply_crime_free_decay,
+    wanted_consequences,
+)
+from .curfew import CurfewTrigger, curfew_night_key, game_clock_total_minutes, resolve_curfew_encounter
+from .trust import exchange_gossip
+from .victory import _season_from_day, resolve_shared_liberation
+from .rewards import grant_catalog_item, validate_catalog_item
 from .commands import (
     apply_action_trust,
-    advance_time_one_minute,
-    check_death_conditions,
     check_planted_evidence,
-    check_curfew_penalty,
     disguise_bonus,
-    handle_player_death,
     log_event,
     maybe_trigger_storylet,
     move_npcs_if_hour_changed,
     post_display,
     process_gossip,
     process_survival_tick,
-    process_tailing,
-    trigger_ending,
 )
 from .session import Session
-from .game_world import SharedWorldState
-from .locales import get as loc
+from .game_world import SharedWorldState, is_named_npc_dead, retire_recorded_npcs
+from .patrols import (
+    PatrolState,
+    is_transient_patrol_id,
+    patrol_next_rooms,
+    patrol_pause_seconds,
+    patrol_reachable_rooms,
+)
+from .npc_interactions import npc_interaction_manager
+from .social_interactions import (
+    SOCIAL_INTERVAL_MINUTES,
+    SocialDialogueComposer,
+    SocialInteractionResolver,
+    SocialSchedule,
+    due_npc_ids,
+)
+from .social_consequences import publish_consequence_rumour
+from .tutorial import tutorial_blocks_world_events
+
+SOCIAL_CONSEQUENCE_PAIR_CATEGORY_COOLDOWN = 130
+SOCIAL_CONSEQUENCE_ROOM_CAP = 3
+SOCIAL_CONSEQUENCE_DISTRICT_CAP = 8
+
+
+NPC_ACTION_SOUNDS = {
+    "argue": (3, "npc_argument", "yell"),
+    "extort_civilian": (3, "npc_extortion", "yell"),
+    "intimidate_rival": (3, "npc_intimidation", "yell"),
+}
+
+
+def record_social_consequence(interaction, actor, target, shared, room, witnesses: list[str] | None = None) -> dict | None:
+    consequence_class = getattr(interaction, "consequence_class", "ambient")
+    if consequence_class not in {"persistent",  "actionable"}:
+        return None
+
+    actor_ids = sorted((actor.id, target.id))
+    category = getattr(interaction, "consequence_category", "") or interaction.id
+    room_id = getattr(room, "id", "")
+    district_id = getattr(room, "district", "") or "default"
+    consequence_id = f"{':'.join(actor_ids)}:{room_id}:{category}"
+    records = shared.social_consequences
+    cooldowns = shared.social_consequence_cooldowns
+    existing = records.get(consequence_id)
+    if existing and existing.get("state") == "active":
+        return existing
+
+    created_at = (shared.game_time.day - 1) * 1440 + shared.game_time.minute
+    cooldown_id = f"{':'.join(actor_ids)}:{category}"
+    cooldown = getattr(interaction, "consequence_cooldown", None)
+    if cooldown is None:
+        cooldown = SOCIAL_CONSEQUENCE_PAIR_CATEGORY_COOLDOWN
+    last_created_at = cooldowns.get(cooldown_id)
+    if last_created_at is not None and created_at - last_created_at < cooldown:
+        return None
+
+    room_cap = getattr(interaction, "consequence_room_cap", None)
+    if room_cap is None:
+        room_cap = SOCIAL_CONSEQUENCE_ROOM_CAP
+    district_cap = getattr(interaction, "consequence_district_cap", None)
+    if district_cap is None:
+        district_cap = SOCIAL_CONSEQUENCE_DISTRICT_CAP
+    active_records = [record for record in records.values() if record.get("state") == "active"]
+    if sum(record.get("room_id") == room_id for record in active_records) >= room_cap:
+        return None
+    if sum(record.get("district_id") == district_id for record in active_records) >= district_cap:
+        return None
+
+    duration = int(getattr(interaction, "consequence_duration", 0) or 0)
+    record = {
+        "id": consequence_id,
+        "source_interaction_id": interaction.id,
+        "npc_ids": actor_ids,
+        "room_id": room_id,
+        "district_id": district_id,
+        "consequence_class": consequence_class,
+        "category": category,
+        "created_at": created_at,
+        "expires_at": created_at + duration if duration else None,
+        "follow_up_key": getattr(interaction, "follow_up_key", None) if consequence_class == "actionable" else None,
+        "rumour": getattr(interaction, "consequence_rumour", None),
+        "room_manifestation": getattr(interaction, "consequence_room_manifestation", None),
+        "ask_topic": getattr(interaction, "consequence_ask_topic", None),
+        "ask_response": getattr(interaction, "consequence_ask_response", None),
+        "follow_up_due_at": created_at + int(getattr(interaction, "follow_up_delay", 30) or 0)
+        if consequence_class == "actionable" and getattr(interaction, "follow_up_key", None) else None,
+        "follow_up_state": "pending" if consequence_class == "actionable" and getattr(interaction, "follow_up_key", None) else None,
+        "follow_up_trust_ranges": getattr(interaction, "follow_up_trust_ranges", {}),
+        "visibility": getattr(interaction, "consequence_visibility", "local"),
+        "witnesses": sorted(witnesses or []),
+        "state": "active",
+    }
+    records[consequence_id] = record
+    cooldowns[cooldown_id] = created_at
+    publish_consequence_rumour(shared, record, actor, target)
+    return record
+
+
+def cleanup_social_consequenes(shared) -> list[str]:
+    now = (shared.game_time.day - 1) * 1440 + shared.game_time.minute
+    resolved_ids = []
+    world = shared.world
+
+    for consequence_id in sorted(shared.social_consequences):
+        record = shared.social_consequences[consequence_id]
+        if record.get("state") != "active":
+            continue
+
+        involved_npcs = record.get("npc_ids", [])
+        unavailable = any(
+            npc_id not in world.npcs
+            or is_named_npc_dead(shared, npc_id)
+            or npc_id not in world.npc_locations
+            for npc_id in involved_npcs
+        )
+        if unavailable:
+            if record.get("follow_up_state") == "pending":
+                record["resolved_at"] = now
+                record["resolution_reason"] = "actor_unavailable"
+                resolved_ids.append(consequence_id)
+            continue
+
+        if record.get("follow_up_state") == "pending" and any(
+            world.npc_locations.get(npc_id) != record.get("room_id")
+            for npc_id in involved_npcs
+        ):
+            record["follow_up_invalidated_at"] = now
+            record["follow_up_invalidation_reason"] = "actor_departed_room"
+
+        expires_at = record.get("expires_at")
+        if expires_at is not None and now >= int(expires_at):
+            if record.get("follow_up_state") == "pending":
+                record["resolved_at"] = now
+                record["resolution_reason"] = "expired"
+                resolved_ids.append(consequence_id)
+
+    return resolved_ids
 
 if TYPE_CHECKING:
     from .session_manager import SessionManager
