@@ -2017,3 +2017,116 @@ class WorldClock:
             return Status.RUNNING
         self._clear_npc_sound_memory(npc, bb)
         return Status.FAILURE
+
+    @staticmethod
+    def _clear_npc_sound_memory(npc, bb) -> None:
+        bb.clear("last_heard_sound")
+        bb.set("heard_hostile_sound", False)
+        npc_bb = getattr(npc, "_blackboard", None)
+        if npc_bb:
+            npc_bb.clear("last_heard_sound")
+            npc_bb.set("heard_hostile_sound", False)
+
+    def _update_weather(self):
+        season = _season_from_day(self.shared.game_time.day)
+        weather_weights = {
+            "spring": (("clear", 50), ("rain", 25), ("fog", 15), ("storm", 10)),
+            "summer": (("clear", 50), ("rain", 25), ("fog", 10), ("storm", 15)),
+            "autumn": (("clear", 35), ("rain", 30), ("fog", 20), ("storm", 15)),
+            "winter": (("clear", 40), ("snow", 30), ("fog", 15), ("rain", 10), ("storm", 5)),
+        }
+        states, weights = zip(*weather_weights[season])
+        self.shared.weather = random.choices(states, weights=weights, k=1)[0]
+        if self.shared.weather == "rain":
+            self._apply_weather_degradation()
+        elif self.shared.weather == "storm":
+            self._apply_weather_degradation(multiplier=2)
+
+    def _apply_weather_degradation(self, multiplier: int = 1):
+        from .constants import DEGRADE_RAIN_RATE
+        for session in list(self.session_manager.sessions.values()):
+            room = self.shared.world.get_room(session.player.current_room)
+            if room and room.indoors:
+                continue
+            broken = []
+            for item in session.player.inventory:
+                if not (item.is_weapon or item.is_armour) or item.durability <= 0:
+                    continue
+                item.durability = max(0, item.durability - DEGRADE_RAIN_RATE * multiplier)
+                if item.durability <= 0:
+                    verb = "rusts apart" if item.is_weapon else "is ruined by the rain"
+                    asyncio.create_task(session.send_display(f"Your {item.name} {verb}."))
+                    broken.append(item)
+            for item in broken:
+                session.player.inventory.remove(item)
+
+    async def _check_death_and_victory(self):
+        from .locales import get as loc
+
+        for session in list(self.session_manager.sessions.values()):
+            is_dead = False
+            death_message = ""
+
+            if session.player.health <= 0:
+                is_dead = True
+                death_message = loc("death.health")
+
+            if is_dead:
+                from .commands import _trigger_death
+                ctx = self.session_manager._make_context(session)
+                await _trigger_death(ctx, death_message)
+
+        if self.shared.game_time.minute == 0:
+            await self._check_milestone_day()
+            await resolve_shared_liberation(self.shared, self.session_manager)
+
+    async def _handle_server_reset(self, ending_type: str = ""):
+        return await resolve_shared_liberation(self.shared, self.session_manager)
+
+    def _reset_shared_world(self):
+        from .victory import _reset_shared_world
+
+        _reset_shared_world(self.shared, self.session_manager)
+
+    async def _check_milestone_day(self):
+        mm = self.shared.milestone_manager
+        if not mm:
+            return
+        triggered = mm.check_day(self.shared.game_time.day)
+        if not triggered:
+            return
+        from .milestones import apply_milestone_effects
+        for m in triggered:
+            for session in list(self.session_manager.sessions.values()):
+                if tutorial_blocks_world_events(session.player):
+                    continue
+                if apply_milestone_effects(session.player, m, self.shared):
+                    asyncio.create_task(session.send_display(f"\n{m.narrative}\n"))
+            await self._broadcast_display(f"\n[MILESTONE] {m.narrative}\n")
+
+    async def _check_storylet_timers_all_sessions(self):
+        from .storylets import is_storylet_expired
+        from .commands import _resolve_neglect
+
+        for session in list(self.session_manager.sessions.values()):
+            if not session.player.active_storylets:
+                continue
+            if tutorial_blocks_world_events(session.player):
+                continue
+            expired = [a for a in session.player.active_storylets if is_storylet_expired(a)]
+            for active in expired:
+                try:
+                    ctx = self.session_manager._make_context(session)
+                    await _resolve_neglect(ctx, active)
+                except Exception as e:
+                    import logging
+                    logging.getLogger(__name__).warning(f"Error resolving neglect for {active.storylet_id}: {e}")
+
+    async def _broadcast_display(self, text: str):
+        for session in list(self.session_manager.sessions.values()):
+            if tutorial_blocks_world_events(session.player):
+                continue
+            try:
+                await session.send_display(text)
+            except Exception:
+                pass
