@@ -4,7 +4,7 @@ from typing import Any, Callable, Dict, List, Optional
 import yaml
 from pathlib import Path
 
-
+from .content_validation import load_strict_yaml
 
 class Status(Enum):
     SUCCESS = "success"
@@ -183,8 +183,7 @@ def _load_tree_defs(path: str = "server/data/behavior_trees.yaml") -> Dict[str, 
     p = Path(path)
     if not p.exists():
         return {}
-    with open(p, "r", encoding="utf-8") as f:
-        data = yaml.safe_load(f) or {}
+    data = load_strict_yaml(p) or {}
     return data.get("trees", {})
 
 
@@ -215,6 +214,7 @@ class TreeRegistry:
         )
 
     def tree_for(self, npc_id: str, archetype: str) -> BehaviorTree:
+        archetype = self.ARCHETYPE_ALIASES.get(archetype, archetype)
         if archetype not in self._root_cache:
             self._root_cache[archetype] = self._build_root(archetype)
         bb = Blackboard()
