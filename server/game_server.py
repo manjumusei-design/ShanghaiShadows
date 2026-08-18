@@ -1,43 +1,49 @@
 import asyncio
 import logging
-import random
 from pathlib import Path
+from typing import Optional
 
 logger = logging.getLogger(__name__)
 
 from .config import get_setting, load_dotenv
 from .game_world import (
     SharedWorldState,
+    bootstrap_cycle_state,
     load_world_state,
-    save_world_state,
     load_disguises,
     DISGUISES_PATH,
     STORYLETS_PATH,
     SAVES_DIR,
     STATE_BROADCAST_INTERVAL,
 )
+from .constants import AUTOSAVE_INTERVAL_SECONDS
 from .world_clock import WorldClock
 from .commands import build_command_registry, broadcast_state, build_completions
-from .save_manager import save_player
+from .save_manager import save_world_state
 from .locales import load_locale, get as loc
 from .stealth import StealthSystem
 from .storylets import load_storylets, load_narrative_chains, StoryletManager
 from .missions import load_missions, MissionManager
-from .world import World
-from .room_codes import generate_room_codes, layout_rooms, layout_tutorial_rooms
+from .milestones import load_milestones, MilestoneManager
 
 
 class GameServer:
-    def __init__(self, fresh_world: bool = False):
+    def __init__(self, shared: Optional[SharedWorldState] = None, fresh_world: bool = False):
         load_dotenv()
         load_locale(get_setting("LOCALE", "en"))
         SAVES_DIR.mkdir(parents=True, exist_ok=True)
 
-        self.shared = (
-            self._create_shared_world()
-            if fresh_world
-            else (load_world_state() or self._create_shared_world())
-        )
+        if shared is None:
+            shared = (
+                self._create_shared_world()
+                if fresh_world
+                else (load_world_state() or self._create_shared_world())
+            )
+        self.shared = shared
+        from .content_references import assert_valid_authored_references
+        assert_valid_authored_references(self.shared.world)
+        from .lifecycle import replay_lifecycle_outbox
+        replay_lifecycle_outbox(self.shared)
         from .npc_memory import npc_relationship_system
         self.shared.relationship_system = npc_relationship_system
 
@@ -49,8 +55,11 @@ class GameServer:
         narrative_chains = load_narrative_chains(NARRATIVE_CHAINS_PATH)
         self.storylet_manager = StoryletManager(storylets, narrative_chains)
 
-        missions = load_missions()
-        self.shared.mission_manager = MissionManager(missions)
+        if self.shared.mission_manager is None:
+            self.shared.mission_manager = MissionManager(load_missions())
+        if self.shared.milestone_manager is None:
+            from .constants import MILESTONES_PATH
+            self.shared.milestone_manager = MilestoneManager(load_milestones(MILESTONES_PATH))
 
         from .session_manager import SessionManager
         self.session_manager = SessionManager(self.shared, self.disguises, self.stealth, self.storylet_manager)
@@ -59,65 +68,7 @@ class GameServer:
         self._world_seconds_since_save = 0
 
     def _create_shared_world(self) -> SharedWorldState:
-        world = World()
-        from .time_system import EventScheduler, GameTime
-        from .constants import EVENTS_PATH, TRUST_RULES_PATH, MILESTONES_PATH
-        from .trust import load_trust_rules
-        from .game_world import SharedWorldState
-        from .milestones import load_milestones, MilestoneManager
-        from .game_world import build_market_tracker
-        from .rumors import seed_active_rumors
-        from .room_codes import generate_room_codes, layout_rooms
-
-        scheduler = EventScheduler()
-        scheduler.load_from_yaml(EVENTS_PATH)
-        trust_rules = load_trust_rules(TRUST_RULES_PATH)
-        milestones = load_milestones(MILESTONES_PATH)
-
-        _active = seed_active_rumors(1)
-        all_rooms = world.rooms
-        layout_seed = random.randint(1, 1000000)
-        room_codes = generate_room_codes(all_rooms)
-        layout_coords = layout_rooms(all_rooms, layout_seed=layout_seed)
-        tutorial_coords = layout_tutorial_rooms(all_rooms)
-        layout_coords.update(tutorial_coords)
-        code_to_room = {code: rid for rid, code in room_codes.items()}
-
-        import logging
-        _logger = logging.getLogger(__name__)
-        _faction_archetype_map = {
-            "civilian": "civilian_vendor",
-            "ccp": "ccp_operative",
-            "gmd": "gmd_operative",
-            "kempeitai": "kempeitai_patrol",
-            "green_gang": "gang_enforcer",
-        }
-        for npc_id, npc in world.npcs.items():
-            if not npc.bt_archetype:
-                _logger.warning(
-                    f"NPC {npc_id} ({npc.name}, faction={npc.faction}) "
-                    f"has no bt_archetype; assigning '{_faction_archetype_map.get(npc.faction, 'civilian_vendor')}'"
-                )
-                npc.bt_archetype = _faction_archetype_map.get(npc.faction, "civilian_vendor")
-
-        return SharedWorldState(
-            world=world,
-            game_time=GameTime(minute=480),
-            scheduler=scheduler,
-            trust_rules=trust_rules,
-            ccp_influence=10,
-            gmd_influence=15,
-            event_log=[],
-            rumour_mill={},
-            milestone_manager=MilestoneManager(milestones),
-            market_rooms=build_market_tracker(world),
-            death_journals={},
-            active_rumors=_active,
-            room_codes=room_codes,
-            code_to_room=code_to_room,
-            room_layout_coords=layout_coords,
-            layout_seed=layout_seed,
-        )
+        return bootstrap_cycle_state()
 
     async def tick_loop(self):
         import traceback as _tb
@@ -126,12 +77,9 @@ class GameServer:
                 await asyncio.sleep(1)
                 await self.clock.tick()
 
-                for session in list(self.session_manager.sessions.values()):
-                    session.seconds_since_autosave += 1
-                    if session.seconds_since_autosave >= 300:
-                        save_player(session.player)
-                        session.seconds_since_autosave = 0
+                self._process_autosaves()
 
+                for session in list(self.session_manager.sessions.values()):
                     session.seconds_since_state_broadcast += 1
                     if session.seconds_since_state_broadcast >= STATE_BROADCAST_INTERVAL:
                         from .commands import CommandContext
@@ -145,18 +93,32 @@ class GameServer:
                             room=self.shared.world.get_room(session.player.current_room),
                         )
                         await broadcast_state(ctx)
-                        session.seconds_since_stage_broadcast = 0
+                        session.seconds_since_state_broadcast = 0
 
-                self._world_seconds_since_save += 1
-                if self._world_seconds_since_save >= 1800:
-                    save_world_state(self.shared)
-                    self._world_seconds_since_save = 0
             except Exception:
                 logger.critical(f"tick_loop crashed: {_tb.format_exc()}")
+                from .lifecycle import save_authorized_session
                 for session in list(self.session_manager.sessions.values()):
+                    if getattr(session, "clean_close_completed", False) or getattr(session, "final_save_attempted", False) or getattr(session, "ephemeral", False):
+                        continue
                     try:
-                        save_player(session.player)
+                        save_authorized_session(session)
                     except Exception:
                         pass
                 save_world_state(self.shared)
                 raise
+
+    def _process_autosaves(self):
+        from .lifecycle import save_authorized_session
+        for session in list(self.session_manager.sessions.values()):
+            if getattr(session, "clean_close_completed", False) or getattr(session, "final_save_attempted", False) or getattr(session, "ephemeral", False):
+                continue
+            session.seconds_since_autosave += 1
+            if session.seconds_since_autosave >= AUTOSAVE_INTERVAL_SECONDS:
+                if save_authorized_session(session):
+                    session.seconds_since_autosave = 0
+
+        self._world_seconds_since_save += 1
+        if self._world_seconds_since_save >= AUTOSAVE_INTERVAL_SECONDS:
+            save_world_state(self.shared)
+            self._world_seconds_since_save = 0
