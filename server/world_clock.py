@@ -1299,3 +1299,177 @@ class WorldClock:
                 asyncio.create_task(session.send_display(
                     random.choice(messages), msg_type=MessageType.NPC_AMBIENT,
                 ))
+    def _dispatch_world_sound(
+        self,
+        source_room_id: str,
+        intensity: int,
+        sound_type: str,
+        audio_name: str | None = None,
+        max_distance: int = 3,
+    ) -> None:
+        from .commands import _update_npc_sound_memory
+        from .pathfinding import emit_sound, propagate_sound
+        sound_event = emit_sound(
+            source_room_id,
+            "npc_confrontation",
+            intensity=intensity,
+            weather=getattr(self.shared, "weather", "clear"),
+            game_time=self.shared.game_time,
+            source_actor_id=sound_type,
+            base_range=max_distance,
+        )
+        heard_rooms = propagate_sound(
+            self.shared.world.rooms,
+            sound_event,
+        )
+        for room_id, perceived_intensity in heard_rooms:
+            room = self.shared.world.get_room(room_id)
+            if not room:
+                continue
+            for npc_id in room.npcs:
+                npc = self.shared.world.npcs.get(npc_id)
+                if npc:
+                    _update_npc_sound_memory(
+                        npc,
+                        source_room_id,
+                        perceived_intensity,
+                        sound_type,
+                        self.shared.game_time,
+                        sound_event=sound_event,
+                    )
+            if perceived_intensity >= 3:
+                message = f"You hear a loud {sound_type} nearby!"
+            elif perceived_intensity >= 2:
+                message = f"You hear a distant {sound_type}."
+            else:
+                message = f"You hear a muffled {sound_type} from somewhere nearby."
+            for session in self.session_manager.get_players_in_room(room_id):
+                if tutorial_blocks_world_events(session.player):
+                    continue
+                if audio_name and getattr(session, "audio_enabled", True):
+                    volume = min(1.0, perceived_intensity / sound_event.intensity)
+                    self._track_task(session.send_audio(audio_name, volume=volume, loop=False))
+                self._track_task(session.send_display(message + "\n"))
+
+    def _dispatch_authority_sound(self, source_room_id: str, intensity: int, sound_type: str) -> None:
+        self._dispatch_world_sound(source_room_id, intensity, sound_type)
+
+    def _npc_flee_action(self, npc, current_room_id: str, current_room, rooms_with_players: set, reason: str = ""):
+        import random
+
+        is_wounded = getattr(npc, 'wounded', False)
+
+        nearby_npcs = self._get_nearby_npcs(npc.id, current_room)
+        kempeitai_nearby = any(n.faction == "kempeitai" for n in nearby_npcs)
+        is_resistance = npc.faction in ["ccp", "gmd"]
+
+        if not (is_wounded or (kempeitai_nearby and is_resistance)):
+            return
+
+        if not current_room.exits:
+            return
+
+        direction = None
+        dest_room_id = None
+
+        if is_wounded:
+            nurse_rooms = ['oldcity_06', 'hongkou_04', 'hongkou_16', 'church_18', 'hidden_10']
+            game_hour = self.shared.game_time.hour
+            for nurse_room_id in nurse_rooms:
+                for dir_opt, dest_opt in current_room.exits.items():
+                    if dest_opt == nurse_room_id:
+                        nurse_room = self.shared.world.rooms.get(nurse_room_id)
+                        if nurse_room and getattr(nurse_room, 'nurse_available', False):
+                            nurse_hours = getattr(nurse_room, 'nurse_hours', [8, 18])
+                            if nurse_hours and len(nurse_hours) >= 2:
+                                if nurse_hours[0] <= game_hour < nurse_hours[1]:
+                                    direction = dir_opt
+                                    dest_room_id = dest_opt
+                                    break
+                if direction:
+                    break
+                for dir1, mid_room_id in current_room.exits.items():
+                    mid_room = self.shared.world.rooms.get(mid_room_id)
+                    if mid_room and mid_room.exits:
+                        for dir2, dest_opt in mid_room.exits.items():
+                            if dest_opt == nurse_room_id:
+                                nurse_room = self.shared.world.rooms.get(nurse_room_id)
+                                if nurse_room and getattr(nurse_room, 'nurse_available', False):
+                                    nurse_hours = getattr(nurse_room, 'nurse_hours', [8, 18])
+                                    if nurse_hours and len(nurse_hours) >= 2:
+                                        if nurse_hours[0] <= game_hour < nurse_hours[1]:
+                                            direction = dir1
+                                            dest_room_id = mid_room_id
+                                            break
+                    if direction:
+                        break
+                if direction:
+                    break
+
+        if not direction:
+            direction = random.choice(list(current_room.exits.keys()))
+            dest_room_id = current_room.exits[direction]
+
+        if self._move_npc_between_rooms(npc.id, current_room_id, dest_room_id):
+            if current_room_id in rooms_with_players or dest_room_id in rooms_with_players:
+                dest_room = self.shared.world.rooms.get(dest_room_id)
+                reached_nurse = is_wounded and dest_room and getattr(dest_room, 'nurse_available', False)
+                nurse_hours = getattr(dest_room, 'nurse_hours', [8, 18]) if reached_nurse else []
+                game_hour = self.shared.game_time.hour
+
+                if reached_nurse and nurse_hours and len(nurse_hours) >= 2 and nurse_hours[0] <= game_hour < nurse_hours[1]:
+                    heal_amount = random.randint(15, 25)
+                    npc.hp = min(100, npc.hp + heal_amount)
+                    flee_msg = f"{npc.name} stumbles into the clinic, seeking help for their wound."
+                    if npc.hp >= 70:
+                        npc.wounded = False
+                        npc.wound_type = ""
+                        flee_msg = f"{npc.name} stumbles into the clinic, and a nurse rushes to treat their wound. After a few minutes, they seem stable."
+                else:
+                    flee_msg = f"{npc.name} staggers away {direction}, clutching a wound!" if is_wounded else f"{npc.name} flees {direction}!"
+                for session in self.session_manager.get_players_in_room(current_room_id):
+                    asyncio.create_task(session.send_display(
+                        flee_msg, msg_type=MessageType.NPC_AMBIENT,
+                    ))
+
+    OPPOSITE_FACTION_PAIRS = {
+        frozenset(("kempeitai", "ccp")),
+        frozenset(("kempeitai", "gmd")),
+        frozenset(("kempeitai", "green_gang")),
+        frozenset(("green_gang", "ccp")),
+        frozenset(("green_gang", "gmd")),
+    }
+
+    def _are_opposite_factions(self, faction_a: str, faction_b: str) -> bool:
+        return frozenset((faction_a, faction_b)) in self.OPPOSITE_FACTION_PAIRS
+
+    def _get_bt_registry(self):
+        if self._bt_registry is not None:
+            return self._bt_registry
+        from .behavior_tree import TreeRegistry, Status
+        actions = self._build_bt_actions()
+        conditions = self._build_bt_conditions()
+        self._bt_registry = TreeRegistry.from_yaml(
+            action_bindings=actions,
+            condition_bindings=conditions,
+        )
+        return self._bt_registry
+
+    def _build_bt_actions(self):
+        from .behavior_tree import Status
+
+        def _npc_ctx(bb, require_room=True, require_exits=False):
+            npc_id = bb.get("npc_id")
+            npc = self.shared.world.npcs.get(npc_id)
+            room_id = self.shared.world.npc_locations.get(npc_id) if npc else None
+            room = self.shared.world.rooms.get(room_id) if room_id else None
+            if not npc or (require_room and not room) or (require_exits and (not room or not room.exits)):
+                return None, None, None
+            return npc, room, room_id
+
+        def _action_move(bb):
+            npc, room, room_id = _npc_ctx(bb, require_exits=True)
+            if not npc:
+                return Status.FAILURE
+            self._npc_move_action(npc, room_id, room, self._rooms_with_players())
+            return Status.SUCCESS
