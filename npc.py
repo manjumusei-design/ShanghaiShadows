@@ -1,11 +1,15 @@
 import random
 import re
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Any, Dict, List, Optional
 import yaml
 
 from .trust import TrustMap, get_role_trust
 from .dataclass_utils import filter_to_dataclass
+from .law import wanted_consequences
+from .rumors import RumorObservation
+from .content_validation import load_strict_yaml, validate_npc_dialogue_strings
 
 
 @dataclass
@@ -19,6 +23,7 @@ class Npc:
     awareness: int
     schedule: Dict[int, str] = field(default_factory=dict)
     dialogue: Dict[str, Any] = field(default_factory=dict)
+    ask_topic_labels: Dict[str, str] = field(default_factory=dict)
     faction_leader: bool = False
     memory: List[str] = field(default_factory=list)
     authority: int = 50
@@ -36,6 +41,7 @@ class Npc:
     inventory: List[Dict[str, Any]] = field(default_factory=list)
     player_memories: Dict[str, Any] = field(default_factory=dict)
     tracked_rumors: List[dict] = field(default_factory=list)
+    rumor_observations: Dict[str, RumorObservation] = field(default_factory=dict)
     personality_traits: Dict[str, int] = field(default_factory=dict)
     needs: Dict[str, int] = field(default_factory=dict)
     burden_gift: str = ""
@@ -50,8 +56,11 @@ class Npc:
 
 
 def load_npcs(path: str) -> Dict[str, Npc]:
-    with open(path, "r", encoding="utf-8") as f:
-        data = yaml.safe_load(f)
+    source = Path(path)
+    data = load_strict_yaml(source)
+    dialogue_findings = validate_npc_dialogue_strings(data, source)
+    if dialogue_findings:
+        raise dialogue_findings[0]
     npcs = {}
     for npc_data in data.get("npcs", []):
         _complete_dialogue_content(npc_data)
@@ -78,7 +87,7 @@ _STANDARD_DIALOGUE = {
     "hostile": ["Do not mistake my patience for an invitation. I have work to finish.", "You ask too freely for someone who has not earned an answer.", "This is not your concern. Leave it alone before it becomes your problem.", "I have learned to be cautious around strangers, and you are still one.", "We have nothing to discuss. Please take the hint and move on."],
     "afraid": ["Please, not here. A careless word can follow a person home.", "Keep your voice down. I cannot afford to be noticed with you.", "I do not know what you want, and I do not want to know in public.", "There are uniforms nearby. Whatever this is, it can wait.", "Forgive me, but I have people depending on me to return safely."],
     "farewell": ["Take care on the road. Shanghai changes its face quickly after dark.", "Go carefully, and keep your papers close if you have them.", "May your next stop be kinder than your last. That is no small wish today.", "Until next time. I hope we meet under quieter circumstances.", "Mind yourself. The city remembers both kindness and carelessness."],
-    "gossip": ["Rice is even more expensive again, and every stallholder has a different explanation for it.", "People say the patrol route changed near dawn, though nobody agrees who ordered it.", "A shipment arrived late at the docks. That is enough to set half the district talking.", "The market has been quiet in a way that makes experienced people uneasy.", "News travels faster than carts in this city, and it becomes less reliable at every corner."],
+    "gossip": ["Rice is dearer again, and every stallholder has a different explanation for it.", "People say the patrol route changed near dawn, though nobody agrees who ordered it.", "A shipment arrived late at the docks. That is enough to set half the district talking.", "The market has been quiet in a way that makes experienced people uneasy.", "News travels faster than carts in this city, and it becomes less reliable at every corner."],
 }
 _ASK_TOPICS_BY_ROLE = {"vendor": ("prices", "city", "danger"), "merchant": ("prices", "foreigners", "city"), "worker": ("work", "prices", "danger"), "doctor": ("people", "danger", "war"), "officer": ("city", "danger", "war"), "default": ("city", "work", "danger")}
 
@@ -98,7 +107,7 @@ def _complete_dialogue_content(npc_data: Dict[str, Any]) -> None:
     for bucket, defaults in _STANDARD_DIALOGUE.items():
         current = list(dialogue.get(bucket) or [])
         dialogue[bucket] = (current + [line for line in defaults if line not in current])[:8]
-    existing_ask = dialogue.get("ask") if isinstanec(dialogue.get("ask"), dict) else {}
+    existing_ask = dialogue.get("ask") if isinstance(dialogue.get("ask"), dict) else {}
     topics = list(existing_ask)[:3]
     for topic in _ASK_TOPICS_BY_ROLE[_content_role(npc_data)]:
         if len(topics) >= 3:
@@ -107,12 +116,13 @@ def _complete_dialogue_content(npc_data: Dict[str, Any]) -> None:
             topics.append(topic)
     dialogue["ask"] = {topic: (list(existing_ask.get(topic) or []) + _ask_lines(topic))[:8] for topic in topics}
     wanted = {"wanted_nervous": "Your face has been noticed. Do not make this place answer for you.", "wanted_fear": "Please leave before someone decides I knew you were here.", "wanted_refuse": "I cannot help a person carrying this much attention. Not today."}
-    if npc_data.get("faction") in WANTED_FACTIONS_HELP:
-        wanted["wanted_help"] = "I can spare a moment, but we must be careful about who sees it."
-    if npc_data.get("faction") in WANTED_FACTIONS_HOSTILE:
-        wanted["wanted_hostile"] = "You are wanted. Stay where you are and make this easier on yourself."
     for bucket, line in wanted.items():
         dialogue.setdefault(bucket, [line])
+    faction = str(npc_data.get("faction", "")).lower()
+    if faction in WANTED_FACTIONS_HOSTILE:
+        dialogue.setdefault("wanted_hostile", ["You are known. The wanted posters carry your description, and this street answers to the occupation. Do not make me prove it."])
+    if faction in WANTED_FACTIONS_HELP:
+        dialogue.setdefault("wanted_help", ["Trouble has been asking for you by name. Stay close to the shadows, and I will pretend I never saw your face."])
 WANTED_DIALOGUE_FALLBACKS = {
     1: "People have started asking questions about you. Keep moving.",
     2: "Your face is drawing the wrong kind of attention. Do not linger here.",
@@ -122,10 +132,12 @@ WANTED_DIALOGUE_FALLBACKS = {
 }
 
 
-def _get_wanted_aware_dialogue(npc: Npc, wanted_level: int, player_trust: TrustMap, player_relationships: Optional[Dict[str, Dict[str, int]]] = None) -> Optional[str]:
+def _get_wanted_aware_dialogue(npc: Npc, wanted_level: int, player_trust: TrustMap,player_relationships: Optional[Dict[str, Dict[str, int]]] = None) -> Optional[str]:
+    policy = wanted_consequences(wanted_level)
+    wanted_level = policy.level
     trust_score = get_role_trust(player_trust, npc.faction, npc.role)
 
-    if npc.faction in WANTED_FACTIONS_HOSTILE and wanted_level >= 1:
+    if npc.faction in WANTED_FACTIONS_HOSTILE and policy.level >= 1:
         line = _pick_line(npc, "wanted_hostile")
         if line:
             return line
@@ -133,17 +145,17 @@ def _get_wanted_aware_dialogue(npc: Npc, wanted_level: int, player_trust: TrustM
         if line:
             return line
 
-    if npc.faction in WANTED_FACTIONS_HELP and wanted_level >= 2 and trust_score >= 30:
+    if npc.faction in WANTED_FACTIONS_HELP and policy.ordinary_vendor_refuses and trust_score >= 30:
         line = _pick_line(npc, "wanted_help")
         if line:
             return line
 
-    if npc.perception >= WANTED_PERCEPTION_THRESHOLD and wanted_level >= 1:
+    if npc.perception >= WANTED_PERCEPTION_THRESHOLD and policy.level >= 1:
         line = _pick_line(npc, "wanted_nervous")
         if line:
             return line
 
-    if wanted_level >= 3:
+    if policy.npc_may_flee:
         line = _pick_line(npc, "wanted_fear")
         if line:
             return line
@@ -151,7 +163,7 @@ def _get_wanted_aware_dialogue(npc: Npc, wanted_level: int, player_trust: TrustM
         if line:
             return line
 
-    if wanted_level >= 2:
+    if policy.ordinary_vendor_refuses:
         line = _pick_line(npc, "wanted_refuse")
         if line:
             return line
@@ -159,10 +171,11 @@ def _get_wanted_aware_dialogue(npc: Npc, wanted_level: int, player_trust: TrustM
         if line:
             return line
 
-    if wanted_level >= 1:
+    if policy.level >= 1:
         line = _pick_line(npc, "wanted_nervous")
         if line:
             return line
+        return WANTED_DIALOGUE_FALLBACKS.get(policy.level) or WANTED_DIALOGUE_FALLBACKS[5]
 
     return None
 
@@ -230,6 +243,11 @@ def match_topic(raw: str, npc: Optional[Npc] = None) -> Optional[str]:
                 normalized_topic = _normalize_topic(topic)
                 if t == normalized_topic:
                     return topic
+            labels = getattr(npc, "ask_topic_labels", {})
+            if isinstance(labels, dict):
+                for topic, label in labels.items():
+                    if topic in ask and t == _normalize_topic(label):
+                        return topic
             partial_matches = [
                 (topic, normalized_topic)
                 for topic, normalized_topic in normalized_topics
@@ -255,6 +273,16 @@ def npc_ask_topics(npc: Npc) -> List[str]:
     return list(ask.keys()) if isinstance(ask, dict) else []
 
 
+def humanize_topic_key(key: str) -> str:
+    return " ".join(str(key).replace("_", " ").replace("-", " ").split())
+
+
+def display_topic_label(npc: Optional[Npc], topic_key: str) -> str:
+    labels = getattr(npc, "ask_topic_labels", {}) if npc is not None else {}
+    label = labels.get(topic_key, topic_key) if isinstance(labels, dict) else topic_key
+    return humanize_topic_key(label)
+
+
 def get_dialogue(npc: Npc, player_trust: TrustMap) -> str:
     trust_score = get_role_trust(player_trust, npc.faction, npc.role)
     if trust_score > 70:
@@ -267,7 +295,9 @@ def get_dialogue(npc: Npc, player_trust: TrustMap) -> str:
     return random.choice(lines)
 
 
-def get_contextual_dialogue(npc: Npc, player_trust: TrustMap, context_type: str = "talk", player_relationships: Optional[Dict[str, Dict[str, int]]] = None, wanted_level: int = 0, player_morale: int = 50) -> str:
+def get_contextual_dialogue(npc: Npc, player_trust: TrustMap, context_type: str = "talk", player_relationships: Optional[Dict[str, Dict[str, int]]] = None, wanted_level: int = 0, player_morale: int = 50, player_flags: Optional[List[str]] = None) -> str:
+    policy = wanted_consequences(wanted_level)
+    wanted_level = policy.level
     if wanted_level > 0:
         wanted_line = _get_wanted_aware_dialogue(npc, wanted_level, player_trust, player_relationships)
         if wanted_line:
@@ -278,10 +308,15 @@ def get_contextual_dialogue(npc: Npc, player_trust: TrustMap, context_type: str 
         if morale_line:
             return morale_line
 
+    if player_flags and f"bond_testimony:{npc.id}" in player_flags:
+        warm_line = _pick_line(npc, "warm")
+        if warm_line:
+            return warm_line
+
     trust_score = get_role_trust(player_trust, npc.faction, npc.role)
 
     friendship = 0
-    fear = 0 
+    fear = 0
     if player_relationships and npc.id in player_relationships:
         rel = player_relationships[npc.id]
         friendship = rel.get("friendship", 0)
@@ -307,13 +342,13 @@ def get_contextual_dialogue(npc: Npc, player_trust: TrustMap, context_type: str 
     high_friendship = friendship >= 30
     high_fear = fear >= 30
 
-    if wanted_level >= 1 and npc.perception > 20:
+    if policy.level >= 1 and npc.perception > 20:
         wanted_fear = wanted_level * 15
         high_fear = (fear + wanted_fear) >= 30
-        if wanted_level >= 2:
+        if policy.ordinary_vendor_refuses:
             high_trust = False
             high_friendship = False
-    flee_flag = wanted_level >= 3
+    flee_flag = policy.npc_may_flee
 
     if high_trust and high_friendship and not high_fear:
         friendly = _pick_line(npc, "friendly")
@@ -364,17 +399,15 @@ def load_district_profiles(path: str = None) -> dict:
     if path is None:
         from .constants import NPC_INTERACTIONS_PATH
         path = NPC_INTERACTIONS_PATH
-    with open(path, "r", encoding="utf-8") as f:
-        data = yaml.safe_load(f)
+    data = load_strict_yaml(Path(path))
     return data.get("district_profiles", {})
 
 
 def load_personality_traits(path: str = None) -> dict:
     if path is None:
         from .constants import NPC_INTERACTIONS_PATH
-        path - NPC_INTERACTIONS_PATH
-    with open(path, "r", encoding="utf-8") as f:
-        data = yaml.safe_load(f)
+        path = NPC_INTERACTIONS_PATH
+    data = load_strict_yaml(Path(path))
     return data.get("personality_traits", {})
 
 
@@ -385,38 +418,34 @@ def get_district_for_room(room_id: str, world) -> str:
     return "default"
 
 
-async def trigger_npc_distress(victim_npc: "Npc", attacker_player, room, world, ctx) -> None:
-    from .pathfinding import propogate_sound
-    from .constants import DISTRESS_WANTED_INCREASE_CHANCE
-    from .locales import get as loc
+async def trigger_npc_distress(victim_npc: "Npc", attacker_player, room, world, ctx, sound_event) -> None:
+    from .pathfinding import propagate_sound
 
     profiles = load_district_profiles()
     trait_defs = load_personality_traits()
-    damage = 100 - getattr(victim_npc, 'hp', 100)
-    intensity_data = load_distress_intensity(damage)
-    sound_range = intensity_data["sound_range"]
     district = get_district_for_room(room.id, world)
     profile = profiles.get(district, profiles.get("default", {}))
-    sound_source = room.id
-    npcs_in_range = propagate_sound(world.rooms, sound_source, sound_range)
-    for npc_id, distance in npcs_in_range:
-        near_npc = world.npcs.get(npc_id)
-        if not near_npc or near_npc.id == victim_npc.id:
+    for room_id, distance in propagate_sound(world.rooms, sound_event):
+        heard_room = world.get_room(room_id)
+        if not heard_room:
             continue
-
-        reaction = _determine_npc_reaction(near_npc, victim_npc, attacker_player, profile, trait_defs, district, distance, ctx
-        )
-        if reaction:
-            await _apply_npc_reaction(near_npc, attacker_player, reaction, ctx)
+        for npc_id in getattr(heard_room, "npcs", ()):
+            near_npc = world.npcs.get(npc_id)
+            if not near_npc or near_npc.id == victim_npc.id:
+                continue
+            reaction = _determine_npc_reaction(
+                near_npc, victim_npc, attacker_player, profile, trait_defs,
+                district, distance, ctx,
+            )
+            if reaction:
+                await _apply_npc_reaction(near_npc, attacker_player, reaction, ctx)
 
 
 def load_distress_intensity(damage: int) -> dict:
     from .constants import NPC_INTERACTIONS_PATH
-    import yaml
-    with open(NPC_INTERACTIONS_PATH, "r", encoding="utf-8") as f:
-        data = yaml.safe_load(f)
+    data = load_strict_yaml(Path(NPC_INTERACTIONS_PATH))
     intensities = data.get("distress_intensity", {})
-    for tier in ("critical", "moderate", "glancing", {})
+    for tier in ("critical", "moderate", "glancing"):
         cfg = intensities.get(tier, {})
         min_d = cfg.get("min_damage", 0)
         max_d = cfg.get("max_damage", 100)
@@ -442,7 +471,6 @@ def _determine_npc_reaction(near_npc, victim_npc, attacker_player, profile, trai
             return reaction
 
         if trait_config.get("defend_same_faction") and near_npc.faction == victim_npc.faction:
-            reaction["type"] = "defend"
             return reaction
 
         if trait_config.get("hunt_across_rooms") and near_npc.faction != attacker_player.faction:
@@ -452,7 +480,7 @@ def _determine_npc_reaction(near_npc, victim_npc, attacker_player, profile, trai
 
         intervene = trait_config.get("intervene_chance", 0)
         if intervene and random.randint(1, 100) <= intervene:
-            reaction["type"] = "intervene"
+            reaction["type"] = "defend"
             reaction["side"] = "victim" if near_npc.faction == victim_npc.faction else "attacker"
             return reaction
 
@@ -461,36 +489,36 @@ def _determine_npc_reaction(near_npc, victim_npc, attacker_player, profile, trai
             reaction["type"] = "extort"
             return reaction
 
-    if distance <= 1:
-        civilians = profile.get("civilians", "flee")
+    civilians = profile.get("civilians", "flee")
 
-        if civilians == "flee_or_report_kempeitai":
-            reaction["type"] = "report"
-            reaction["wanted_increase_chance"] = DISTRESS_WANTED_INCREASE_CHANCE
-            return reaction
+    if civilians == "flee_or_report_kempeitai":
+        reaction["type"] = "report"
+        reaction["wanted_increase_chance"] = DISTRESS_WANTED_INCREASE_CHANCE
+        return reaction
 
-        if "flee" in civilians:
-            reaction["type"] = "flee"
-            return reaction
+    if "flee" in civilians:
+        reaction["type"] = "flee"
+        return reaction
 
-        patrol_chance = profile.get("patrol_respond_chance", 0)
-        if patrol_chance and random.randint(1, 100) <= patrol_chance:
-            reaction["type"] = "investigate"
-            reaction["source"] = "patrol"
-            return reaction
+    patrol_chance = profile.get("patrol_respond_chance", 0)
+    if patrol_chance and random.randint(1, 100) <= patrol_chance:
+        reaction["type"] = "report"
+        reaction["source"] = "patrol"
+        return reaction
 
     return reaction
 
 
-async def _apply_npc_raction(npc, player, reaction: dict, ctx) -> None:
-    from .locals import get as loc
+async def _apply_npc_reaction(npc, player, reaction: dict, ctx) -> None:
+    from .locales import get as loc
 
     rtype = reaction.get("type", "ignore")
     if rtype == "ignore":
         return
 
-    if rtype == "flee"
-        room = ctx.shared.world.get_room(ctx.session.player.current_room)
+    if rtype == "flee":
+        room_id = ctx.shared.world.npc_locations.get(npc.id)
+        room = ctx.shared.world.get_room(room_id) if room_id else None
         if room and room.exits:
             import random
             dest_name = random.choice(list(room.exits.keys()))
@@ -515,3 +543,140 @@ async def _apply_npc_raction(npc, player, reaction: dict, ctx) -> None:
             "player_name": player.name,
             "reported_at_minute": ctx.shared.game_time.minute if hasattr(ctx.shared, 'game_time') else 0,
         })
+
+    elif rtype == "investigate":
+        pass
+
+    elif rtype == "defend":
+        from .commands import post_display
+        await post_display(ctx, loc("npc.defend").format(name=npc.name), msg_type="combat")
+
+    elif rtype == "hunt":
+        if not hasattr(npc, 'player_memories'):
+            npc.player_memories = {}
+        npc.player_memories[player.username] = {
+            'relationship_type': 'hunted',
+            'trust_mod': -50,
+            'last_interaction_day': ctx.shared.game_time.day,
+        }
+
+
+_SPAWN_COUNTER = 0
+
+
+def spawn_patrol_instance(template_id: str, room_id: str, world) -> str:
+
+    global _SPAWN_COUNTER
+    template = world.npcs.get(template_id)
+    if not template:
+        return ""
+
+    from copy import deepcopy
+    _SPAWN_COUNTER += 1
+    uid = f"{template_id}_patrol_{_SPAWN_COUNTER}"
+
+    patrol = deepcopy(template)
+    patrol.id = uid
+    world.npcs[uid] = patrol
+    world.npc_locations[uid] = room_id
+
+    room = world.get_room(room_id)
+    if room and uid not in room.npcs:
+        room.npcs.append(uid)
+
+    return uid
+
+
+def despawn_patrol_instance(patrol_id: str, world) -> None:
+    if patrol_id not in world.npcs:
+        return
+    room_id = world.npc_locations.get(patrol_id)
+    if room_id:
+        room = world.get_room(room_id)
+        if room and patrol_id in room.npcs:
+            room.npcs.remove(patrol_id)
+    world.npcs.pop(patrol_id, None)
+    world.npc_locations.pop(patrol_id, None)
+
+
+def get_npc_archetype(npc) -> str:
+    ARCHETYPE_MAP = {
+        "civilian_vendor": "merchant",
+        "shopkeeper": "merchant",
+        "merchant": "merchant",
+        "dock_worker": "worker",
+        "coolie": "worker",
+        "worker": "worker",
+        "rickshaw_puller": "worker",
+        "civilian": "civilian",
+        "doctor": "doctor",
+        "refugee": "refugee",
+        "green_gang": "green_gang",
+        "gangster": "green_gang",
+        "student": "student",
+        "student_intellectual": "student",
+        "kempeitai": "kempeitai",
+        "kempeitai_soldier": "kempeitai",
+        "resistance": "resistance",
+        "underground_operative": "resistance",
+        "ccp": "resistance",
+        "soldier": "soldier",
+        "gmd_soldier": "soldier",
+        "official": "official",
+        "bureaucrat": "official",
+        "neighbor": "neighbor",
+        "resident": "neighbor",
+    }
+
+    traits = getattr(npc, 'personality_traits', {}) or {}
+    if traits.get('brave', 0) > 50:
+        return "soldier"
+    if traits.get('cowardly', 0) > 50:
+        return "civilian"
+    if traits.get('corrupt', 0) > 50:
+        return "green_gang"
+
+    bt = str(getattr(npc, 'bt_archetype', '') or '').lower()
+    role = str(getattr(npc, 'role', '') or '').lower()
+    faction = str(getattr(npc, 'faction', '') or '').lower()
+    personality = str(getattr(npc, 'personality', '') or '').lower()
+    mapped_bt = ARCHETYPE_MAP.get(bt)
+    role_archetype = {
+        "merchant": "merchant",
+        "worker": "worker",
+        "rickshaw_puller": "worker",
+        "resident": "neighbor",
+        "refugee": "refugee",
+        "student": "student",
+        "doctor": "doctor",
+        "medic": "doctor",
+        "nurse": "doctor",
+        "civilian": "civilian",
+        "orphan": "civilian",
+        "official": "official",
+        "bureaucrat": "official",
+        "clerk": "official",
+        "clerks": "official",
+        "police": "official",
+        "consul": "official",
+    }
+    if faction == "civilian" and role == "informant" and any(marker in personality for marker in ("nervous", "guilty", "coward")):
+        return "cowardly_civilian"
+    if role == "merchant" and faction in {"british", "german"}:
+        return "refugee"
+    if role in role_archetype and bt in {"", "civilian_vendor", "underground_operative"}:
+        return role_archetype[role]
+    if mapped_bt:
+        return mapped_bt
+
+    FACTION_ARCHETYPE = {
+        "ccp": "resistance",
+        "gmd": "soldier",
+        "kempeitai": "kempeitai",
+        "green_gang": "green_gang",
+        "civilian": "civilian",
+    }
+    if faction in FACTION_ARCHETYPE:
+        return FACTION_ARCHETYPE[faction]
+
+    return "civilian"
