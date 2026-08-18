@@ -1473,3 +1473,214 @@ class WorldClock:
                 return Status.FAILURE
             self._npc_move_action(npc, room_id, room, self._rooms_with_players())
             return Status.SUCCESS
+
+        def _action_gossip(bb):
+            npc, room, _ = _npc_ctx(bb)
+            if not npc or not room:
+                return Status.FAILURE
+            self._npc_flee_action(npc, room_id, room, self._rooms_with_players())
+            return Status.SUCCESS
+
+        def _action_social(action: str):
+            def execute(bb):
+                npc, room, _ = _npc_ctx(bb)
+                if not npc or not room:
+                    return Status.FAILURE
+                return Status.SUCCESS if self._run_social_interaction(npc, room, action) else Status.FAILURE
+            return execute
+
+        def _action_flee(bb):
+            npc, room, room_id = npc_ctx(bb)
+            if not npc:
+                return Status.FAILURE
+            self._npc_flee_action(npc, room_id, room, self._rooms_with_players())
+            return Status.SUCCESS
+
+        def _action_idle(bb):
+            return Status.SUCCESS
+
+        def _action_investigate_sound(bb):
+            npc, _, _ = _npc_ctx(bb, require_room=False)
+            return self, _npc_investigate_action(npc, bb)
+
+        def _action_follow_schedule(bb):
+            from .pathfinding import a_star_find_path
+            npc, _, _ = _npc_ctx(bb, require_room=False)
+            if not npc:
+                return Status.FAILURE
+            hour = bb.get("game_hour", -1)
+            target_room = npc.schedule.get(hour)
+            current_room_id = self.shared.world.npc_locations.get(bb.get("npc_id"))
+            if not target_room or current_room_id == target_room:
+                return Status.FAILURE
+            current_room_obj = self.shared.world.rooms.get(current_room_id)
+            if not current_room_obj or not current_room_obj.exits:
+                return Status.FAILURE
+
+            path = a_star_find_path(
+                self.shared.world.rooms,
+                current_room_id,
+                target_room,
+                cost_fn=lambda a, b: 1.0,
+            )
+            if path:
+                direction = path[0]
+                dest_room_id = current_room_obj.exits.get(direction)
+                if dest_room_id and self._move_npc_between_rooms(npc.id, current_room_id, dest_room_id, direction):
+                    rooms_with_players = self._rooms_with_players()
+                    if current_room_id in rooms_with_players or dest_room_id in rooms_with_players:
+                        for session in self._visible_sessions(current_room_id):
+                            asyncio.create_task(session.send_display(
+                                f"{npc.name} walks {direction}.", msg_type=MessageType.NPC_AMBIENT,
+                            ))
+                        for session in self._visible_sessions(dest_room_id):
+                            asyncio.create_task(session.send_display(
+                                f"{npc.name} arrives from the {self._get_direction(dest_room_id, current_room_id)}.",
+                                msg_type=MessageType.NPC_AMBIENT,
+                            ))
+                    return Status.SUCCESS
+            self._npc_move_action(npc, current_room_id, current_room_obj, self._rooms_with_players())
+            return Status.SUCCESS
+
+        def _action_share_intel(bb):
+            npc, room, _ = _npc_ctx(bb)
+            if not npc or not room:
+                return Status.FAILURE
+            return Status.SUCCESS if self._run_social_interaction(npc, room, "share_intel") else Status.FAILURE
+
+        def _action_hide_in_shadows(bb):
+            npc, room, room_id = _npc_ctx(bb)
+            if not npc or not room or not room.hiding_spots:
+                return Status.FAILURE
+            for session in self.session_manager.get_players_in_room(room_id):
+                asyncio.create_task(session.send_display(
+                    f"{npc.name} slips into the shadows and vanishes from sight.",
+                    msg_type=MessageType.NPC_AMBIENT,
+                ))
+            return Status.SUCCESS
+
+        def _action_extort_civilian(bb):
+            npc, room, room_id = _npc_ctx(bb)
+            if not npc:
+                return Status.FAILURE
+            civilians = [nid for nid in room.npcs
+                         if nid != npc.id and self.shared.world.npcs.get(nid)
+                         and self.shared.world.npcs.get(nid).faction == "civilian"]
+            if not civilians:
+                return Status.FAILURE
+            target = self.shared.world.npcs.get(civilians[0])
+            if not self._run_social_interaction(npc, room, "extort_civilian", target):
+                return Status.FAILURE
+            self._resolve_decision("extortion", npc.id, room_id,
+                                   {"victim_npc_id": target.id if target else ""},
+                                   "extortion_underway")
+            return Status.SUCCESS
+
+        def _action_intimidate_rival(bb):
+            npc, room, room_id = _npc_ctx(bb)
+            if not npc:
+                return Status.FAILURE
+            rivals = [nid for nid in room.npcs
+                      if nid != npc.id and self.shared.world.npcs.get(nid)
+                      and self._are_opposite_factions(npc.faction, self.shared.world.npcs.get(nid).faction)]
+            if not rivals:
+                return Status.FAILURE
+            target = self.shared.world.npcs.get(rivals[0])
+            return Status.SUCCESS if self._run_social_interaction(npc, room, "intimidate_rival", target) else Status.FAILURE
+
+        def _action_hold_secret_meeting(bb):
+            npc, room, _ = _npc_ctx(bb)
+            if not npc or not room:
+                return Status.FAILURE
+            return Status.SUCCESS if self._run_social_interaction(npc, room, "hold_secret_meeting") else Status.FAILURE
+
+        def _action_investigate_player(bb):
+            npc, room, room_id = _npc_ctx(bb)
+            if not npc or not room_id:
+                return Status.FAILURE
+            players = self.session_manager.get_players_in_room(room_id)
+            target = next((s for s in players if s.player.hidden), None)
+            if not target:
+                for nid in room.npcs:
+                    other = self.shared.world.npcs.get(nid)
+                    if other:
+                        other.suspicion = 0
+                return Status.FAILURE
+            target.player.hidden = False
+            asyncio.create_task(target.send_display(
+                f"{npc.name} scans the shadows and spots you. 'What are you doing?'"
+            ))
+            for nid in room.npcs:
+                other = self.shared.world.npcs.get(nid)
+                if other:
+                    other.suspicion = max(0, other.suspicion - SUSPICION_INVESTIGATE_RELIEF)
+            return Status.SUCCESS
+
+        def _action_shutter_shop(bb):
+            npc, room, room_id = _npc_ctx(bb)
+            if not npc or not room_id:
+                return Status.FAILURE
+            world_tension = (self.shared.ccp_influence + self.shared.gmd_influence) / 2
+            if world_tension < VENDOR_SHUTTER_TENSION:
+                return Status.FAILURE
+            if bb.get("courage", 50) >= 40:
+                return Status.FAILURE
+            self.shared.room_state_overrides[room_id] = {
+                "shop_closed": True,
+                "closed_reason": f"{npc.name} has fled Shanghai, fearing the rising tension.",
+            }
+            self._resolve_decision("vendor_shutter", npc.id, room_id,
+                                   {"room_id": room_id}, "vendor_fled")
+            schedule_rooms = [r for h, r in npc.schedule.items() if r in self.shared.world.rooms]
+            if schedule_rooms:
+                self._move_npc_between_rooms(npc.id, room_id, schedule_rooms[0])
+            for session in self.session_manager.get_players_in_room(room_id):
+                asyncio.create_task(session.send_display(
+                    f"{npc.name} boards up the shop and slips away into the crowd."
+                ))
+            return Status.SUCCESS
+
+        def _action_defect(bb):
+            npc, room, room_id = _npc_ctx(bb, require_room=False)
+            if not npc:
+                return Status.FAILURE
+
+            old_faction = npc.faction
+
+            if old_faction == "ccp":
+                new_faction = "gmd"
+            elif old_faction == "gmd":
+                new_faction = "ccp"
+            elif old_faction == "green_gang":
+                disp = self.shared.npc_dispositions.get(npc.id, {"disillusionment": 0})
+                if disp.get("disillusionment", 0) > 80:
+                    new_faction = "civilian"
+                else:
+                    new_faction = "kempeitai"
+            else:
+                return Status.FAILURE
+
+            npc.faction = new_faction
+            self.shared.npc_dispositions.pop(npc.id, None)
+            self._resolve_decision("defection", npc.id, room_id or "",
+                                   {"old_faction": old_faction, "new_faction": new_faction})
+            for nid, other in self.shared.world.npcs.items():
+                if nid != npc.id and other.faction == old_faction:
+                    disp = self.shared.npc_dispositions.setdefault(nid, {"disillusionment": 0})
+                    disp["disillusionment"] = min(100, disp["disillusionment"] + 5)
+            from .rumors import publish_event_rumor
+            publish_event_rumor(
+                self.shared,
+                event_type="defection",
+                text=f"{npc.name} has abandoned the {old_faction.upper()} for the {new_faction.upper()}.",
+                location=room_id or "",
+                district=getattr(self.shared.world.rooms.get(room_id or ""), "district", "") if room_id else "",
+                witnesses=list(room.npcs) if room else [],
+                faction_context=new_faction,
+                created_day=self.shared.game_time.day,
+                occurrence=npc.id,
+            )
+            asyncio.create_task(self._broadcast_display(
+                f"Rumour spreads: {npc.name} has abandoned the {old_faction.upper()} for the {new_faction.upper()}."
+            ))
+            return Status.SUCCESS
