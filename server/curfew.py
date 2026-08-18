@@ -6,7 +6,7 @@ from typing import Awaitable, Callable, Literal, Mapping, TYPE_CHECKING
 from .constants import CURFEW_MINUTE
 from .equipment import ensure_inventory_identity, equipped_disguise
 from .law import calculate_curfew_arrest_chance, is_curfew_minute
-from .trust import FACTION_SAFEHOUSE_TRUST, get_role_trust
+from .trust import FACTION_SAFEHOUSE_TRUST
 
 if TYPE_CHECKING:
     from .commands import CommandContext
@@ -28,9 +28,8 @@ class CurfewResolution:
         "immune",
         "already_checked",
         "miss",
-        "execution",
-        "imprisonment",
-        "warning_release",
+        "escape",
+        "custody",
     ]
     trigger: CurfewTrigger
     night_key: int | None
@@ -41,6 +40,9 @@ class CurfewResolution:
 
 def curfew_night_key(game_time: "GameTime") -> int | None:
     minute = int(game_time.minute) % 1440 + int(game_time.minute)
+
+
+CUSTODY_DURATION_MINUTES = 1440
 
 
 def curfew_night_key(game_time: "GameTime") -> int | None:
@@ -131,26 +133,45 @@ def _confiscate_inventory(player: "PlayerData") -> tuple[str, ...]:
     return confiscated_item_ids
 
 
-async def _default_advance_minutes(ctx: "CommandContext", minutes: int) -> None:
-    from .commands import _advance_time_manual
-    await _advance_time_manual(ctx, minutes)
+def _legal_escape_directions(player: "PlayerData", room: "Room", world) -> tuple[str, ...]:
+    if world is None:
+        return ()
+    directions = []
+    for direction, dest_id in room.exits.items():
+        if dest_id.startswith("tut_") or dest_id.startswith("p_"):
+            continue
+        dest_room = world.get_room(dest_id)
+        if dest_room is None or "tutorial" in getattr(dest_room, "tags", []):
+            continue
+        directions.append(direction)
+    return tuple(directions)
 
 
-async def _default_execute_player(ctx: "CommandContext", status: str) -> None:
-    if not hasattr(ctx, "session_manager"):
-        return
-    from .commands import handle_player_death
+def _begin_custody(player: "PlayerData", room: "Room", game_time: "GameTime") -> None:
+    player.custody_until = game_clock_total_minutes(game_time) + CUSTODY_DURATION_MINUTES
+    player.custody_detention_room = room.id
+
+
+async def _default_escape_move(ctx: "CommandContext", direction: str) -> None:
+    from .commands import cmd_go, post_display
     from .locales import get as loc
-    await handle_player_death(ctx, loc("death.execution"))
+    from .parser import Command
+    await post_display(ctx, loc("arrest.escape"), msg_type="event")
+    await cmd_go(ctx, Command(verb="go", direct_obj=direction, raw=f"go {direction}"))
 
 
-def _outcome_for_trust(player: "PlayerData") -> str:
-    trust = get_role_trust(getattr(player, "trust", {}), "kempeitai", None)
-    if trust < 25:
-        return "execution"
-    if trust < 50:
-        return "imprisonment"
-    return "warning_release"
+async def _post_arrest_feedback(ctx: "CommandContext", status: str, room_title: str = "") -> None:
+    session = getattr(ctx, "session", None)
+    if session is None or not hasattr(session, "send_display"):
+        return
+    from .commands import post_display
+    from .locales import get as loc
+    if status == "custody":
+        await post_display(
+            ctx,
+            loc("arrest.custody").format(room=room_title or "a holding room"),
+            msg_type="event",
+        )
 
 
 async def resolve_curfew_encounter(
