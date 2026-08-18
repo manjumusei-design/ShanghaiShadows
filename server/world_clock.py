@@ -394,3 +394,148 @@ class WorldClock:
             )
             patrol.expires_at = now + self._patrol_pause_seconds(patrol)
             self._patrol_entities.append(patrol)
+
+    def _patrol_candidates(self, patrol: PatrolState) -> list[str]:
+        candidates = patrol_next_rooms(self.shared.world.rooms, patrol.room_id, patrol.last_room_id)
+        return [
+            room_id for room_id in candidates
+            if (room := self.shared.world.get_room(room_id))
+            and not room.indoors
+            and self._room_zone(room) == patrol.zone
+        ]
+
+    async def _advance_patrol(self, patrol: PatrolState, now: float) -> None:
+        candidates = self._patrol_candidates(patrol)
+        if not candidates:
+            patrol.expires_at = now + self._patrol_pause_seconds(patrol)
+            return
+        next_room_id = random.choice(candidates)
+        patrol.last_room_id, patrol.room_id = patrol.room_id, next_room_id
+        self.shared.world.place_npc(patrol.npc_id, next_room_id)
+        patrol.expires_at = now + self._patrol_pause_seconds(patrol)
+        await self._resolve_patrol_entry(patrol)
+
+    def _patrol_pause_seconds(self, patrol: PatrolState) -> int:
+        active = any(
+            session.running
+            and wanted_consequences(session.player.wanted_level).patrol_multiplier > 1
+            and self._room_zone(self.shared.world.get_room(session.player.current_room)) == patrol.zone
+            and not tutorial_blocks_world_events(session.player)
+            for session in self.session_manager.sessions.values()
+        )
+        seasonal_density = SEASONAL_PATROL_DENSITY.get(
+            get_season(self.shared.game_time.day), 1.0
+        )
+        return patrol_pause_seconds(
+            self.shared.game_time,
+            seasonal_density=seasonal_density,
+            wanted_multiplier=2 if active else 1,
+        )
+
+    async def _broadcast_patrol_warning(self, patrol: PatrolState, now: float) -> None:
+        if curfew_night_key(self.shared.game_time) is None:
+            for session in self.session_manager.sessions.values():
+                if session.running:
+                    await session.clear_patrol_warning()
+            return
+
+        eligible = lambda room: (
+            not room.indoors and self._room_zone(room) == patrol.zone
+        )
+        reachable = patrol_reachable_rooms(
+            self.shared.world.rooms,
+            patrol.room_id,
+            patrol.last_room_id,
+            eligible=eligible,
+        )
+        seconds_remaining = max(0, int(patrol.expires_at - now))
+        for session in self.session_manager.sessions.values():
+            if not session.running or tutorial_blocks_world_events(session.player):
+                continue
+            distance = reachable.get(session.player.current_room)
+            if distance not in {1, 2, 3}:
+                await session.clear_patrol_warning()
+                continue
+            stage = 4 - distance
+            if stage == 3:
+                await session.send_patrol_warning(
+                    patrol_id=patrol.npc_id,
+                    stage=stage,
+                    seconds_remaining=seconds_remaining,
+                    expires_at=patrol.expires_at,
+                )
+            else:
+                await session.send_patrol_warning(
+                    patrol_id=patrol.npc_id,
+                    stage=stage,
+                )
+
+    def _despawn_patrol(self, npc_id: str) -> None:
+        room_id = self.shared.world.npc_locations.pop(npc_id, None)
+        room = self.shared.world.get_room(room_id) if room_id else None
+        if room and npc_id in room.npcs:
+            room.npcs.remove(npc_id)
+        self.shared.world.npcs.pop(npc_id, None)
+
+    def _clear_transient_patrols(self) -> None:
+        for npc_id in list(self.shared.world.npcs):
+             if is_transient_patrol_id(npc_id):
+                 self._despawn_patrol(npc_id)
+        for room in self.shared.world.rooms.values():
+            room.npcs = [npc_id for npc_id in room.npcs if not is_transient_patrol_id(npc_id)]
+        for npc_id in list(self.shared.world.npc_locations):
+            if is_transient_patrol_id(npc_id):
+                self.shared.world.npc_locations.pop(npc_id, None)
+
+    async def _resolve_patrol_entry(self, patrol: PatrolState) -> None:
+        from .stealth import PierceStage
+        room_id = patrol.room_id
+        patrol_npc = self.shared.world.npcs.get(patrol.npc_id)
+        if not patrol_npc:
+            return
+        room = self.shared.world.get_room(room_id)
+        if not room or room.indoors:
+            return
+        active_curfew = curfew_night_key(self.shared.game_time) is not None
+        for session in self.session_manager.get_players_in_room(room_id):
+            player = session.player
+            if not session.running or tutorial_blocks_world_events(player):
+                continue
+            if getattr(player, "custody_until", -1) >=0:
+                continue
+            await session.clear_patrol_warning()
+            if not player.hidden:
+                await session.send_display("Boots pass close by, then fade into the street.", msg_type="ambient")
+                if active_curfew:
+                    ctx = self.session_manager._make_context(session)
+                    await resolve_curfew_encounter(ctx, CurfewTrigger.PATROL_CONTACT)
+                continue
+            stage = self.stealth.passive_detection_check(
+                patrol_npc,
+                player.stealth_skill,
+                season=get_season(self.shared.game_time.day),
+                room_indoors=False,
+                game_hour=self.shared.game_time.hour,
+                weather=getattr(self.shared, "weather", "clear"),
+            )
+            if stage == PierceStage.EXPOSED:
+                player.hidden = False
+                await session.send_display("Boots pass close by, then fade into the street.", msg_type="ambient")
+                if active_curfew:
+                    ctx = self.session_manager._make_context(session)
+                    await resolve_curfew_encounter(ctx, CurfewTrigger.PATROL_CONTACT)
+                continue
+            await session.send_display("Boots pass close by, then fade into the street.", msg_type="ambient")
+
+    def _expire_crime_scenes(self) -> None:
+        current_day = self.shared.game_time.day
+
+        for room in self.shared.world.rooms.values():
+            if room.crime_scene_until_day > 0 and current_day >= room.crime_scene_until_day:
+                if "crime_scene" in room.tags:
+                    room.tags.remove("crime_scene")
+                room.crime_scene_until_day = 0
+            room.items = [
+                item for item in room.items
+                if not (item.is_corpse and item.decay_day > 0 and current_day >= item.decay_day)
+            ]
