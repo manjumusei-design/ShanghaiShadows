@@ -1193,3 +1193,109 @@ class WorldClock:
                     item = self.shared.world.clone_item(item_id)
                     if item:
                         room.items.append(item)
+
+    def _get_nearby_npcs(self, npc_id: str, current_room) -> list:
+        return [self.shared.world.npcs.get(nid) for nid in current_room.npcs if nid != npc_id and self.shared.world.npcs.get(nid)]
+
+    def _run_social_interaction(self, actor, room, action: str, target=None) -> bool:
+        candidates = [target] if target else self._get_nearby_npcs(actor.id, room)
+        if not candidates:
+            return False
+        random.shuffle(candidates)
+        world_state = type("SocialWorldState", (), {
+            "world_tension": (self.shared.ccp_influence + self.shared.gmd_influence) / 2,
+            "district": getattr(room, "district", ""),
+        })()
+        for candidate in candidates:
+            interaction = npc_interaction_manager.select_interaction(action, actor, candidate, world_state)
+            if not interaction:
+                continue
+            district = getattr(room, "district", "") or "default"
+            self._social_resolver.apply(interaction, actor, candidate, self.shared, district)
+            sound = NPC_ACTION_SOUNDS.get(action)
+            if sound:
+                intensity, sound_type, audio_name = sound
+                self._dispatch_world_sound(room.id, intensity, sound_type, audio_name)
+            sessions = list(self.session_manager.get_players_in_room(room.id))
+            record_social_consequence(
+                interaction, actor, candidate, self.shared, room,
+                witnesses=[session.username for session in sessions],
+            )
+            if interaction.effects.rumor_propagation:
+                exchange_gossip(
+                    actor.memory, candidate.memory, chance=1.0,
+                    game_day=self.shared.game_time.day, npc_a=actor, npc_b=candidate,
+                    shared=self.shared,
+                )
+            if action in {"gossip", "trade_gossip", "exchange_rumors", "share_news"}:
+                turns = self._social_dialogue.compose_turns(
+                    actor,
+                    candidate,
+                    action,
+                    {
+                        "weather": self.shared.weather,
+                        "absolute_minute": game_clock_total_minutes(self.shared.game_time),
+                    },
+                )
+            else:
+                turns = [
+                    {"speaker": actor.name, "text": npc_interaction_manager.render_narrative(interaction, actor, candidate), "delay_ms": 900},
+                    {"speaker": candidate.name, "text": "The exchange ends without drawing further attention.", "delay_ms": 900},
+                ]
+            from .rumors import push_panel_entry
+            for session in sessions:
+                push_panel_entry(session, action, {
+                    "speaker": actor.name,
+                    "listener": candidate.name,
+                    "turns": turns,
+                })
+            return True
+        return False
+
+    def _npc_move_action(self, npc, current_room_id: str, current_room, rooms_with_players: set):
+        import random
+        if not current_room.exits:
+            return
+
+        direction = random.choice(list(current_room.exits.keys()))
+        dest_room_id = current_room.exits[direction]
+
+        if self._move_npc_between_rooms(npc.id, current_room_id, dest_room_id):
+            if current_room_id in rooms_with_players or dest_room_id in rooms_with_players:
+                for session in self._visible_sessions(current_room_id):
+                    asyncio.create_task(session.send_display(
+                        f"{npc.name} walks {direction}.", msg_type=MessageType.NPC_AMBIENT,
+                    ))
+
+                for session in self._visible_sessions(dest_room_id):
+                    asyncio.create_task(session.send_display(
+                        f"{npc.name} arrives from the {self._get_direction(dest_room_id, current_room_id)}.",
+                        msg_type=MessageType.NPC_AMBIENT,
+                    ))
+
+    def _npc_gossip_action(self, npc, current_room, rooms_with_players: set):
+        self._run_social_interaction(npc, current_room, "exchange_rumors")
+
+    def _npc_argue_action(self, npc, current_room, rooms_with_players: set):
+        import random
+
+        nearby_npcs = self._get_nearby_npcs(npc.id, current_room)
+        if not nearby_npcs:
+            return
+
+        opponents = [n for n in nearby_npcs if self._are_opposite_factions(npc.faction, n.faction)]
+        if not opponents:
+            return
+
+        opponent = random.choice(opponents)
+        self._run_social_interaction(npc, current_room, "argue", opponent)
+        if current_room.id in rooms_with_players:
+            for session in self.session_manager.get_players_in_room(current_room.id):
+                messages = [
+                    f"{npc.name} argues heatedly with {opponent.name}.",
+                    f"{npc.name} and {opponent.name} exchange angry words.",
+                    f"Tension rises as {npc.name} confronts {opponent.name}."
+                ]
+                asyncio.create_task(session.send_display(
+                    random.choice(messages), msg_type=MessageType.NPC_AMBIENT,
+                ))
