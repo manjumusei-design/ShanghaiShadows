@@ -1,24 +1,26 @@
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional
 import random
-import time 
+import time
 import yaml
 
+from .content_validation import load_strict_yaml
 
-@dataclass 
+
+@dataclass
 class NarrativeChain:
     id: str
-    trigger: str
+    trigger: str 
     npc: str
     precondition: Dict[str, object] = field(default_factory=dict)
     effects: Dict[str, object] = field(default_factory=dict)
-    feed: str = "" 
+    feedback: str = ""
 
 
 @dataclass
 class StoryletOption:
     text: str
-    effects: Dict[str, object] =  field(default_factory=dict)
+    effects: Dict[str, object] = field(default_factory=dict)
     followup_storylet: str = ""
     disabled: bool = False
     disabled_reason: str = ""
@@ -41,7 +43,7 @@ class Storylet:
     preconditions: Dict[str, object]
     options: List[StoryletOption]
     scope: str = "player"
-    resolution: str= "first_choice"
+    resolution: str = "first_choice"
     speaker_npc: str = ""
     listener_npc: str = ""
     is_overheard: bool = False
@@ -49,6 +51,7 @@ class Storylet:
     timer_seconds: int = 120
     blocking: bool = False
     neglect: Optional[NeglectOutcome] = None
+    social_consequence_only: bool = False
 
 
 @dataclass
@@ -69,10 +72,25 @@ class ActiveStorylet:
     owner_username: str = ""
     expires_at: float = 0.0
     resolution_started: bool = False
+    resolution_committed: bool = False
+
+    def participant_npc_ids(self) -> tuple[str, ...]:
+        ids: List[str] = []
+        for value in (self.speaker_npc, self.listener_npc):
+            if isinstance(value, str) and value.strip():
+                ids.append(value.strip())
+        turns = self.turns or []
+        if isinstance(turns, list):
+            for turn in turns:
+                if isinstance(turn, dict):
+                    speaker = turn.get("speaker_npc")
+                    if isinstance(speaker, str) and speaker.strip():
+                        ids.append(speaker.strip())
+        return tuple(dict.fromkeys(ids))
+
 
 def load_storylets(path: str) -> Dict[str, Storylet]:
-    with open(path, "r", encoding="utf-8") as f:
-        data = yaml.safe_load(f) or {}
+    data = load_strict_yaml(path) or {}
     storylets: Dict[str, Storylet] = {}
     for row in data.get("storylets", []):
         neglect_data = row.get("neglect")
@@ -97,26 +115,26 @@ def load_storylets(path: str) -> Dict[str, Storylet]:
                     followup_storylet=opt.get("followup_storylet", ""),
                     disabled=opt.get("disabled", False),
                     disabled_reason=opt.get("disabled_reason", ""),
-                    response_msg=opt.get("response_msg", "")
+                    response_msg=opt.get("response_msg", ""),
                 )
                 for opt in row.get("options", [])
             ],
             scope=row.get("scope", "player"),
-            resolution=row.get("resolution", "first_choice:"),
+            resolution=row.get("resolution", "first_choice"),
             speaker_npc=row.get("speaker_npc", ""),
             listener_npc=row.get("listener_npc", ""),
             is_overheard=row.get("is_overheard", False),
-            timer_seconds=row.get("timer_seconds", 120),
             turns=list(row.get("turns", [])),
+            timer_seconds=row.get("timer_seconds", 120),
             blocking=row.get("blocking", False),
             neglect=neglect,
+            social_consequence_only=row.get("social_consequence_only", False),
         )
     return storylets
 
 
 def load_narrative_chains(path: str) -> Dict[str, NarrativeChain]:
-    with open(path, "r", encoding="utf-8") as f:
-        data = yaml.safe_load(f) or {}
+    data = load_strict_yaml(path) or {}
     chains: Dict[str, NarrativeChain] = {}
     for row in data.get("narrative_chains", []):
         chains[row["id"]] = NarrativeChain(
@@ -130,7 +148,6 @@ def load_narrative_chains(path: str) -> Dict[str, NarrativeChain]:
     return chains
 
 
-
 class StoryletManager:
     def __init__(self, storylets: Dict[str, Storylet], narrative_chains: Dict[str, NarrativeChain] = None):
         self.storylets = storylets
@@ -141,6 +158,8 @@ class StoryletManager:
         if storylet.scope == "player" and len(player.active_storylets) >= STORYLET_QUEUE_MAX:
             return False
         if storylet.id in player.storylet_history:
+            return False
+        if storylet.social_consequence_only:
             return False
         
         if getattr(player, 'in_tutorial', False) and storylet.id != "tutorial_choice":
@@ -259,8 +278,71 @@ class StoryletManager:
                     owner_username=player.username,
                     expires_at=timer_started_at + storylet.timer_seconds,
                 )
+                mark_untimed_for_tutorial(active, player)
                 player.active_storylets.append(active)
                 return active
+
+    def maybe_trigger_social_follow_up(self, player, shared) -> Optional[ActiveStorylet]:
+        from .constants import STORYLET_QUEUE_MAX
+        from .game_world import is_named_npc_dead
+
+        if len(player.active_storylets) >= STORYLET_QUEUE_MAX:
+            return None
+        now = (shared.game_time.day - 1) * 1440 + shared.game_time.minute
+        for consequence_id in sorted(getattr(shared, "social_consequences", {})):
+            record = shared.social_consequences[consequence_id]
+            if record.get("state") != "active" or record.get("consequence_class") != "actionable":
+                continue
+            if record.get("follow_up_state") != "pending" or record.get("follow_up_due_at", now + 1) > now:
+                continue
+            if player.current_room != record.get("room_id"):
+                continue
+            involved_npcs = record.get("npc_ids", [])
+            if any(
+                npc_id not in shared.world.npcs
+                or is_named_npc_dead(shared, npc_id)
+                or npc_id not in shared.world.npc_locations
+                or shared.world.npc_locations[npc_id] != record.get("room_id")
+                for npc_id in involved_npcs
+            ):
+                record["follow_up_state"] = "invalidated"
+                continue
+            for trust_key, bounds in record.get("follow_up_trust_ranges", {}).items():
+                from .trust import get_role_trust
+                faction, _, role = trust_key.partition(".")
+                trust = get_role_trust(player.trust, faction, role) if role else get_role_trust(player.trust, faction)
+                if trust < int(bounds[0]) or trust > int(bounds[1]):
+                    record["follow_up_state"] = "unavailable"
+                    break
+            if record.get("follow_up_state") != "pending":
+                continue
+            storylet = self.storylets.get(record.get("follow_up_key"))
+            if not storylet or not storylet.social_consequence_only or storylet.id in player.storylet_history:
+                record["follow_up_state"] = "unavailable"
+                continue
+
+            timer_started_at = time.time()
+            active = ActiveStorylet(
+                storylet_id=storylet.id,
+                narrative=storylet.narrative,
+                options=storylet.options,
+                room_id=player.current_room,
+                timer_duration=storylet.timer_seconds,
+                timer_started_at=timer_started_at,
+                speaker_npc=storylet.speaker_npc,
+                listener_npc=storylet.listener_npc,
+                turns=list(storylet.turns),
+                blocking=storylet.blocking,
+                scope=storylet.scope,
+                owner_username=player.username,
+                expires_at=timer_started_at + storylet.timer_seconds,
+            )
+            mark_untimed_for_tutorial(active, player)
+            player.active_storylets.append(active)
+            record["follow_up_state"] = "delivered"
+            record["follow_up_delivered_to"] = player.username
+            return active
+        return None
 
     def check_narrative_chain(self, npc_id: str, player, shared) -> Optional[NarrativeChain]:
         for chain in self.narrative_chains.values():
@@ -307,3 +389,11 @@ def is_storylet_expired(active: ActiveStorylet) -> bool:
         return False
     expires_at = active.expires_at or active.timer_started_at + active.timer_duration
     return time.time() >= expires_at
+
+
+def mark_untimed_for_tutorial(active: ActiveStorylet, player) -> None:
+    from .tutorial import tutorial_blocks_world_events
+    if tutorial_blocks_world_events(player):
+        active.timer_duration = 0
+        active.expires_at = 0.0
+
