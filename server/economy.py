@@ -2,12 +2,17 @@ from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional
 import random
 from .constants import BLACK_MARKET_LISTING_EXPIRE_DAYS, get_season, SEASONAL_PRICE_MULTIPLIER
+from .trust import get_trust_tier
 
 
 def _validate_fabi_amount(amount: int) -> int:
     if not isinstance(amount, int) or amount < 0:
         raise ValueError("fabi value must be a non neg int")
     return amount
+
+
+def _availability_price_modifier(availability: float) -> float:
+    return max(0,5m min(2.0, 1.0 + (1.0 - availability) * 0.5))
 
 
 def wallet_fabi_value(player) -> int:
@@ -132,6 +137,12 @@ class EconomySystem:
     def get_item_category(self, item_id: str) -> str:
         return self.ITEM_CATEGORIES.get(item_id, 'general')
 
+    def get_item_base_price(self, item_id: str, item_catalog: Optional[Dict[str, Any]] = None) -> int:
+        entry = (item_catalog or {}).get(item_id)
+        if entry is None or not getattr(entry, "takeable", False):
+            return 0
+        return max(0, int(getattr(entry, "base_cost", 0) or 0))
+    
     def get_regional_modifier(self, item_id: str, region: str) -> float:
         category = self.get_item_category(item_id)
         return self.REGIONAL_PRICES.get(region, {}).get(category, 1.0)
@@ -139,17 +150,6 @@ class EconomySystem:
     def get_faction_modifier(self, item_id: str, faction: str) -> float:
         category = self.get_item_category(item_id)
         return self.FACTION_PRICES.get(faction, {}).get(category, 1.0)
-
-    def get_scarcity_modifier(self, item_id: str, region: str) -> float:
-        key = f"{region}_{item_id}"
-        condition = self.market_conditions.get(key)
-        if not condition:
-            return 1.0
-        if condition.availability < 0.3:
-            return 1.5
-        if condition.availability < 0.5:
-            return 1.2
-        return 1.0
 
 
     def get_item_price(self, item_base_cost: int, item_id: str, region: str,
@@ -160,26 +160,24 @@ class EconomySystem:
             return 0
 
         if player_morale < 30:
-            morale_mod = 1.15  
-        elif player_morale < 50:
-            morale_mod = 1.05  
+            morale_mod = 1.10
+        elif player_morale < 70:
+            morale_mod = 1.00
         else:
-            morale_mod = 1.0 
+            morale_mod = 0.95
 
-        if trust_score < 30:
-            trust_tier_mod = 1.5
-        elif trust_score < 50:
-            trust_tier_mod = 1.0
-        elif trust_score < 80:
-            trust_tier_mod = 0.9
-        else:
-            trust_tier_mod = 0.8
+        trust_tier_mod = {
+            "hostile": 1.5,
+            "neutral": 1.0,
+            "trusted": 0.9,
+            "connected": 0.8,
+        }.get(get_trust_tier(trust_score), 1.0)
 
         regional_mod = self.get_regional_modifier(item_id, region)
         faction_mod = self.get_faction_modifier(item_id, npc_faction)
-        scarcity_mod = self.get_scarcity_modifier(item_id, region)
 
-        key = f"{region}_{item_id}"
+        category = self.get_item_category(item_id)
+        key = f"{region}_{category}"
         condition = self.market_conditions.get(key)
         condition_price_mod = condition.price_modifier if condition else 1.0
 
@@ -189,22 +187,34 @@ class EconomySystem:
             "rare": 1.10,
             "legendary": 1.20,
         }.get(item_rarity.lower(), 1.0)
-
         final_price = int(item_base_cost * regional_mod * faction_mod *
-                         scarcity_mod * condition_price_mod * inflation_rate *
+                         condition_price_mod * inflation_rate *
                          season_multiplier * trust_tier_mod * morale_mod * rarity_multiplier)
 
         return max(1, final_price)
 
-    def get_trust_tier(self, trust_score: int) -> str:
-        if trust_score < 30:
-            return "outsider"
-        elif trust_score < 50:
-            return "neutral"
-        elif trust_score < 80:
-            return "trusted"
-        else:
-            return "connected"
+    def get_resale_price(self, item, region: str, faction: str, base_cost: int = 0,
+                         trust_score: int = 50, player_morale: int = 50,
+                         inflation_rate: float = 1.0, season_multiplier: float = 1.0) -> int:
+        if not getattr(item, "takeable", True):
+            return 0
+        if getattr(item, "is_quest_item", False):
+            return 0
+        condition_multiplier = 1.0
+        if (getattr(item, "is_weapon", False) or getattr(item, "is_armour", False)) and getattr(item, "max_durability", -1) > 0:
+            ratio = getattr(item, "durability", 0) / item.max_durability
+            if ratio <= 0:
+                return 0
+            condition_multiplier = ratio
+        quote = self.get_item_price(
+            base_cost, item.id, region, faction,
+            inflation_rate=inflation_rate,
+            season_multiplier=season_multiplier,
+            trust_score=trust_score,
+            player_morale=player_morale,
+            item_rarity=getattr(item, "rarity", "common"),
+        )
+        return int(quote * 0.5 * condition_multiplier)
 
     def update_market_conditions(self, day: int, shared_state=None) -> None:
         self.last_update_day = day
@@ -216,12 +226,12 @@ class EconomySystem:
                 if key in self.market_conditions:
                     mc = self.market_conditions[key]
                     mc.availability = max(0.1, min(1.0, base_availability + random.uniform(-0.15, 0.15)))
-                    mc.price_modifier = max(0.5, min(2.0, 1.0 + (1.0 - mc.availability) * 0.5))
+                    mc.price_modifier = _availability_price_modifier(mc.availability)
                 else:
                     self.market_conditions[key] = MarketCondition(
                         region=region,
                         item_category=category,
-                        price_modifier=1.0,
+                        price_modifier=_availability_price_modifier(base_availability),
                         availability=base_availability,
                     )
 
@@ -254,7 +264,7 @@ class EconomySystem:
     def claim_credits(self, player_name: str) -> int:
         amount = self.pending_credits.pop(player_name, 0)
         return amount
-    
+
 
 economy_system = EconomySystem()
 
