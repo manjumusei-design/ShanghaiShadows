@@ -76,8 +76,9 @@ class NpcInteractionManager:
         if not yaml_path.exists():
             return
         
-        with open(yaml_path, "r", encoding="utf-8") as f:
-            data = yaml.safe_load(f)
+
+
+        data = load_strict_yaml(yaml_path)
 
         for interaction_data in data.get("interactions", []):
             interaction = self._parse_interaction(interaction_data)
