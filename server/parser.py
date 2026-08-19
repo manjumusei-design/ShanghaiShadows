@@ -18,84 +18,15 @@ ARTICLES = {"the", "a", "an"}
 PREPOSITIONS = {"to", "at", "on", "with", "in", "from", "about"}
 DIRECTIONS = {"north", "south", "east", "west", "up", "down", "n", "s", "e", "w", "u", "d"}
 
+from .command_schema import COMMAND_DEFS as _COMMAND_DEFS
+
 VERB_ALIASES = {
-    "get": "take",
-    "grab": "take",
-    "discard": "drop",
-    "move": "go",
-    "walk": "go",
-    "head": "go",
-    "exit": "quit",
-    "logout": "quit",
-    "bye": "quit",
-    "h": "help",
-    "?": "help",
-    "stat": "status",
-    "run": "flee",
+    alias: verb
+    for verb, definition in _COMMAND_DEFS.items()
+    for alias in definition["aliases"]
 }
 
-KNOWN_VERBS = {
-    "look",
-    "go",
-    "take",
-    "drop",
-    "inventory",
-    "quit",
-    "help",
-    "talk to",
-    "ask",
-    "ask about",
-    "whisper",
-    "give",
-    "plant",
-    "disguise as",
-    "hide",
-    "unhide",
-    "read",
-    "eat",
-    "journal",
-    "status",
-    "tail",
-    "bond",
-    "say",
-    "attack",
-    "flee",
-    "search",
-    "season",
-    "examine",
-    "map",
-    "pickpocket",
-    "wear",
-    "remove",
-    "open",
-    "close",
-    "unlock",
-    "missions",
-    "mission details",
-    "yell",
-    "buy from",
-    "sell",
-    "equip",
-    "sound",
-    "claim",
-    "retrieve",
-    "repair",
-    "rumors",
-    "rumours",
-    "take from",
-    "mod weapon",
-    "write note",
-    "leave note",
-    "abandon mission",
-    "bribe",
-    "favor",
-    "buy newspaper",
-	    "assess", 
-	    "skip tutorial",
-	    "trust",
-	    "wanted",
-	}
-
+KNOWN_VERBS = set(_COMMAND_DEFS.keys())
 
 def _strip_articles(tokens: List[str]) -> List[str]:
     return [t for t in tokens if t.lower() not in ARTICLES]
@@ -107,7 +38,7 @@ def _resolve_verb(word: str) -> str:
         return "go"
     resolved = VERB_ALIASES.get(word, word)
     if resolved not in KNOWN_VERBS:
-        return resolved
+        return "unknown"
     return resolved
 
 
@@ -134,33 +65,27 @@ def parse(text: str) -> Command:
         rest = _strip_articles(tokens[2:])
         direct = " ".join(rest) if rest else None
         return Command(verb="disguise as", direct_obj=direct, raw=raw)
-    
-    if first == "ask" and len(tokens) > 2 and tokens[1].lower() == "about": 
+
+    if first == "ask" and len(tokens) > 2 and tokens[1].lower() == "about":
         rest = _strip_articles(tokens[2:])
         direct = " ".join(rest) if rest else None
         return Command(verb="ask about", direct_obj=direct, raw=raw)
-    
+
     if first == "buy" and len(tokens) > 2 and tokens[1].lower() == "from":
         rest = _strip_articles(tokens[2:])
         direct = " ".join(rest) if rest else None
         return Command(verb="buy from", direct_obj=direct, raw=raw)
 
-    if first == "mission" and len(tokens) > 2 and tokens[1].lower() == "details":
-        direct = " ".join(tokens[2:])
-        return Command(verb="mission details", direct_obj=direct or None, raw=raw)
-    
     if first == "whisper" and len(tokens) > 2:
         direct = tokens[1]
         indirect = " ".join(tokens[2:])
         return Command(verb="whisper", direct_obj=direct, indirect_obj=indirect, raw=raw)
 
-    if first == "take" and len(tokens) > 2 and tokens[1].lower() == "trishaw":
+    if first == "take" and len(tokens) > 2 and tokens[1].lower() == "note":
         rest = _strip_articles(tokens[2:])
-        if rest and rest[0].lower() == "to":
-            direct = "trishaw"
-            indirect = " ".join(rest[1:]) if len(rest) > 1 else None
-            return Command(verb="take trishaw", direct_obj=direct, preposition="to", indirect_obj=indirect, raw=raw)
-        return Command(verb="take trishaw", direct_obj="trishaw", raw=raw)
+        direct = "note"
+        indirect = " ".join(rest) if rest else None
+        return Command(verb="write note", direct_obj=direct, indirect_obj=indirect, raw=raw)
 
     if first == "write" and len(tokens) > 1 and tokens[1].lower() == "note":
         rest = _strip_articles(tokens[2:])
@@ -174,15 +99,6 @@ def parse(text: str) -> Command:
         indirect = " ".join(rest) if rest else None
         return Command(verb="leave note", direct_obj=direct, indirect_obj=indirect, raw=raw)
 
-    if first == "put" and len(tokens) > 2:
-        prep_idx = next((i for i, t in enumerate(tokens[1:], 1) if t.lower() == "in"), None)
-        if prep_idx:
-            direct_tokens = _strip_articles(tokens[1:prep_idx])
-            direct = " ".join(direct_tokens) if direct_tokens else None
-            indirect_tokens = _strip_articles(tokens[prep_idx + 1:])
-            indirect = " ".join(indirect_tokens) if indirect_tokens else None
-            return Command(verb="put in", direct_obj=direct, preposition="in", indirect_obj=indirect, raw=raw)
-
     if first == "take" and len(tokens) > 2:
         prep_idx = next((i for i, t in enumerate(tokens[1:], 1) if t.lower() == "from"), None)
         if prep_idx:
@@ -192,7 +108,9 @@ def parse(text: str) -> Command:
             indirect = " ".join(indirect_tokens) if indirect_tokens else None
             return Command(verb="take from", direct_obj=direct, preposition="from", indirect_obj=indirect, raw=raw)
 
-    if first == "mod" and len(tokens) > 2 and tokens[1].lower() == "weapon":
+    if first == "mod" and len(tokens) >= 2 and tokens[1].lower() == "weapon":
+        if len(tokens) == 2:
+            return Command(verb="mod weapon", raw=raw)
         prep_idx = next((i for i, t in enumerate(tokens[2:], 2) if t.lower() == "with"), None)
         if prep_idx:
             direct_tokens = _strip_articles(tokens[2:prep_idx])
@@ -201,18 +119,9 @@ def parse(text: str) -> Command:
             indirect = " ".join(indirect_tokens) if indirect_tokens else None
             return Command(verb="mod weapon", direct_obj=direct, preposition="with", indirect_obj=indirect, raw=raw)
 
-    if first == "abandon" and len(tokens) > 1 and tokens[1].lower() == "mission":
-        rest = _strip_articles(tokens[2:])
-        direct = "mission"
-        indirect = " ".join(rest) if rest else None
-        return Command(verb="abandon mission", direct_obj=direct, indirect_obj=indirect, raw=raw)
-
-    if first == "visit" and len(tokens) > 1 and tokens[1].lower() == "nurse":
-        return Command(verb="visit nurse", direct_obj="nurse", raw=raw)
-
-    if first == "hide" and len(tokens) > 2 and tokens[1].lower() == "for":
+    if first == "skip" and len(tokens) > 1 and tokens[1].lower() == "tutorial":
         return Command(verb="skip tutorial", raw=raw)
-    
+
     verb = _resolve_verb(first)
     rest = tokens[1:]
 

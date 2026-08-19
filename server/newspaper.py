@@ -1,15 +1,18 @@
+import asyncio
 import random
 from typing import Dict, List, Optional, Any, TYPE_CHECKING
 from datetime import datetime
+
+from .economy import can_afford_fabi, spend_fabi_value
 
 if TYPE_CHECKING:
     from .ai_client import AIClient
 
 
 NEWSPAPER_COST_FABI = 3
-NEWSPAPER_MASTHEAD = "弄堂消息""
+NEWSPAPER_MASTHEAD = "弄堂消息"
 NEWSPAPER_SUBTITLE = "LONGTANG XIAOSHUO"
-NEWSPAPER_DATE_FORMAT = "Day {day}" #todo: might need to add year as well
+NEWSPAPER_DATE_FORMAT = "Day {day}"
 
 
 def _get_district_display(district: str) -> str:
@@ -28,15 +31,17 @@ def _get_district_display(district: str) -> str:
     return district_names.get(district, district)
 
 
+def _format_npc_death_record(record: Dict[str, Any]) -> str:
+    victim = record.get("npc_name") or record.get("npc_id", "someone")
+    return f"Violence in the lanes. {str(victim).replace('_', ' ').title()} found dead."
+
+
 def _format_world_decision(decision: Dict[str, Any]) -> Optional[str]:
     decision_type = decision.get("decision_type", "")
     actor_npc_id = decision.get("actor_npc_id", "someone")
     effects = decision.get("effects", {})
 
-    if decision_type == "npc_killed":
-        victim = effects.get("victim_id", "someone")
-        return f"Violence in the lanes. {victim.replace('_', ' ').title()} found dead."
-    elif decision_type == "vendor_shutter":
+    if decision_type == "vendor_shutter":
         return f"A shopkeeper on {_get_district_display(effects.get('district', 'unknown'))} closes early. Tension rises."
     elif decision_type == "defection":
         return f"Word is {actor_npc_id.replace('_', ' ').title()} has made new arrangements."
@@ -83,7 +88,7 @@ Gossip version:"""
     return _distort_rumor(rumor, distortion_level)
 
 
-def _disort_rumor(rumor_text: str, disortion_level: float = 0.3) -> str:
+def _distort_rumor(rumor_text: str, distortion_level: float = 0.3) -> str:
     words = rumor_text.split()
     if len(words) < 5:
         return rumor_text
@@ -96,17 +101,17 @@ def _disort_rumor(rumor_text: str, disortion_level: float = 0.3) -> str:
         ("took", "allegedly took"),
         ("found", "reportedly found"),
     ]
-
+    
     distorted = words.copy()
     for i, word in enumerate(distorted):
-        if random.random() < disortion_level:
+        if random.random() < distortion_level:
             lower = word.lower().rstrip(".,")
             for old, new in distortions:
                 if lower == old:
                     distorted[i] = new + (word[-1] if word[-1] in ".," else "")
                     break
-
-    return "".join(distorted)
+    
+    return " ".join(distorted)
 
 
 def _select_rumors_for_newspaper(
@@ -140,11 +145,12 @@ async def generate_newspaper(
     all_rumors: List[Dict[str, Any]],
     active_rumor_ids: List[str],
     world_decisions: List[Dict[str, Any]],
-    rumor_mill: Dict[str, List[str]],
+    rumour_mill: Dict[str, List[str]],
     ai_client: Optional["AIClient"] = None,
+    named_npc_deaths: Optional[Dict[str, Dict[str, Any]]] = None,
 ) -> Dict[str, Any]:
     selected_rumors = _select_rumors_for_newspaper(
-        all_rumors, active_rumor_ids, player_district, max_rumors = 5
+        all_rumors, active_rumor_ids, player_district, max_rumors=5
     )
 
     teahouse_talk = []
@@ -154,6 +160,12 @@ async def generate_newspaper(
         teahouse_talk.append(enhanced)
 
     notable_incidents = []
+    for npc_id, record in sorted((named_npc_deaths or {}).items()):
+        incident = _format_npc_death_record(record)
+        if incident and incident not in notable_incidents:
+            enhanced = await _ai_enhance_incident(ai_client, incident, game_day)
+            if enhanced and enhanced not in notable_incidents:
+                notable_incidents.append(enhanced)
     for decision in world_decisions[-5:]:
         incident = _format_world_decision(decision)
         if incident and incident not in notable_incidents:
@@ -166,13 +178,13 @@ async def generate_newspaper(
     all_street_rumors = []
     for faction, rumors in rumour_mill.items():
         all_street_rumors.extend(rumors)
-
+    
     if all_street_rumors:
         sampled = random.sample(all_street_rumors, min(3, len(all_street_rumors)))
         for rumor in sampled:
             enhanced = await _ai_enhance_rumor(ai_client, rumor, distortion_level=0.5)
             lane_whispers.append(f"Heard that {enhanced.lower()}")
-
+    
     newspaper = {
         "day": game_day,
         "masthead": NEWSPAPER_MASTHEAD,
@@ -184,6 +196,50 @@ async def generate_newspaper(
         "purchased_at": datetime.now().isoformat(),
     }
     return newspaper
+
+
+async def purchase_newspaper(
+    player: Any,
+    game_day: int,
+    player_district: str,
+    all_rumors: List[Dict[str, Any]],
+    active_rumor_ids: List[str],
+    world_decisions: List[Dict[str, Any]],
+    rumour_mill: Dict[str, List[str]],
+    ai_client: Optional["AIClient"] = None,
+    named_npc_deaths: Optional[Dict[str, Dict[str, Any]]] = None,
+    active=None,
+) -> Optional[Dict[str, Any]]:
+    lock = getattr(player, "_newspaper_purchase_lock", None)
+    if lock is None:
+        lock = asyncio.Lock()
+        setattr(player, "_newspaper_purchase_lock", lock)
+    async with lock:
+        if player.last_newspaper_day == game_day:
+            return None
+        if not can_afford_fabi(player, NEWSPAPER_COST_FABI):
+            return None
+        newspaper = await generate_newspaper(
+            game_day=game_day,
+            player_district=player_district,
+            all_rumors=all_rumors,
+            active_rumor_ids=active_rumor_ids,
+            world_decisions=world_decisions,
+            rumour_mill=rumour_mill,
+            ai_client=ai_client,
+            named_npc_deaths=named_npc_deaths,
+        )
+        if active is not None:
+            from .commands import storylet_resolution_owned
+            if not storylet_resolution_owned(active):
+                return None
+        if not newspaper:
+            return None
+        if not spend_fabi_value(player, NEWSPAPER_COST_FABI):
+            return None
+        player.newspapers.append(newspaper)
+        player.last_newspaper_day = game_day
+        return newspaper
 
 
 def format_newspaper_for_display(newspaper: Dict[str, Any]) -> str:
