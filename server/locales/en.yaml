@@ -1,6 +1,16 @@
 cmd_go.no_direction: "Go where?"
 cmd_go.nowhere: "You are nowhere."
 cmd_go.no_exit: "You can't go that way."
+terminal_guidance.vendor.first: "A vendor is here. BUY FROM the vendor to see what is available."
+terminal_guidance.vendor.recovery: "The purchase failed. Check the vendor's visible stock and try BUY FROM again."
+terminal_guidance.loose_item.first: "An item is within reach. TAKE it to put it in your inventory."
+terminal_guidance.loose_item.recovery: "That action failed. Use TAKE on the visible item, if it is still there."
+terminal_guidance.container.first: "A container is here. OPEN it to inspect what it holds."
+terminal_guidance.container.recovery: "The container action failed. Check whether it is open or locked, then try again."
+terminal_guidance.safe_room.first: "This is a safe room. CLAIM it when you can make it yours."
+terminal_guidance.safe_room.recovery: "The safe-room action failed. Check the room and your faction standing before trying again."
+terminal_guidance.immediate_danger.first: "The danger here is immediate. HIDE or move before it closes in."
+terminal_guidance.immediate_danger.recovery: "You could not hide. Try HIDE again or move while there is still a way out."
 cmd_take.no_target: "Take what?"
 cmd_take.success: "You pick up {name}."
 cmd_take.not_here: "You don't see that here."
@@ -17,6 +27,7 @@ cmd_talk_to.no_target: "Talk to whom?"
 cmd_talk_to.not_here: "They aren't here."
 cmd_ask_about.no_target: "Ask whom about what?"
 cmd_ask_about.not_here: "They aren't here."
+cmd_assess.no_target: "Assess what?"
 cmd_disguise_as.no_target: "Disguise as what?"
 cmd_disguise_as.not_found: "That disguise is not prepared for you."
 disguise.pierced_entry: "{npc} studies you a moment too long. Something is not right."
@@ -75,47 +86,47 @@ cmd.unknown: "I don't understand that command."
 cmd_unknown.format: "I don't understand '{raw}'. Try HELP."
 cmd_help.text: "MOVEMENT:
 LOOK - Examine your surroundings
-GO <direction|room> - Move in a direction or auto-path to a known room
-FLEE - Random escape direction (costs morale)
+GO <direction> - Move in that direction
+GO <room name> - Auto-walk to a room you have discovered
 INTERACTION:
 TALK TO <npc> - Speak with someone
-ASK <npc> ABOUT <topic> - Ask about a specific topic
+ASK <npc> ABOUT <topic> - Ask about a topic; bare ASK lists what they discuss
 SAY <message> - Speak aloud
 WHISPER <target> <message> - Whisper to someone
 YELL <message> - Broadcast to nearby rooms
 GIVE <item> TO <target> - Give an item to someone
-BOND WITH <npc> USING <action> - Build trust through shared activity
+BOND <npc> - Share a meal and build friendship
 COVERT:
-HIDE - Conceal yourself in hiding spots
+HIDE - Conceal yourself
 TAIL <npc> - Follow someone secretly
 DISGUISE AS <role> - Impersonate a faction role
-PLANT <item> - Plant evidence on an NPC
+PLANT <item> ON <npc> - Plant evidence on someone
 PICKPOCKET <npc> - Steal from someone (risk of discovery)
-SEARCH - Look for hidden exits and items
-EXAMINE <target> - Detailed inspection of items, NPCs, or containers
+SEARCH <detail> - Reveal hidden items or dead drops into the room
+EXAMINE <target> - Inspect an item, NPC, or container
 ITEMS:
-TAKE <item> - Pick up an item
-DROP <item> - Discard an item
-INVENTORY - List your possessions
-WEAR <armour> - Equip armour
-REMOVE <armour> - Unequip armour
-OPEN <container> - Open a container
-TAKE <item> FROM <container> - Retrieve item from container
-READ <item> - Read an item
+TAKE <item> - Pick up an item; bare TAKE opens a chooser
+DROP <item> - Discard an item; bare DROP opens a chooser
+EAT <item> - Consume food; bare EAT opens a chooser
+READ <item> - Read an item; bare READ opens a chooser
+SELL <item> - Sell an item; bare SELL opens a chooser
+REPAIR <weapon> - Repair a weapon; bare REPAIR opens a chooser
+INVENTORY - List what you carry
+WEAR <armour> - Wear armour
+REMOVE <armour> - Remove armour
+EQUIP <weapon> - Equip a weapon
+OPEN <container> - The only way to unlock a locked container
+TAKE <item> FROM <container> - Retrieve from an open container
 WRITE NOTE <text> - Create a note
 LEAVE NOTE - Drop a note in the room
 SURVIVAL:
-EAT <item> - Consume food
-SLEEP - Sleep until dawn
-REST - Rest for a short time
 JOURNAL [character] - View your journal or an archived journal
-STATUS - View your character's condition
+STATUS - View your condition
 COMBAT:
 ATTACK <target> - Engage in combat (courage-based)
 MOD WEAPON <weapon> WITH <mod> - Attach a mod to a weapon
 ECONOMY:
-BUY <item> - Purchase items from vendors
-SELL <item> - Sell items for fabi
+BUY FROM <npc> - Purchase from a vendor
 MISSIONS:
 MISSIONS - View active missions
 MISSIONS AVAILABLE - Show available missions and encounter-driven opportunities
@@ -125,22 +136,24 @@ SYSTEM:
 HELP - Display this help
 MEMORIAL - View the legacy book (fallen characters)
 QUIT - Save and exit
-TIPS:
-- Faction clothing affects NPC reactions
-- Safe rooms (inns, clinics) protect from arrest
-- Curfew is enforced 20:00-06:00
-- Multiple perception checks reveal hidden details
-- Building trust unlocks missions and resources
-- Rain degrades weapons and armour when outdoors
-- Use JOURNAL <name> to read archived journals of fallen characters"
+NOTES:
+- MAP is retired. The side-panel map always shows what you have discovered.
+- Locked containers open only with OPEN and the right key.
+- Completion suggests only commands the server has registered.
+"
 cmd_look.nowhere: "You are nowhere."
+cmd_examine.no_target: "Examine what?"
+cmd_examine.not_found: "You don't see that here."
 cmd_stub.not_implemented: "{verb} has not been implemented."
 death.health: "You collapse in the alley. The streets continue as before. Another person has left the city, and the city barely notices."
 death.arrest: "The Kempeitai do not listen. They take you to Bridge House Prison. A name is crossed off a list somewhere."
 death.execution: "The city continues without you. A name disappears from a record, and another space opens in the crowd."
 death.arrest_message: "Armed officers surround you. 'You're coming with us.'"
 death.legacy: "Some people remember you. A shopkeeper. A neighbour. Someone you helped once."
-arrest.imprisonment: "The Kempeitai throw you into a cramped cell. Days blur. Your health fades. They confiscate everything."
+arrest.escape: "The patrol closes in. Your escape charge burns as you slip through the crowd and into a side street."
+arrest.custody: "The patrol arrests you and holds you in {room}. You may only use STATUS, JOURNAL, or QUIT until release."
+arrest.custody_release: "Your custody ends. You are released where you were detained."
+custody.command_blocked: "You are in custody. Only STATUS, JOURNAL, and QUIT are available until release."
 arrest.release: "The officer studies your face. 'You're useful to us. Go. Remember who showed mercy.'"
 curfew.warning: "The curfew is in force. Faces turn away from you in the dark as everyone hurriedly scurries back to their residence."
 hunger.cramps: "Your stomach cramps with hunger."
@@ -148,11 +161,11 @@ hunger.peckish: "You feel a slight pang of hunger."
 hunger.hungry: "Your stomach growls. You should find food soon."
 hunger.famished: "You are starving. Every movement is an effort."
 hunger.starving: "Hunger gnaws at you. You feel weak and desperate."
-hunger.tier.satisfied: "Your last meal still carries you."
-hunger.tier.peckish: "You notice the emptiness returning."
+hunger.tier.full: "Your last meal still carries you."
+hunger.tier.satisfied: "You notice the emptiness returning."
 hunger.tier.hungry: "You find yourself thinking about food."
-hunger.tier.famished: "Your hands feel weaker than usual."
-hunger.tier.starving: "Even walking requires effort."
+hunger.tier.starving: "Your hands feel weaker than usual."
+hunger.tier.famished: "Even walking requires effort."
 newspaper.delivery: "At dawn a newspaper runner slips a fresh edition into your hands."
 newspaper.fallback_prefix: "Headline"
 storylet.choose: "Choose 1-{max}: "
@@ -183,6 +196,7 @@ cmd_buy_from.no_stock: "{vendor} has nothing to sell."
 cmd_buy_from.shop_prompt: "{vendor}'s wares:"
 cmd_buy_from.back_room: "Back Room"
 cmd_buy_from.black_market_available: "You've earned access to the back room."
+cmd_buy_from.already_purchased: "You already bought that from the back room this cycle."
 cmd_buy_from.detection: "A Kempeitai patrol catches you in the act! Your purchase is confiscated and your wanted level rises."
 cmd_buy_from.confiscated: "The {name} is seized before you can hide it."
 shop_menu.cancel: "Cancel"
@@ -237,9 +251,6 @@ combat.wounded_present: "{name} is here, wounded and bleeding."
 combat.wounded_seeks_help: "{name} stumbles into the clinic, seeking help for their wound."
 combat.wounded_healed: "{name} stumbles into the clinic, and a nurse rushes to treat their wound. After a few minutes, they seem stable."
 crime_scene.active: "⚠ Police tape and chalk marks indicate a recent crime scene here."
-safehouse.escape_charge_offer: "{name} leans in. \"I can arrange an emergency escape route for you. {cost} fabi buys one extra charge. You have {remaining} charges remaining.\""
-safehouse.escape_charge_purchased: "You hand over {cost} fabi. \"{name} nods. If you need to flee, you have one more way out.\""
-safehouse.escape_charge_max: "You already have as many escape routes as I can arrange."
 mission.objective_complete: "Objective complete: {type} {target}"
 mission.all_complete: "All objectives complete! Use MISSIONS COMPLETE {id} to claim your reward."
 mission.expired: "Mission {id} has expired."
@@ -305,11 +316,6 @@ cmd_buy_from.wanted_refuse_kempeitai: "{vendor}'s eyes narrow. \"You're wanted. 
 burden_gift.received: "{npc} presses something into your hands. \"Take this — you've earned it.\""
 burden_gift.item: "You received: {item_name}."
 status.armour: "Armour: {name} (def {defense}, dur {durability})"
-cmd_flee.hidden: "You are already hidden. There's no need to flee."
-cmd_flee.nowhere: "There's nowhere to flee."
-cmd_flee.no_charges: "You have no escape charges left. Wait until tomorrow."
-cmd_flee.done: "You flee blindly through the streets!"
-cmd_flee.charges_left: "Escape charges remaining: {count}"
 perk_unlocked: "Your standing with {faction} has improved! New perk unlocked: {perk_name}"
 perk_lost: "Your standing with {faction} has fallen. You have lost the perk: {perk_name}"
 cmd_bribe.not_wanted: "You're not wanted. There's no one to bribe."
