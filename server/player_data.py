@@ -100,6 +100,9 @@ class PlayerData:
     last_curfew_night_key: int | None = None
     last_trust_interaction: Dict[str, int] = field(default_factory=dict)
     tutorial_last_room: str = ""
+    tutorial_resume_room_id: str = ""
+    tutorial_revealed_rooms: List[str] = field(default_factory=list)
+    tutorial_vendor_depletion: Dict[str, List[str]] = field(default_factory=dict)
     tutorial_confirmation: Dict[str, Any] = field(default_factory=dict)
     tutorial_read_note: bool = False
     tutorial_journal_lessons: Dict[str, str] = field(default_factory=dict)
@@ -272,6 +275,12 @@ def serialize_player(player: PlayerData) -> Dict[str, object]:
         "journal_intel": player.journal_intel,
         "tutorial_stage": player.tutorial_stage,
         "tutorial_last_room": player.tutorial_last_room,
+        "tutorial_resume_room_id": player.tutorial_resume_room_id,
+        "tutorial_revealed_rooms": list(player.tutorial_revealed_rooms),
+        "tutorial_vendor_depletion": {
+            vendor_id: list(item_ids)
+            for vendor_id, item_ids in sorted(player.tutorial_vendor_depletion.items())
+        },
         "tutorial_confirmation": player.tutorial_confirmation,
         "tutorial_read_note": player.tutorial_read_note,
         "tutorial_journal_lessons": dict(player.tutorial_journal_lessons),
@@ -417,6 +426,16 @@ def deserialize_player(data: Dict[str, object], storylet_manager=None) -> Player
     
     player.tutorial_stage = _safe_int(data.get("tutorial_stage"), 0)
     player.tutorial_last_room = _safe_str(data.get("tutorial_last_room"), "")
+    player.tutorial_resume_room_id = _safe_str(data.get("tutorial_resume_room_id"), "")
+    player.tutorial_revealed_rooms = [
+        room_id for room_id in _safe_list(data.get("tutorial_revealed_rooms"), [])
+        if isinstance(room_id, str)
+    ]
+    player.tutorial_vendor_depletion = {
+        str(vendor_id): [item_id for item_id in _safe_list(item_ids, []) if isinstance(item_id, str)]
+        for vendor_id, item_ids in _safe_dict(data.get("tutorial_vendor_depletion"), {}).items()
+        if isinstance(vendor_id, str)
+    }
     player.tutorial_confirmation = _safe_dict(data.get("tutorial_confirmation"), {})
     player.tutorial_read_note = _safe_bool(data.get("tutorial_read_note"), False)
     player.tutorial_journal_lessons = {
@@ -468,6 +487,13 @@ def deserialize_player(data: Dict[str, object], storylet_manager=None) -> Player
     ]
     player.in_tutorial = _safe_bool(data.get("in_tutorial"), False)
     player.tutorial_choice_pending = _safe_bool(data.get("tutorial_choice_pending"), False)
+    if player.in_tutorial and not player.tutorial_resume_room_id:
+        legacy_room = player.tutorial_last_room or player.current_room
+        if legacy_room.startswith("tut_"):
+            legacy_room = legacy_room.split("_", 2)[-1]
+        player.tutorial_resume_room_id = legacy_room or "refugee_entry_tea_house"
+    if player.in_tutorial and not player.tutorial_revealed_rooms:
+        player.tutorial_revealed_rooms = [player.tutorial_resume_room_id]
     player.max_inventory = _safe_int(data.get("max_inventory"), 12)
 
     from .rumors import migrate_player_rumors
