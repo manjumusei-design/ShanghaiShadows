@@ -30,6 +30,10 @@ DISTRICT_LABELS = {
 }
 
 
+def is_public_map_room(room) -> bool:
+    return bool(room) and room.district != "hidden_shanghai" and "hidden_shanghai" not in room.tags
+
+
 def _select_time_desc(room: "Room", game_hour: int, weather: str = "clear", season: str = "spring") -> str:
     if weather == "rain":
         if room.indoors and room.rain_desc:
