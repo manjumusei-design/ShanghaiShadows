@@ -227,7 +227,10 @@ def load_authenticated_slot(username: str, slot_number: int, storylet_manager=No
     if slot is None or slot.status != "living":
         return None
     from .save_manager import load_slot_player
-    return load_slot_player(slot, username.strip().lower(), storylet_manager), slot
+    player = load_slot_player(slot, username.strip().lower(), storylet_manager)
+    if player is not None:
+        player.name = slot.display_name
+    return player, slot
 
 
 def resolve_spawn_room(username: str) -> str:
