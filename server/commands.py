@@ -270,6 +270,32 @@ def _vendor_item_id(item_data: Any) -> str:
     return str(item_data)
 
 
+def _is_tutorial_vendor_clone(player: Any, vendor_id: str) -> bool:
+    instance_id = getattr(player, "tutorial_instance_id", "")
+    return bool(
+        getattr(player, "in_tutorial", False)
+        and instance_id
+        and vendor_id.startswith(f"tut_{instance_id}_")
+    )
+
+
+def _deplete_tutorial_vendor_stock(ctx: CommandContext, vendor_id: str, item_id: str) -> None:
+    if not _is_tutorial_vendor_clone(ctx.session.player, vendor_id):
+        return
+    vendor = ctx.shared.world.npcs.get(vendor_id)
+    if not vendor:
+        return
+    for index, item_data in enumerate(getattr(vendor, "shop_inventory", []) or []):
+        if _vendor_item_id(item_data) == item_id:
+            del vendor.shop_inventory[index]
+            from .tutorial import get_canonical_tutorial_npc_id, record_tutorial_vendor_depletion
+            canonical_vendor = get_canonical_tutorial_npc_id(
+                getattr(ctx.session.player, "tutorial_instance_id", ""), vendor_id,
+            )
+            record_tutorial_vendor_depletion(ctx.session.player, canonical_vendor, item_id)
+            return
+
+
 def validate_vendor_purchase_context(
     ctx: CommandContext,
     vendor_id: str,
@@ -1216,8 +1242,9 @@ def _consume_key(player: PlayerData, key_id: str) -> Optional[Item]:
 
 
 def _find_player_in_room(ctx: CommandContext, name: str) -> Optional[Session]:
+    target_username = (name or "").strip().casefold()
     for s in ctx.session_manager.get_players_in_room(ctx.session.player.current_room):
-        if s.username == name or s.player.name.lower() == name.lower():
+        if s.username.casefold() == target_username:
             return s
     return None
 
@@ -1228,6 +1255,58 @@ _CACHED_VERBS: Optional[List[str]] = None
 def _dedup(seq):
     seen = set()
     return [x for x in seq if not (x in seen or seen.add(x))]
+
+
+def _tutorial_ask_topics(player, npc_id: str) -> Optional[List[str]]:
+    from .tutorial import (
+        STAGE_ACTIONS,
+        get_canonical_tutorial_npc_id,
+        normalize_to_actionable_stage,
+        tutorial_blocks_world_events,
+    )
+
+    if not tutorial_blocks_world_events(player):
+        return None
+    action = STAGE_ACTIONS.get(normalize_to_actionable_stage(player), {})
+    if action.get("verb") != "ask":
+        return None
+    expected_npc_id = action.get("from_npc", "")
+    canonical_npc_id = get_canonical_tutorial_npc_id(
+        getattr(player, "tutorial_instance_id", ""), npc_id
+    )
+    if canonical_npc_id != expected_npc_id:
+        return None
+    topics = action.get("topics")
+    if isinstance(topics, list):
+        return list(topics)
+    required_indirect = action.get("required_indirect")
+    return [required_indirect] if required_indirect else []
+
+
+def _eligible_ask_topics(ctx: CommandContext, npc_id: str, npc, room) -> List[str]:
+    tutorial_topics = _tutorial_ask_topics(ctx.session.player, npc_id)
+    if tutorial_topics is not None:
+        return tutorial_topics
+    topics = list(npc_ask_topics(npc))
+    consequence_lead = find_consequence_ask_lead(ctx.shared, npc_id, room.id, "") if room else None
+    if consequence_lead and consequence_lead["ask_topic"] not in topics:
+        topics.append(consequence_lead["ask_topic"])
+    return topics
+
+
+def _ask_topic_prompt(npc, topics: List[str]) -> str:
+    labels = _dedup(display_topic_label(npc, topic) for topic in topics)
+    if labels:
+        return f'{_short_name(npc.name)} can tell you about: {", ".join(labels)}.'
+    return f'{_short_name(npc.name)} has nothing to share.'
+
+
+def _matches_ask_topic(raw: str, npc, topics: List[str]) -> bool:
+    normalized_raw = _normalize_text(raw)
+    return any(
+        normalized_raw in {_normalize_text(topic), _normalize_text(display_topic_label(npc, topic))}
+        for topic in topics
+    )
 
 
 from .command_schema import COMMAND_DEFS as _COMMAND_DEFS
@@ -1245,6 +1324,7 @@ def build_completions(ctx: CommandContext) -> Dict[str, List[str]]:
     items: List[str] = []
     exits: List[str] = []
     topics: List[str] = []
+    ask_topics: Dict[str, List[str]] = {}
     room = _room(ctx)
     if room:
         exits = list(room.exits.keys())
@@ -1252,10 +1332,20 @@ def build_completions(ctx: CommandContext) -> Dict[str, List[str]]:
             npc = ctx.shared.world.npcs.get(npc_id)
             if npc and npc.name:
                 npcs.append(npc.name.lower())
-                for t in npc_ask_topics(npc):
-                    t = display_topic_label(npc, t)
-                    if t not in topics:
-                        topics.append(t)
+                tutorial_topics = _tutorial_ask_topics(ctx.session.player, npc.id)
+                if tutorial_topics is not None:
+                    npc_topics = [display_topic_label(npc, topic) for topic in tutorial_topics]
+                else:
+                    npc_topics = [display_topic_label(npc, topic) for topic in npc_ask_topics(npc)]
+                    consequence_lead = find_consequence_ask_lead(ctx.shared, npc.id, room.id, "")
+                    if consequence_lead:
+                        label = display_topic_label(npc, consequence_lead["ask_topic"])
+                        if label not in npc_topics:
+                            npc_topics.append(label)
+                ask_topics[npc.name.lower()] = _dedup(npc_topics)
+                for topic in npc_topics:
+                    if topic not in topics:
+                        topics.append(topic)
         for item in room.items:
             if item.name:
                 items.append(item.name.lower())
@@ -1264,15 +1354,16 @@ def build_completions(ctx: CommandContext) -> Dict[str, List[str]]:
             items.append(item.name.lower())
     players = []
     if ctx.session_manager:
-        for s in ctx.session_manager.sessions.values():
-            if s.player and s.player.name and s.username != ctx.session.username:
-                players.append(s.player.name.lower())
+        for s in ctx.session_manager.get_players_in_room(ctx.session.player.current_room):
+            if s.player and s.username != ctx.session.username:
+                players.append(s.username.lower())
     return {
         "verbs": list(_CACHED_VERBS),
         "npcs": _dedup(npcs),
         "items": _dedup(items),
         "exits": _dedup(exits),
         "topics": _dedup(topics),
+        "ask_topics": ask_topics,
         "players": _dedup(players),
         "grammar": {verb: slots for verb, slots in COMMAND_SCHEMA.items() if verb in _CACHED_VERBS},
     }
@@ -1910,6 +2001,14 @@ async def resolve_storylet_choice(ctx: CommandContext, text: str):
             active.resolution_started = False
             return failure("storylet_effect_failed")
 
+        if active.storylet_id.startswith("shop_"):
+            effects = getattr(option, "effects", {}) or {}
+            _deplete_tutorial_vendor_stock(
+                ctx,
+                str(effects.get("vendor_id", "")),
+                str(effects.get("give_item", "")),
+            )
+
         if option.response_msg:
             await post_display(ctx, option.response_msg, msg_type="npc_dialogue")
 
@@ -2290,10 +2389,25 @@ async def cmd_go(ctx: CommandContext, cmd: Command):
         else:
             target_name = direction.lower()
             target_room = None
-            for room_id in ctx.session.player.map_revealed:
+            from .world import is_public_map_room
+            revealed = set(ctx.session.player.map_revealed)
+            candidate_ids = list(ctx.shared.world.rooms)
+            if getattr(ctx.session.player, "in_tutorial", False):
+                instance_id = getattr(ctx.session.player, "tutorial_instance_id", "")
+                clone_map = ctx.shared.tutorial_room_clones.get(instance_id, {})
+                candidate_ids = list(clone_map.values())
+            for room_id in candidate_ids:
                 r = ctx.shared.world.rooms.get(room_id)
-                if r and (target_name == r.id.lower() or target_name in r.title.lower() or
-                          (hasattr(r, 'name') and target_name in r.name.lower())):
+                if not r or not (is_public_map_room(r) or room_id in revealed):
+                    continue
+                display_id = room_id
+                if getattr(ctx.session.player, "in_tutorial", False):
+                    from .tutorial import get_original_tutorial_room_id
+                    display_id = get_original_tutorial_room_id(
+                        ctx.session.player.tutorial_instance_id, room_id, ctx.shared
+                    )
+                if (target_name == display_id.lower() or target_name in r.title.lower() or
+                        (hasattr(r, 'name') and target_name in r.name.lower())):
                     target_room = r
                     break
 
@@ -2401,6 +2515,9 @@ async def cmd_go(ctx: CommandContext, cmd: Command):
     ctx.session.player._last_movement_tick = ctx.shared.game_time.minute
     if dest not in ctx.session.player.map_revealed:
         ctx.session.player.map_revealed.append(dest)
+    if getattr(ctx.session.player, "in_tutorial", False):
+        from .tutorial import update_tutorial_resume_state
+        update_tutorial_resume_state(ctx.session.player, ctx.shared)
     ctx.session.player.hidden = False
     log_event(ctx, f"You moved {direction} into {dest}.")
     if not getattr(ctx.session.player, "in_tutorial", False) and not ctx.session.player.escape_charge_available:
@@ -2985,6 +3102,10 @@ async def cmd_ask_about(ctx: CommandContext, cmd: Command):
                     facts={"asked"},
                     tutorial_event={"verb": "ask", "target": cmd.direct_obj or "", "indirect": cmd.indirect_obj or ""},
                 )
+            tutorial_topics = _eligible_ask_topics(ctx, npc_id, npc, room)
+            if cmd.indirect_obj and not _matches_ask_topic(cmd.indirect_obj, npc, tutorial_topics):
+                await post_display(ctx, _ask_topic_prompt(npc, tutorial_topics), msg_type="npc_dialogue")
+                return failure("ask_unanswered")
             td_lines = tutorial_dialogue_for_stage(ctx.session.player, npc_id, ctx.shared.world, topic=cmd.indirect_obj or "")
             if td_lines:
                 line = random.choice(td_lines)
@@ -3009,16 +3130,8 @@ async def cmd_ask_about(ctx: CommandContext, cmd: Command):
             if curated:
                 await post_display(ctx, "Topics: " + ", ".join(display_topic_label(npc, t) for t in curated), msg_type="npc_dialogue")
                 return
-        topics = npc_ask_topics(npc)
         room = _room(ctx)
-        consequence_lead = find_consequence_ask_lead(ctx.shared, npc_id, room.id, "") if room else None
-        if consequence_lead and consequence_lead["ask_topic"] not in topics:
-            topics.append(consequence_lead["ask_topic"])
-        if topics:
-            topic_list = ", ".join(sorted(display_topic_label(npc, t) for t in topics))
-            await post_display(ctx, f'{_short_name(npc.name)} can tell you about: {topic_list}.', msg_type="npc_dialogue")
-        else:
-            await post_display(ctx, f'{_short_name(npc.name)} has nothing to share.', msg_type="npc_dialogue")
+        await post_display(ctx, _ask_topic_prompt(npc, _eligible_ask_topics(ctx, npc_id, npc, room)), msg_type="npc_dialogue")
         return
     
     topic = cmd.indirect_obj
@@ -3036,11 +3149,11 @@ async def cmd_ask_about(ctx: CommandContext, cmd: Command):
         await post_display(ctx, loc("cmd_ask_about.not_here"))
         return
     npc = ctx.shared.world.npcs[npc_id]
-    known = npc_ask_topics(npc)
     short = _short_name(npc.name)
-    hint = _topic_hint(npc)
     topic_key = match_topic(topic, npc)
     room = _room(ctx)
+    eligible_topics = _eligible_ask_topics(ctx, npc_id, npc, room)
+    known = npc_ask_topics(npc)
     consequence_lead = find_consequence_ask_lead(ctx.shared, npc_id, room.id, topic) if room else None
     if consequence_lead:
         line = consequence_lead.get("ask_response")
@@ -3121,11 +3234,8 @@ async def cmd_ask_about(ctx: CommandContext, cmd: Command):
             facts={"asked"},
             tutorial_event={"verb": "ask", "target": cmd.direct_obj or "", "indirect": cmd.indirect_obj or ""},
         )
-    elif topic_key:
-        displayed_topic = display_topic_label(npc, topic_key if topic_key in known else topic)
-        await post_display(ctx, f'{short} shrugs. "Wouldn\'t know about {displayed_topic}. Ask me about {hint}."', msg_type="npc_dialogue")
     else:
-        await post_display(ctx, f'{short} looks blank. "What about? I know about {hint}."', msg_type="npc_dialogue")
+        await post_display(ctx, _ask_topic_prompt(npc, eligible_topics), msg_type="npc_dialogue")
     return failure("ask_unanswered")
 
 
@@ -3927,6 +4037,15 @@ async def cmd_give(ctx: CommandContext, cmd: Command):
         await post_display(ctx, f"You don't have {item_name}.")
         return failure("give_not_held")
     
+    target_session = _find_player_in_room(ctx, target_name)
+    if target_session:
+        ctx.session.player.inventory.remove(item)
+        target_session.player.inventory.append(item)
+        log_event(ctx, f"You gave {item.name} to {target_session.player.name}.")
+        await post_display(ctx, loc("cmd_give.success").format(item=item.name, target=target_session.player.name))
+        await target_session.send_display(loc("cmd_give.received").format(name=ctx.session.player.name, item=item.name))
+        return success("give", facts={"item_given"})
+
     npc_id = resolve_npc(ctx, target_name)
     if npc_id:
         npc = ctx.shared.world.npcs.get(npc_id)
@@ -3967,17 +4086,8 @@ async def cmd_give(ctx: CommandContext, cmd: Command):
                 tutorial_event={"verb": "give", "target": item.id or item.name, "indirect": target_name},
             )
     
-    target_session = _find_player_in_room(ctx, target_name)
-
-    if not target_session:
-        await post_display(ctx, f"{target_name} is not here.")
-        return failure("give_target_not_here")
-    ctx.session.player.inventory.remove(item)
-    target_session.player.inventory.append(item)
-    log_event(ctx, f"You gave {item.name} to {target_session.player.name}.")
-    await post_display(ctx, loc("cmd_give.success").format(item=item.name, target=target_session.player.name))
-    await target_session.send_display(loc("cmd_give.received").format(name=ctx.session.player.name, item=item.name))
-    return success("give", facts={"item_given"})
+    await post_display(ctx, f"{target_name} is not here.")
+    return failure("give_target_not_here")
 
 
 async def cmd_attack(ctx: CommandContext, cmd: Command):
@@ -3996,17 +4106,16 @@ async def cmd_attack(ctx: CommandContext, cmd: Command):
 
     target_name = cmd.direct_obj
 
+    target_session = _find_player_in_room(ctx, target_name)
+    if target_session:
+        await _attack_player(ctx, target_session, courage_mult)
+        return
+
     npc_id = resolve_npc(ctx, target_name)
     if npc_id:
         return await _attack_npc(ctx, npc_id, courage_mult)
 
-    target_session = _find_player_in_room(ctx, target_name)
-
-    if not target_session:
-        await post_display(ctx, loc("cmd_attack.not_here").format(name=target_name))
-        return
-
-    await _attack_player(ctx, target_session, courage_mult)
+    await post_display(ctx, loc("cmd_attack.not_here").format(name=target_name))
 
 
 def _get_equipped_weapon(player: PlayerData) -> Optional[Item]:
@@ -4541,19 +4650,8 @@ async def cmd_buy_from(ctx: CommandContext, cmd: Command):
         base_cost = item_data.get("base_cost", 10) if isinstance(item_data, dict) else 10
         tutorial_price = item_data.get("tutorial_price") if isinstance(item_data, dict) else None
         from .economy import economy_system as _econ
-        if tutorial_price is not None and getattr(ctx.session.player, "in_tutorial", False):
-            from .tutorial import get_canonical_tutorial_npc_id
-            instance_id = getattr(ctx.session.player, "tutorial_instance_id", "")
-            canonical_vendor = get_canonical_tutorial_npc_id(instance_id, npc_id)
-            if canonical_vendor == "tutorial_old_gao":
-                final_price = int(tutorial_price)
-            else:
-                final_price = int(_econ.get_item_price(
-                    base_cost, item_id, econ_region, npc.faction,
-                    inflation_rate=inflation_mult, season_multiplier=season_mult,
-                    trust_score=trust_score, player_morale=player_morale,
-                    item_rarity=item_template.rarity,
-                ))
+        if tutorial_price is not None and _is_tutorial_vendor_clone(ctx.session.player, npc_id):
+            final_price = int(tutorial_price)
         else:
             final_price = int(_econ.get_item_price(
                 base_cost, item_id, econ_region, npc.faction,
@@ -4596,7 +4694,7 @@ async def cmd_buy_from(ctx: CommandContext, cmd: Command):
             },
         ))
     
-    if vendor_capable:
+    if vendor_capable and not _is_tutorial_vendor_clone(ctx.session.player, npc_id):
         from .newspaper import NEWSPAPER_COST_FABI
         shop_items.append({
             "id": "newspaper",
@@ -5208,6 +5306,17 @@ async def cmd_assess(ctx: CommandContext, cmd: Command):
     room = _room(ctx)
     if not room:
         return
+
+    target_session = _find_player_in_room(ctx, cmd.direct_obj)
+    if target_session:
+        target_player = target_session.player
+        lines = [f"You assess {target_player.name}."]
+        lines.append(f"Health: {target_player.health}")
+        lines.append(f"Morale: {target_player.morale}")
+        lines.append(f"Courage: {target_player.courage}")
+        lines.append(f"Perception: {target_player.perception}")
+        await post_display(ctx, "\n".join(lines))
+        return success("assess", facts={"assessed"}, tutorial_event={"verb": "assess", "target": cmd.direct_obj or ""})
 
     npc_id = resolve_npc(ctx, cmd.direct_obj)
     if not npc_id:
