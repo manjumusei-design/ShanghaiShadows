@@ -17,7 +17,7 @@ def format_bold_underline(text: str) -> str:
     return f"<b><u>{text}</u></b>"
 
 
-def format_italic(text:str) -> str:
+def format_italic(text: str) -> str:
     return f"<i>{text}</i>"
 
 
@@ -49,23 +49,29 @@ def get_faction_tag(faction: str) -> str:
     return ""
 
 
-def format_npc_presence(npc_name: str, faction: str, wounded: bool = False) -> str:
-    faction_tag = get_faction_tag(faction)
+def semantic_span(text: str, kind: str) -> str:
+    return f'<sem type="{kind}">{text}</sem>'
+
+
+def format_npc_presence(npc_name: str, faction: str, wounded: bool = False,
+                       reveal_faction: bool = True) -> str:
+    faction_tag = get_faction_tag(faction) if reveal_faction else ""
+    name_part = semantic_span(npc_name, "npc")
     if faction_tag:
         if wounded:
-            return f"<b>{npc_name}</b> {faction_tag} is here, wounded and bleeding."
+            return f"{name_part} {faction_tag} is here, wounded and bleeding."
         else:
-            return f"<b>{npc_name}</b> {faction_tag} is here."
+            return f"{name_part} {faction_tag} is here."
     else:
         if wounded:
-            return f"<b>{npc_name}</b> is here, wounded and bleeding."
+            return f"{name_part} is here, wounded and bleeding."
         else:
-            return f"<b>{npc_name}</b> is here."
+            return f"{name_part} is here."
 
 
 def format_item_list(items: list) -> str:
-    return ", ".join(format_bold(item) for item in items)
+    return ", ".join(semantic_span(item, "item") for item in items)
 
 
 def format_exit(direction: str, destination: str) -> str:
-    return f"{format_bold(direction)} ({destination})"
+    return f"{semantic_span(direction, 'exit')} ({semantic_span(destination, 'exit')})"
