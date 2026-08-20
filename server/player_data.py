@@ -487,6 +487,9 @@ def deserialize_player(data: Dict[str, object], storylet_manager=None) -> Player
     ]
     player.in_tutorial = _safe_bool(data.get("in_tutorial"), False)
     player.tutorial_choice_pending = _safe_bool(data.get("tutorial_choice_pending"), False)
+    if player.in_tutorial and "money_fabi" not in data and "money_silver" not in data:
+        from .economy import set_wallet_fabi_value
+        set_wallet_fabi_value(player, 50)
     if player.in_tutorial and not player.tutorial_resume_room_id:
         legacy_room = player.tutorial_last_room or player.current_room
         if legacy_room.startswith("tut_"):
