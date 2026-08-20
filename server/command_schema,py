@@ -1,0 +1,269 @@
+from typing import Dict, List
+
+COMMAND_DEFS: Dict[str, Dict] = (
+    "ask": {
+        "help": "ASK <name> about a topic, or ASK without a topic to list what they discuss.",
+        "slots": [{"category": "npcs", "separator": " "}],
+        "aliases": [],
+    },
+    "ask about": {
+        "help": "ASK <name> ABOUT <topic>. Ask a person without a topic to list what they will discuss.",
+        "slots": [{"category": "npcs", "separator": " about "}, {"category": "topics", "separator": " "}],
+        "aliases": [],
+    },
+    "assess": {
+        "help": "ASSESS <target> sizes up a person or thing before you act.",
+        "slots": [],
+        "aliases": [],
+    },
+    "attack": {
+        "help": "ATTACK <name> (courage-based; killing notable figures shifts influence).",
+        "slots": [{"category": "npcs", "separator": " "}],
+        "aliases": [],
+    },
+    "bond": {
+        "help": "BOND <name> shares a meal to build friendship.",
+        "slots": [{"category": "npcs", "separator": " "}],
+        "aliases": [],
+    },
+    "bribe": {
+        "help": "BRIBE <npc> offers money to change an outcome.",
+        "slots": [{"category": "npcs", "separator": " "}],
+        "aliases": [],
+    },
+    "buy from": {
+        "help": "BUY FROM <vendor> to purchase items from NPCs.",
+        "slots": [{"category": "npcs", "separator": " "}],
+        "aliases": [],
+    },
+    "claim": {
+        "help": "CLAIM makes this safe room your safehouse.",
+        "slots": [],
+        "aliases": [],
+    },
+    "disguise as": {
+        "help": "DISGUISE AS <faction role> to pass as one of them.",
+        "slots": [],
+        "aliases": [],
+    },
+    "drop": {
+        "help": "DROP <item>, or bare DROP to choose from a chooser.",
+        "slots": [{"category": "items", "separator": " "}],
+        "aliases": ["discard"],
+    },
+    "eat": {
+        "help": "EAT <food>, or bare EAT to choose from a chooser.",
+        "slots": [{"category": "items", "separator": " "}],
+        "aliases": [],
+    },
+    "equip": {
+        "help": "EQUIP <weapon> readies a held weapon for combat.",
+        "slots": [{"category": "items", "separator": " "}],
+        "aliases": [],
+    },
+    "examine": {
+        "help": "EXAMINE <npc/item> for detail and what you can do with it.",
+        "slots": [{"category": "items", "separator": " "}],
+        "aliases": [],
+    },
+    "favor": {
+        "help": "FAVOR <npc> asks someone to do you a good turn.",
+        "slots": [],
+        "aliases": [],
+    },
+    "give": {
+        "help": "GIVE <item> TO <name>.",
+        "slots": [{"category": "items", "separator": " to "}, {"category": "npcs", "separator": " "}],
+        "aliases": [],
+    },
+    "go": {
+        "help": "GO <direction> (n/s/e/w/u/d), or GO <room name> to auto-walk. Follow the Routes line between districts.",
+        "slots": [{"category": "exits", "separator": " "}],
+        "aliases": ["move", "walk", "head"],
+    },
+    "help": {
+        "help": "HELP lists everything; HELP <command> shows how to use one; HELP START for the basics.",
+        "slots": [],
+        "aliases": ["h", "?"],
+    },
+    "hide": {
+        "help": "HIDE conceals you. Moving or loud actions break it.",
+        "slots": [],
+        "aliases": [],
+    },
+    "inventory": {
+        "help": "INVENTORY (i) lists what you carry, each with its use.",
+        "slots": [],
+        "aliases": [],
+    },
+    "journal": {
+        "help": "JOURNAL shows your journal; JOURNAL <name> reads an archived journal.",
+        "slots": [],
+        "aliases": [],
+    },
+    "leave note": {
+        "help": "LEAVE NOTE drops a written note in the room.",
+        "slots": [],
+        "aliases": [],
+    },
+    "look": {
+        "help": "LOOK, or EXAMINE <npc/item> for detail and what you can do with it.",
+        "slots": [],
+        "aliases": [],
+    },
+    "memorial": {
+        "help": "MEMORIAL shows the legacy book of fallen characters.",
+        "slots": [],
+        "aliases": [],
+    },
+    "missions": {
+        "help": "MISSIONS shows active work; MISSIONS AVAILABLE lists jobs; MISSIONS COMPLETE/ABANDON <id>.",
+        "slots": [],
+        "aliases": [],
+    },
+    "mod weapon": {
+        "help": "MOD WEAPON <weapon> WITH <mod> attaches a modification to a weapon.",
+        "slots": [],
+        "aliases": [],
+    },
+    "open": {
+        "help": "OPEN <container> is the only way to unlock a locked container.",
+        "slots": [{"category": "items", "separator": " "}],
+        "aliases": [],
+    },
+    "pickpocket": {
+        "help": "PICKPOCKET <name> (risky; raises suspicion if caught).",
+        "slots": [{"category": "npcs", "separator": " "}],
+        "aliases": [],
+    },
+    "plant": {
+        "help": "PLANT <item> ON <name> to frame them.",
+        "slots": [],
+        "aliases": [],
+    },
+    "quit": {
+        "help": "QUIT saves and exits.",
+        "slots": [],
+        "aliases": ["exit", "logout", "bye", "q"],
+    },
+    "read": {
+        "help": "READ <item>, or bare READ to choose from a chooser.",
+        "slots": [{"category": "items", "separator": " "}],
+        "aliases": [],
+    },
+    "remove": {
+        "help": "REMOVE <armour>.",
+        "slots": [{"category": "items", "separator": " "}],
+        "aliases": [],
+    },
+    "repair": {
+        "help": "REPAIR <weapon>, or bare REPAIR to choose a weapon.",
+        "slots": [{"category": "items", "separator": " "}],
+        "aliases": [],
+    },
+    "retrieve": {
+        "help": "RETRIEVE gear stashed at your safehouse.",
+        "slots": [],
+        "aliases": [],
+    },
+    "rumors": {
+        "help": "RUMORS shows the rumours reaching you about the city.",
+        "slots": [],
+        "aliases": [],
+    },
+    "rumours": {
+        "help": "RUMOURS shows the rumours reaching you about the city.",
+        "slots": [],
+        "aliases": [],
+    },
+    "say": {
+        "help": "SAY <message> speaks aloud to the room.",
+        "slots": [],
+        "aliases": [],
+    },
+    "search": {
+        "help": "SEARCH <detail> reveals hidden items or dead drops into the room.",
+        "slots": [],
+        "aliases": [],
+    },
+    "season": {
+        "help": "SEASON tells the current season and what it brings.",
+        "slots": [],
+        "aliases": [],
+    },
+    "sell": {
+        "help": "SELL <item>, or bare SELL to choose from a chooser.",
+        "slots": [{"category": "items", "separator": " "}],
+        "aliases": [],
+    },
+    "skip tutorial": {
+        "help": "SKIP TUTORIAL leaves the tutorial early.",
+        "slots": [],
+        "aliases": [],
+    },
+    "sound": {
+        "help": "SOUND shows the sounds around you.",
+        "slots": [],
+        "aliases": [],
+    },
+    "status": {
+        "help": "STATUS shows your condition, objective, season, and the Liberation influence tide.",
+        "slots": [],
+        "aliases": ["stat"],
+    },
+    "tail": {
+        "help": "TAIL <name> follows someone secretly.",
+        "slots": [{"category": "npcs", "separator": " "}],
+        "aliases": [],
+    },
+    "take": {
+        "help": "TAKE <item>, or bare TAKE to choose from a chooser.",
+        "slots": [{"category": "items", "separator": " "}],
+        "aliases": ["get", "grab"],
+    },
+    "take from": {
+        "help": "TAKE <item> FROM <container>, or use the open container panel.",
+        "slots": [{"category": "items", "separator": " from "}, {"category": "items", "separator": " "}],
+        "aliases": [],
+    },
+    "talk to": {
+        "help": "TALK TO <name> greets someone and shows what to ASK them about.",
+        "slots": [{"category": "npcs", "separator": " "}],
+        "aliases": [],
+    },
+    "trust": {
+        "help": "TRUST shows how each faction regards you.",
+        "slots": [],
+        "aliases": [],
+    },
+    "unhide": {
+        "help": "UNHIDE stops hiding.",
+        "slots": [],
+        "aliases": [],
+    },
+    "wanted": {
+        "help": "WANTED shows your standing with the authorities.",
+        "slots": [],
+        "aliases": [],
+    },
+    "wear": {
+        "help": "WEAR <armour>.",
+        "slots": [{"category": "items", "separator": " "}],
+        "aliases": [],
+    },
+    "whisper": {
+        "help": "WHISPER <name> <message>.",
+        "slots": [{"category": "players", "separator": " "}],
+        "aliases": [],
+    },
+    "write note": {
+        "help": "WRITE NOTE <text> creates a note; TAKE NOTE <text> also works.",
+        "slots": [],
+        "aliases": [],
+    },
+    "yell": {
+        "help": "YELL <message> broadcasts to nearby rooms, and draws attention.",
+        "slots": [],
+        "aliases": [],
+    },
+)
