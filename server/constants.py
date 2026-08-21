@@ -27,7 +27,10 @@ class MessageType(Enum):
     WEATHER_FOG = "weather_fog"
     WEATHER_SNOW = "weather_snow"
     WEATHER_CLEAR = "weather_clear"
-
+    SUCESS = "success"
+    WARNING = "warning"
+    ERROR = "error"
+    
 CURFEW_MINUTE = 1200
 EVENT_LOG_MAXLEN = 500
 WORLD_EVENTS_MAXLEN = 50
