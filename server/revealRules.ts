@@ -1,7 +1,7 @@
 const REVEAL_TYPES = new Set(['room', 'npc', 'social', 'ambient', 'npc_ambient', 'combat_narration'])
 const INSTANT_TEXT_STORAGE_KEY = 'ss_instant_text'
 
-export function preferReducedMotion(): boolean {
+export function prefersReducedMotion(): boolean {
   if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return false
   try {
     return window.matchMedia('(prefers-reduced-motion: reduce)').matches
