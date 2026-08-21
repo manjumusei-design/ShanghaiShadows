@@ -1,10 +1,10 @@
 - id: streetcar_bell
-  text: "A streetcar bell clangs twice somewhat beyond the next block, its metal note swallowed by engine smoke and rain."
+  text: "A streetcar bell clangs twice beyond the next block, swallowed by engine smoke and rain."
   tags: [city, transport, sound]
   room_types: [street, civilian]
   probability: 0.08
   sound_range: 2
-  cooldown_ticks:12
+  cooldown_ticks: 12
 
 - id: patrol_boots_distant
   text: "Boots strike the pavement in a measured file. The rhythm pauses at a corner, then continues away."
@@ -41,7 +41,7 @@
   cooldown_ticks: 8
 
 - id: radio_static_hidden
-  text: "For a breath, radio static scratches behind a wall. A voice forms almost a word before the set is cut dead."
+  text: "Radio static scratches behind a wall. A voice forms almost a word before the set cuts off."
   tags: [resistance, hidden, signal]
   room_types: [hidden, resistance, secret]
   districts: [hidden_shanghai]
@@ -50,7 +50,7 @@
   cooldown_ticks: 16
 
 - id: church_bell_muted
-  text: "A church bell gives a single muted note, more memory than music, and pigeons lift from the roofline."
+  text: "A church bell gives a single muted note. Pigeons lift from the roofline."
   tags: [church, civilian, mourning]
   room_types: [church, safe]
   districts: [church]
@@ -58,7 +58,7 @@
   probability: 0.10
   cooldown_ticks: 12
 
-  - id: school_recitation
+- id: school_recitation
   text: "Children recite a lesson in uneven voices. The teacher corrects them gently, then lowers her voice at a knock."
   tags: [school, civilian, occupation]
   room_types: [school, civilian]
@@ -68,7 +68,7 @@
   cooldown_ticks: 10
 
 - id: rain_on_tiles
-  text: "Rain ticks against roof tiles and drains through a cracked gutter, tapping out an anxious little rhythm."
+  text: "Rain ticks against roof tiles and drains through a cracked gutter."
   tags: [weather, sound, city]
   probability: 0.06
   sound_range: 1
@@ -92,10 +92,582 @@
   cooldown_ticks: 20
 
 - id: ration_queue_murmur
-  text: "A ration queue mutters like a tired animal. Someone laughs once, too loudly, and the sound dies at once."
+  text: "A ration queue murmurs. Someone laughs once, too loudly, and the sound dies at once."
   tags: [scarcity, civilian, morale]
   room_types: [market, residential, civilian]
   districts: [residential]
   time_range: [420, 780]
   probability: 0.10
   cooldown_ticks: 12
+
+# ── Weather-specific events ──
+
+- id: thunder_rolls
+  text: "Thunder rolls across the city. Windows rattle and the air smells of ozone."
+  tags: [weather, danger, sound, storm]
+  probability: 0.15
+  sound_range: 4
+  cooldown_ticks: 8
+  min_perception: 10
+
+- id: fog_muffled_bells
+  text: "Bells carry through the fog, too muffled to place as temple or church, their notes arriving thick and far away."
+  tags: [weather, sound, fog]
+  probability: 0.12
+  sound_range: 3
+  cooldown_ticks: 16
+  min_perception: 15
+
+- id: storm_glass_breaks
+  text: "Wind throws a shutter against glass. Something cracks."
+  tags: [weather, danger, storm]
+  probability: 0.08
+  sound_range: 2
+  cooldown_ticks: 12
+
+- id: fog_footsteps_muffled
+  text: "Footsteps approach and fade in the fog, their owner invisible. You hear breath, then nothing."
+  tags: [weather, danger, fog, sound]
+  room_types: [street, civilian]
+  probability: 0.10
+  sound_range: 1
+  cooldown_ticks: 14
+  min_perception: 25
+
+# ── District-specific events ──
+
+- id: jazz_from_club
+  text: "Jazz leaks from a doorway, saxophone and piano threading through smoke and laughter."
+  tags: [entertainment, foreign, sound]
+  districts: [bund, french]
+  room_types: [street, civilian]
+  time_range: [1080, 1380]
+  probability: 0.12
+  sound_range: 2
+  cooldown_ticks: 10
+
+- id: french_cafe_chatter
+  text: "French voices debate wine and politics at a cafe table, their laughter bright against the grey street."
+  tags: [civilian, foreign, sound]
+  districts: [french]
+  room_types: [street, civilian]
+  time_range: [480, 1200]
+  probability: 0.14
+  sound_range: 1
+  cooldown_ticks: 8
+
+- id: japanese_patrol_announcement
+  text: "A Kempeitai officer barks an announcement in Japanese. The street goes quiet until he passes."
+  tags: [occupation, military, danger]
+  districts: [hongkou]
+  room_types: [street, checkpoint]
+  probability: 0.08
+  sound_range: 3
+  cooldown_ticks: 20
+
+- id: old_city_vendor_cry
+  text: "An old woman calls out her wares in the local tongue. Hot buns, sweet bean soup."
+  tags: [market, civilian, sound]
+  districts: [old_city]
+  room_types: [street, market]
+  time_range: [360, 1080]
+  probability: 0.15
+  sound_range: 1
+  cooldown_ticks: 6
+
+- id: temple_bells_morning
+  text: "Temple bells roll across the old quarter. Shopkeepers pause for a moment, then return to their morning work."
+  tags: [church, civilian, sound]
+  districts: [old_city]
+  time_range: [300, 420]
+  probability: 0.18
+  sound_range: 3
+  cooldown_ticks: 12
+
+- id: bund_ship_horn
+  text: "A ship's horn moans from the Whangpoo, answered by another further downriver."
+  tags: [harbor, transport, sound]
+  districts: [bund]
+  time_range: [0, 1440]
+  probability: 0.06
+  sound_range: 4
+  cooldown_ticks: 18
+
+- id: western_restaurant_music
+  text: "A phonograph plays Strauss behind curtained windows."
+  tags: [entertainment, foreign, sound]
+  districts: [bund, french]
+  room_types: [street, civilian]
+  time_range: [1020, 1320]
+  probability: 0.10
+  sound_range: 1
+  cooldown_ticks: 14
+
+# ── Time-specific events ──
+
+- id: curfew_patrol_approach
+  text: "Measured, unhurried boots draw closer as the Kempeitai patrol comes down the street; windows darken one by one."
+  tags: [danger, occupation, curfew]
+  time_range: [1200, 1440]
+  probability: 0.12
+  sound_range: 3
+  cooldown_ticks: 8
+  min_perception: 15
+
+- id: curfew_whisper_warning
+  text: "Someone hisses from a doorway: 'They're coming. Get off the street.' Then the door shuts."
+  tags: [resistance, curfew, danger]
+  time_range: [1200, 1440]
+  probability: 0.08
+  sound_range: 1
+  cooldown_ticks: 16
+  min_perception: 30
+
+- id: dawn_fishermen
+  text: "Before the city wakes, fishermen haul their catch ashore. The harbor smells of salt and diesel."
+  tags: [labor, civilian, sound]
+  districts: [bund, warehouse]
+  time_range: [240, 360]
+  probability: 0.14
+  sound_range: 2
+  cooldown_ticks: 10
+
+- id: market_opening_bustle
+  text: "The market wakes. Shutters bang open, vendors arrange their stalls, and the first arguments begin."
+  tags: [market, civilian, sound]
+  room_types: [market]
+  time_range: [360, 480]
+  probability: 0.16
+  sound_range: 2
+  cooldown_ticks: 8
+
+- id: lunch_crowd_swells
+  text: "The lunch crowd floods the street vendors. Voices rise, coins clatter, the smell of oil and steam."
+  tags: [market, civilian, sound]
+  time_range: [660, 780]
+  probability: 0.14
+  sound_range: 2
+  cooldown_ticks: 10
+
+- id: dusk_lanterns_lit
+  text: "As dusk settles, lanterns flicker to life one by one."
+  tags: [civilian, time]
+  time_range: [1020, 1140]
+  probability: 0.12
+  sound_range: 1
+  cooldown_ticks: 12
+
+- id: curfew_siren_wail
+  text: "A siren rises over the Bund and holds one long note before falling. Doors bolt. Windows darken."
+  tags: [curfew, danger, sound, occupation]
+  time_range: [1200, 1230]
+  probability: 0.95
+  sound_range: 4
+  cooldown_ticks: 60
+
+- id: dawn_bird_chorus
+  text: "A single sparrow calls from a rooftop. Another answers two streets away. Within minutes, birds sing from every eave and ledge."
+  tags: [dawn, civilian, sound, hope]
+  time_range: [360, 420]
+  probability: 0.90
+  sound_range: 3
+  cooldown_ticks: 60
+
+- id: temple_bells_noon
+  text: "Bronze notes roll down from the Old City. The bells ring through the noon hour, as they have for centuries."
+  tags: [temple, civilian, sound, time]
+  time_range: [720, 750]
+  probability: 0.85
+  sound_range: 4
+  cooldown_ticks: 30
+
+- id: river_fog_horns
+  text: "Somewhere on the Huangpu, a ship sounds its horn. The note spreads across the water. The fog swallows everything but the sound."
+  tags: [river, weather, sound, civilian]
+  time_range: [240, 480]
+  probability: 0.30
+  sound_range: 3
+  cooldown_ticks: 20
+
+- id: rain_on_tin_roofs
+  text: "The rain begins, scattering on tin roofs. It builds to a steady roar that drowns the street cries, the patrol boots, the arguments in the flat upstairs."
+  tags: [weather, rain, sound, civilian]
+  time_range: [0, 1440]
+  probability: 0.25
+  sound_range: 2
+  cooldown_ticks: 20
+
+- id: distant_gunfire
+  text: "Three sharp cracks echo from the direction of the docks. Then a fourth, closer. Then silence. Faces turn toward the sound and then away. Nobody runs."
+  tags: [danger, combat, sound, occupation]
+  probability: 0.04
+  sound_range: 5
+  cooldown_ticks: 30
+
+- id: kempeitai_motorcycle
+  text: "The snarl of an engine cuts through the street noise. Conversations stop mid-syllable. Faces turn toward doorways. The motorcycle passes, its sidecar empty, its rider staring straight ahead."
+  tags: [patrol, occupation, sound, danger]
+  probability: 0.06
+  sound_range: 3
+  cooldown_ticks: 15
+
+- id: market_morning_clamor
+  text: "The market wakes with shutters creaking and fish slapping wetly on stone, then a hundred voices rise to haggle over prices that change by the hour."
+  tags: [market, civilian, sound, time]
+  time_range: [360, 600]
+  probability: 0.40
+  sound_range: 2
+  cooldown_ticks: 15
+
+- id: wind_through_bamboo_scaffolding
+  text: "The bamboo scaffolding that wraps half the Bund creaks in the wind. A forest of tied joints and lashed poles groans and shifts."
+  tags: [weather, wind, sound, city]
+  probability: 0.15
+  sound_range: 2
+  cooldown_ticks: 18
+
+- id: hidden_radio_transmission
+  text: "Through static, a voice breaks through in Mandarin. It recites numbers. Then names. Then a frequency. Then the transmission cuts out."
+  tags: [resistance, hidden, sound, danger]
+  min_perception: 40
+  probability: 0.05
+  sound_range: 1
+  cooldown_ticks: 25
+
+# ── Additional district-specific events for Phase 30 ──
+
+- id: commercial_shopper_haggle
+  text: "A shopper argues with a clerk over the price of silk, voices rising until a patrol passes and both go quiet."
+  tags: [market, civilian, sound]
+  districts: [commercial]
+  room_types: [street, market, civilian]
+  time_range: [480, 1080]
+  probability: 0.12
+  sound_range: 1
+  cooldown_ticks: 10
+
+- id: commercial_rickshaw_call
+  text: "A rickshaw puller calls out for passengers, his voice hoarse from a day of shouting over the crowd."
+  tags: [transport, civilian, sound]
+  districts: [commercial]
+  room_types: [street]
+  time_range: [360, 1200]
+  probability: 0.10
+  sound_range: 1
+  cooldown_ticks: 12
+
+- id: commercial_storefront_opening
+  text: "Wooden shutters creak as a shopkeeper opens for business, the first customer already waiting at the threshold."
+  tags: [market, civilian, time]
+  districts: [commercial]
+  time_range: [360, 480]
+  probability: 0.16
+  sound_range: 1
+  cooldown_ticks: 15
+
+- id: docks_cargo_loading
+  text: "Dock workers chant in rhythm as they haul crates onto a cargo ship, sweat and curses mixing with the river smell."
+  tags: [labor, harbor, sound]
+  districts: [docks]
+  room_types: [street, warehouse, dock]
+  time_range: [420, 1140]
+  probability: 0.14
+  sound_range: 2
+  cooldown_ticks: 10
+
+- id: docks_smuggling_whisper
+  text: "Two men in oil-stained clothes whisper near a crate. One slips a packet inside, then they move on."
+  tags: [crime, resistance, danger]
+  districts: [docks]
+  min_perception: 30
+  probability: 0.08
+  sound_range: 1
+  cooldown_ticks: 18
+
+- id: docks_net_mending
+  text: "An old man mends fishing nets by the water, his fingers working the knots without looking. He hums quietly."
+  tags: [labor, civilian, sound]
+  districts: [docks]
+  time_range: [360, 1080]
+  probability: 0.11
+  sound_range: 1
+  cooldown_ticks: 14
+
+- id: hongkou_refugee_line
+  text: "The refugee line shuffles forward, documents clutched in hands. A child cries until the mother gives her the last piece of bread."
+  tags: [civilian, hardship, occupation]
+  districts: [hongkou]
+  room_types: [street, checkpoint]
+  time_range: [420, 1140]
+  probability: 0.13
+  sound_range: 1
+  cooldown_ticks: 12
+
+- id: hongkou_checkpoint_shout
+  text: "A Japanese soldier shouts at a man whose papers are wrong. The man bows repeatedly until the soldier waves him through."
+  tags: [occupation, danger, military]
+  districts: [hongkou]
+  room_types: [checkpoint]
+  probability: 0.10
+  sound_range: 2
+  cooldown_ticks: 20
+
+- id: hongkou_boarding_house_noise
+  text: "Through thin walls, someone practices reading Japanese from a primer. The words come slowly."
+  tags: [civilian, occupation, sound]
+  districts: [hongkou]
+  room_types: [residential]
+  time_range: [480, 1020]
+  probability: 0.09
+  sound_range: 1
+  cooldown_ticks: 16
+
+- id: ccp_base_printing_press
+  text: "A hidden press runs in the cellar. The smell of ink mingles with noodles from the shop above."
+  tags: [resistance, hidden, sound]
+  districts: [ccp_base]
+  probability: 0.15
+  sound_range: 1
+  cooldown_ticks: 12
+
+- id: ccp_base_radio_transmission
+  text: "A coded message crackles from the hills. The operator transcribes without expression."
+  tags: [resistance, military, sound]
+  districts: [ccp_base]
+  min_perception: 20
+  probability: 0.10
+  sound_range: 1
+  cooldown_ticks: 18
+
+- id: ccp_base_meeting_whisper
+  text: "Several people speak quietly around a table. One person rolls up a map before you can see the markings."
+  tags: [resistance, hidden, planning]
+  districts: [ccp_base]
+  min_perception: 25
+  probability: 0.12
+  cooldown_ticks: 15
+
+- id: gmd_office_typewriter
+  text: "A typewriter clatters behind a closed door."
+  tags: [military, intelligence, sound]
+  districts: [gmd_office]
+  time_range: [480, 1140]
+  probability: 0.14
+  sound_range: 1
+  cooldown_ticks: 10
+
+- id: gmd_officer_debate
+  text: "Two officers argue about strategy in low voices. One wants to strike now. The other says patience. Neither looks at the map."
+  tags: [military, planning, sound]
+  districts: [gmd_office]
+  min_perception: 30
+  probability: 0.10
+  sound_range: 1
+  cooldown_ticks: 16
+
+- id: gmd_office_filing
+  text: "A clerk squares each paper against the desk and files it without looking up."
+  tags: [intelligence, civilian, sound]
+  districts: [gmd_office]
+  time_range: [480, 1020]
+  probability: 0.11
+  cooldown_ticks: 12
+
+- id: orientation_npc_instruction
+  text: "A voice carries from nearby, repeating directions for newcomers until they settle in the ear."
+  tags: [tutorial, civilian, sound]
+  districts: [orientation]
+  probability: 0.08
+  cooldown_ticks: 20
+
+- id: refugee_entry_processing
+  text: "Officials call names from a list, each one a chance to enter or be turned away. The crowd presses forward."
+  tags: [civilian, hardship, bureaucracy]
+  districts: [refugee_entry]
+  time_range: [420, 1140]
+  probability: 0.13
+  sound_range: 2
+  cooldown_ticks: 12
+
+- id: refugee_entry_camp_noise
+  text: "The camp murmurs with a thousand small sounds. Children crying, pots clanking, someone praying in a dialect no one else recognizes."
+  tags: [civilian, hardship, sound]
+  districts: [refugee_entry]
+  probability: 0.15
+  sound_range: 2
+  cooldown_ticks: 10
+
+# ── Hidden-player events (E6) ──
+
+- id: hidden_footsteps_approach
+  text: "Footsteps draw near, halt outside your hiding place, then continue down the passage."
+  tags: [hidden, tension, sound]
+  hidden_player: true
+  probability: 0.08
+  sound_range: 1
+  cooldown_ticks: 14
+  min_perception: 20
+
+- id: hidden_match_strike
+  text: "Someone strikes a match nearby. The flare illuminates a sliver of wall for a moment. The smell of sulfur lingers."
+  tags: [hidden, tension, danger]
+  hidden_player: true
+  probability: 0.06
+  sound_range: 1
+  cooldown_ticks: 18
+  min_perception: 25
+
+- id: hidden_cough_nearby
+  text: "A cough sounds close enough to feel, and the silence after it presses harder."
+  tags: [hidden, tension, sound]
+  hidden_player: true
+  probability: 0.07
+  sound_range: 1
+  cooldown_ticks: 12
+  min_perception: 15
+
+- id: hidden_flashlight_sweep
+  text: "A flashlight beam sweeps over the far wall, pauses at the plaster seam, then moves on."
+  tags: [hidden, tension, danger, patrol]
+  hidden_player: true
+  probability: 0.05
+  sound_range: 1
+  cooldown_ticks: 20
+  min_perception: 30
+
+- id: hidden_rat_scurry
+  text: "Something small and quick scurries across your foot. A rat."
+  tags: [hidden, tension, false_alarm]
+  hidden_player: true
+  probability: 0.09
+  sound_range: 0
+  cooldown_ticks: 10
+  min_perception: 10
+
+- id: hidden_door_opens
+  text: "A door creaks open somewhere behind you. Light spills in, then cuts off as the door closes."
+  tags: [hidden, tension, sound]
+  hidden_player: true
+  probability: 0.06
+  sound_range: 1
+  cooldown_ticks: 16
+  min_perception: 20
+
+- id: hidden_whisper_your_direction
+  text: "A voice, very close, says something you cannot quite hear."
+  tags: [hidden, tension, paranoia]
+  hidden_player: true
+  probability: 0.04
+  sound_range: 1
+  cooldown_ticks: 22
+  min_perception: 35
+
+- id: hidden_patrol_passes_blind
+  text: "Boots pass within arm's reach. The patrol does not look your way."
+  tags: [hidden, tension, patrol, danger]
+  hidden_player: true
+  probability: 0.07
+  sound_range: 1
+  cooldown_ticks: 15
+  min_perception: 25
+
+- id: hidden_distant_shout
+  text: "A shout from the next street. 'Over here!' Then you realize they found something else. Someone else."
+  tags: [hidden, tension, danger, false_alarm]
+  hidden_player: true
+  probability: 0.05
+  sound_range: 2
+  cooldown_ticks: 18
+  min_perception: 20
+
+- id: hidden_breathing_in_dark
+  text: "In the silence, another person's slow, even breathing reaches you from the dark."
+  tags: [hidden, tension, paranoia]
+  hidden_player: true
+  probability: 0.04
+  sound_range: 0
+  cooldown_ticks: 24
+  min_perception: 40
+
+- id: hidden_cat_knock
+  text: "Something clatters to the ground. A cat streaks away into the shadows."
+  tags: [hidden, tension, false_alarm, sound]
+  hidden_player: true
+  probability: 0.08
+  sound_range: 1
+  cooldown_ticks: 12
+  min_perception: 10
+
+- id: hidden_wood_creak
+  text: "The floorboard beneath you groans, and you freeze, but nothing answers from outside."
+  tags: [hidden, tension, sound]
+  hidden_player: true
+  probability: 0.06
+  sound_range: 0
+  cooldown_ticks: 16
+  min_perception: 15
+
+- id: hidden_suspicious_pause
+  text: "The footsteps outside pause for two beats, then resume at a slower pace."
+  tags: [hidden, tension, danger, patrol]
+  hidden_player: true
+  probability: 0.03
+  sound_range: 1
+  cooldown_ticks: 25
+  min_perception: 45
+
+- id: hidden_pipe_drip
+  text: "Water drips from a pipe somewhere in the dark."
+  tags: [hidden, tension, sound, false_alarm]
+  hidden_player: true
+  probability: 0.10
+  sound_range: 0
+  cooldown_ticks: 8
+  min_perception: 10
+
+- id: hidden_vehicle_stop
+  text: "An engine dies right outside; doors open, followed by voices in Japanese."
+  tags: [hidden, tension, danger, military]
+  hidden_player: true
+  probability: 0.03
+  sound_range: 2
+  cooldown_ticks: 30
+  min_perception: 30
+
+# ── Human micro-events ──
+
+- id: child_late_home
+  text: "A mother calls a child's name from a balcony. The answer comes from three lanes away."
+  tags: [civilian, family, sound]
+  room_types: [street, civilian, residential]
+  time_range: [600, 1140]
+  probability: 0.08
+  sound_range: 2
+  cooldown_ticks: 14
+
+- id: factory_whistle
+  text: "A factory whistle sounds. Workers spill into the street carrying lunch tins."
+  tags: [labor, industrial, sound]
+  room_types: [street, industrial]
+  time_range: [660, 780]
+  probability: 0.10
+  sound_range: 3
+  cooldown_ticks: 20
+
+- id: currency_argument
+  text: "A shopkeeper refuses a customer's notes. They argue quietly about yesterday's exchange rate."
+  tags: [market, civilian, economy]
+  room_types: [market, civilian]
+  time_range: [480, 1080]
+  probability: 0.08
+  sound_range: 1
+  cooldown_ticks: 16
+
+- id: refugee_sleeping
+  text: "A family sleeps beneath the eaves of a closed shop. Their belongings are tied in cloth bundles beside them."
+  tags: [civilian, hardship, refugees]
+  room_types: [street, civilian]
+  time_range: [0, 1440]
+  probability: 0.10
+  sound_range: 0
+  cooldown_ticks: 20
