@@ -12,6 +12,7 @@ class MessageType(Enum):
     ROOM_NPCS = "room_npcs"
     SYSTEM = "system"
     COMBAT = "combat"
+    COMBAT_NARRATION = "combat_narration"
     SOCIAL = "social"
     EVENT = "event"
     AMBIENT = "ambient"
