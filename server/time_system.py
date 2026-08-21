@@ -2,6 +2,9 @@ import heapq
 from dataclasses import dataclass, field
 from typing import List, Optional
 
+from .content_validation import load_strict_yaml
+
+
 @dataclass
 class GameTime:
     minute: int = 0
@@ -10,33 +13,32 @@ class GameTime:
     @property
     def hour(self) -> int:
         return (self.minute // 60) % 24
-    
-    
+
+
 def time_str(gt: GameTime) -> str:
-    h = (gt.minute // 60)  % 24
+    h = (gt.minute // 60) % 24
     m = gt.minute % 60
     return f"Day {gt.day}, {h:02d}:{m:02d}"
 
 
-
 EVENTS = [
-    {"minute": 0,    "text": "Silence falls over the city as midnight passes.",
+    {"minute": 0,    "text": "Midnight settles over the city, leaving patrol lamps, shuttered windows, and the careful sounds people make while pretending to sleep.",
      "effect": {"patrol_density_mult": 0.5, "duration": 120}},
-    {"minute": 360,  "text": "The dawn broadcast crackles to life from a hidden radio loud enough to wake the dead.",
+    {"minute": 360,  "text": "The dawn broadcast crackles through thin walls, praising order while families count rice and decide which errands can wait.",
      "effect": {"reveal_rumour": True}},
-    {"minute": 540,  "text": "Resistance leaflets flutter through the morning streets, telling civilians to fight for their home.",
+    {"minute": 540,  "text": "Fresh leaflets appear on damp walls before the patrols scrape them away, their wet ink passing from hand to hand.",
      "effect": {"ccp_influence": 1, "patrol_density_mult": 1.1, "duration": 180}},
-    {"minute": 600,  "text": "The morning market bustles with activity.",
+    {"minute": 600,  "text": "The morning market opens in layers: shutters, baskets, bargaining voices, and ration queues already bending around the corner.",
      "effect": {"vendor_restock": 25}},
-    {"minute": 720,  "text": "Patrols units are now changing shifts across the city.",
+    {"minute": 720,  "text": "Patrol shifts change across the city, leaving corners briefly crowded with boots, cigarette smoke, and papers checked twice.",
      "effect": {"reset_patrol_density": True}},
-    {"minute": 900,  "text": "Afternoon rumours spread through the teahouses through the noises of .",
+    {"minute": 900,  "text": "Afternoon rumours pass through teahouses and market stalls, gathering prices, names, denials, and half-truths with every cup.",
      "effect": {"spread_rumour": True}},
-    {"minute": 1080, "text": "Dusk falls. Shadows lengthen in the alleyways.",
+    {"minute": 1080, "text": "Dusk lengthens the alleyways, and every errand begins to measure itself against the curfew lamps being lit.",
      "effect": {"stealth_modifier": 5, "duration": 120}},
-    {"minute": 1200, "text": "Curfew is in effect. All civilians must be indoors.",
+    {"minute": 1200, "text": "Curfew takes hold across Shanghai, turning open streets into official ground and doorways into whispered negotiations.",
      "effect": {"curfew_start": True}},
-    {"minute": 1380, "text": "Night raids intensify in high tension districts.",
+    {"minute": 1380, "text": "Night raids gather in tense districts, where one mistaken address can empty a staircase and silence a whole lane.",
      "effect": {"kempeitai_raid_chance": 0.2, "duration": 60}},
 ]
 
@@ -74,13 +76,11 @@ class EventScheduler:
                 ))
         self._daily_loaded = True
 
-    def add_event(self,   event: ScheduledEvent):
+    def add_event(self, event: ScheduledEvent):
         heapq.heappush(self.events, event)
 
     def load_from_yaml(self, path: str):
-        import yaml
-        with open(path, "r", encoding = "utf-8") as f:
-            data = yaml.safe_load(f)
+        data = load_strict_yaml(path)
         for ev in data.get("events", []):
             self.add_event(ScheduledEvent(
                     trigger_minute=ev["trigger_time"],
@@ -111,7 +111,7 @@ class EventScheduler:
                     ),
                 )
         return effects
-                
+
     def to_payload(self):
         return [
             {
@@ -122,9 +122,9 @@ class EventScheduler:
             }
             for event in self.events
         ]
-    
+
     def load_from_payload(self, rows):
-        self.event = []
+        self.events = []
         self._daily_loaded = False
         for row in rows or []:
             self.add_event(ScheduledEvent(
@@ -146,5 +146,5 @@ class EventScheduler:
     def _handle_witness_report(self, payload: dict, broadcast, game_time: GameTime) -> None:
         import random
         victim_name = payload.get("victim_name", "someone")
-        if random.random() < 0.3:
+        if random.random() < 0.30:
             broadcast(f"A witness has reported the murder of {victim_name} to the Kempeitai.")

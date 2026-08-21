@@ -53,6 +53,7 @@ export interface StorePayload {
 }
 
 export interface InventoryItem extends ItemRow {
+  instance_id: string
   equipped?: 'weapon' | 'armour' | 'disguise' | null
   actions: string[]
 }
