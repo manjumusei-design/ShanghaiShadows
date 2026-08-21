@@ -142,7 +142,7 @@ export class WeatherEffects {
 
     for (const d of this.raindrops) {
       d.y += d.speed
-      d.x += 2 // wind angle
+      d.x += 2
       if (d.y > canvas.height) {
         d.y = -20
         d.x = Math.random() * canvas.width
