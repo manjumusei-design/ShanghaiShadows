@@ -1,1328 +1,3518 @@
 storylets:
-  - id: wounded_courier
-    location_tags: [old_city, alley]
-    trigger_chance: 0.7
-    preconditions:
-      trust_ranges:
-        civilian.resident: [30, 90]
-      game_hour: [20, 23]
-      flags_missing: [helped_courier, betrayed_courier]
-    narrative: "A man stumbles out of the dark with one hand over a wet wound. A Resistance armband flashes beneath his coat before he hides it again."
-    options:
-      - text: "Help him into the shadows."
-        effects:
-          set_flag: helped_courier
-          change_trust:
-            ccp.courier: 15
-            civilian.resident: 8
-          add_item: bloodied_message
-          log_event: "You hid a wounded courier from the patrols."
-        followup_storylet: grateful_contact
-      - text: "Alert the patrol."
-        effects:
-          set_flag: betrayed_courier
-          change_trust:
-            kempeitai.patrol: 18
-            civilian.resident: -20
-          log_event: "You betrayed a wounded courier to the authorities."
-
-  - id: grateful_contact
-    location_tags: [old_city, shrine]
-    trigger_chance: 0.8
-    preconditions:
-      flags_required: [helped_courier]
-      flags_missing: [met_grateful_contact]
-    narrative: "A woman waiting beside a shrine does not look at you when she speaks. 'The man you saved still breathes. Take this and keep walking.'"
-    options:
-      - text: "Accept the forged pass."
-        effects:
-          set_flag: met_grateful_contact
-          add_item: forged_pass
-          change_trust:
-            resistance.safehouse: 10
-          log_event: "A grateful contact gave you a forged pass."
-      - text: "Refuse and move on."
-        effects:
-          set_flag: met_grateful_contact
-          change_trust:
-            resistance.safehouse: 3
-          log_event: "You refused a reward from the Resistance."
-
-  - id: tea_house_whisper
-    location_tags: [teahouse]
-    trigger_chance: 0.55
-    preconditions:
-      game_hour: [14, 20]
-      flags_missing: [heard_teahouse_whisper]
-    narrative: "Two patrons pause their game of xiangqi when you sit too close. One line drifts your way anyway: 'Tonight. Pier Six. No mistakes.'"
-    options:
-      - text: "Memorize the line and leave quietly."
-        effects:
-          set_flag: heard_teahouse_whisper
-          change_trust:
-            resistance.courier: 4
-          log_event: "You overheard a whisper about Pier Six."
-      - text: "Lean in and press for more."
-        effects:
-          set_flag: heard_teahouse_whisper
-          change_trust:
-            civilian.vendor: -6
-            resistance.courier: -4
-          log_event: "You pressed strangers too hard for information and made them uncomfortable."
-
-  - id: night_knock
-    location_tags: [lilong, residence]
-    trigger_chance: 0.45
-    preconditions:
-      game_hour: [22, 23]
-      flags_missing: [answered_night_knock]
-    narrative: "A knock comes in a rhythm no honest visitor would ever use. The lane outside has already gone quiet."
-    options:
-      - text: "Open the door a crack."
-        effects:
-          set_flag: answered_night_knock
-          change_trust:
-            ccp.safehouse: 8
-          add_item: coded_ledger
-          log_event: "A covert visitor left you a coded ledger."
-      - text: "Stay silent and let them go."
-        effects:
-          set_flag: answered_night_knock
-          change_trust:
-            civilian.resident: 4
-          log_event: "You chose caution over contact after a suspicious knock."
-
-  - id: rice_queue_argument
-    location_tags: [market] 
-    trigger_chance: 0.6
-    preconditions:
-      flags_missing: [settled_rice_queue]
-    narrative: "The ration queue buckles into anger when a clerk tries to close the window early. Hunger subsequently makes the crowd brave for one minute at at time."
-    options:
-      - text: "Calm the crowd and negotiate."
-        effects:
-          set_flag: settled_rice_queue
-          change_trust:
-            civilian.vendor: 8
-            civilian.worker: 5
-          log_event: "You calmed a ration queue before it turned into a riot."
-      - text: "Fan the anger and slip away."
-        effects:
-          set_flag: settled_rice_queue
-          change_trust:
-            green_gang.broker: 4
-            civilian.worker: -8 
-          add_item: hidden_cash
-          log_event: "You profited from unrest at a ration queue."
-
-  - id: patrol_glance
-    location_tags: [checkpoint]
-    trigger_chance: 0.5
-    preconditions:
-      flags_missing: [survived_patrol_glance]
-    narrative: "A patrol sergeant lingers over your papers half a second longer than comfort allows."
-    options:
-      - text: "Hold steady and meet his stare."
-        effects:
-          set_flag: survived_patrol_glance
-          change_trust:
-            kempeitai.officer: 5
-          log_event: "You stood firm under a patrol sergeant's scrutiny."
-      - text: "Lower your eyes and apologize."
-        effects:
-          set_flag: survived_patrol_glance
-          change_trust:
-            civilian.resident: 2
-            kempeitai.officer: -2
-          log_event: "You submitted to a patrol sergeant's scrutiny and passed."
-
-  - id: dock_crate
-    location_tags: [dock]
-    trigger_chance: 0.5
-    preconditions:
-      flags_missing: [opened_dock_crate]
-    narrative: "A crate lies split open on the dock, straw spilling into a puddle clack with oil."
-    options:
-      - text: "Search the crate before anyone notices."
-        effects:
-          set_flag: opened_dock_crate
-          add_item: dock_manifest
-          change_trust:
-            british.dockmaster: 3
-            green_gang.smuggler: 5
-          log_event: "You searched a broken crate on the docks."
-      - text: "Flag down a foreman."
-        effects:
-          set_flag: opened_dock_crate
-          change_trust:
-            civilian.worker: 5
-            green_gang.smuggler: -5
-          log_event: "You alerted a foreman about a broken crate."
-
-  - id: hidden_prayer
-    location_tags: [shrine]
-    trigger_chance: 0.5
-    preconditions:
-      flags_missing: [found_hidden_prayer]
-    narrative: "A candle guttering in the draft reveals fresh ash and a folded scrap tucked behind the altar rail."
-    options:
-      - text: "Take the talisman and the note."
-        effects:
-          set_flag: found_hidden_prayer
-          add_item: temple_talisman
-          change_trust:
-            civilian.resident: 6
-            ccp.organizer: 3
-          log_event: "You found a hidden prayer note in a shrine."
-      - text: "Leave it untouched."
-        effects:
-          set_flag: found_hidden_prayer
-          change_trust:
-            civilian.resident: 3
-          log_event: "You left a hidden shrine message undisturbed."
-
-  - id: alley_child
-    location_tags: [alley]
-    trigger_chance: 0.45
-    preconditions:
-      flags_missing: [helped_alley_child]
-    narrative: "A child with bare feet watches you from behind a broken handcart, too hungry to hide properly."
-    options:
-      - text: "Share what little you have."
-        effects:
-          set_flag: helped_alley_child
-          change_trust:
-            civilian.resident: 10
-            civilian.worker: 6
-          log_event: "You shared scarce provisions with a hungry child."
-      - text: "Keep walking."
-        effects: 
-          set_flag: helped_alley_child
-          change_trust:
-            civilian.resident: -4
-          log_event: "You left a hungry child behind."
-          
-  - id: smoked_window
-    location_tags: [safehouse]
-    trigger_chance: 0.55
-    preconditions:
-      trust_ranges:
-        ccp.organizer: [45, 100]
-      flags_missing: [entered_smoked_window]
-    narrative: "One safehouse window is smoked black from within. Someone opens it a finger-width when you pass."
-    options:
-      - text: "Give the passphrase you were told."
-        effects:
-          set_flag: entered_smoked_window
-          change_trust:
-            ccp.organizer: 12
-          log_event: "A safehouse finally let you inside."
-      - text: "Keep your silence and move on."
-        effects:
-          set_flag: skipped_smoked_window
-          change_trust:
-            ccp.organizer: -3
-          log_event: "You passed a possible safehouse without making contact."
-
-  - id: contraband_offer
-    location_tags: [market]
-    trigger_chance: 0.5
-    preconditions:
-      flags_missing: [resolved_contraband_offer]
-    narrative: "A vendor opens his coat just enough for you to see medicine where soap should be."
-    options:
-      - text: "Buy the morphine and say nothing."
-        effects:
-          set_flag: resolved_contraband_offer
-          add_item: contraband_morphine
-          change_trust:
-            green_gang.broker: 8
-          log_event: "You bought contraband morphine from a market vendor."
-      - text: "Warn him the patrols are close."
-        effects:
-          set_flag: resolved_contraband_offer
-          change_trust:
-            civilian.vendor: 8
-            green_gang.broker: 2
-          log_event: "You warned a vendor before the patrols arrived."
-
-  - id: ledger_question
-    location_tags: [warehouse]
-    trigger_chance: 0.45
-    preconditions:
-      inventory_has: [coded_ledger]
-      flags_missing: [showed_ledger]
-    narrative: "A warehouse clerk notices the edge of the ledger in your pocket and abruptly loses his composure."
-    options:
-      - text: "Ask him what the numbers mean."
-        effects:
-          set_flag: showed_ledger
-          change_trust:
-            green_gang.broker: 10
-          log_event: "A clerk reacted to the coded ledger you were carrying."
-      - text: "Hide the ledger and leave."
-        effects:
-          set_flag: showed_ledger
-          change_trust:
-            civilian.worker: 3
-          log_event: "You concealed the coded ledger when a clerk noticed it."
-
-  - id: checkpoint_beggar
-    location_tags: [checkpoint]
-    trigger_chance: 0.4
-    preconditions:
-      flags_missing: [met_checkpoint_beggar]
-    narrative: "A beggar sitting just outside the checkpoint taps the curb twice with a tin cup, then looks at your shoes instead of your face."
-    options:
-        - text: "Leave a coin and listen."
-          effects:
-            set_flag: met_checkpoint_beggar
-            change_trust:
-              civilian.vendor: 5
-              ccp.courier: 4
-            log_event: "A beggar near a checkpoint passed you a useful warning"
-        - text: "Ignore the signal."
-          effects:
-            set_flag: met_checkpoint_beggar
-            change_trust:
-              civilian.vendor: -2
-            log_event: "You ignored a beggar's coded warning."
-
-  - id: river_smell
-    location_tags: [bund]
-    trigger_chance: 0.35
-    preconditions:
-      game_hour: [4, 7]
-      flags_missing: [morning_river_smell]
-    narrative: "The river smells of rain, coal and something metallic enough to taste. Dawn arrives slowly over ships that do not belong here."
-    options:
-      - text: "Stay and watch the barges."
-        effects:
-          set_flag: morning_river_smell
-          change_trust:
-            british.merchant: 3
-            civilian.worker: 2
-          log_event: "You watched contraband barges move at dawn on the river."
-      - text: "Turn inland before the patrols finish changing shifts."
-        effects:
-          set_flag: morning_river_smell
-          change_trust:
-            kempeitai.patrol: -2
-          log_event: "You left the Bund before the patrols settled into the morning."
-
-  - id: borrowed_prayer
-    location_tags: [residence]
-    trigger_chance: 0.35
-    preconditions: 
-      inventory_has: [temple_talisman]
-      flags_missing: [lent_talisman]
-    narrative: "A neighbour's hands shake when she sees the temple charm in your pocket. 'Just for the night.' she says."
-    options:
-      - text: "Lend her the talisman."
-        effects:
-          set_flag: lent_talisman
-          remove_item: temple_talisman
-          change_trust:
-            civilian.resident: 12
-          log_event: "You lent a temple talisman to a frightened neighbour."
-      - text: "Keep it."
-        effects:
-          set_flag: lent_talisman
-          change_trust:
-            civilian.resident: -6
-          log_event: "You refused to lend a talisman to a frightened neighbour."
-
-  - id: ruined_flyer
-    location_tags: [school, old_city]
-    trigger_chance: 0.4
-    preconditions:
-      flags_missing: [found_ruined_flyer]
-    narrative: "Rain has pasted a propaganda flyer to the wall so badly that only a child's drawing shows beneath the torn corner."
-    options:
-      - text: "Peel it away carefully."
-        effects:
-          set_flag: found_ruined_flyer
-          change_trust:
-            civilian.resident: 4
-            ccp.organizer: 4
-          log_event: "You uncovered a child's drawing behind a propaganda flyer."
-      - text: "Leave the wall untouched."
-        effects:
-          set_flag: found_ruined_flyer
-          change_trust:
-            civilian.resident: 1
-          log_event: "You left a ruined flyer clinging to a wall."
-
-  - id: choir_attic
-    location_tags: [church, attic]
-    trigger_chance: 0.5
-    preconditions:
-      flags_missing: [heard_attic_choir]
-      game_hour: [18, 22]
-    narrative: "Someone is singing above the rafters in a voice too soft for prayer and too steady for grief."
-    options:
-      - text: "Climb quietly toward the attic."
-        effects:
-          set_flag: heard_attic_choir
-          change_trust:
-            civilian.resident: 6
-            ccp.organizer: 5
-          log_event: "You found hidden voices in a church attic."
-      - text: "Leave before the song ends."
-        effects:
-          set_flag: heard_attic_choir
-          change_trust:
-            civilian.resident: 2
-          log_event: "You left a church before learning the identity of the singer above you."
-
-  - id: silk_signal
-    location_tags: [french, balcony]
-    trigger_chance: 0.4
-    preconditions:
-      inventory_has: [silk_scarf]
-      flags_missing: [used_silk_signal]
-    narrative: "Across a narrow lane, another balcony displays the same shade of silk as the scarf in your pocket."
-    options:
-      - text: "Raise the scarf in reply."
-        effects:
-          set_flag: "used_silk_signal"
-          change_trust:
-            french_concession.merchant: 10
-            log_event: "You answered a coded silk signal in the French Concession."
-      - text: "Pretend not to notice."
-        effects:
-          set_flag: used_silk_signal
-          change_trust:
-            french_concession.merchant: -5
-            log_event: "You ignored a possible signal from a balcony."
-    
-  - id: ledger_drop
-    location_tags: [teahouse]
-    trigger_chance: 0.35
-    preconditions:
-      inventory_has: [coded_ledger]
-      flags_missing: [dropped_ledger_copy]
-    narrative: "A man at the back table folds his napkin with absurd care, and says without looking up, 'Some numbers deserve to travel farther than their owners.'"
-    options:
-      - text: "Leave a copied page of the ledger beneath the saucer."
-        effects:
-          set_flag: dropped_ledger_copy
-          change_trust:
-            ccp.courier: 8
-            green_gang.smuggler: -4
-          log_event: "You quietly passed on a page from the coded ledger."
-      - text: "Keep the ledger intact."
-        effects:
-          set_flag: dropped_ledger_copy
-          change_trust:
-            ccp.courier: -2
-          log_event: "You kept the coded ledger to yourself."
-
-  - id: bombed_shopfront
-    location_tags: [commercial]
-    trigger_chance: 0.45
-    preconditions:
-      flags_missing: [saw_bombed_shopfront]
-    narrative: "A shattered window still smells of last night's explosives. Someone has already swept the glass into a neat, defeated pile."
-    options: 
-      - text: "Help the store owner board it up."
-        effects:
-          set_flag: saw_bombed_shopfront
-          change_trust:
-            civilian.vendor: -3
-            ccp.guerilla: 2
-          log_event: "You helped board up a bombed shopfront."
-      - text: "Ask who did it."
-        effects: 
-          set_flag: saw_bombed_shopfront
-          change_trust:
-            civilian.vendor: -3
-            kempeitai.informant: 4
-          log_event: "You pressed a shopkeeper about a bombing while the dust was still fresh."
-
-  - id: ferry_whistle
-    location_tags: [river]
-    trigger_chance: 0.35
-    preconditions:
-      game_hour: [5, 8]
-      flags_missing: [heard_ferry_whistle]
-    narrative: "A ferry whistle sounds once through the mist, then twice in shorter reply from the distance."
-    options:
-      - text: "Mark the rhythm in memory."
-        effects:
-          set_flag: heard_ferry_whistle
-          change_trust:
-            ccp.courier: 5
-          log_event: "You memorized a coded ferry whistle at dawn."
-      - text: "Dismiss it as river business."
-        effects:
-          set_flag: heard_ferry_whistle
-          change_trust:
-            civilian.worker: 1
-          log_event: "You ignored the strange call and response on the river."
-
-  - id: hidden_cash_offer
-    location_tags: [gambling]
-    trigger_chance: 0.4
-    preconditions:
-      inventory_has: [hidden_cash]
-      flags_missing: [resolved_cash_offer]
-    narrative: "A bookmaker offers to double your money if you are willing to bet on who survives tommorow's raid."
-    options:
-      - text: "Walk away in disgust."
-        effects:
-          set_flag: resolved_cash_offer
-          change_trust:
-            civilian.resident: 6
-            green_gang.broker: -6
-          log_event: "You refused to bet on the lives of your fellow citizens."
-      - text: "Take the wager."
-        effects:
-          set_flag: resolved_cash_offer
-          change_trust:
-            green_gang.broker: 10
-            civilian.resident: -10
-          log_event: "You gambled on the outcome of a raid."
-
-  - id: patrol_map
-    location_tags: [office, checkpoint]
-    trigger_chance: 0.35
-    preconditions:
-      flags_missing: [found_patrol_map]
-    narrative: "On the wall behind an unattended desk hangs a patrol map annotated in a steadier hand than the official markings."
-    options:
-      - text: "Copy the route into memory."
-        effects:
-          set_flag: found_patrol_map
-          add_item: patrol_route
-          change_trust:
-            ccp.courier: 10
-          log_event: "You copied a patrol route from an unattended office."
-      - text: "Leave before someone returns."
-        effects: 
-          set_flag: found_patrol_map
-          change_trust:
-            kempeitai.patrol: 1
-          log_event: "You left an unattended office without touching the patrol map."
-
-  - id: mourning_clothes
-    location_tags: [cemetery, old_city]
-    trigger_chance: 0.4
-    preconditions:
-      flags_missing: [spoke_to_mourner]
-    narrative: "A mourner in plain black clothes kneels at an unmarked stone and asks whether you have seen anyone brave enough to remember names out loud."
-    options:
-      - text: "Say the city remembers quietly."
-        effects:
-          set_flag: spoke_to_mourner
-          change_trust:
-            civilian.resident: 8
-          log_event: "You comforted a mourner in the cemetery."
-      - text: "Say remembrance is dangerous."
-        effects:
-          set_flag: spoke_to_mourner
-          change_trust:
-            civilian.resident: -4
-            kempeitai.informant: 3
-          log_event: "You warned a mourner that memory itself would become dangerous if combined with resentment."
-
-  - id: backroom_surgeon
-    location_tags: [clinic, alley]
-    trigger_chance: 0.4
-    preconditions:
-      inventory_has: [contraband_morphine]
-      flags_missing: [met_backroom_surgeon]
-    narrative: "In a curtained clinic room, a surgeon rinses blood from his hands and looks at the morphine in your pocket with professional desperation."   
-    options: 
-      - text: "Hand it over."
-        effects:
-          set_flag: met_backroom_surgeon
-          remove_item: contraband_morphine
-          change_trust:
-            civilian.worker: 10
-            ccp.organizer: 6
-          log_event: "You gave contraband morphine to a backroom surgeon."
-      - text: "Keep it for later."
-        effects:
-          set_flag: met_backroom_surgeon
-          change_trust:
-            civilian.worker: -8
-          log_event: "You withheld morphine from a desperate surgeon."
-
-  - id: pressman_glance 
-    location_tags: [printshop]
-    trigger_chance: 0.35
-    preconditions:
-      flags_missing: [met_pressman]
-    narrative: "The pressman oils a machine that prints half lies and half truths and ultimately, nothing. 'However a broken clock is right twice a day' you say, and the pressman looks up at you with a glint of recognition. 'You know about the midnight runs, don't you?' he asks."
-    options:
-      - text: "Ask what runs after midnight."
-        effects:
-          set_flag: met_pressman
-          change_trust:
-            ccp.organizer: 7
-            civilian.vendor: 3
-          log_event: "A pressman hinted at midnight printing runs."
-      - text: "Comment on the machine instead."
-        effects:
-          set_flag: met_pressman
-          change_trust:
-            civilian.vendor: 4
-          log_event: "You kept a coversation with a pressman."
-
-  - id: rooftop_signal
-    location_tags: [rooftop, french]
-    trigger_chance: 0.35
-    preconditions:
-      game_hour: [19, 23]
-      flags_missing: [saw_rooftop_signal]
-    narrative: "Three lanterns bloom on a nearby rooftop in a sequence too deliberate to be just coincidence."
-    options:
-      - text: "Count the pattern and remember it."
-        effects:
-          set_flag: saw_rooftop_signal
-          change_trust:
-            ccp.guerilla: 6
-          log_event: "You memorized a lantern code from the rooftops."
-      - text: "Wave back."
-        effects:
-          set_flag: saw_rooftop_signal
-          change_trust:
-            ccp.guerilla: 2
-            kempeitai.patrol: 3
-          log_event: "You answered a rooftop lantern signal and risked being seen."
-
-  - id: exhausted_policeman
-    location_tags: [checkpoint, french]
-    trigger_chance: 0.35
-    preconditions:
-      flags_missing: [judged_policeman]
-    narrative: "A concession policeman rubs his eyes and mutters that there are too many uniforms in the city and none of them truly belong to it."
-    options:
-      - text: "Offer him a ciggarete and listen "
-        effects:
-          set_flag: judged_policeman
-          change_trust:
-            french_concession.police: 8
-          log_event: "You earned a tired policeman's trust."
-      - text: "Tell him everyone serves someone now."
-        effects:
-          set_flag: judged_policeman
-          change_trust:
-            french_concession.police: -6
-          log_event: "You pushed a tired policeman to reality."
-
-  - id: refugee_suitcase
-    location_tags: [station, refugee]
-    trigger_chance: 0.45
-    preconditions:
-      flags_missing: [helped_refugee_suitcase]
-    narrative: "A refugee family has tied their whole life into one suitcase, and the clasp gives way at the edge of the platform."
-    options:
-      - text: "Help them gather the spilled contents."
-        effects:
-          set_flag: helped_refugee_suitcase
-          change_trust:
-            civilian.resident: 10
-            british.consul: 2
-          log_event: "You helped a refugee family gayther the contents of a broken suitcase."
-      - text: "Use the confusion to search what spilled out."
-        effects:
-          set_flag: helped_refugee_suitcase
-          add_item: hidden_cash
-          change_trust:
-            civilian.resident: -12
-          log_event: "You exploited a refugee family's panic for worldy gains."
-
-  - id: cold_noodles
-    location_tags: [market, food]
-    trigger_chance: 0.35
-    preconditions:
-      flags_missing: [shared_cold_noodles]
-    narrative: "A noodle seller scrapes the bottom of the pot and says there is just enough left for one bowl, maybe two if everyone pretends otherwise."
-    options:
-      - text: "Buy two and share one."
-        effects:
-          set_flag: shared_cold_noodles
-          change_trust:
-            civilian.vendor: 8
-            civilian.worker: 4
-          log_event: "You shared a bowl of cold noodles in the market with a stranger."
-      - text: "Take the last full portion for yourself." 
-        effects:
-          set_flag: shared_cold_noodles
-          change_trust:
-            civilian.vendor: -4
-          log_event: "You took the last full bowl for yourself."
-
-  - id: late_train_manifest
-    location_tags: [station]
-    trigger_chance: 0.35
-    preconditions:
-      inventory_has: [dock_manifest]
-      flags_missing: [compared_manifests]
-    narrative: "A station porter glances at your manifest and goes pale. 'That crate was not meant to leave the river,' he whispers."
-    options:
-    - text: "Ask where it went." 
-      effects:
-        set_flag: compared_manifests
-        change_trust:
-          ccp.courier: 6
-          british.dockmaster: 4
-        log_event: "A porter linked your dock manifest to a vanished rail shipment."
-    - text: "Fold the paper away."
-      effects:
-        set_flag: compared_manifests
-        change_trust:
-          british.dockmaster: -2
-        log_event: "You chose not to press a porter about a suspicious shipment."
-        
-  - id: harbor_funeral
-    location_tags: [dock, river]
-    trigger_chance: 0.3
-    preconditions:
-      flags_missing: [witnessed_harbor_funeral]
-      game_hour: [17, 20]
-    narrative: "Men who never stop to mourn pause just long enough to push a wreath onto the black water."
-    options:
-      - text: "Stand with them in silence."
-        effects:
-          set_flag: witnessed_harbor_funeral
-          change_trust:
-            civilian.worker: 7
-            british.dockmaster: 2
-          log_event: "You stood in silence during an improvised harbor funeral."
-      - text: "Leave before grief draws attention."
-        effects:
-          set_flag: witnessed_harbor_funeral
-          change_trust:
-            civilian.worker: -2
-          log_event: "You left the harbor before a quiet funeral could become dangerous."
-
-  - id: counterfeit_stamp
-    location_tags: [office, french]
-    trigger_chance: 0.35
-    preconditions:
-      inventory_has: [forged_pass]
-      flags_missing: [tested_forged_pass]
-    narrative: "A clerk handling permits pauses over your pass, then glances at a drawer where a real seal is hidden under his blotter."
-    options:
-      - text: "Slip him cash and ask for the proper stamp."
-        effects:
-          set_flag: tested_forged_pass
-          remove_item: hidden_cash
-          change_trust:
-            french_concession.clerks: 10
-          log_event: "You bribed a clerk to strengthen a forged pass."
-      - text: "Take your chances and leave."
-        effects:
-          set_flag: tested_forged_pass
-          change_trust:
-            french_concession.clerks: -4
-            kempeitai.officer: 2
-          log_event: "You left with a weak forged pass rather than risk a bribe."
-
-  - id: ash_under_nails
-    location_tags: [printshop, alley]
-    trigger_chance: 0.3
-    preconditions:
-      flags_missing: [noticed_print_ash]
-    narrative: "The messenger who brushes past you has a printer's dust under his fingernails and ink stains on his cuffs. He does not look like a man who delivers messages for ordinary people."
-    options:
-      - text: "Follow him for about a block."
-        effects:
-          set_flag: noticed_print_ash
-          change_trust:
-            ccp.courier: 5
-        log_event: "You shadowed a messenger carrying printshop ash on his hands."
-      - text: "Memorize his face and let him go."
-        effects:
-          set_flag: noticed_print_ash
-          change_trust:
-            civilian.vendor: 2
-          log_event: "You let a suspicious messenger go after memorizing his face."
-
-  - id: bridge_rain
-    location_tags: [bridge, river]
-    trigger_chance: 0.3
-    preconditions:
-      flags_missing: [stood_in_bridge_rain]
-    narrative: "Rain needles the bridge planks while a woman beneath a torn umbrella asks whether the city still has decent people."
-    options:
-      - text: "Tell her decency survives in fragments."
-        effects:
-          set_flag: stood_in_bridge_rain
-          change_trust:
-            civilian.resident: 8
-          log_event: "You offered a stranger what hope you could on a bridge in the rain."
-      - text: "Tell her survival matters more."
-        effects:
-          set_flag: stood_in_bridge_rain
-          change_trust:
-            civilian.resident: -4
-            green_gang.enforcer: 2
-          log_event: "You answered a question about decency with cold practicality."
-
-  - id: soup_delivery
-    location_tags: [residence]
-    trigger_chance: 0.4
-    preconditions:
-      game_hour: [18, 22]
-      trust_ranges:
-        civilian.resident: [50, 100]
-    narrative: "There's a knock at your door. When you open it, you find a bowl of hot soup and a note: 'For when the nights get cold.'"
-    options:
-      - text: "Accept it with gratitude."
-        effects:
-          change_trust:
-            civilian.resident: 10
-          log_event: "A neighbor brought you soup when you were struggling."
-      - text: "Leave it outside."
-        effects:
-          change_trust:
-            civilian.resident: -5
-          log_event: "You refused a neighbor's kindness."
-
-  - id: raid_warning
-    location_tags: [checkpoint]
-    trigger_chance: 0.3
-    preconditions:
-      game_hour: [19, 23]
-      flags_required: [friend_saves_player]
-    narrative: "Someone pulls you into an alley. 'Not tonight. They're raiding the checkpoint. Take the back way.'"
-    options:
-      - text: "Follow their advice."
-        effects:
-          set_flag: avoided_raid
-          change_trust:
-            civilian.resident: 8
-          log_event: "A friend warned you about a raid."
-      - text: "Continue as planned."
-        effects:
-          change_trust:
-            civilian.resident: -5
-          log_event: "You ignored a friend's warning about a raid."
-
-  - id: old_friend_reunion
-    location_tags: [market, residence]
-    trigger_chance: 0.35
-    preconditions:
-      trust_ranges:
-        civilian.resident: [70, 100]
-    narrative: "An old friend spots you through the crowd and asks, 'Do you remember when Shanghai was different?'"
-    options:
-      - text: "Share a meal and talk about old times."
-        effects:
-          add_item: rice_bowl
-          change_trust:
-            civilian.resident: 12
-          log_event: "You shared a meal and talked about better times with an old friend."
-      - text: "Say you need to keep moving."
-        effects:
-          change_trust:
-            civilian.resident: -3
-          log_event: "You hurried past an old friend who wanted to talk."
-
-  - id: ccp_recruit_workers
-    location_tags: [commercial, docks]
-    trigger_chance: 0.5
-    preconditions:
-      trust_ranges:
-        ccp.organizer: [40, 100]
-      flags_missing: [recruited_workers]
-    narrative: "A group of dockworkers gather in a shadowed alley, their faces gaunt from forced labour. They whisper about organizing a strike. A Japanese overseer watches from across the street, his truncheon tapping against his palm."
-    options:
-      - text: "Address the workers and help them organize."
-        effects:
-          set_flag: recruited_workers
-          change_trust:
-            ccp.organizer: 15
-            kempeitai.informant: -10
-          change_influence:
-            ccp: 8
-          log_event: "You helped dockworkers organize a strike against Japanese overseers."
-          add_item: resistance_map
-      - text: "Disperse the crowd."
-        effects:
-          change_trust:
-            kempeitai.informant: 3
-          log_event: "You chose to disperse a group of workers."
-
-  - id: ccp_sabotage_supply_run
-    location_tags: [warehouse, docks]
-    trigger_chance: 0.4
-    preconditions:
-      trust_ranges:
-        ccp.guerrilla: [50, 100]
-      flags_missing: [sabotaged_supplies]
-    narrative: "A Japanese supply truck sits idling outside a warehouse, its driver chatting with a guard. The cargo contains ammunition bound for the front lines that could be destroyed with a well-placed fire. The risk is enormous. The reward is just as big."
-    options:
-      - text: "Slip behind the truck and ignite the fuel line."
-        effects:
-          set_flag: sabotaged_supplies
-          change_trust:
-            ccp.guerrilla: 20
-            kempeitai.officer: -20
-          change_influence:
-            ccp: 10
-          log_event: "You destroyed a Japanese ammunition truck. The explosion lit up the warehouse district."
-      - text: "Report the truck's location to the underground. Let others take the risk."
-        effects:
-          change_trust:
-            ccp.guerrilla: 5
-          log_event: "You passed intelligence about a Japanese supply truck to the underground."
-
-  - id: ccp_distribute_pamphlets
-    location_tags: [old_city, school]
-    trigger_chance: 0.6
-    preconditions:
-      trust_ranges:
-        ccp.courier: [35, 100]
-      game_hour: [17, 22]
-      flags_missing: [distributed_pamphlets]
-    narrative: "A stack of resistance pamphlets sits in a hidden compartment beneath a market stall. The text exposes the Nanjing Massacre in unflinching detail: the systematic murder of hundreds of thousands of Chinese civilians by Japanese soldiers. Distributing them is a death sentence. Not distributing them means the truth dies."
-    options:
-      - text: "Take the pamphlets and slip them into passersby's hands."
-        effects:
-          set_flag: distributed_pamphlets
-          change_trust:
-            ccp.courier: 12
-            civilian.resident: 8
-            kempeitai.patrol: -15
-          change_influence:
-            ccp: 6
-          log_event: "You distributed banned pamphlets exposing Japanese atrocities in the old city."
-          add_item: ccp_pamphlet
-      - text: "Leave them. The risk is too great right now."
-        effects:
-          change_trust:
-            kempeitai.patrol: 2
-          log_event: "You decided not to distribute the pamphlets tonight."
-
-  - id: gmd_intercept_orders
-    location_tags: [french, bund]
-    trigger_chance: 0.4
-    preconditions:
-      trust_ranges:
-        gmd.spy: [45, 100]
-      flags_missing: [intercepted_orders]
-    narrative: "A Japanese staff car parks outside a French Concession cafe. Inside, an officer leaves a leather satchel unattended while he takes a phone call. The satchel likely contains military orders such as intelligence that could save hundreds of lives."
-    options:
-      - text: "Slip past the guard and photograph the documents."
-        effects:
-          set_flag: intercepted_orders
-          change_trust:
-            gmd.spy: 18
-            kempeitai.officer: -15
-          change_influence:
-            gmd: 8
-          log_event: "You intercepted Japanese military orders from an unattended satchel."
-          add_item: code_book
-      - text: "Note the officer's movements and report to intelligence."
-        effects:
-          change_trust:
-            gmd.officer: 5
-          log_event: "You reported a Japanese officer's movements to GMD intelligence."
-
-  - id: gmd_smuggle_medicine
-    location_tags: [docks, warehouse]
-    trigger_chance: 0.5
-    preconditions:
-      trust_ranges:
-        gmd.smuggler: [40, 100]
-      flags_missing: [smuggled_medicine]
-    narrative: "A fishing boat slips into the wharf at midnight, its hull packed full with medical supplies like quinine, bandages, surgical tools that are meant for underground clinics that treat Chinese civilians while Japanese hospitals turn them away. The Kempeitai patrol boat is due in twenty minutes."
-    options:
-      - text: "Help unload the supplies before the patrol arrives."
-        effects:
-          set_flag: smuggled_medicine
-          change_trust:
-            gmd.smuggler: 15
-            civilian.resident: 10
-          change_influence:
-            gmd: 7
-          log_event: "You helped smuggle medical supplies past the Japanese blockade."
-          add_item: quinine_bottle
-      - text: "Signal the boat to move on since it's too dangerous tonight."
-        effects:
-          change_trust:
-            gmd.smuggler: -5
-          log_event: "You turned away a smuggling boat due to Kempeitai patrol risk."
-
-  - id: ccp_safe_house_raid
-    location_tags: [hidden_shanghai, residential]
-    trigger_chance: 0.3
-    preconditions:
-      trust_ranges:
-        ccp.organizer: [55, 100]
-      game_hour: [0, 5]
-    narrative: "Footsteps in the alley. Voices speaking Japanese. The Kempeitai are conducting a midnight sweep going door to door, dragging out anyone without papers. A neighbour's child clings to your leg, trembling. You can hear screams from down the block."
-    options:
-      - text: "Hide the child and shelter the neighbours in the basement."
-        effects:
-          change_trust:
-            ccp.organizer: 10
-            civilian.resident: 15
-          change_influence:
-            ccp: 5
-          log_event: "You sheltered neighbours from a Kempeitai midnight raid."
-      - text: "Lock your door and stay silent."
-        effects:
-          change_trust:
-            civilian.resident: -10
-          log_event: "You stayed silent during a Kempeitai raid."
-
-  - id: gmd_rescue_prisoner
-    location_tags: [hongkou, bund]
-    trigger_chance: 0.3
-    preconditions:
-      trust_ranges:
-        gmd.officer: [50, 100]
-      flags_missing: [rescued_prisoner]
-    narrative: "A GMD operative is being held in a Kempeitai holding cell near the Bund that is scheduled for interrogation and likely execution. A sympathetic guard can be bribed, but the window is narrow and the risk is extreme."
-    options:
-      - text: "Pay the bribe and extract the operative."
-        effects:
-          set_flag: rescued_prisoner
-          change_trust:
-            gmd.officer: 20
-            kempeitai.officer: -20
-          change_influence:
-            gmd: 10
-          log_event: "You rescued a captured GMD operative from Kempeitai custody."
-      - text: "It's too risky. Inform Chungking of the capture."
-        effects:
-          change_trust:
-            gmd.officer: -5
-          log_event: "A GMD operative was captured. You reported the loss."
-
-  - id: ccp_rice_distribution
-    location_tags: [old_city, residential]
-    trigger_chance: 0.5
-    preconditions:
-      trust_ranges:
-        ccp.organizer: [30, 100]
-      game_hour: [5, 9]
-      flags_missing: [distributed_rice]
-    narrative: "A shipment of rice, liberated from a Japanese military warehouse, needs to be distributed to starving families before the Kempeitai realize it's missing. Lines of gaunt mothers clutching emaciated children have already formed."
-    options:
-      - text: "Help distribute the rice to the families."
-        effects:
-          set_flag: distributed_rice
-          change_trust:
-            ccp.organizer: 12
-            civilian.resident: 15
-          change_influence:
-            ccp: 6
-          log_event: "You helped distribute liberated rice to starving families."
-          add_item: rice_parcel
-      - text: "Take a portion for yourself and leave."
-        effects:
-          change_trust:
-            civilian.resident: -15
-            ccp.organizer: -10
-          add_item: rice_parcel
-          log_event: "You took rice meant for starving families."
-
-  - id: gmd_forge_documents
-    location_tags: [commercial, french]
-    trigger_chance: 0.4
-    preconditions:
-      trust_ranges:
-        gmd.spy: [40, 100]
-      flags_missing: [forged_documents]
-    narrative: "A Jewish refugee family needs forged travel papers to escape to Chungking. Without them, they face deportation back to Europe, and worse. The forger needs someone to deliver the materials and collect the finished documents without attracting attention."
-    options:
-      - text: "Deliver the materials and escort the family to safety."
-        effects:
-          set_flag: forged_documents
-          change_trust:
-            gmd.spy: 15
-            civilian.resident: 10
-          change_influence:
-            gmd: 6
-          log_event: "You helped forge travel documents for a refugee family."
-          add_item: japanese_travel_pass
-      - text: "Refuse. It's too dangerous and the family isn't Chinese."
-        effects:
-          change_trust:
-            gmd.spy: -5
-          log_event: "You refused to help forge documents for refugees."
-
-  - id: ccp_student_protest
-    location_tags: [school, bund]
-    trigger_chance: 0.35
-    preconditions:
-      trust_ranges:
-        ccp.courier: [45, 100]
-      game_hour: [10, 16]
-      flags_missing: [student_protest]
-    narrative: "University students are gathering on the Bund for a silent protest against Japanese occupation. They carry no weapons, only handwritten signs demanding freedom and an end to the occupation. The Kempeitai are massing at the end of the street with rifles and bayonets."
-    options:
-      - text: "Join the protest line and stand with the students."
-        effects:
-          set_flag: student_protest
-          change_trust:
-            ccp.courier: 15
-            civilian.resident: 12
-            kempeitai.patrol: -20
-          change_influence:
-            ccp: 8
-          log_event: "You stood with student protesters on the Bund as the Kempeitai closed in."
-      - text: "Warn the students to disperse before the Kempeitai charge."
-        effects:
-          change_trust:
-            ccp.organizer: 5
-            civilian.resident: 5
-          log_event: "You warned students to disperse before a confrontation."
-
-  - id: wounded_courier_room
-    location_tags: [indoor, commercial]
-    trigger_chance: 0.3
-    scope: room
-    preconditions:
-      game_hour: [18, 23]
-    narrative: "A wounded courier crashes through the door, blood staining his shirt. He clutches a folded document to his chest and collapses against the wall."
-    options:
-      - text: "Help him hide and tend to his wounds."
-        effects:
-          trust:
-            ccp.guerrilla: 10
-            civilian.resident: 8
-          flag: helped_wounded_courier
-          log_event: "You hid a wounded courier from the authorities."
-      - text: "Drag him out into the street."
-        effects:
-          trust:
-            kempeitai.patrol: 5
-            civilian.resident: -15
-          flag: betrayed_courier
-          log_event: "You exposed a wounded courier to the Kempeitai."
-      - text: "Turn him in to the authorities."
-        effects:
-          trust:
-            kempeitai.patrol: 15
-            ccp.guerrilla: -25
-            gmd.spy: -10
-          flag: betrayed_courier_authorities
-          log_event: "You betrayed a wounded courier to the authorities."
-
-  - id: kempeitai_search
-    location_tags: [residential, indoor]
-    trigger_chance: 0.25
-    scope: room
-    preconditions:
-      game_hour: [6, 20]
-    narrative: "Kempeitai soldiers pound on the door and push inside without waiting. 'We have reports of Resistance activity. Everyone against the wall. Now.'"
-    options:
-      - text: "Comply with the search."
-        effects:
-          trust:
-            civilian.resident: -3
-          log_event: "You submitted to a Kempeitai search."
-      - text: "Hide something quickly."
-        effects:
-          trust:
-            kempeitai.patrol: -8
-          health: -5
-          flag: hid_from_kempeitai
-          log_event: "You hid evidence from a Kempeitai search."
-      - text: "Resist and demand a warrant."
-        effects:
-          trust:
-            civilian.resident: 8
-            kempeitai.patrol: -12
-          flag: resisted_kempeitai
-          log_event: "You resisted an unlawful Kempeitai search."
-
-  - id: arms_cache_found
-    location_tags: [warehouse, hidden]
-    trigger_chance: 0.2
-    scope: room
-    preconditions:
-      trust_ranges:
-        ccp.guerrilla: [20, 100]
-        gmd.spy: [20, 100]
-    narrative: "A hidden crate in the corner creaks with movement. Inside, you find a cache of weapons: pistols, grenades, and ammunition."
-    options:
-      - text: "Report the cache to your faction contacts."
-        effects:
-          trust:
-            ccp.guerrilla: 12
-            gmd.spy: 8
-          flag: reported_arms_cache
-          log_event: "You reported an arms cache to your faction."
-      - text: "Take weapons for yourself."
-        effects:
-          add_item: mauser_c96
-          trust:
-            ccp.guerrilla: -5
-          flag: looted_arms_cache
-          log_event: "You looted an arms cache for personal use."
-      - text: "Share with the other refugees hiding here."
-        effects:
-          trust:
-            civilian.resident: 15
-            ccp.guerrilla: 5
-          morale: 10
-          flag: shared_arms_cache
-          log_event: "You distributed weapons from an arms cache to refugees."
-
-  - id: food_dispute
-    location_tags: [civilian, street]
-    trigger_chance: 0.35
-    scope: room
-    preconditions:
-      game_hour: [8, 18]
-    narrative: "Two civilians argue over a stolen bag of rice. One accuses the other of theft, while the other claims hunger drove them to it. A crowd watches nervously."
-    options:
-      - text: "Mediate the dispute and suggest sharing."
-        effects:
-          trust:
-            civilian.resident: 10
-          morale: 5
-          flag: mediated_food_dispute
-          log_event: "You mediated a dispute over stolen food."
-      - text: "Side with the accuser and condemn the theft."
-        effects:
-          trust:
-            civilian.resident: -8
-          flag: condemned_thief
-          log_event: "You condemned a starving thief."
-      - text: "Side with the hungry thief and argue for compassion."
-        effects:
-          trust:
-            civilian.resident: 8
-          flag: defended_thief
-          log_event: "You defended a starving person accused of theft."
-
-  - id: lost_child
-    location_tags: [commercial, street]
-    trigger_chance: 0.3
-    scope: room
-    preconditions:
-      game_hour: [10, 20]
-    narrative: "A crying child, no older than seven, wanders through the crowd calling for their mother. Passersby hurry past, afraid to get involved."
-    options:
-      - text: "Help the child find their mother."
-        effects:
-          trust:
-            civilian.resident: 12
-          morale: 8
-          flag: helped_lost_child
-          log_event: "You helped a lost child find their mother."
-      - text: "Ignore the child and keep moving."
-        effects:
-          trust:
-            civilian.resident: -3
-          morale: -5
-          flag: ignored_lost_child
-          log_event: "You ignored a lost child in need."
-      - text: "Take advantage of the situation to steal from the distracted crowd."
-        effects:
-          trust:
-            civilian.resident: -20
-          add_item: silver_yuan
-          flag: preyed_on_distraction
-          log_event: "You stole from a crowd while a child was lost."
-
-  - id: tutorial_01_ration_card
-    scope: player
-    trigger_condition:
-      flag_not_set: tutorial_complete
-      room: bund_dawn
-    narrative: |
-      A thin man in a threadbare coat approaches you cautiously on the Bund.
-      "You look new here," he says, pressing a small card into your hand.
-      "This is a ration card. Keep it hidden. The Kempeitai confiscate them on sight."
-      He glances over his shoulder. "Go find Old Wu in the Old City. He runs a noodle stand there.
-      Tell him Liu Wei sent you. He'll explain how things work around here."
-    options:
-      - text: "Thank him and take the card"
-        effects:
-          - type: item
-            item_id: ration_card
-          - type: flag
-            flag: tutorial_step_1
-    probability: 1.0
-
-  - id: tutorial_02_deliver_note
-    scope: player
-    trigger_condition:
-      flag_set: tutorial_step_1
-      room: oldcity_01
-    narrative: |
-      Old Wu looks up from his wok, squinting through the steam. "Liu Wei sent you? Hmph."
-      He wipes his hands on his apron and produces a folded note from his pocket.
-      "Take this to Sister Mei at the chapel in the French Concession. Don't read it.
-      And don't get caught after curfew, that's 8 PM to 6 AM. The patrols are thorough."
-    options:
-      - text: "Accept the note"
-        effects:
-          - type: item
-            item_id: folded_note
-          - type: flag
-            flag: tutorial_step_2
-    probability: 1.0
-
-  - id: tutorial_03_safe_rooms
-    scope: player
-    trigger_condition:
-      flag_set: tutorial_step_2
-      room: french_01
-    narrative: |
-      Sister Mei takes the note, reads it quickly, and nods. "Welcome to Shanghai. Or what's left of it."
-      She gestures around the chapel. "This is a safe room. No violence here. No arrests.
-      If you're hurt or hungry, look for rooms like this: clinics, churches, teahouses with the right connections."
-      She hands you a bowl of rice. "Eat. You look half-dead. And remember: trust is everything here.
-      Talk to people. Listen. Help when you can. The factions notice who's useful."
-    options:
-      - text: "Eat the rice and listen carefully"
-        effects:
-          - type: health
-            value: 20
-          - type: morale
-            value: 10
-          - type: flag
-            flag: tutorial_complete
-    probability: 1.0
-
-  - id: vendor_fled
-    scope: room
-    location_tags: []
-    trigger_chance: 1.0
-    preconditions:
-      flags_missing: [seen_vendor_fled]
-    narrative: "The shopfront is shuttered. A scrap of paper flutters in the doorway. The proprietor has fled, leaving only dust and unanswered questions."
-    options:
-      - text: "Move on."
-        effects:
-          set_flag: seen_vendor_fled
-          log_event: "A vendor fled the district as tension rose."
-
-  - id: extortion_underway
-    scope: room
-    location_tags: []
-    trigger_chance: 1.0
-    preconditions:
-      flags_missing: [saw_extortion]
-    narrative: "A low voice makes demands. A civilian trembles. The Green Gang enforcer has cornered someone who cannot pay, and the choice of what to do falls to you."
-    options:
-      - text: "Intervene. Step between them."
-        effects:
-          set_flag: saw_extortion
-          change_trust:
-            civilian.resident: 12
-            green_gang.enforcer: -15
-          log_event: "You intervened in a Green Gang shakedown."
-      - text: "Ignore it and move on."
-        effects:
-          set_flag: saw_extortion
-          log_event: "You witnessed a shakedown and did nothing."
-      - text: "Join the shakedown."
-        effects:
-          set_flag: saw_extortion
-          change_trust:
-            green_gang.enforcer: 15
-            civilian.resident: -20
-          log_event: "You joined a Green Gang extortion."
+- id: faction_argument_lead
+  social_consequence_only: true
+  timer_seconds: 90
+  trigger_chance: 1.0
+  preconditions: {}
+  narrative: "The two men have gone, but an old woman gathering vegetable leaves says their argument began with ration cards and ended with a patrol route neither wished to name."
+  options:
+  - text: Ask which road the patrol has begun to use.
+    effects:
+      set_flag: followed_faction_argument_lead
+      log_event: You learned a cautious route from the aftermath of a faction argument.
+    response_msg: "She names the road only after looking at the lamps, then turns back to her basket."
+  - text: Leave the street to its silence.
+    effects:
+      set_flag: left_faction_argument_lead
+    response_msg: "The leaves rustle under her hands, and the street resumes its careful business."
+- id: secret_meeting_lead
+  social_consequence_only: true
+  timer_seconds: 90
+  trigger_chance: 1.0
+  preconditions: {}
+  narrative: "A young courier returns for a dropped matchbox and murmurs that the men who met here were frightened of the curfew, not of one another."
+  options:
+  - text: Offer to carry the matchbox toward the safer lane.
+    effects:
+      set_flag: assisted_secret_meeting_lead
+      change_trust:
+        civilian.resident: 2
+      log_event: You helped a courier after a secret meeting.
+    response_msg: "The courier accepts with a quick bow and vanishes before the next patrol passes."
+  - text: Let the courier retrieve it alone.
+    effects:
+      set_flag: left_secret_meeting_lead
+    response_msg: "He pockets the matchbox and walks away as though he had never stopped."
+- id: shared_intel_lead
+  social_consequence_only: true
+  timer_seconds: 90
+  trigger_chance: 1.0
+  preconditions: {}
+  narrative: "A paper runner pauses by the drain and says the message concerned a checkpoint that has begun searching bags after the evening bell."
+  options:
+  - text: Ask where the inspection has moved.
+    effects:
+      set_flag: followed_shared_intel_lead
+      log_event: You learned of a changed checkpoint inspection from a shared message.
+    response_msg: "The runner names a side street and asks you not to repeat it near the market."
+  - text: Tell the runner to keep the warning moving.
+    effects:
+      set_flag: left_shared_intel_lead
+    response_msg: "He nods and folds the warning into his sleeve."
+- id: extortion_aftermath_lead
+  social_consequence_only: true
+  timer_seconds: 90
+  trigger_chance: 1.0
+  preconditions: {}
+  narrative: "After the collector leaves, the stallholder counts the remaining fabi twice and says a neighbour may need warning before the next collection begins."
+  options:
+  - text: Carry the warning to the neighbouring stall.
+    effects:
+      set_flag: warned_of_extortion
+      change_trust:
+        civilian.resident: 2
+      log_event: You carried a warning after an extortion collection.
+    response_msg: "The stallholder gives no thanks aloud, but places a small bundle of tea leaves in your hand."
+  - text: Keep clear of the collector's business.
+    effects:
+      set_flag: left_extortion_aftermath
+    response_msg: "The stallholder lowers the shutter another inch and says nothing more."
+- id: rival_intimidation_lead
+  social_consequence_only: true
+  timer_seconds: 90
+  trigger_chance: 1.0
+  preconditions: {}
+  narrative: "The frightened man waits until the corner is empty, then asks whether the street ahead is clear enough for him to leave without another warning."
+  options:
+  - text: Point him toward the quieter lane.
+    effects:
+      set_flag: assisted_rival_intimidation
+      log_event: You guided a frightened rival away from a threatened corner.
+    response_msg: "He thanks you with a nod and keeps his face turned from the lamps."
+  - text: Refuse to involve yourself.
+    effects:
+      set_flag: left_rival_intimidation
+    response_msg: "He waits until the street empties, then chooses his own way."
+- id: gang_intimidation_lead
+  social_consequence_only: true
+  timer_seconds: 90
+  trigger_chance: 1.0
+  preconditions: {}
+  narrative: "A tea boy clearing cups says the two Gang men argued over a name in a warehouse ledger, and that no one near the docks wishes to repeat it."
+  options:
+  - text: Ask which warehouse ledger caused the quarrel.
+    effects:
+      set_flag: followed_gang_intimidation_lead
+      log_event: You learned of a Gang quarrel tied to a warehouse ledger.
+    response_msg: "The boy gives the warehouse number, then hurries back to his cups."
+  - text: Pay for your tea and leave the ledger alone.
+    effects:
+      set_flag: left_gang_intimidation_lead
+    response_msg: "The boy looks relieved when the subject passes."
+- id: missing_crate_lead
+  social_consequence_only: true
+  timer_seconds: 90
+  trigger_chance: 1.0
+  preconditions: {}
+  narrative: "A stevedore waits beside the damp warehouse wall until the foreman turns away. He says the missing crate was moved before dawn, and its empty space on the tally has become more dangerous than the cargo itself."
+  options:
+  - text: Ask which clerk changed the tally before the Kempeitai arrived.
+    effects:
+      set_flag: followed_missing_crate_lead
+      change_trust:
+        civilian.worker: 3
+      log_event: You followed a dockside lead about a missing crate and its altered tally.
+    response_msg: "He gives you a surname, then turns back to the loading line as though the question had never been asked."
+  - text: Leave the matter alone and let the loading line close around it.
+    effects:
+      set_flag: left_missing_crate_lead
+      log_event: You left a dockside lead about a missing crate unexplored.
+    response_msg: "The stevedore nods once and returns to his work before the foreman notices the pause."
+- id: patrol_warning_lead
+  social_consequence_only: true
+  timer_seconds: 90
+  trigger_chance: 1.0
+  preconditions: {}
+  narrative: "After the warning has had time to travel, a woman at the edge of the market catches your sleeve and points toward a side lane. She says the Kempeitai were asking for papers near the main road, but she cannot say where they will turn next."
+  options:
+  - text: Consider the side lane, though the watch may turn before you arrive.
+    effects:
+      set_flag: heeded_patrol_warning
+      change_trust:
+        civilian.resident: 2
+      log_event: You acted on a resident's current warning about Kempeitai activity.
+    response_msg: "You leave the brighter road behind, aware that the market offers no certainty."
+  - text: Thank her and continue along the main road.
+    effects:
+      set_flag: declined_patrol_warning
+      log_event: You chose not to act on a resident's current warning about Kempeitai activity.
+    response_msg: "She gives a small nod and disappears between the stalls before anyone can notice her concern."
+- id: wounded_courier
+  timer_seconds: 60
+  location_tags:
+  - old_city
+  - alley
+  trigger_chance: 0.7
+  preconditions:
+    trust_ranges:
+      civilian.resident:
+      - 30
+      - 90
+    game_hour:
+    - 20
+    - 23
+    flags_missing:
+    - helped_courier
+    - betrayed_courier
+  neglect:
+    narrative: The alley is empty when you return. The dye shop owner says someone carried him away before dawn. Nobody knows where. Nobody asks.
+    effects:
+      set_flag: courier_ignored
+      change_trust:
+        civilian.resident: -5
+      log_event: A wounded courier died alone in an alley.
+  narrative: A man collapses beside a dye shop after curfew. His clothes suggest a dock worker, but the paper hidden inside his sleeve bears a name you recognise from yesterday's newspaper. The street is empty, but the patrols will pass here within the hour.
+  options:
+  - text: Help him into a doorway before the patrol arrives.
+    effects:
+      set_flag: helped_courier
+      change_trust:
+        ccp.courier: 15
+        civilian.resident: 8
+      add_item: bloodied_message
+      log_event: You hid a wounded courier from the patrols.
+    followup_storylet: grateful_contact
+  - text: Walk past. You did not see anything.
+    effects:
+      set_flag: betrayed_courier
+      change_trust:
+        kempeitai.patrol: 18
+        civilian.resident: -20
+      log_event: You betrayed a wounded courier to the authorities.
+- id: grateful_contact
+  location_tags:
+  - old_city
+  - shrine
+  trigger_chance: 0.8
+  preconditions:
+    flags_required:
+    - helped_courier
+    flags_missing:
+    - met_grateful_contact
+  neglect:
+    narrative: The woman's gaze slides past you. She folds the paper back into her sleeve and walks away. Whatever she offered vanishes into the morning crowd.
+    effects:
+      set_flag: met_grateful_contact
+      log_event: You hesitated too long and missed a grateful contact's offer.
+  narrative: A woman waiting beside a shrine does not look at you when she speaks. Her voice is low, the kind of voice that has learned not to carry. "The man you helped last night sends his thanks. Take this and keep walking." She presses a folded paper into your palm without breaking stride.
+  options:
+  - text: Accept the paper and continue walking.
+    effects:
+      set_flag: met_grateful_contact
+      add_item: forged_pass
+      change_trust:
+        ccp.safehouse: 10
+      log_event: A grateful contact gave you a forged pass.
+  - text: Nod but leave the paper behind.
+    effects:
+      set_flag: met_grateful_contact
+      change_trust:
+        ccp.safehouse: 3
+      log_event: You refused a reward from the Resistance.
+- id: tea_house_whisper
+  location_tags:
+  - teahouse
+  trigger_chance: 0.55
+  preconditions:
+    game_hour:
+    - 14
+    - 20
+    flags_missing:
+    - heard_teahouse_whisper
+  neglect:
+    narrative: The conversation drifts to other things. Pier Six or Pier Nine, you cannot remember which. The tea grows cold.
+    effects:
+      set_flag: heard_teahouse_whisper
+      log_event: You overheard something at the teahouse but let it slip away.
+  narrative: 'Two old men play xiangqi in the corner of the tea house. One of them says something about the price of fish that makes the other laugh without smiling. When you sit too close, they pause. One line drifts your way anyway: "The fish arrives late tonight. At which pier? The one where nobody goes fishing anymore."'
+  options:
+  - text: Memorise the exchange and finish your tea quietly.
+    effects:
+      set_flag: heard_teahouse_whisper
+      change_trust:
+        ccp.courier: 4
+      log_event: You overheard a whisper about Pier Six.
+  - text: Lean closer and ask about the fishing.
+    effects:
+      set_flag: heard_teahouse_whisper
+      change_trust:
+        civilian.vendor: -6
+        ccp.courier: -4
+      log_event: You pressed strangers too hard for information and made them uncomfortable.
+- id: night_knock
+  timer_seconds: 60
+  location_tags:
+  - lilong
+  - residence
+  trigger_chance: 0.45
+  preconditions:
+    game_hour:
+    - 22
+    - 23
+    flags_missing:
+    - answered_night_knock
+  neglect:
+    narrative: The knocking stops. Footsteps fade down the lane. The patrol passes ten minutes later without stopping. Whoever it was made it wherever they were going.
+    effects:
+      set_flag: answered_night_knock
+      log_event: You ignored a late-night knock at your door.
+  narrative: A knock comes at the door after curfew. Three short raps, then a pause, then two more. The lane outside has been silent for hours. Anyone moving after dark either knows the patrol schedule or is desperate enough not to care.
+  options:
+  - text: Open the door a crack and see who it is.
+    effects:
+      set_flag: answered_night_knock
+      change_trust:
+        ccp.safehouse: 8
+      add_item: coded_ledger
+      give_item: testimony_collaboration
+      log_event: A covert visitor left you a coded ledger.
+  - text: Stay silent and wait for them to leave.
+    effects:
+      set_flag: answered_night_knock
+      change_trust:
+        civilian.resident: 4
+      log_event: You chose caution over contact after a suspicious knock.
+- id: rice_queue_argument
+  location_tags:
+  - market
+  trigger_chance: 0.6
+  preconditions:
+    flags_missing:
+    - settled_rice_queue
+  neglect:
+    narrative: The argument resolves itself. Someone shouts, someone yields, and the line shuffles forward. The old woman is still standing at the window when you leave.
+    effects:
+      set_flag: settled_rice_queue
+      log_event: You watched a ration queue argument resolve without intervening.
+  narrative: The rice queue stretches past the tea stall when the clerk closes the wooden window. An old woman holds up her ration card and insists the missing stamps are not her mistake. Nobody moves. Everyone is hungry, but everyone is afraid of becoming the person the guards remember.
+  options:
+  - text: Step forward and speak for the old woman.
+    effects:
+      set_flag: settled_rice_queue
+      change_trust:
+        civilian.vendor: 8
+        civilian.worker: 5
+      log_event: You calmed a ration queue before it turned into a riot.
+  - text: Leave before the argument draws attention.
+    effects:
+      set_flag: settled_rice_queue
+      change_trust:
+        green_gang.broker: 4
+        civilian.worker: -8
+      add_item: hidden_cash
+      log_event: You profited from unrest at a ration queue.
+- id: patrol_glance
+  timer_seconds: 60
+  location_tags:
+  - checkpoint
+  trigger_chance: 0.5
+  preconditions:
+    flags_missing:
+    - survived_patrol_glance
+  neglect:
+    narrative: The sergeant hands your papers back without a word. You are still standing. That is enough.
+    effects:
+      set_flag: survived_patrol_glance
+      log_event: You stood still under a patrol sergeant's scrutiny.
+  narrative: The patrol sergeant holds your papers half a second longer than you would like. The lantern light makes it hard to read his expression. Behind him, the street is empty in both directions. A dog barks somewhere down the lane.
+  options:
+  - text: Stand still and meet his gaze.
+    effects:
+      set_flag: survived_patrol_glance
+      change_trust:
+        kempeitai.officer: 5
+      log_event: You stood firm under a patrol sergeant's scrutiny.
+  - text: Lower your eyes and shift your weight like someone who has nothing to hide.
+    effects:
+      set_flag: survived_patrol_glance
+      change_trust:
+        civilian.resident: 2
+        kempeitai.officer: -2
+      log_event: You submitted to a patrol sergeant's scrutiny and passed.
+- id: dock_crate
+  location_tags:
+  - dock
+  trigger_chance: 0.5
+  preconditions:
+    flags_missing:
+    - opened_dock_crate
+  neglect:
+    narrative: A dock worker notices the crate first and hauls it onto a handcart. The moment passes.
+    effects:
+      set_flag: opened_dock_crate
+      change_trust:
+        civilian.worker: 3
+      log_event: You hesitated too long at the dock and someone else claimed the crate.
+  narrative: A crate has split open on the dock. Straw spills into a puddle black with oil. The cargo is exposed. Tins of something labelled in Japanese. A foreman is arguing with a sailor fifty metres away, his back turned.
+  options:
+  - text: Kneel and look at the cargo before anyone notices.
+    effects:
+      set_flag: opened_dock_crate
+      add_item: dock_manifest
+      change_trust:
+        british.dockmaster: 3
+        green_gang.smuggler: 5
+      log_event: You searched a broken crate on the docks.
+  - text: Call out to the foreman that a crate has broken.
+    effects:
+      set_flag: opened_dock_crate
+      change_trust:
+        civilian.worker: 5
+        green_gang.smuggler: -5
+      log_event: You alerted a foreman about a broken crate.
+- id: hidden_prayer
+  timer_seconds: 180
+  location_tags:
+  - shrine
+  trigger_chance: 0.5
+  preconditions:
+    flags_missing:
+    - found_hidden_prayer
+  neglect:
+    narrative: The candle gutters out. In the darkness, you can no longer find the folded scrap. It was never meant for you.
+    effects:
+      set_flag: found_hidden_prayer
+      log_event: You hesitated at a shrine and lost a hidden message.
+  narrative: A candle flickers behind the altar rail, casting shadows that move without wind. Someone has tucked a folded scrap of paper into a gap in the wood. The ink is fresh.
+  options:
+  - text: Take the paper and read it where you stand.
+    effects:
+      set_flag: found_hidden_prayer
+      add_item: temple_talisman
+      change_trust:
+        civilian.resident: 6
+        ccp.organizer: 3
+      log_event: You found a hidden prayer note in a shrine.
+  - text: Leave it where it belongs.
+    effects:
+      set_flag: found_hidden_prayer
+      change_trust:
+        civilian.resident: 3
+      log_event: You left a hidden shrine message undisturbed.
+- id: alley_child
+  timer_seconds: 60
+  location_tags:
+  - alley
+  trigger_chance: 0.45
+  preconditions:
+    flags_missing:
+    - helped_alley_child
+  neglect:
+    narrative: The child watches you pass without a word. When you look back, she is gone, as if she was never there.
+    effects:
+      set_flag: helped_alley_child
+      change_trust:
+        civilian.resident: -2
+      log_event: You walked past a hungry child without a word.
+  narrative: A child with bare feet watches you from behind a broken handcart. She does not beg. She just watches, the way children learn to watch when they have learned that adults are unpredictable. Her ribs show through her shirt.
+  options:
+  - text: Share what food you have and keep walking.
+    effects:
+      set_flag: helped_alley_child
+      change_trust:
+        civilian.resident: 10
+        civilian.worker: 6
+      log_event: You shared scarce provisions with a hungry child.
+  - text: Look away and keep walking.
+    effects:
+      set_flag: helped_alley_child
+      change_trust:
+        civilian.resident: -4
+      log_event: You left a hungry child behind.
+- id: smoked_window
+  location_tags:
+  - safehouse
+  trigger_chance: 0.55
+  preconditions:
+    trust_ranges:
+      ccp.organizer:
+      - 45
+      - 100
+    flags_missing:
+    - entered_smoked_window
+  neglect:
+    narrative: The window closes. The watcher decides you are not worth waiting for.
+    effects:
+      set_flag: skipped_smoked_window
+      log_event: You hesitated too long outside a safehouse.
+  narrative: One window in the tenement is blacked out with paint. As you pass, it opens a finger-width from the inside. Someone is watching you without showing their face. The lane is empty except for a cat cleaning itself on a stoop.
+  options:
+  - text: Pause and wait for a sign.
+    effects:
+      set_flag: entered_smoked_window
+      change_trust:
+        ccp.organizer: 12
+      log_event: A safehouse finally let you inside.
+  - text: Keep walking. Curious people do not live long in Shanghai.
+    effects:
+      set_flag: skipped_smoked_window
+      change_trust:
+        ccp.organizer: -3
+      log_event: You passed a possible safehouse without making contact.
+- id: contraband_offer
+  location_tags:
+  - market
+  trigger_chance: 0.5
+  preconditions:
+    flags_missing:
+    - resolved_contraband_offer
+  neglect:
+    narrative: The vendor buttons his coat and melts into the crowd. The opportunity passes.
+    effects:
+      set_flag: resolved_contraband_offer
+      log_event: You hesitated too long at a contraband offer.
+  narrative: A vendor at the edge of the market opens his coat just enough for you to see glass vials where there should be packets of tea. He does not meet your eyes. His hands are steady, which means he has done this before.
+  options:
+  - text: Buy the medicine and say nothing.
+    effects:
+      set_flag: resolved_contraband_offer
+      add_item: contraband_morphine
+      change_trust:
+        green_gang.broker: 8
+      log_event: You bought contraband morphine from a market vendor.
+  - text: Tell him the patrols are making rounds and walk on.
+    effects:
+      set_flag: resolved_contraband_offer
+      change_trust:
+        civilian.vendor: 8
+        green_gang.broker: 2
+      log_event: You warned a vendor before the patrols arrived.
+- id: ledger_question
+  location_tags:
+  - warehouse
+  trigger_chance: 0.45
+  preconditions:
+    inventory_has:
+    - coded_ledger
+    flags_missing:
+    - showed_ledger
+  neglect:
+    narrative: The clerk's moment of recognition fades. He returns to his work, and you walk on, ledger still in pocket.
+    effects:
+      set_flag: showed_ledger
+      log_event: You walked away before a clerk could question your ledger.
+  narrative: A warehouse clerk notices the edge of the ledger in your pocket and abruptly loses his composure.
+  options:
+  - text: Ask him what the numbers mean.
+    effects:
+      set_flag: showed_ledger
+      change_trust:
+        green_gang.broker: 10
+      log_event: A clerk reacted to the coded ledger you were carrying.
+  - text: Hide the ledger and leave.
+    effects:
+      set_flag: showed_ledger
+      change_trust:
+        civilian.worker: 3
+      log_event: You concealed the coded ledger when a clerk noticed it.
+- id: checkpoint_beggar
+  location_tags:
+  - checkpoint
+  trigger_chance: 0.4
+  preconditions:
+    flags_missing:
+    - met_checkpoint_beggar
+  neglect:
+    narrative: The beggar's gaze moves on. Whatever he knew, he takes it with him.
+    effects:
+      set_flag: met_checkpoint_beggar
+      log_event: You ignored a beggar's coded signal at a checkpoint.
+  narrative: A man sitting just outside the checkpoint taps the curb twice with a tin cup. He looks at your shoes instead of your face. A warning or a signal. The difference is not always clear in Shanghai.
+  options:
+  - text: Drop a coin in the cup and listen for what follows.
+    effects:
+      set_flag: met_checkpoint_beggar
+      change_trust:
+        civilian.vendor: 5
+        ccp.courier: 4
+      log_event: A beggar near a checkpoint passed you a useful warning
+  - text: Pass without slowing.
+    effects:
+      set_flag: met_checkpoint_beggar
+      change_trust:
+        civilian.vendor: -2
+      log_event: You ignored a beggar's coded warning.
+- id: river_smell
+  timer_seconds: 180
+  location_tags:
+  - bund
+  trigger_chance: 0.35
+  preconditions:
+    game_hour:
+    - 4
+    - 7
+    flags_missing:
+    - morning_river_smell
+  neglect:
+    narrative: The dawn brightens. The barges are gone, their cargo delivered or hidden. The river tells no stories.
+    effects:
+      set_flag: morning_river_smell
+      log_event: You lingered too long by the river and missed the dawn barges.
+  narrative: The river at dawn smells of rain and coal and something metallic. Barges move silently through the mist, their navigation lights dimmed. A figure on the nearest boat drops a rope before the bow touches the dock.
+  options:
+  - text: Watch from the shadows and note what you see.
+    effects:
+      set_flag: morning_river_smell
+      change_trust:
+        british.merchant: 3
+        civilian.worker: 2
+      log_event: You watched contraband barges move at dawn on the river.
+  - text: Turn inland before the patrols finish changing shifts.
+    effects:
+      set_flag: morning_river_smell
+      change_trust:
+        kempeitai.patrol: -2
+      log_event: You left the Bund before the patrols settled into the morning.
+- id: borrowed_prayer
+  timer_seconds: 180
+  location_tags:
+  - residence
+  trigger_chance: 0.35
+  preconditions:
+    inventory_has:
+    - temple_talisman
+    flags_missing:
+    - lent_talisman
+  neglect:
+    narrative: She waits a moment longer, then quietly withdraws into her room. The door closes without a sound.
+    effects:
+      set_flag: lent_talisman
+      change_trust:
+        civilian.resident: -3
+      log_event: You neither accepted nor refused the neighbour's request.
+  narrative: Your neighbour's hands shake when she sees the temple charm in your pocket. "Just for the night," she says. "Tomorrow I will return it." She does not explain why she needs it, and you do not ask. Some questions are better left unasked in this city.
+  options:
+  - text: Press the charm into her palm.
+    effects:
+      set_flag: lent_talisman
+      remove_item: temple_talisman
+      change_trust:
+        civilian.resident: 12
+      log_event: You lent a temple talisman to a frightened neighbour.
+  - text: Apologise and keep it.
+    effects:
+      set_flag: lent_talisman
+      change_trust:
+        civilian.resident: -6
+      log_event: You refused to lend a talisman to a frightened neighbour.
+- id: ruined_flyer
+  timer_seconds: 180
+  location_tags:
+  - school
+  - old_city
+  trigger_chance: 0.4
+  preconditions:
+    flags_missing:
+    - found_ruined_flyer
+  neglect:
+    narrative: The rain softens the paper further. By morning, nothing remains but a blur of ink and charcoal.
+    effects:
+      set_flag: found_ruined_flyer
+      log_event: You let a ruined flyer dissolve in the rain.
+  narrative: Rain has pasted a propaganda flyer to the wall so thoroughly that only a corner remains. Beneath the torn paper, a child has drawn a picture in charcoal. A house, a tree, a sun with a face. Someone crossed it out with a single brushstroke.
+  options:
+  - text: Peel the flyer away carefully to see the drawing.
+    effects:
+      set_flag: found_ruined_flyer
+      change_trust:
+        civilian.resident: 4
+        ccp.organizer: 4
+      log_event: You uncovered a child's drawing behind a propaganda flyer.
+  - text: Leave the wall as it is.
+    effects:
+      set_flag: found_ruined_flyer
+      change_trust:
+        civilian.resident: 1
+      log_event: You left a ruined flyer clinging to a wall.
+- id: choir_attic
+  timer_seconds: 180
+  location_tags:
+  - church
+  - attic
+  trigger_chance: 0.5
+  preconditions:
+    flags_missing:
+    - heard_attic_choir
+    game_hour:
+    - 18
+    - 22
+  neglect:
+    narrative: The song fades into silence. By the time you reach the attic, whoever was singing has gone. The room is empty except for a single candle still warm.
+    effects:
+      set_flag: heard_attic_choir
+      log_event: You lingered too long and lost the singer in the church attic.
+  narrative: Someone is singing above the church rafters. The voice is too soft for prayer and too steady for grief. It is a song in a language you half-recognise, the melody worn smooth by repetition. The door to the attic stairs is unlocked.
+  options:
+  - text: Climb the stairs and find the singer.
+    effects:
+      set_flag: heard_attic_choir
+      change_trust:
+        civilian.resident: 6
+        ccp.organizer: 5
+      log_event: You found hidden voices in a church attic.
+  - text: Stand in the doorway and listen until the song ends.
+    effects:
+      set_flag: heard_attic_choir
+      change_trust:
+        civilian.resident: 2
+      log_event: You left a church before learning the identity of the singer above you.
+- id: silk_signal
+  timer_seconds: 180
+  location_tags:
+  - french
+  - balcony
+  trigger_chance: 0.4
+  preconditions:
+    inventory_has:
+    - silk_scarf
+    flags_missing:
+    - used_silk_signal
+  neglect:
+    narrative: The silk disappears from the balcony. Whoever was watching has decided you are not the one they were waiting for.
+    effects:
+      set_flag: used_silk_signal
+      log_event: You hesitated too long and missed the silk signal.
+  narrative: Across a narrow lane, a balcony displays a silk scarf the same colour as the one you carry. The occupant is watering plants with careful attention, though the plants have clearly been dead for weeks. A signal or a coincidence. In this city, you can never be certain.
+  options:
+  - text: Raise your scarf briefly and wait.
+    effects:
+      set_flag: used_silk_signal
+      change_trust:
+        french_concession.merchant: 10
+        log_event: You answered a coded silk signal in the French Concession.
+  - text: Keep walking. Curiosity is a luxury.
+    effects:
+      set_flag: used_silk_signal
+      change_trust:
+        french_concession.merchant: -5
+        log_event: You ignored a possible signal from a balcony.
+- id: ledger_drop
+  location_tags:
+  - teahouse
+  trigger_chance: 0.35
+  preconditions:
+    inventory_has:
+    - coded_ledger
+    flags_missing:
+    - dropped_ledger_copy
+  neglect:
+    narrative: The man finishes his tea and leaves. The opportunity to share the ledger passes with him.
+    effects:
+      set_flag: dropped_ledger_copy
+      log_event: You hesitated too long with the ledger and lost your contact.
+  narrative: A man at the back table folds his napkin with absurd care, and says without looking up, 'Some numbers deserve to travel farther than their owners.'
+  options:
+  - text: Leave a copied page of the ledger beneath the saucer.
+    effects:
+      set_flag: dropped_ledger_copy
+      change_trust:
+        ccp.courier: 8
+        green_gang.smuggler: -4
+      log_event: You quietly passed on a page from the coded ledger.
+  - text: Keep the ledger intact.
+    effects:
+      set_flag: dropped_ledger_copy
+      change_trust:
+        ccp.courier: -2
+      log_event: You kept the coded ledger to yourself.
+- id: bombed_shopfront
+  timer_seconds: 60
+  location_tags:
+  - commercial
+  trigger_chance: 0.45
+  preconditions:
+    flags_missing:
+    - saw_bombed_shopfront
+  neglect:
+    narrative: By the time you pass again, the crater has been filled with rubble and the shop is whole. The sign is gone.
+    effects:
+      set_flag: saw_bombed_shopfront
+      log_event: You walked past a bombed shopfront without stopping.
+  narrative: 'A bomb crater still smells of smoke three days later. The shop behind it is open anyway. The owner has hung a lantern from a broken beam and stacked his goods on a plank across two milk crates. A sign reads: "Business as usual."'
+  options:
+  - text: Buy something from the shopkeeper.
+    effects:
+      set_flag: saw_bombed_shopfront
+      change_trust:
+        civilian.vendor: -3
+        ccp.guerilla: 2
+      log_event: You helped board up a bombed shopfront.
+  - text: Help him clear debris from the entrance.
+    effects:
+      set_flag: saw_bombed_shopfront
+      change_trust:
+        civilian.vendor: -3
+        kempeitai.informant: 4
+      log_event: You pressed a shopkeeper about a bombing while the dust was still fresh.
+- id: ferry_whistle
+  location_tags:
+  - river
+  trigger_chance: 0.35
+  preconditions:
+    game_hour:
+    - 5
+    - 8
+    flags_missing:
+    - heard_ferry_whistle
+  neglect:
+    narrative: The ferry pulls away from the dock. The whistle sounds a third time, distant now. There will be another boat tomorrow.
+    effects:
+      set_flag: heard_ferry_whistle
+      log_event: You let a coded ferry whistle drift away unremembered.
+  narrative: The ferry whistle sounds twice across the river. A boat is leaving whether you are on it or not. The ticket seller is already counting his take, one eye on the patrol approaching the gangplank.
+  options:
+  - text: Hurry to buy a ticket before the boat departs.
+    effects:
+      set_flag: heard_ferry_whistle
+      change_trust:
+        ccp.courier: 5
+      log_event: You memorized a coded ferry whistle at dawn.
+  - text: Watch from the shore and let the ferry leave without you.
+    effects:
+      set_flag: heard_ferry_whistle
+      change_trust:
+        civilian.worker: 1
+      log_event: You ignored the strange call and response on the river.
+- id: hidden_cash_offer
+  location_tags:
+  - gambling
+  trigger_chance: 0.4
+  preconditions:
+    inventory_has:
+    - hidden_cash
+    flags_missing:
+    - resolved_cash_offer
+  neglect:
+    narrative: The bookmaker loses interest. Another gambler steps forward to take your place.
+    effects:
+      set_flag: resolved_cash_offer
+      log_event: You hesitated too long at the gambling den.
+  narrative: A bookmaker offers to double your money if you are willing to bet on who survives tomorrow's raid.
+  options:
+  - text: Walk away in disgust.
+    effects:
+      set_flag: resolved_cash_offer
+      change_trust:
+        civilian.resident: 6
+        green_gang.broker: -6
+      log_event: You refused to bet on the lives of your fellow citizens.
+  - text: Take the wager.
+    effects:
+      set_flag: resolved_cash_offer
+      change_trust:
+        green_gang.broker: 10
+        civilian.resident: -10
+      log_event: You gambled on the outcome of a raid.
+- id: patrol_map
+  location_tags:
+  - office
+  - checkpoint
+  trigger_chance: 0.35
+  preconditions:
+    flags_missing:
+    - found_patrol_map
+  neglect:
+    narrative: Footsteps approach. You slip away, the patrol route unmemorized.
+    effects:
+      set_flag: found_patrol_map
+      log_event: You lost your chance to copy the patrol route.
+  narrative: On the wall behind an unattended desk hangs a patrol map annotated in a steadier hand than the official markings.
+  options:
+  - text: Copy the route into memory.
+    effects:
+      set_flag: found_patrol_map
+      add_item: patrol_route
+      change_trust:
+        ccp.courier: 10
+      log_event: You copied a patrol route from an unattended office.
+  - text: Leave before someone returns.
+    effects:
+      set_flag: found_patrol_map
+      change_trust:
+        kempeitai.patrol: 1
+      log_event: You left an unattended office without touching the patrol map.
+- id: mourning_clothes
+  location_tags:
+  - cemetery
+  - old_city
+  trigger_chance: 0.4
+  preconditions:
+    flags_missing:
+    - spoke_to_mourner
+  neglect:
+    narrative: She folds the letter carefully back into her sleeve and continues standing at the corner. Someone else will stop eventually.
+    effects:
+      set_flag: spoke_to_mourner
+      log_event: You said nothing to the mourner at the unmarked grave.
+  narrative: A woman in mourning clothes stands at a street corner, holding a letter she cannot read. She stops passersby and shows them the envelope, but everyone is too busy to stop. The address is in a foreign language.
+  options:
+  - text: Read the letter for her and tell her what it says.
+    effects:
+      set_flag: spoke_to_mourner
+      change_trust:
+        civilian.resident: 8
+      log_event: You comforted a mourner in the cemetery.
+  - text: Direct her to the missionary school where they teach English.
+    effects:
+      set_flag: spoke_to_mourner
+      change_trust:
+        civilian.resident: -4
+        kempeitai.informant: 3
+      log_event: You warned a mourner that memory itself would become dangerous if combined with resentment.
+- id: backroom_surgeon
+  location_tags:
+  - clinic
+  - alley
+  trigger_chance: 0.4
+  preconditions:
+    inventory_has:
+    - contraband_morphine
+    flags_missing:
+    - met_backroom_surgeon
+  neglect:
+    narrative: The apothecary closes the door. Whatever happens in there, you will not see it.
+    effects:
+      set_flag: met_backroom_surgeon
+      log_event: You left a surgeon waiting for morphine that never came.
+  narrative: The apothecary's back room smells of iodine and old bandages. A man sits on a wooden chair with his sleeve rolled up, his jaw tight. The apothecary is cleaning a wound that should have been treated in a hospital. There are no hospitals for men like this.
+  options:
+  - text: Offer to help hold the lamp steady.
+    effects:
+      set_flag: met_backroom_surgeon
+      remove_item: contraband_morphine
+      change_trust:
+        civilian.worker: 10
+        ccp.organizer: 6
+      log_event: You gave contraband morphine to a backroom surgeon.
+  - text: Leave before your presence is noted.
+    effects:
+      set_flag: met_backroom_surgeon
+      change_trust:
+        civilian.worker: -8
+      log_event: You withheld morphine from a desperate surgeon.
+- id: pressman_glance
+  location_tags:
+  - printshop
+  trigger_chance: 0.35
+  preconditions:
+    flags_missing:
+    - met_pressman
+  neglect:
+    narrative: The pressman turns back to his machine. Whatever he was about to say is lost in the clatter of the press.
+    effects:
+      set_flag: met_pressman
+      log_event: You let a moment with a pressman slip away.
+  narrative: The pressman oils a machine that prints half lies and half truths and ultimately, nothing. 'However a broken clock is right twice a day' you say, and the pressman looks up at you with a glint of recognition. 'You know about the midnight runs, don't you?' he asks.
+  options:
+  - text: Ask what runs after midnight.
+    effects:
+      set_flag: met_pressman
+      change_trust:
+        ccp.organizer: 7
+        civilian.vendor: 3
+      log_event: A pressman hinted at midnight printing runs.
+  - text: Comment on the machine instead.
+    effects:
+      set_flag: met_pressman
+      change_trust:
+        civilian.vendor: 4
+      log_event: You kept a coversation with a pressman.
+- id: rooftop_signal
+  location_tags:
+  - rooftop
+  - french
+  trigger_chance: 0.35
+  preconditions:
+    game_hour:
+    - 19
+    - 23
+    flags_missing:
+    - saw_rooftop_signal
+  neglect:
+    narrative: The lantern blinks out. The signal ends before you could decide.
+    effects:
+      set_flag: saw_rooftop_signal
+      log_event: You watched a rooftop lantern signal fade into darkness.
+  narrative: Three lanterns bloom on a nearby rooftop in a sequence too deliberate to be just coincidence.
+  options:
+  - text: Count the pattern and remember it.
+    effects:
+      set_flag: saw_rooftop_signal
+      change_trust:
+        ccp.guerilla: 6
+      log_event: You memorized a lantern code from the rooftops.
+  - text: Wave back.
+    effects:
+      set_flag: saw_rooftop_signal
+      change_trust:
+        ccp.guerilla: 2
+        kempeitai.patrol: 3
+      log_event: You answered a rooftop lantern signal and risked being seen.
+- id: exhausted_policeman
+  location_tags:
+  - checkpoint
+  - french
+  trigger_chance: 0.35
+  preconditions:
+    flags_missing:
+    - judged_policeman
+  neglect:
+    narrative: The policeman straightens his cap and walks away, his complaints swallowed by the city noise.
+    effects:
+      set_flag: judged_policeman
+      log_event: You said nothing to the exhausted policeman.
+  narrative: A concession policeman rubs his eyes and mutters that there are too many uniforms in the city and none of them truly belong to it.
+  options:
+  - text: 'Offer him a cigarette and listen '
+    effects:
+      set_flag: judged_policeman
+      change_trust:
+        french_concession.police: 8
+      log_event: You earned a tired policeman's trust.
+  - text: Tell him everyone serves someone now.
+    effects:
+      set_flag: judged_policeman
+      change_trust:
+        french_concession.police: -6
+      log_event: You pushed a tired policeman to reality.
+- id: refugee_suitcase
+  location_tags:
+  - station
+  - refugee
+  trigger_chance: 0.45
+  preconditions:
+    flags_missing:
+    - helped_refugee_suitcase
+  neglect:
+    narrative: When you pass again, the suitcase is gone. The tap still drips.
+    effects:
+      set_flag: helped_refugee_suitcase
+      log_event: You watched a refugee family's suitcase burst open and did nothing.
+  narrative: A suitcase sits abandoned beside a public tap. It is tied shut with rope, the leather worn through at the corners. Someone carried it a long way and then stopped. The tap drips. The suitcase stays.
+  options:
+  - text: Check the suitcase for anything useful.
+    effects:
+      set_flag: helped_refugee_suitcase
+      change_trust:
+        civilian.resident: 10
+        british.consul: 2
+      log_event: You helped a refugee family gather the contents of a broken suitcase.
+  - text: Leave it. Whoever left it had a reason.
+    effects:
+      set_flag: helped_refugee_suitcase
+      add_item: hidden_cash
+      change_trust:
+        civilian.resident: -12
+      log_event: You exploited a refugee family's panic for worldy gains.
+- id: cold_noodles
+  location_tags:
+  - market
+  - food
+  trigger_chance: 0.35
+  preconditions:
+    flags_missing:
+    - shared_cold_noodles
+  neglect:
+    narrative: Another customer steps forward. The bowl is gone before you decide.
+    effects:
+      set_flag: shared_cold_noodles
+      log_event: You missed the last of the noodle seller's pot.
+  narrative: A noodle seller scrapes the bottom of the pot and says there is just enough left for one bowl, maybe two if everyone pretends otherwise.
+  options:
+  - text: Buy two and share one.
+    effects:
+      set_flag: shared_cold_noodles
+      change_trust:
+        civilian.vendor: 8
+        civilian.worker: 4
+      log_event: You shared a bowl of cold noodles in the market with a stranger.
+  - text: Take the last full portion for yourself.
+    effects:
+      set_flag: shared_cold_noodles
+      change_trust:
+        civilian.vendor: -4
+      log_event: You took the last full bowl for yourself.
+- id: late_train_manifest
+  location_tags:
+  - station
+  trigger_chance: 0.35
+  preconditions:
+    inventory_has:
+    - dock_manifest
+    flags_missing:
+    - compared_manifests
+  neglect:
+    narrative: The porter's moment of recognition passes. He moves on, taking his knowledge with him.
+    effects:
+      set_flag: compared_manifests
+      log_event: A porter noticed your manifest but you didn't follow up.
+  narrative: A station porter glances at your manifest and goes pale. 'That crate was not meant to leave the river,' he whispers.
+  options:
+  - text: Ask where it went.
+    effects:
+      set_flag: compared_manifests
+      change_trust:
+        ccp.courier: 6
+        british.dockmaster: 4
+      log_event: A porter linked your dock manifest to a vanished rail shipment.
+  - text: Fold the paper away.
+    effects:
+      set_flag: compared_manifests
+      change_trust:
+        british.dockmaster: -2
+      log_event: You chose not to press a porter about a suspicious shipment.
+- id: harbor_funeral
+  timer_seconds: 60
+  location_tags:
+  - dock
+  - river
+  trigger_chance: 0.3
+  preconditions:
+    flags_missing:
+    - witnessed_harbor_funeral
+    game_hour:
+    - 17
+    - 20
+  neglect:
+    narrative: The wreath drifts away on the black water. You weren't part of it.
+    effects:
+      set_flag: witnessed_harbor_funeral
+      log_event: You watched a harbor funeral from a distance and didn't join.
+  narrative: Men who never stop to mourn pause just long enough to push a wreath onto the black water.
+  options:
+  - text: Stand with them in silence.
+    effects:
+      set_flag: witnessed_harbor_funeral
+      change_trust:
+        civilian.worker: 7
+        british.dockmaster: 2
+      log_event: You stood in silence during an improvised harbor funeral.
+  - text: Leave before grief draws attention.
+    effects:
+      set_flag: witnessed_harbor_funeral
+      change_trust:
+        civilian.worker: -2
+      log_event: You left the harbor before a quiet funeral could become dangerous.
+- id: counterfeit_stamp
+  location_tags:
+  - french
+  - office
+  trigger_chance: 0.35
+  preconditions:
+    inventory_has:
+    - forged_pass
+    flags_missing:
+    - tested_forged_pass
+  neglect:
+    narrative: The clerk waves you through with a shrug. Your forged pass holds, barely.
+    effects:
+      set_flag: tested_forged_pass
+      log_event: You let a clerk glance at your forged pass without acting.
+  narrative: A clerk handling permits pauses over your pass, then glances at a drawer where a real seal is hidden under his blotter.
+  options:
+  - text: Slip him cash and ask for the proper stamp.
+    effects:
+      set_flag: tested_forged_pass
+      remove_item: hidden_cash
+      change_trust:
+        french_concession.clerks: 10
+      log_event: You bribed a clerk to strengthen a forged pass.
+  - text: Take your chances and leave.
+    effects:
+      set_flag: tested_forged_pass
+      change_trust:
+        french_concession.clerks: -4
+        kempeitai.officer: 2
+      log_event: You left with a weak forged pass rather than risk a bribe.
+- id: ash_under_nails
+  location_tags:
+  - printshop
+  - alley
+  trigger_chance: 0.3
+  preconditions:
+    flags_missing:
+    - noticed_print_ash
+  neglect:
+    narrative: The messenger disappears into the crowd. His destination remains unknown.
+    effects:
+      set_flag: noticed_print_ash
+      log_event: You let a messenger with printshop ash walk away unmarked.
+  narrative: The messenger who brushes past you has a printer's dust under his fingernails and ink stains on his cuffs. He does not look like a man who delivers messages for ordinary people.
+  options:
+  - text: Follow him for about a block.
+    effects:
+      set_flag: noticed_print_ash
+      change_trust:
+        ccp.courier: 5
+    log_event: You shadowed a messenger carrying printshop ash on his hands.
+  - text: Memorize his face and let him go.
+    effects:
+      set_flag: noticed_print_ash
+      change_trust:
+        civilian.vendor: 2
+      log_event: You let a suspicious messenger go after memorizing his face.
+- id: bridge_rain
+  timer_seconds: 180
+  location_tags:
+  - bridge
+  - river
+  trigger_chance: 0.3
+  preconditions:
+    flags_missing:
+    - stood_in_bridge_rain
+  neglect:
+    narrative: The woman turns away, her question unanswered, and disappears into the rain.
+    effects:
+      set_flag: stood_in_bridge_rain
+      log_event: You said nothing to the woman on the bridge in the rain.
+  narrative: Rain needles the bridge planks while a woman beneath a torn umbrella asks whether the city still has decent people.
+  options:
+  - text: Tell her decency survives in fragments.
+    effects:
+      set_flag: stood_in_bridge_rain
+      change_trust:
+        civilian.resident: 8
+      log_event: You offered a stranger what hope you could on a bridge in the rain.
+  - text: Tell her survival matters more.
+    effects:
+      set_flag: stood_in_bridge_rain
+      change_trust:
+        civilian.resident: -4
+        green_gang.enforcer: 2
+      log_event: You answered a question about decency with cold practicality.
+- id: soup_delivery
+  location_tags:
+  - residence
+  trigger_chance: 0.4
+  preconditions:
+    game_hour:
+    - 18
+    - 22
+    trust_ranges:
+      civilian.resident:
+      - 50
+      - 100
+  neglect:
+    narrative: The line shortens as the soup runs out. The woman scrapes the pot clean and wipes her hands on her apron. Tomorrow she will do it again.
+    effects:
+      log_event: A neighbor's gift of soup sat unattended until it disappeared.
+  narrative: A soup kitchen operates out of a bombed-out building, serving whoever comes. The woman who runs it does not ask for papers or names. She ladles broth into every bowl the same way. Full measure, no questions. The line is long but quiet.
+  options:
+  - text: Take a bowl and listen to the conversations around you.
+    effects:
+      change_trust:
+        civilian.resident: 10
+      log_event: A neighbor brought you soup when you were struggling.
+  - text: Leave a few coins in the donation tin and move on.
+    effects:
+      change_trust:
+        civilian.resident: -5
+      log_event: You refused a neighbor's kindness.
+- id: raid_warning
+  timer_seconds: 60
+  location_tags:
+  - checkpoint
+  trigger_chance: 0.3
+  preconditions:
+    game_hour:
+    - 19
+    - 23
+    flags_required:
+    - friend_saves_player
+  neglect:
+    narrative: The checkpoint flares with torches. You're too late. Someone shouts in the dark.
+    effects:
+      set_flag: avoided_raid
+      log_event: You hesitated too long at a raid warning.
+  narrative: Someone pulls you into an alley. 'Not tonight. They're raiding the checkpoint. Take the back way.'
+  options:
+  - text: Follow their advice.
+    effects:
+      set_flag: avoided_raid
+      change_trust:
+        civilian.resident: 8
+      log_event: A friend warned you about a raid.
+  - text: Continue as planned.
+    effects:
+      change_trust:
+        civilian.resident: -5
+      log_event: You ignored a friend's warning about a raid.
+- id: old_friend_reunion
+  timer_seconds: 180
+  location_tags:
+  - market
+  - residence
+  trigger_chance: 0.35
+  preconditions:
+    trust_ranges:
+      civilian.resident:
+      - 70
+      - 100
+  neglect:
+    narrative: Your friend's face falls, then disappears into the crowd. The moment for reunions passes.
+    effects:
+      log_event: You hesitated too long when an old friend wanted to talk.
+  narrative: An old friend spots you through the crowd and asks, 'Do you remember when Shanghai was different?'
+  options:
+  - text: Share a meal and talk about old times.
+    effects:
+      add_item: rice_bowl
+      change_trust:
+        civilian.resident: 12
+      log_event: You shared a meal and talked about better times with an old friend.
+  - text: Say you need to keep moving.
+    effects:
+      change_trust:
+        civilian.resident: -3
+      log_event: You hurried past an old friend who wanted to talk.
+- id: ccp_recruit_workers
+  location_tags:
+  - commercial
+  - docks
+  trigger_chance: 0.5
+  preconditions:
+    trust_ranges:
+      ccp.organizer:
+      - 40
+      - 100
+    flags_missing:
+    - recruited_workers
+  neglect:
+    narrative: The workers finish their tea and scatter. The moment for conversation passes.
+    effects:
+      set_flag: recruited_workers
+      log_event: You hesitated too long and the workers dispersed.
+  narrative: A group of dockworkers take their break in a shaded alley, sharing a single cigarette between them. They talk about the new shift schedules and the foreman who takes bribes for lighter loads. One of them glances at you and lowers his voice, not in conspiracy but in the habit of men who have learned that words can cost you.
+  options:
+  - text: Sit with them and listen to their complaints.
+    effects:
+      set_flag: recruited_workers
+      change_trust:
+        ccp.organizer: 15
+        civilian.worker: 10
+      change_influence:
+        ccp: 8
+      log_event: You listened to dockworkers air their grievances about working conditions.
+  - text: Nod and keep walking.
+    effects:
+      change_trust:
+        civilian.worker: 2
+      log_event: You passed a group of dockworkers on break without engaging.
+- id: ccp_sabotage_supply_run
+  location_tags:
+  - warehouse
+  - docks
+  trigger_chance: 0.4
+  preconditions:
+    trust_ranges:
+      ccp.organizer:
+      - 50
+      - 100
+    flags_missing:
+    - sabotaged_supplies
+  neglect:
+    narrative: The convoy finishes loading and departs. Whatever was inside those crates is no longer your concern.
+    effects:
+      set_flag: sabotaged_supplies
+      log_event: You watched a military convoy leave without investigating.
+  narrative: A military truck is being loaded at the warehouse with crates marked in Japanese. The workers move slowly, deliberately, the way men move when they want to delay without being caught. One of them catches your eye and glances meaningfully at the tailgate.
+  options:
+  - text: Note the cargo numbers and delivery schedule.
+    effects:
+      set_flag: sabotaged_supplies
+      change_trust:
+        ccp.organizer: 15
+        civilian.worker: 8
+      change_influence:
+        ccp: 6
+      log_event: You recorded the contents of a military convoy's cargo manifest.
+  - text: Pass by without slowing. Some information is too heavy to carry.
+    effects:
+      change_trust:
+        civilian.worker: 3
+      log_event: You decided not to involve yourself with a military convoy.
+- id: ccp_distribute_pamphlets
+  location_tags:
+  - old_city
+  - school
+  trigger_chance: 0.6
+  preconditions:
+    trust_ranges:
+      ccp.organizer:
+      - 35
+      - 100
+    game_hour:
+    - 17
+    - 22
+    flags_missing:
+    - distributed_pamphlets
+  neglect:
+    narrative: The paperboy packs up and cycles away. The pamphlets stay folded in their hiding place, another night of silence.
+    effects:
+      set_flag: distributed_pamphlets
+      log_event: You left the pamphlets hidden in the market stall.
+  narrative: Beneath a vegetable stall, a paperboy has tucked a stack of printed sheets wrapped in oilcloth. The text is simple. A list of names, dates, and places where people were taken. No call to action. No slogans. Just a record that someone thought should survive.
+  options:
+  - text: Take a few and pass them quietly to people you trust.
+    effects:
+      set_flag: distributed_pamphlets
+      change_trust:
+        ccp.organizer: 10
+        civilian.resident: 8
+      change_influence:
+        ccp: 4
+      log_event: You passed on printed sheets documenting disappearances.
+  - text: Leave them where they are.
+    effects:
+      change_trust:
+        civilian.resident: -2
+      log_event: You decided not to touch the pamphlets.
+- id: gmd_intercept_orders
+  location_tags:
+  - french
+  - bund
+  trigger_chance: 0.4
+  preconditions:
+    trust_ranges:
+      gmd.spy:
+      - 45
+      - 100
+    flags_missing:
+    - intercepted_orders
+  neglect:
+    narrative: The officer finishes his call, collects his things, and drives away. Whatever he was carrying remains unknown.
+    effects:
+      set_flag: intercepted_orders
+      log_event: You hesitated too long and lost the chance to examine a military satchel.
+  narrative: A Japanese staff car idles outside a French Concession cafe. The officer inside steps out to take a call at the counter, leaving a leather satchel on the back seat. The window is cracked open. The driver is reading a newspaper.
+  options:
+  - text: Walk past and note the vehicle registration and destination.
+    effects:
+      set_flag: intercepted_orders
+      change_trust:
+        gmd.spy: 12
+      change_influence:
+        gmd: 5
+      log_event: You recorded a Japanese officer's vehicle details in the French Concession.
+  - text: Keep walking. There are eyes everywhere.
+    effects:
+      change_trust:
+        civilian.resident: 2
+      log_event: You passed a Japanese staff car without glancing twice.
+- id: gmd_smuggle_medicine
+  location_tags:
+  - dock
+  - river
+  trigger_chance: 0.35
+  preconditions:
+    trust_ranges:
+      gmd.spy:
+      - 50
+      - 100
+    flags_missing:
+    - smuggled_medicine
+  neglect:
+    narrative: The fishing boat's light blinks twice and goes dark. It slips away into the river traffic.
+    effects:
+      set_flag: smuggled_medicine
+      log_event: You watched a suspected smuggling boat slip away without acting.
+  narrative: A fishing boat ties up at a disused wharf after dark. The crew move crates not to a truck but to a handcart waiting in the alley. The crates are marked with medical symbols. A child stands watch at the corner, pretending to play with a piece of string.
+  options:
+  - text: Help the crew move the crates before the river patrol passes.
+    effects:
+      set_flag: smuggled_medicine
+      change_trust:
+        gmd.spy: 12
+        civilian.resident: 10
+      change_influence:
+        gmd: 5
+      log_event: You helped unload medical supplies from a fishing boat at midnight.
+  - text: Keep your distance. Help that arrives by accident is less suspicious.
+    effects:
+      change_trust:
+        civilian.resident: 3
+      log_event: You noted the wharf's location and continued walking.
+- id: ccp_safe_house_raid
+  timer_seconds: 60
+  location_tags:
+  - hidden_shanghai
+  - residential
+  trigger_chance: 0.3
+  preconditions:
+    trust_ranges:
+      ccp.organizer:
+      - 55
+      - 100
+    game_hour:
+    - 0
+    - 5
+  neglect:
+    narrative: The voices pass. The neighbours' door slams. Another night survives intact.
+    effects:
+      set_flag: survived_safe_house_raid
+      log_event: You waited out a building search in silence.
+  narrative: Shouts in the alley. Boots on the stairs. The building is being searched. A neighbour's child presses against your door, uncertain whether to knock. You can hear papers being torn open in the flat above.
+  options:
+  - text: Pull the child inside and wait together.
+    effects:
+      change_trust:
+        ccp.organizer: 8
+        civilian.resident: 15
+      change_influence:
+        ccp: 3
+      log_event: You sheltered a neighbour's child during a building search.
+  - text: Stay still. The searchers will move on.
+    effects:
+      change_trust:
+        civilian.resident: -8
+      log_event: You stayed silent during a building search.
+- id: gmd_rescue_prisoner
+  location_tags:
+  - bund
+  - french
+  trigger_chance: 0.3
+  preconditions:
+    trust_ranges:
+      gmd.officer:
+      - 50
+      - 100
+    flags_missing:
+    - rescued_prisoner
+  neglect:
+    narrative: The guard changes shift. The opportunity to speak passes. You will not get another chance.
+    effects:
+      set_flag: rescued_prisoner
+      log_event: You hesitated too long to approach a sympathetic guard.
+  narrative: A holding cell near the Bund houses a man arrested during a sweep of the printing district. His wife waits outside the gate every morning with a basket of food the guards will not deliver. The guard on duty looks tired and avoids meeting your eyes.
+  options:
+  - text: Slip the guard a note with the man's name.
+    effects:
+      set_flag: rescued_prisoner
+      change_trust:
+        gmd.officer: 15
+      change_influence:
+        gmd: 6
+      log_event: You passed information to a guard at the Bund holding cells.
+  - text: The guards are watching. Walk past like everyone else.
+    effects:
+      change_trust:
+        gmd.officer: -3
+      log_event: You passed the holding cells without making contact.
+- id: ccp_rice_distribution
+  location_tags:
+  - old_city
+  - residential
+  trigger_chance: 0.5
+  preconditions:
+    trust_ranges:
+      ccp.organizer:
+      - 30
+      - 100
+    game_hour:
+    - 5
+    - 9
+    flags_missing:
+    - distributed_rice
+  neglect:
+    narrative: The line shortens as people give up waiting. The clerk arrives late, unlocks the door, and serves those who stayed.
+    effects:
+      set_flag: distributed_rice
+      log_event: You missed distributing rice to the early morning queue.
+  narrative: Before sunrise, a queue has already formed outside the grain distribution office. Women clutch ration books and empty sacks, their breath fogging in the cold. A man at the front argues that the stamps in his book have not been renewed. The clerk's window remains shuttered.
+  options:
+  - text: Help the clerk prepare the distribution before the crowd grows restless.
+    effects:
+      set_flag: distributed_rice
+      change_trust:
+        ccp.organizer: 10
+        civilian.resident: 15
+      change_influence:
+        ccp: 4
+      log_event: You helped distribute rice to the morning queue.
+  - text: Join the queue like everyone else.
+    effects:
+      change_trust:
+        civilian.resident: 2
+      log_event: You queued for rice rations at dawn.
+- id: gmd_forge_documents
+  location_tags:
+  - commercial
+  - french
+  trigger_chance: 0.4
+  preconditions:
+    trust_ranges:
+      gmd.spy:
+      - 40
+      - 100
+    flags_missing:
+    - forged_documents
+  neglect:
+    narrative: The stamp shop closes for lunch. The clerk hangs a sign that says "Back in an hour." You wait, but he never returns.
+    effects:
+      set_flag: forged_documents
+      log_event: You hesitated too long to approach the stamp maker.
+  narrative: A stamp maker in the French Concession has a side business that does not appear on his ledgers. He can replicate seals, signatures, and official chops, provided you bring the right paper and enough patience. His shop smells of ink and turpentine, and he does not ask questions.
+  options:
+  - text: Commission a set of travel papers for the family upstairs.
+    effects:
+      set_flag: forged_documents
+      change_trust:
+        gmd.spy: 12
+        civilian.resident: 10
+      change_influence:
+        gmd: 4
+      log_event: You commissioned forged travel documents for a refugee family.
+  - text: Leave the shop. Forgeries are a heavy thing to carry.
+    effects:
+      change_trust:
+        gmd.spy: -3
+      log_event: You left the stamp maker's shop empty-handed.
+- id: ccp_student_protest
+  location_tags:
+  - school
+  - bund
+  trigger_chance: 0.35
+  preconditions:
+    trust_ranges:
+      ccp.organizer:
+      - 45
+      - 100
+    game_hour:
+    - 10
+    - 16
+    flags_missing:
+    - student_protest
+  neglect:
+    narrative: The students disperse before you reach them. Someone shouted a warning. The Bund returns to its usual rhythm.
+    effects:
+      set_flag: student_protest
+      log_event: You watched from a distance as a student gathering dispersed.
+  narrative: A handful of university students gather at the edge of the Bund, passing a notebook between them. One of them reads aloud in a low voice, a poem about autumn and soldiers. Others listen without smiling. A policeman watches from the tram stop, his expression unreadable.
+  options:
+  - text: Stand nearby and listen to the poem.
+    effects:
+      set_flag: student_protest
+      change_trust:
+        ccp.organizer: 10
+        civilian.resident: 10
+      change_influence:
+        ccp: 4
+      log_event: You listened to students recite poetry on the Bund.
+  - text: Move along before the policeman decides to notice you.
+    effects:
+      change_trust:
+        civilian.resident: 2
+      log_event: You passed a student gathering on the Bund without stopping.
+- id: wounded_courier_room
+  location_tags:
+  - indoor
+  - commercial
+  trigger_chance: 0.3
+  scope: room
+  preconditions:
+    game_hour:
+    - 18
+    - 23
+  neglect:
+    narrative: The man's breathing slows. By the time you reach him, his eyes have already stopped seeing.
+    effects:
+      log_event: A wounded man died in the room while you hesitated.
+  narrative: A man stumbles through the door, clutching his side. Blood seeps through his fingers and stains the floorboards. He looks at you not with expectation but with the flat acceptance of someone who knows he may not make it. "Lock the door," he says.
+  options:
+  - text: Help him to a chair and tear cloth for bandages.
+    effects:
+      trust:
+        ccp.organizer: 10
+        civilian.resident: 8
+      flag: helped_wounded_courier
+      log_event: You helped bandage a wounded man in a back room.
+  - text: Drag him out into the hallway before you're implicated.
+    effects:
+      trust:
+        civilian.resident: -15
+      flag: betrayed_courier
+      log_event: You moved a wounded man out of your room to avoid involvement.
+  - text: Fetch the apothecary from two doors down.
+    effects:
+      trust:
+        civilian.resident: 10
+        kempeitai.patrol: -5
+      flag: fetched_apothecary
+      log_event: You fetched help for a wounded stranger.
+- id: kempeitai_search
+  location_tags:
+  - residential
+  - indoor
+  trigger_chance: 0.25
+  scope: room
+  preconditions:
+    game_hour:
+    - 6
+    - 20
+  neglect:
+    narrative: The soldier loses patience. He shoves past you and begins opening drawers himself.
+    effects:
+      log_event: You stood frozen during a building search.
+  narrative: Two soldiers enter the building without knocking. They are checking papers room by room, a routine that has become anything but routine. The landlord follows behind them, apologising to everyone with his eyes.
+  options:
+  - text: Present your papers calmly.
+    effects:
+      trust:
+        civilian.resident: 2
+      log_event: You presented your papers during a routine building check.
+  - text: Step aside and let them search quickly.
+    effects:
+      trust:
+        civilian.resident: -3
+      log_event: You complied with a building search without resistance.
+  - text: Ask the landlord what they are looking for.
+    effects:
+      trust:
+        civilian.resident: 8
+        kempeitai.patrol: -8
+      flag: questioned_search
+      log_event: You asked questions during a military search.
+- id: arms_cache_found
+  location_tags:
+  - warehouse
+  - hidden
+  trigger_chance: 0.2
+  scope: room
+  preconditions:
+    trust_ranges:
+      ccp.organizer:
+      - 20
+      - 100
+      gmd.spy:
+      - 20
+      - 100
+  neglect:
+    narrative: You close the crate and leave it. Some things are better left undisturbed in a city like this.
+    effects:
+      log_event: You left a hidden crate undisturbed in the warehouse.
+  narrative: A floorboard in the corner of the warehouse is loose. Beneath it, a crate of old police revolvers wrapped in oilcloth, rusted, unused, left behind when the previous administration fled. The question is not who put them here, but who remembers them.
+  options:
+  - text: Report the cache location to someone who might need it.
+    effects:
+      trust:
+        ccp.organizer: 10
+        gmd.spy: 6
+      flag: reported_arms_cache
+      log_event: You reported a hidden weapons cache to your contacts.
+  - text: Rebuckle the crate and leave it forgotten.
+    effects:
+      trust:
+        civilian.resident: 3
+      flag: looted_arms_cache
+      log_event: You left an old weapons cache hidden.
+  - text: Take one revolver for protection.
+    effects:
+      add_item: old_revolver
+      trust:
+        civilian.resident: -3
+      morale: 5
+      flag: shared_arms_cache
+      log_event: You took an old revolver from a hidden cache.
+- id: food_dispute
+  location_tags:
+  - market
+  - residential
+  trigger_chance: 0.35
+  scope: room
+  preconditions:
+    game_hour:
+    - 8
+    - 18
+  neglect:
+    narrative: The argument escalates into a fight. Someone gets hurt, and the rice is scattered in the dust.
+    effects:
+      log_event: You watched a food dispute turn violent.
+  narrative: Two civilians argue over a stolen bag of rice. One accuses the other of theft, while the other claims hunger drove them to it. A crowd watches nervously.
+  options:
+  - text: Mediate the dispute and suggest sharing.
+    effects:
+      trust:
+        civilian.resident: 10
+      morale: 5
+      flag: mediated_food_dispute
+      log_event: You mediated a dispute over stolen food.
+  - text: Side with the accuser and condemn the theft.
+    effects:
+      trust:
+        civilian.resident: -8
+      flag: condemned_thief
+      log_event: You condemned a starving thief.
+  - text: Side with the hungry thief and argue for compassion.
+    effects:
+      trust:
+        civilian.resident: 8
+      flag: defended_thief
+      log_event: You defended a starving person accused of theft.
+- id: lost_child
+  location_tags:
+  - commercial
+  - street
+  trigger_chance: 0.3
+  scope: room
+  preconditions:
+    game_hour:
+    - 10
+    - 20
+  neglect:
+    narrative: The child wanders off into the crowd, their cries fading. You'll never know what happened to them.
+    effects:
+      log_event: You let a lost child disappear into the crowd.
+  narrative: A crying child, no older than seven, wanders through the crowd calling for their mother. Passersby hurry past, afraid to get involved.
+  options:
+  - text: Help the child find their mother.
+    effects:
+      trust:
+        civilian.resident: 12
+      morale: 8
+      flag: helped_lost_child
+      log_event: You helped a lost child find their mother.
+  - text: Ignore the child and keep moving.
+    effects:
+      trust:
+        civilian.resident: -3
+      morale: -5
+      flag: ignored_lost_child
+      log_event: You ignored a lost child in need.
+  - text: Take advantage of the situation to steal from the distracted crowd.
+    effects:
+      trust:
+        civilian.resident: -20
+      add_item: silver_yuan
+      flag: preyed_on_distraction
+      log_event: You stole from a crowd while a child was lost.
+- id: vendor_fled
+  scope: room
+  location_tags: []
+  trigger_chance: 1.0
+  preconditions:
+    flags_missing:
+    - seen_vendor_fled
+  neglect:
+    narrative: You move on without examining the shuttered shop. Whatever happened here remains a mystery.
+    effects:
+      set_flag: seen_vendor_fled
+      log_event: You passed a shuttered shop without investigating.
+  narrative: The shopfront is shuttered. A scrap of paper flutters in the doorway. The proprietor has fled, leaving only dust and unanswered questions.
+  options:
+  - text: Move on.
+    effects:
+      set_flag: seen_vendor_fled
+      log_event: A vendor fled the district as tension rose.
+- id: extortion_underway
+  scope: room
+  location_tags:
+  - bund
+  - commercial
+  - residential
+  - old_city
+  trigger_chance: 1.0
+  preconditions:
+    flags_missing:
+    - saw_extortion
+  neglect:
+    narrative: The shakedown continues. Money changes hands, and the enforcer walks away. You did nothing.
+    effects:
+      set_flag: saw_extortion
+      log_event: You watched a shakedown unfold without acting.
+  narrative: A low voice makes demands. A civilian trembles. The Green Gang enforcer has cornered someone who cannot pay, and the choice of what to do falls to you.
+  options:
+  - text: Intervene. Step between them.
+    effects:
+      set_flag: saw_extortion
+      change_trust:
+        civilian.resident: 12
+        green_gang.enforcer: -15
+      log_event: You intervened in a Green Gang shakedown.
+  - text: Ignore it and move on.
+    effects:
+      set_flag: saw_extortion
+      log_event: You witnessed a shakedown and did nothing.
+  - text: Join the shakedown.
+    effects:
+      set_flag: saw_extortion
+      change_trust:
+        green_gang.enforcer: 15
+        civilian.resident: -20
+      log_event: You joined a Green Gang extortion.
+- id: overheard_dock_deal
+  location_tags:
+  - dock
+  - warehouse
+  trigger_chance: 0.5
+  is_overheard: true
+  speaker_npc: qiao_ming
+  listener_npc: thomas_reed
+  preconditions:
+    game_hour:
+    - 10
+    - 18
+    flags_missing:
+    - overheard_dock_deal
+  neglect:
+    narrative: The conversation ends. Whatever they were discussing fades into the noise of the docks.
+    effects:
+      set_flag: overheard_dock_deal
+      log_event: You overheard something at the docks but didn't retain it.
+  narrative: Qiao Ming and Thomas Reed stand beside a warehouse ledger while dock bells sound through river fog.
+  options:
+  - text: Keep the detail for a price to be named later.
+    effects:
+      set_flag: overheard_dock_deal
+      change_trust:
+        green_gang.smuggler: 5
+      log_event: You overheard Qiao Ming and Thomas Reed discussing missing crates.
+  - text: Slip away before they notice you.
+    effects:
+      set_flag: overheard_dock_deal
+      log_event: You overheard a smuggling discrepancy and left quietly.
+  turns:
+  - speaker_npc: qiao_ming
+    text: The manifest says three crates, Mr. Reed, but five came off the boat before the foreign tally clerk looked up.
+  - speaker_npc: thomas_reed
+    text: Then two crates belong to someone with better friends than paperwork, and I shall mislay the question until morning.
+- id: overheard_printshop_whisper
+  location_tags:
+  - commercial
+  - printshop
+  trigger_chance: 0.45
+  is_overheard: true
+  speaker_npc: lao_peng
+  listener_npc: yan_fen
+  preconditions:
+    game_hour:
+    - 8
+    - 14
+    flags_missing:
+    - overheard_printshop_whisper
+  neglect:
+    narrative: You hear only fragments before they move on. The details slip away.
+    effects:
+      set_flag: overheard_printshop_whisper
+      log_event: You overheard something in the printshop but didn't catch the details.
+  narrative: Ink dries slowly in the printshop, and the press keeps turning just loudly enough to cover low voices.
+  options:
+  - text: Commit the shop name to memory.
+    effects:
+      set_flag: overheard_printshop_whisper
+      change_trust:
+        civilian.resident: 6
+      log_event: You overheard the printer's apprentice mention a cheap medicine shop.
+  - text: Pretend you heard nothing.
+    effects:
+      set_flag: overheard_printshop_whisper
+      log_event: You ignored overheard gossip about a medicine shop.
+  turns:
+  - speaker_npc: lao_peng
+    text: Your aunt?s cough needs the cathedral medicine, Yan Fen, but ask for cough syrup and never for the locked cabinet.
+  - speaker_npc: yan_fen
+    text: I understand, Master Peng. A cheap remedy near the French church, paid in fabi, with no names written down.
+- id: overheard_teahouse_gossip
+  location_tags:
+  - teahouse
+  trigger_chance: 0.55
+  is_overheard: true
+  speaker_npc: madam_xu
+  listener_npc: inspector_moreau
+  preconditions:
+    game_hour:
+    - 14
+    - 20
+    flags_missing:
+    - overheard_teahouse_gossip
+  neglect:
+    narrative: Their voices drop. By the time you focus, the conversation has moved on.
+    effects:
+      set_flag: overheard_teahouse_gossip
+      log_event: You overheard Madam Xu and Inspector Moreau but missed the details.
+  narrative: A teahouse corner grows quiet as Madam Xu speaks across cooling cups to Inspector Moreau.
+  options:
+  - text: Note the mention of unmarked carts.
+    effects:
+      set_flag: overheard_teahouse_gossip
+      change_trust:
+        civilian.resident: 4
+      log_event: You overheard a woman mention unmarked carts to a policeman.
+  - text: Finish your tea and leave quietly.
+    effects:
+      set_flag: overheard_teahouse_gossip
+      log_event: You left as a woman and a policeman talked quietly.
+  turns:
+  - speaker_npc: madam_xu
+    text: Three unmarked carts used the warehouse lane after curfew, Inspector, and none of them paid the usual courtesy.
+  - speaker_npc: inspector_moreau
+    text: Then the night watchman has poor eyesight, madame, and I have learned not to correct blindness without orders.
+- id: overheard_kempeitai_orders
+  location_tags:
+  - hongkou
+  - checkpoint
+  trigger_chance: 0.35
+  is_overheard: true
+  speaker_npc: captain_ishikawa
+  listener_npc: gangster_wu
+  preconditions:
+    game_hour:
+    - 9
+    - 12
+    flags_missing:
+    - overheard_kempeitai_orders
+  neglect:
+    narrative: Their words blur into the street noise. You catch nothing useful.
+    effects:
+      set_flag: overheard_kempeitai_orders
+      log_event: You overheard Japanese and Green Gang voices but couldn't follow.
+  narrative: Near the Hongkou checkpoint, Captain Ishikawa addresses Gangster Wu as if reading from a municipal notice.
+  options:
+  - text: This changes everything. Remember it.
+    effects:
+      set_flag: overheard_kempeitai_orders
+      change_trust:
+        kempeitai.officer: -5
+        green_gang.enforcer: 8
+      log_event: You overheard Captain Ishikawa warning Gangster Wu about the Bund.
+  - text: Move along before you're spotted.
+    effects:
+      set_flag: overheard_kempeitai_orders
+      log_event: You overheard a Kempeitai-Green Gang arrangement and fled.
+  turns:
+  - speaker_npc: captain_ishikawa
+    text: Your collectors will keep their hands off the Bund after dark, Wu, especially where foreign merchants can complain in writing.
+  - speaker_npc: gangster_wu
+    text: The Bund is a polished table, Captain. My boys know better than to leave knife marks where officers dine.
+- id: overheard_oldcity_bridge_rumor
+  location: oldcity_05
+  trigger_chance: 0.55
+  is_overheard: true
+  speaker_npc: oldcity_merchant
+  listener_npc: refugee_woman
+  preconditions:
+    game_hour:
+    - 6
+    - 10
+    flags_missing:
+    - overheard_bridge_rumor
+  neglect:
+    narrative: The market noise swallows their words. You catch only fragments about a shooting.
+    effects:
+      set_flag: overheard_bridge_rumor
+      log_event: You overheard something about the bridge but missed the details.
+  narrative: The morning market presses close while Uncle Wen lowers his voice beside Mei.
+  options:
+  - text: Commit the detail to memory and move on.
+    effects:
+      set_flag: overheard_bridge_rumor
+      log_event: You overheard Uncle Wen discussing the bridge shooting with Mei.
+  - text: Slip away before you're noticed.
+    effects:
+      set_flag: overheard_bridge_rumor
+      log_event: You left the market before the conversation could draw attention.
+  turns:
+  - speaker_npc: oldcity_merchant
+    text: They say the north bridge woman carried contraband, but ${npc:teahouse_owner} heard she carried only a photograph.
+  - speaker_npc: refugee_woman
+    text: Photographs weigh more than rice now, Uncle Wen. The Kempeitai call anything dangerous when a widow holds it.
+- id: overheard_temple_arrests_night
+  location: oldcity_03
+  trigger_chance: 0.45
+  is_overheard: true
+  speaker_npc: ccp_contact_teacher
+  listener_npc: old_wu
+  preconditions:
+    game_hour:
+    - 21
+    - 5
+    flags_missing:
+    - overheard_temple_arrests
+  neglect:
+    narrative: The temple falls silent. Whatever the teacher was saying, you've missed it.
+    effects:
+      set_flag: overheard_temple_arrests
+      log_event: You caught only fragments of the teacher's grief at the temple.
+  narrative: The temple is dark except for a candle guttering before the old altar.
+  options:
+  - text: Stay hidden in the shadows and listen.
+    effects:
+      set_flag: overheard_temple_arrests
+      log_event: You overheard the teacher's anguished monologue about the temple arrests.
+  - text: Leave before your presence complicates things.
+    effects:
+      set_flag: overheard_temple_arrests
+      log_event: You departed the temple quietly, leaving grief to its privacy.
+  turns:
+  - speaker_npc: ccp_contact_teacher
+    text: Seven came at evening prayer, Old Wu, and the ones without papers vanished before the incense burned down.
+  - speaker_npc: old_wu
+    text: The gods see everything, Teacher Chen, but men with notebooks prefer smoke because it hides the names they steal.
+- id: overheard_market_raid_fear
+  location: venue_old_city_market_hub
+  trigger_chance: 0.5
+  is_overheard: true
+  speaker_npc: black_market_seller
+  listener_npc: oldcity_merchant
+  preconditions:
+    game_hour:
+    - 11
+    - 14
+    flags_missing:
+    - overheard_market_raid
+  neglect:
+    narrative: The market hubbub rises. Their whispered warning is lost in the noise of commerce.
+    effects:
+      set_flag: overheard_market_raid
+      log_event: You overheard something about raids but couldn't follow the thread.
+  narrative: Vegetable stalls reopen after a raid, though every vendor watches the street before speaking.
+  options:
+  - text: Note the pattern and withdraw.
+    effects:
+      set_flag: overheard_market_raid
+      log_event: You overheard discussion of the selective market raid.
+  - text: Disappear into the crowd before questions form.
+    effects:
+      set_flag: overheard_market_raid
+      log_event: You faded into market traffic, carrying the knowledge of tip-offs.
+  turns:
+  - speaker_npc: black_market_seller
+    text: They confiscated from Lin and ignored Chen, which means someone sold them a list before breakfast.
+  - speaker_npc: oldcity_merchant
+    text: Lists are dearer than cabbage now, Lao Jin, and every honest stall keeps paying for dishonest ink.
+- id: overheard_zhang_reputation
+  location: oldcity_04
+  trigger_chance: 0.4
+  is_overheard: true
+  speaker_npc: refugee_woman
+  listener_npc: teahouse_owner
+  preconditions:
+    game_hour:
+    - 15
+    - 18
+    flags_missing:
+    - overheard_zhang_warning
+  neglect:
+    narrative: They move on before you can catch more than a name. The warning remains half-heard.
+    effects:
+      set_flag: overheard_zhang_warning
+      log_event: You caught fragments about an informant but missed the full warning.
+  narrative: A side street empties as Mei grips Auntie Liu?s sleeve near the teahouse door.
+  options:
+  - text: Absorb the warning and depart.
+    effects:
+      set_flag: overheard_zhang_warning
+      log_event: You overheard Auntie Liu's fear about the informant's interest.
+  - text: Move away silently.
+    effects:
+      set_flag: overheard_zhang_warning
+      log_event: You heard the warning and chose not to be seen.
+  turns:
+  - speaker_npc: refugee_woman
+    text: The man in the expensive coat came asking about my bundle again, Auntie Liu, smiling like a clerk at New Year.
+  - speaker_npc: teahouse_owner
+    text: Do not say Zhang Wei?s name near shutters, child. Some smiles travel faster than patrol boots.
+- id: overheard_refugee_memory
+  location: venue_old_city_tea_lane
+  trigger_chance: 0.35
+  is_overheard: true
+  speaker_npc: refugee_woman
+  listener_npc: teahouse_owner
+  preconditions:
+    game_hour:
+    - 19
+    - 22
+    flags_missing:
+    - overheard_refugee_plight
+  neglect:
+    narrative: The teahouse swallows her whispered words. You hear only sorrow, not its cause.
+    effects:
+      set_flag: overheard_refugee_plight
+      log_event: You sensed Mei's grief but didn't hear her story.
+  narrative: The teahouse back room is dark, with one lamp turned low beside the cold stove.
+  options:
+  - text: Respect her privacy and leave.
+    effects:
+      set_flag: overheard_refugee_plight
+      log_event: You overheard Mei's private grief and chose not to intrude.
+  - text: Withdraw without sound.
+    effects:
+      set_flag: overheard_refugee_plight
+      log_event: You left a grieving woman to her memories.
+  turns:
+  - speaker_npc: refugee_woman
+    text: The bridge at Nanjing was so crowded I stopped feeling my own hands, Auntie Liu, only the photograph stayed with me.
+  - speaker_npc: teahouse_owner
+    text: Then keep it away from the candle, child. Faces fade faster when the city sees you grieving.
+- id: overheard_teahouse_fear
+  location: venue_old_city_tea_lane
+  trigger_chance: 0.45
+  is_overheard: true
+  speaker_npc: teahouse_owner
+  listener_npc: oldcity_merchant
+  preconditions:
+    game_hour:
+    - 20
+    - 23
+    flags_missing:
+    - overheard_teahouse_worry
+  neglect:
+    narrative: The door closes. You catch only the tail of their conversation, something about fear.
+    effects:
+      set_flag: overheard_teahouse_worry
+      log_event: You heard fear in Auntie Liu's voice but missed the reason.
+  narrative: Auntie Liu bars the teahouse door early while Uncle Wen lingers by the last table.
+  options:
+  - text: Note her fear and disappear into the night.
+    effects:
+      set_flag: overheard_teahouse_worry
+      log_event: You overheard Auntie Liu's fear about harboring a refugee.
+  - text: Slip away before the conversation touches you.
+    effects:
+      set_flag: overheard_teahouse_worry
+      log_event: You departed, carrying the weight of someone else's fear.
+  turns:
+  - speaker_npc: teahouse_owner
+    text: Third closing before dusk this week, Uncle Wen, and customers already wonder what I am hiding from the patrol.
+  - speaker_npc: oldcity_merchant
+    text: Let them wonder about tea leaves and bad weather. Wondering aloud is how neighbors become witnesses.
+- id: overheard_teacher_doubt
+  location: oldcity_03
+  trigger_chance: 0.4
+  is_overheard: true
+  speaker_npc: ccp_contact_teacher
+  listener_npc: sister_wang
+  preconditions:
+    game_hour:
+    - 3
+    - 6
+    flags_missing:
+    - overheard_teacher_doubt
+  neglect:
+    narrative: The temple swallows his words. His doubt remains unheard, unresolved.
+    effects:
+      set_flag: overheard_teacher_doubt
+      log_event: You sensed the teacher's doubt but didn't hear his words.
+  narrative: Before dawn, Teacher Chen and Sister Wang stand beneath the temple eaves while the lane stays empty.
+  options:
+  - text: Let the doubt remain private and withdraw.
+    effects:
+      set_flag: overheard_teacher_doubt
+      log_event: You overheard a resistance worker's crisis of faith.
+  - text: Leave before dawn exposes your presence.
+    effects:
+      set_flag: overheard_teacher_doubt
+      log_event: You heard doubt in darkness and chose not to witness it.
+  turns:
+  - speaker_npc: ccp_contact_teacher
+    text: We say the people will rise, Sister Wang, but most are counting rice grains and praying not to be noticed.
+  - speaker_npc: sister_wang
+    text: Then we count with them first, Teacher Chen. A hungry family trusts bread before slogans, and rightly so.
+- id: overheard_black_market_operation
+  location: oldcity_06
+  trigger_chance: 0.45
+  is_overheard: true
+  speaker_npc: black_market_seller
+  listener_npc: kempeitai_informant
+  preconditions:
+    game_hour:
+    - 22
+    - 2
+    flags_missing:
+    - overheard_bribe_deal
+  neglect:
+    narrative: The shadows swallow their deal. You hear nothing of use.
+    effects:
+      set_flag: overheard_bribe_deal
+      log_event: You glimpsed shadows in an alley but didn't hear their words.
+  narrative: In a warehouse alley, money changes hands where lantern light cannot reach.
+  options:
+  - text: Memorize the corruption and move on.
+    effects:
+      set_flag: overheard_bribe_deal
+      log_event: You overheard a bribe arrangement between smuggler and informant.
+  - text: Withdraw before they find a use for your name.
+    effects:
+      set_flag: overheard_bribe_deal
+      log_event: You left a dangerous conversation unwitnessed.
+  turns:
+  - speaker_npc: black_market_seller
+    text: Thirty percent is robbery, Zhang Wei, even by the standards of men who call robbery administration.
+  - speaker_npc: kempeitai_informant
+    text: The commander wants more since the bridge incident, Lao Jin, and I prefer collecting silver to collecting names.
+- id: overheard_merchant_neutral
+  location: venue_old_city_market_hub
+  trigger_chance: 0.5
+  is_overheard: true
+  speaker_npc: oldcity_merchant
+  listener_npc: refugee_woman
+  preconditions:
+    game_hour:
+    - 8
+    - 11
+    flags_missing:
+    - overheard_merchant_help
+  neglect:
+    narrative: The market crowd shifts and you lose sight of them. The moment passes unremarked.
+    effects:
+      set_flag: overheard_merchant_help
+      log_event: You saw kindness in the market but didn't hear its details.
+  narrative: Morning shoppers pass while Uncle Wen presses a small rice sack toward Mei.
+  options:
+  - text: Observe the quiet kindness and continue on.
+    effects:
+      set_flag: overheard_merchant_help
+      log_event: You witnessed a merchant's quiet charity.
+  - text: Walk past without acknowledgment.
+    effects:
+      set_flag: overheard_merchant_help
+      log_event: You passed a moment of grace without interrupting it.
+  turns:
+  - speaker_npc: oldcity_merchant
+    text: Take this rice and do not argue, Mei. Helping ${npc:teahouse_owner} sweep floors is repayment enough for today.
+  - speaker_npc: refugee_woman
+    text: I will sweep before sunrise, Uncle Wen, and I will tell no one which ledger forgot this sack.
+- id: overheard_informant_petty
+  location: oldcity_04
+  trigger_chance: 0.35
+  is_overheard: true
+  speaker_npc: kempeitai_informant
+  listener_npc: black_market_seller
+  preconditions:
+    game_hour:
+    - 12
+    - 15
+    flags_missing:
+    - overheard_informant_motive
+  neglect:
+    narrative: Zhang Wei finishes his private satisfaction and moves on. You catch only fragments.
+    effects:
+      set_flag: overheard_informant_motive
+      log_event: You glimpsed the informant's self-satisfaction but missed the details.
+  narrative: Near the station wall, Zhang Wei adjusts his coat while Lao Jin watches from the shade.
+  options:
+  - text: Note the petty vendettas and slip away.
+    effects:
+      set_flag: overheard_informant_motive
+      log_event: You overheard the informant's true motivations, petty revenge.
+  - text: Distance yourself before he notices you.
+    effects:
+      set_flag: overheard_informant_motive
+      log_event: You left before the informant's self-satisfaction could include you.
+  turns:
+  - speaker_npc: kempeitai_informant
+    text: Old Chen refused me credit in thirty-five, Lao Jin. Men should remember courtesy before fortune turns.
+  - speaker_npc: black_market_seller
+    text: Careful with old accounts, Zhang Wei. A petty ledger fills quickly, and even the Kempeitai dislike excess paper.
+- id: overheard_liu_history
+  location: venue_old_city_tea_lane
+  trigger_chance: 0.4
+  is_overheard: true
+  speaker_npc: teahouse_owner
+  listener_npc: oldcity_merchant
+  preconditions:
+    game_hour:
+    - 14
+    - 17
+    flags_missing:
+    - overheard_liu_past
+  neglect:
+    narrative: The teahouse bustle rises again, drowning out their quiet words. The past remains unspoken.
+    effects:
+      set_flag: overheard_liu_past
+      log_event: You missed Auntie Liu's reflection on her family legacy.
+  narrative: During the teahouse lull, Auntie Liu pours a thin pot of tea for Uncle Wen.
+  options:
+  - text: Respect their privacy and find another table.
+    effects:
+      set_flag: overheard_liu_past
+      log_event: You overheard Auntie Liu's reflection on her family legacy.
+  - text: Leave the teahouse quietly.
+    effects:
+      set_flag: overheard_liu_past
+      log_event: You departed a conversation that wasn't yours to hear.
+  turns:
+  - speaker_npc: teahouse_owner
+    text: My mother served tea in this room, Wen, and now I flinch whenever boots stop outside the door.
+  - speaker_npc: oldcity_merchant
+    text: Forty years of cups leave marks, Auntie Liu. The occupation has boots, but it has not learned patience.
+- id: overheard_mei_search
+  location: oldcity_05
+  trigger_chance: 0.45
+  is_overheard: true
+  speaker_npc: refugee_woman
+  listener_npc: teahouse_owner
+  preconditions:
+    game_hour:
+    - 18
+    - 21
+    flags_missing:
+    - overheard_mei_lead
+  neglect:
+    narrative: The evening crowd swallows their words. Mei's lead fades into the noise.
+    effects:
+      set_flag: overheard_mei_lead
+      log_event: You caught only fragments of Mei's desperate search.
+  narrative: Evening market stalls close while Mei clutches a scrap of paper in both hands.
+  options:
+  - text: Note the lead and continue your evening.
+    effects:
+      set_flag: overheard_mei_lead
+      log_event: You overheard Mei's plan to seek information about lost family.
+  - text: Disperse into the evening crowd.
+    effects:
+      set_flag: overheard_mei_lead
+      log_event: You carried away a fragment of someone else's desperate hope.
+  turns:
+  - speaker_npc: refugee_woman
+    text: Someone at the checkpoint said children were moved to a camp in Hongkou, Auntie Liu, with names kept on a list.
+  - speaker_npc: teahouse_owner
+    text: Lists can save a person or bury her twice, child. Ask carefully, and never ask the same clerk twice.
+- id: overheard_teacher_warning
+  location: oldcity_03
+  trigger_chance: 0.4
+  is_overheard: true
+  speaker_npc: ccp_contact_teacher
+  listener_npc: refugee_woman
+  preconditions:
+    game_hour:
+    - 16
+    - 19
+    flags_missing:
+    - overheard_teacher_caution
+  neglect:
+    narrative: The temple courtyard empties. Their hushed conversation dissolves into prayer chants.
+    effects:
+      set_flag: overheard_teacher_caution
+      log_event: You missed the teacher's warning about the Hongkou camp.
+  narrative: In the temple courtyard, Teacher Chen studies Mei?s photograph before returning it.
+  options:
+  - text: Absorb the warning and move along.
+    effects:
+      set_flag: overheard_teacher_caution
+      log_event: You overheard the teacher's caution about the Hongkou camp.
+  - text: Leave before you're associated with their plans.
+    effects:
+      set_flag: overheard_teacher_caution
+      log_event: You departed with knowledge of a dangerous inquiry.
+  turns:
+  - speaker_npc: ccp_contact_teacher
+    text: The Hongkou camp exists, Mei, but a woman asking after children there becomes a question in someone else?s file.
+  - speaker_npc: refugee_woman
+    text: Then teach me which words sound harmless, Teacher Chen, because silence has not brought them home.
+- id: overheard_tension_rising
+  location: venue_old_city_market_hub
+  trigger_chance: 0.55
+  is_overheard: true
+  speaker_npc: oldcity_merchant
+  listener_npc: teahouse_owner
+  preconditions:
+    game_hour:
+    - 9
+    - 12
+    flags_missing:
+    - overheard_tension
+  neglect:
+    narrative: The market noise swells and their urgent tones are lost in the crowd. The tension goes unremarked.
+    effects:
+      set_flag: overheard_tension
+      log_event: You sensed market unease but couldn't make out the details.
+  narrative: The morning market hums with forced normality as Uncle Wen and Auntie Liu watch a patrol pass.
+  options:
+  - text: Note the changing conditions and continue shopping.
+    effects:
+      set_flag: overheard_tension
+      log_event: You overheard merchants discussing tightening occupation pressure.
+  - text: Move through the market as if you heard nothing.
+    effects:
+      set_flag: overheard_tension
+      log_event: You absorbed the atmosphere of encroaching fear.
+  turns:
+  - speaker_npc: oldcity_merchant
+    text: More Kempeitai on the east side, higher bribes by the warehouse, and Lao Jin says even salt needs permission now.
+  - speaker_npc: teahouse_owner
+    text: Three regulars stopped coming for tea this week. When absence becomes news, the whole street starts counting chairs.
+- id: overheard_teahouse_late
+  location: venue_old_city_tea_lane
+  trigger_chance: 0.35
+  is_overheard: true
+  speaker_npc: teahouse_owner
+  listener_npc: refugee_woman
+  preconditions:
+    game_hour:
+    - 23
+    - 2
+    flags_missing:
+    - overheard_teahouse_late
+  neglect:
+    narrative: The night deepens. Their voices fade behind closed shutters. You move on.
+    effects:
+      set_flag: overheard_teahouse_late
+      log_event: You passed the teahouse at night without stopping to listen.
+  narrative: Behind closed teahouse shutters, two voices carry through a narrow crack.
+  options:
+  - text: Respect their privacy and walk away.
+    effects:
+      set_flag: overheard_teahouse_late
+      log_event: You overheard the fragile trust between refugee and host.
+  - text: Withdraw into the night.
+    effects:
+      set_flag: overheard_teahouse_late
+      log_event: You left two women to navigate their impossible situation alone.
+  turns:
+  - speaker_npc: teahouse_owner
+    text: You cannot stay hidden here forever, Mei, but that does not mean I am putting you back into the street.
+  - speaker_npc: refugee_woman
+    text: I know the difference, Auntie Liu. A borrowed corner can feel like home when one sleeps lightly enough.
+- id: overheard_zhang_pride
+  location: oldcity_04
+  trigger_chance: 0.4
+  is_overheard: true
+  speaker_npc: kempeitai_informant
+  listener_npc: black_market_seller
+  preconditions:
+    game_hour:
+    - 16
+    - 19
+    flags_missing:
+    - overheard_zhang_power
+  neglect:
+    narrative: Zhang Wei finishes his display and moves on. You catch only the tail end of his self-satisfaction.
+    effects:
+      set_flag: overheard_zhang_power
+      log_event: You glimpsed the informant's pride but missed the specifics.
+  narrative: Outside the station, Zhang Wei counts bills while Lao Jin keeps his hands in his sleeves.
+  options:
+  - text: Memorize the petty cruelty and continue on.
+    effects:
+      set_flag: overheard_zhang_power
+      log_event: You overheard the informant's casual abuse of power.
+  - text: Walk away before your expression betrays you.
+    effects:
+      set_flag: overheard_zhang_power
+      log_event: You left before witness became complicit.
+  turns:
+  - speaker_npc: kempeitai_informant
+    text: Three reports filed and two arrests made, Lao Jin. Productive work deserves a little respect from the neighborhood.
+  - speaker_npc: black_market_seller
+    text: Respect is expensive, Zhang Wei. Fear is cheaper, but men who buy cheap goods should expect them to break.
+- id: overheard_teacher_faith
+  location: oldcity_03
+  trigger_chance: 0.4
+  is_overheard: true
+  speaker_npc: ccp_contact_teacher
+  listener_npc: oldcity_merchant
+  preconditions:
+    game_hour:
+    - 11
+    - 14
+    flags_missing:
+    - overheard_teacher_belief
+  neglect:
+    narrative: The courtyard empties as lunchtime ends. Their words of faith and doubt scatter with the wind.
+    effects:
+      set_flag: overheard_teacher_belief
+      log_event: You missed the teacher's refusal to yield to despair.
+  narrative: At midday in the temple courtyard, Uncle Wen speaks with Teacher Chen in the gate?s shadow.
+  options:
+  - text: Carry the weight of conviction and depart.
+    effects:
+      set_flag: overheard_teacher_belief
+      log_event: You overheard a resistance worker's faith against despair.
+  - text: Leave them to their impossible choices.
+    effects:
+      set_flag: overheard_teacher_belief
+      log_event: You witnessed conviction and chose not to witness more.
+  turns:
+  - speaker_npc: ccp_contact_teacher
+    text: I buried three students last month, Uncle Wen, and still the young ones ask when the next leaflet prints.
+  - speaker_npc: oldcity_merchant
+    text: Then print fewer brave words and more useful warnings, Teacher. Mothers trust a man who keeps sons breathing.
+- id: overheard_seller_pragmatism
+  location: oldcity_06
+  trigger_chance: 0.45
+  is_overheard: true
+  speaker_npc: black_market_seller
+  listener_npc: qiao_ming
+  preconditions:
+    game_hour:
+    - 20
+    - 23
+    flags_missing:
+    - overheard_seller_logic
+  neglect:
+    narrative: The warehouse shadows swallow his muttering. His pragmatism goes unheard.
+    effects:
+      set_flag: overheard_seller_logic
+      log_event: You passed the warehouse without catching the seller's rationale.
+  narrative: Night settles over the warehouse district as Lao Jin checks crates beside Qiao Ming.
+  options:
+  - text: Note the self-justification and disappear.
+    effects:
+      set_flag: overheard_seller_logic
+      log_event: You overheard a black marketeer's pragmatic rationalization.
+  - text: Withdraw before you become part of his calculations.
+    effects:
+      set_flag: overheard_seller_logic
+      log_event: You left a man to his profitable compromises.
+  turns:
+  - speaker_npc: black_market_seller
+    text: They call this profiteering, Qiao Ming, but the French clinic needs morphine and the legal cupboard is locked by soldiers.
+  - speaker_npc: qiao_ming
+    text: Survival has a price, Lao Jin. Just make certain the price does not purchase your name in Zhang Wei?s report.
+- id: overheard_morning_anxiety
+  location: venue_old_city_market_hub
+  trigger_chance: 0.5
+  is_overheard: true
+  speaker_npc: oldcity_merchant
+  listener_npc: teahouse_owner
+  preconditions:
+    game_hour:
+    - 5
+    - 8
+    flags_missing:
+    - overheard_morning_worry
+  neglect:
+    narrative: The market awakens around you. Uncle Wen's morning ritual goes unobserved.
+    effects:
+      set_flag: overheard_morning_worry
+      log_event: You missed the merchant's quiet dawn resolve.
+  narrative: Dawn finds Uncle Wen arranging vegetables while Auntie Liu waits for her tea delivery.
+  options:
+  - text: Observe the quiet resolve and begin your own day.
+    effects:
+      set_flag: overheard_morning_worry
+      log_event: You overheard a merchant's fragile determination at dawn.
+  - text: Pass through without acknowledging the moment.
+    effects:
+      set_flag: overheard_morning_worry
+      log_event: You witnessed morning resolve and moved on.
+  turns:
+  - speaker_npc: oldcity_merchant
+    text: Another curfew nearly broken, another morning counting stalls, and your shutters close earlier every week, Auntie Liu.
+  - speaker_npc: teahouse_owner
+    text: I still open them, Wen. In this city, opening a door can be as stubborn as shouting.
+- id: overheard_temple_gathering
+  location: oldcity_03
+  trigger_chance: 0.45
+  is_overheard: true
+  speaker_npc: ccp_contact_teacher
+  listener_npc: refugee_woman
+  preconditions:
+    game_hour:
+    - 18
+    - 21
+    flags_missing:
+    - overheard_temple_evening
+  neglect:
+    narrative: Dusk settles over the temple. Their exchange of kindness goes unwitnessed.
+    effects:
+      set_flag: overheard_temple_evening
+      log_event: You missed the temple's quiet charity at dusk.
+  narrative: At dusk in the temple courtyard, Teacher Chen hands Mei a cloth-wrapped package.
+  options:
+  - text: Witness the charity and continue your evening.
+    effects:
+      set_flag: overheard_temple_evening
+      log_event: You overheard quiet charity in a temple at dusk.
+  - text: Leave before the moment becomes yours.
+    effects:
+      set_flag: overheard_temple_evening
+      log_event: You departed a moment of grace.
+  turns:
+  - speaker_npc: ccp_contact_teacher
+    text: Bread, dried fruit, and a little money from the collection box, Mei. Take it before pride wastes daylight.
+  - speaker_npc: refugee_woman
+    text: I will take it for the children?s list, Teacher Chen, and not because hunger has taught me to beg.
+- id: overheard_informant_transaction
+  location: oldcity_04
+  trigger_chance: 0.4
+  is_overheard: true
+  speaker_npc: kempeitai_informant
+  listener_npc: black_market_seller
+  preconditions:
+    game_hour:
+    - 14
+    - 17
+    flags_missing:
+    - overheard_informant_payment
+  neglect:
+    narrative: The transaction concludes in silence. Money and complicity exchange hands unseen.
+    effects:
+      set_flag: overheard_informant_payment
+      log_event: You missed a protection payment exchange near the station.
+  narrative: A quiet corner near the station swallows the sound of coins changing hands.
+  options:
+  - text: Note the corruption and move along.
+    effects:
+      set_flag: overheard_informant_payment
+      log_event: You overheard a protection payment to the informant.
+  - text: Withdraw before you become part of the transaction.
+    effects:
+      set_flag: overheard_informant_payment
+      log_event: You left corruption to its business.
+  turns:
+  - speaker_npc: kempeitai_informant
+    text: Same arrangement, Lao Jin. You operate, I look elsewhere, and the commander hears only what keeps him satisfied.
+  - speaker_npc: black_market_seller
+    text: Your elsewhere grows dearer every week, Zhang Wei. One day even smugglers will not afford your blindness.
+- id: overheard_refugee_host_bond
+  location: venue_old_city_tea_lane
+  trigger_chance: 0.5
+  is_overheard: true
+  speaker_npc: refugee_woman
+  listener_npc: teahouse_owner
+  preconditions:
+    game_hour:
+    - 12
+    - 15
+    flags_missing:
+    - overheard_women_bond
+  neglect:
+    narrative: The teahouse afternoon lull passes. Their moment of connection goes unobserved.
+    effects:
+      set_flag: overheard_women_bond
+      log_event: You missed the bond forming between refugee and host.
+  narrative: In the quiet teahouse afternoon, Mei wipes tables already clean.
+  options:
+  - text: Respect their grief and find another seat.
+    effects:
+      set_flag: overheard_women_bond
+      log_event: You overheard the bond between refugee and host.
+  - text: Leave them to their healing.
+    effects:
+      set_flag: overheard_women_bond
+      log_event: You departed a moment of human connection.
+  turns:
+  - speaker_npc: refugee_woman
+    text: I am not a guest, Auntie Liu. I am someone taking space, food, and danger from your doorway.
+  - speaker_npc: teahouse_owner
+    text: Then be useful and sit when I tell you. A house survives by knowing when to feed its own.
+- id: overheard_merchant_dilemma
+  location: venue_old_city_market_hub
+  trigger_chance: 0.45
+  is_overheard: true
+  speaker_npc: oldcity_merchant
+  listener_npc: black_market_seller
+  preconditions:
+    game_hour:
+    - 19
+    - 22
+    flags_missing:
+    - overheard_merchant_choice
+  neglect:
+    narrative: The market closes. Their whispered dilemma dissolves into the evening air.
+    effects:
+      set_flag: overheard_merchant_choice
+      log_event: You missed a merchant's impossible choice at closing time.
+  narrative: Evening market stalls fold shut while Uncle Wen speaks beside Lao Jin?s cart.
+  options:
+  - text: Note the moral calculation and depart.
+    effects:
+      set_flag: overheard_merchant_choice
+      log_event: You overheard a merchant's impossible choice.
+  - text: Leave before the choice touches you.
+    effects:
+      set_flag: overheard_merchant_choice
+      log_event: You carried away the weight of another's dilemma.
+  turns:
+  - speaker_npc: oldcity_merchant
+    text: My fair supplier disappeared, Lao Jin, and now your channels are the only ones with cabbage before noon.
+  - speaker_npc: black_market_seller
+    text: Cabbage, quinine, kerosene, all travel the same road now. The terms are ugly because the road is ugly.
+- id: overheard_temple_night_whisper
+  location: oldcity_03
+  trigger_chance: 0.35
+  is_overheard: true
+  speaker_npc: ccp_contact_teacher
+  listener_npc: old_wu
+  preconditions:
+    game_hour:
+    - 0
+    - 4
+    flags_missing:
+    - overheard_temple_night
+  neglect:
+    narrative: The deepest night swallows his whisper. The teacher's grief remains unheard.
+    effects:
+      set_flag: overheard_temple_night
+      log_event: You passed the temple in darkness without stopping to listen.
+  narrative: Deep night leaves the temple hollow except for Teacher Chen and Old Wu near the altar.
+  options:
+  - text: Respect the confession and withdraw.
+    effects:
+      set_flag: overheard_temple_night
+      log_event: You overheard a resistance worker's midnight doubt.
+  - text: Leave before you become another burden.
+    effects:
+      set_flag: overheard_temple_night
+      log_event: You departed a private prayer.
+  turns:
+  - speaker_npc: ccp_contact_teacher
+    text: I told them midnight, Old Wu, but I keep seeing Liu?s face and the children who trusted my certainty.
+  - speaker_npc: old_wu
+    text: Certainty is a brittle incense stick, Teacher Chen. Burn it slowly, or it snaps before giving light.
+- id: overheard_zhang_report
+  location: oldcity_04
+  trigger_chance: 0.4
+  is_overheard: true
+  speaker_npc: kempeitai_informant
+  listener_npc: black_market_seller
+  preconditions:
+    game_hour:
+    - 17
+    - 20
+    flags_missing:
+    - overheard_zhang_evening
+  neglect:
+    narrative: Zhang Wei finishes his notes and pockets them. His targets remain unknown to you.
+    effects:
+      set_flag: overheard_zhang_evening
+      log_event: You glimpsed the informant at work but missed his plans.
+  narrative: Evening papers lie stacked near the station while Zhang Wei reads names to Lao Jin.
+  options:
+  - text: Memorize the threat and slip away.
+    effects:
+      set_flag: overheard_zhang_evening
+      log_event: You overheard the informant planning his next targets.
+  - text: Disappear before you become one of them.
+    effects:
+      set_flag: overheard_zhang_evening
+      log_event: You left with knowledge of coming danger.
+  turns:
+  - speaker_npc: kempeitai_informant
+    text: Vegetable seller, temple woman, refugee in Auntie Liu?s back room, all worth a small note before inspection.
+  - speaker_npc: black_market_seller
+    text: Small notes become large troubles, Zhang Wei. Leave too many, and the whole market learns your handwriting.
+- id: overheard_bridge_aftermath
+  location: oldcity_05
+  trigger_chance: 0.45
+  is_overheard: true
+  speaker_npc: oldcity_merchant
+  listener_npc: teahouse_owner
+  preconditions:
+    game_hour:
+    - 7
+    - 10
+    flags_missing:
+    - overheard_bridge_aftermath
+  neglect:
+    narrative: The morning crowd swallows their words. Whatever happened at the bridge remains a rumor.
+    effects:
+      set_flag: overheard_bridge_aftermath
+      log_event: You overheard something about the bridge but didn't retain the details.
+  narrative: Near the checkpoint edge, morning feet avoid a dark stain in the road.
+  options:
+  - text: Carry the weight of the story and continue.
+    effects:
+      set_flag: overheard_bridge_aftermath
+      log_event: You overheard discussion of the bridge shooting's aftermath.
+  - text: Move into the morning crowd.
+    effects:
+      set_flag: overheard_bridge_aftermath
+      log_event: You absorbed another ghost for the city's collection.
+  turns:
+  - speaker_npc: oldcity_merchant
+    text: The body is gone, Auntie Liu, but nobody will wash the place where she fell by the bridge.
+  - speaker_npc: teahouse_owner
+    text: A stain can become a warning, Wen. The city leaves some things visible because words are too dangerous.
+- id: overheard_seller_warning
+  location: oldcity_06
+  trigger_chance: 0.4
+  is_overheard: true
+  speaker_npc: black_market_seller
+  listener_npc: oldcity_merchant
+  preconditions:
+    game_hour:
+    - 15
+    - 18
+    flags_missing:
+    - overheard_seller_caution
+  neglect:
+    narrative: The warning dissolves into warehouse shadows. You didn't catch who was in danger.
+    effects:
+      set_flag: overheard_seller_caution
+      log_event: You overheard a warning but couldn't recall the details.
+  narrative: Afternoon shadow cuts across the warehouse as Lao Jin pulls Uncle Wen aside.
+  options:
+  - text: Note the warning and withdraw.
+    effects:
+      set_flag: overheard_seller_caution
+      log_event: You overheard a warning about the informant's attention.
+  - text: Leave before you're part of the danger.
+    effects:
+      set_flag: overheard_seller_caution
+      log_event: You departed carrying another's fear.
+  turns:
+  - speaker_npc: black_market_seller
+    text: Zhang Wei is asking about your stall and suppliers, Uncle Wen, which means innocence will not help you.
+  - speaker_npc: oldcity_merchant
+    text: I sell beans and lamp oil, Lao Jin. If that is guilt now, the whole Old City is condemned.
+- id: overheard_photograph_fading
+  location: venue_old_city_tea_lane
+  trigger_chance: 0.35
+  is_overheard: true
+  speaker_npc: refugee_woman
+  listener_npc: teahouse_owner
+  preconditions:
+    game_hour:
+    - 20
+    - 23
+    flags_missing:
+    - overheard_photograph
+  neglect:
+    narrative: The candle gutters and their voices fall silent. The moment passes unremembered.
+    effects:
+      set_flag: overheard_photograph
+      log_event: You overheard something in the teahouse back room but didn't retain the details.
+  narrative: Night presses against the teahouse back room while Mei holds a photograph near the candle.
+  options:
+  - text: Respect their privacy and withdraw.
+    effects:
+      set_flag: overheard_photograph
+      log_event: You overheard a refugee's fear of forgetting.
+  - text: Leave them to their fragile hope.
+    effects:
+      set_flag: overheard_photograph
+      log_event: You departed a moment of private grief.
+  turns:
+  - speaker_npc: refugee_woman
+    text: Her face is going grey at the edges, Auntie Liu, and I fear my memory is improving what the paper loses.
+  - speaker_npc: teahouse_owner
+    text: Then describe her to me while the tea cools, child. A remembered face lasts longer when two people carry it.
+- id: overheard_temple_prayer
+  location: oldcity_03
+  trigger_chance: 0.45
+  is_overheard: true
+  speaker_npc: ccp_contact_teacher
+  listener_npc: refugee_woman
+  preconditions:
+    game_hour:
+    - 5
+    - 8
+    flags_missing:
+    - overheard_temple_prayer
+  neglect:
+    narrative: The dawn prayer fades into the morning air. Their words of faith and survival drift away.
+    effects:
+      set_flag: overheard_temple_prayer
+      log_event: You overheard a temple conversation but didn't retain the details.
+  narrative: Dawn light reaches the temple altar as Teacher Chen and Mei stand without incense.
+  options:
+  - text: Witness the fragile faith and begin your day.
+    effects:
+      set_flag: overheard_temple_prayer
+      log_event: You overheard a dawn conversation about faith and survival.
+  - text: Leave them to their morning.
+    effects:
+      set_flag: overheard_temple_prayer
+      log_event: You departed as the temple filled with light.
+  turns:
+  - speaker_npc: ccp_contact_teacher
+    text: Perhaps they answer through hands, Mei. Mine are not enough, but they are what the morning has given us.
+  - speaker_npc: refugee_woman
+    text: I prayed every day for a month, Teacher Chen, then stopped because gods who answer should not need reminding.
+- id: ccp_safehouse_access
+  location_tags:
+  - safehouse
+  - hidden
+  trigger_chance: 0.7
+  preconditions:
+    flags_required:
+    - warned_network_quiet
+    flags_missing:
+    - entered_ccp_safehouse
+  neglect:
+    narrative: The contact's gaze slides past you. The door stays closed. Whatever welcome you might have had fades with the morning.
+    effects:
+      set_flag: entered_ccp_safehouse
+      log_event: You hesitated too long outside a CCP safehouse.
+  narrative: The contact at the door nods when you mention Sister Zhao's name. 'She sent you? Come through. Quickly.' The door opens just wide enough for you to slip inside.
+  options:
+  - text: Enter and ask about the network.
+    effects:
+      set_flag: entered_ccp_safehouse
+      change_trust:
+        ccp.organizer: 15
+      add_item: safehouse_pass
+      log_event: Sister Zhao's warning gained you entry to a CCP safehouse.
+  - text: Thank them and move on.
+    effects:
+      set_flag: entered_ccp_safehouse
+      change_trust:
+        ccp.organizer: 5
+      log_event: You found a CCP safehouse but didn't stay.
+- id: night_patrol_avoidance
+  location_tags:
+  - old_city
+  - alley
+  trigger_chance: 0.5
+  preconditions:
+    flags_required:
+    - warned_patrol_pattern
+    flags_missing:
+    - used_patrol_knowledge
+    game_hour:
+    - 20
+    - 23
+  neglect:
+    narrative: The patrol passes. You stay hidden. The knowledge Mrs. Lin shared goes unused tonight.
+    effects:
+      set_flag: used_patrol_knowledge
+      log_event: You remembered Mrs. Lin's patrol warning but did not act on it.
+  narrative: A patrol rounds the corner, their footsteps heavy on the cobblestones. Mrs. Lin's warning echoes in your memory. Their route may change without warning, and the alley offers no certain answer.
+  options:
+  - text: Risk moving through the alley despite Mrs. Lin's warning.
+    effects:
+      set_flag: used_patrol_knowledge
+      change_trust:
+        civilian.resident: 8
+      log_event: Mrs. Lin's warning informed your choice to move at night.
+  - text: Wait for them to pass.
+    effects:
+      set_flag: used_patrol_knowledge
+      log_event: You stayed hidden during a patrol.
+- id: chen_secret_mission
+  location_tags:
+  - alley
+  - hidden
+  trigger_chance: 0.6
+  preconditions:
+    flags_required:
+    - chen_acting_strange
+    trust_ranges:
+      ccp.organizer:
+      - 60
+      - 100
+    flags_missing:
+    - offered_chen_mission
+  neglect:
+    narrative: Chen's eyes linger on you, then he turns away. Whatever he wanted to say dies unspoken.
+    effects:
+      set_flag: offered_chen_mission
+      log_event: You missed Chen's offer of a secret mission.
+  narrative: Chen pulls you into a doorway shadow. 'I've been watching you. You're careful. That's rare.' He presses a folded note into your hand. 'The party needs someone who can move without being seen. This is for tonight. Decide now.'
+  options:
+  - text: Accept the mission.
+    effects:
+      set_flag: offered_chen_mission
+      change_trust:
+        ccp.organizer: 20
+      add_item: coded_message
+      log_event: Chen offered you a secret mission for the party.
+  - text: Tell him you need more time.
+    effects:
+      set_flag: offered_chen_mission
+      change_trust:
+        ccp.organizer: -5
+      log_event: You hesitated on Chen's secret mission offer.
+- id: bridge_night_crossing
+  location_tags:
+  - bridge
+  - river
+  trigger_chance: 0.5
+  preconditions:
+    flags_required:
+    - warned_bridge_watch
+    flags_missing:
+    - crossed_bridge_safely
+    game_hour:
+    - 21
+    - 23
+  neglect:
+    narrative: The bridge stays empty. You don't cross. Old Gao's warning keeps you on this side of the river.
+    effects:
+      set_flag: crossed_bridge_safely
+      log_event: You chose not to cross the bridge at night.
+  narrative: The bridge looms against the night sky. Old Gao warned that the watch has been restless near the river, but he could not say where the next patrol will stand.
+  options:
+  - text: Cross despite the warning.
+    effects:
+      set_flag: crossed_bridge_safely
+      change_trust:
+        civilian.resident: 10
+      log_event: Old Gao's warning informed your choice to cross the bridge at night.
+  - text: Stay on this side of the river for now.
+    effects:
+      set_flag: crossed_bridge_safely
+      log_event: You chose not to cross the bridge after Old Gao's warning.
+- id: pharmacist_rumour
+  timer_seconds: 120
+  location_tags:
+  - commercial
+  trigger_chance: 0.5
+  preconditions:
+    flags_missing:
+    - heard_pharmacist_rumour
+  neglect:
+    narrative: The conversation drifts away. You catch only the tail end, something about a shop that never reopened.
+    effects:
+      set_flag: heard_pharmacist_rumour
+      log_event: You overheard something about a missing pharmacist but didn't catch the details.
+  narrative: A cluster of residents speaks in hushed tones outside a shuttered pharmacy. 'Third day now. Old Mr. Chen, never missed a morning in twenty years. The police say he fled, but his stock is still on the shelves.' One of them notices you listening and falls silent.
+  options:
+  - text: Ask what happened to the pharmacist.
+    effects:
+      set_flag: heard_pharmacist_rumour
+      change_trust:
+        civilian.resident: 4
+      log_event: You asked about the missing pharmacist.
+    followup_storylet: pharmacist_investigation
+- id: pharmacist_investigation
+  timer_seconds: 120
+  location_tags:
+  - commercial
+  trigger_chance: 0.6
+  preconditions:
+    flags_required:
+    - heard_pharmacist_rumour
+    flags_missing:
+    - investigated_pharmacist
+  neglect:
+    narrative: The trail grows cold. The shuttered pharmacy stays shuttered, and the neighbours stop talking about it.
+    effects:
+      set_flag: investigated_pharmacist
+      log_event: You let the pharmacist's disappearance go uninvestigated.
+  narrative: The pharmacist's shop is locked from the inside, but the back door hangs open a crack. Inside, the medicine cabinet has been hastily emptied, not by a fleeing owner but by someone who knew exactly which drawers held the valuable stock.
+  options:
+  - text: Follow the Kempeitai lead. A patrol was seen here the night he vanished.
+    effects:
+      set_flag:
+      - pharmacist_kempeitai_trail
+      - investigated_pharmacist
+      change_trust:
+        civilian.resident: 6
+      log_event: You followed a lead connected to a Kempeitai patrol visit.
+    followup_storylet: pharmacist_resolution
+  - text: Follow the Green Gang lead. The pharmacy owed protection money.
+    effects:
+      set_flag:
+      - pharmacist_greengang_trail
+      - investigated_pharmacist
+      change_trust:
+        civilian.resident: 4
+        green_gang.broker: 2
+      log_event: You followed a lead connected to the pharmacy's Green Gang debt.
+    followup_storylet: pharmacist_resolution
+- id: pharmacist_resolution
+  timer_seconds: 120
+  location_tags:
+  - commercial
+  trigger_chance: 0.7
+  preconditions:
+    flags_required:
+    - investigated_pharmacist
+    flags_missing:
+    - resolved_pharmacist_case
+  neglect:
+    narrative: The trail ends here. The truth about Old Mr. Chen remains buried in a city that has learned not to ask.
+    effects:
+      set_flag: resolved_pharmacist_case
+      log_event: You failed to act on the pharmacist's disappearance.
+  narrative: You've pieced together what happened to Old Mr. Chen. The pharmacy has been cleaned out. Official records show a 'voluntary relocation,' but the neighbours know better. The only question left is who gets the truth.
+  options:
+  - text: Report your findings to the neighbourhood elders. Let them spread the warning.
+    effects:
+      set_flag: resolved_pharmacist_case
+      change_trust:
+        civilian.resident: 12
+        civilian.vendor: 6
+      add_item: testimony_green_gang_ledger
+      log_event: You reported the truth about the pharmacist's disappearance to the community.
+  - text: Keep the truth to yourself. It may yet buy you a favour.
+    effects:
+      set_flag: resolved_pharmacist_case
+      add_item: hidden_cash
+      change_trust:
+        green_gang.broker: 4
+      log_event: You kept the truth about the pharmacist's disappearance for a future favour.
+- id: dockworker_shipment_warning
+  timer_seconds: 60
+  location_tags:
+  - dock
+  trigger_chance: 0.55
+  preconditions:
+    flags_required:
+    - warned_bridge_watch
+    flags_missing:
+    - heard_dockworker_warning
+  neglect:
+    narrative: The dockworker glances over his shoulder and vanishes between the crates. Whatever warning he carried goes with him.
+    effects:
+      set_flag: heard_dockworker_warning
+      log_event: A dockworker tried to warn you but you didn't respond in time.
+  narrative: A dockworker in a patched coat brushes past you and mutters without breaking stride. 'The shipment at Pier Three is not what the manifest says. Military radios, bound for a Kempeitai post tonight. Someone ought to know.' He does not wait for an answer.
+  options:
+  - text: Nod once, then let him disappear into the crowd.
+    effects:
+      set_flag: heard_dockworker_warning
+      change_trust:
+        civilian.worker: 6
+        ccp.courier: 4
+      log_event: A dockworker warned you about a military radio shipment at Pier Three.
+    followup_storylet: dockworker_shipment_choice
+- id: dockworker_shipment_choice
+  timer_seconds: 60
+  location_tags:
+  - dock
+  - warehouse
+  trigger_chance: 0.7
+  preconditions:
+    flags_required:
+    - heard_dockworker_warning
+    flags_missing:
+    - warned_ccp_shipment
+    - tipped_greengang_shipment
+  neglect:
+    narrative: The cranes at Pier Three begin their work. Before you choose, the shipment is aboard and the chance has gone.
+    effects:
+      set_flag: tipped_greengang_shipment
+      log_event: You hesitated too long and the shipment was loaded.
+  narrative: Pier Three is all chains, shouted orders, and coal smoke. The crates bear agricultural markings, but the dockworker named their cargo. You must decide whom to warn.
+  options:
+  - text: Warn the CCP contact at the warehouse about the radios.
+    effects:
+      set_flag: warned_ccp_shipment
+      change_trust:
+        ccp.organizer: 15
+        ccp.courier: 8
+        civilian.worker: 4
+      change_influence:
+        ccp: 5
+      log_event: You warned the CCP about the military radio shipment at Pier Three.
+  - text: Tell the Green Gang about the shipment, then name your price.
+    effects:
+      set_flag: tipped_greengang_shipment
+      add_item: hidden_cash
+      change_trust:
+        green_gang.smuggler: 12
+        green_gang.broker: 8
+        civilian.worker: -4
+      log_event: You tipped off the Green Gang about the radio shipment.
+- id: cathedral_crypt_rumour
+  timer_seconds: 180
+  location_tags:
+  - church
+  - french
+  trigger_chance: 0.5
+  preconditions:
+    flags_required:
+    - warned_network_quiet
+    flags_missing:
+    - heard_crypt_rumour
+  neglect:
+    narrative: The parishioner crosses himself and hurries away. The cathedral returns to its silent vigil.
+    effects:
+      set_flag: heard_crypt_rumour
+      log_event: You let the parishioner's warning about the crypt go uninvestigated.
+  narrative: A parishioner stops you by the cathedral entrance and looks back over his shoulder. 'Father, I mean you. In the crypt at night. It sounds like a press, not prayer. I told Father Benoit, but he told me to mind my own soul.' He crosses himself and slips away before you can answer.
+  options:
+  - text: Promise to see what lies beneath the cathedral.
+    effects:
+      set_flag: heard_crypt_rumour
+      change_trust:
+        civilian.resident: 5
+      log_event: A parishioner told you about strange sounds in the cathedral crypt.
+    followup_storylet: cathedral_crypt_investigation
+  - text: Leave him to his prayers and walk on.
+    effects:
+      set_flag: heard_crypt_rumour
+      log_event: You dismissed a parishioner's concerns about the crypt.
+- id: cathedral_crypt_investigation
+  timer_seconds: 180
+  location_tags:
+  - church
+  - attic
+  - hidden
+  trigger_chance: 0.6
+  preconditions:
+    flags_required:
+    - heard_crypt_rumour
+    flags_missing:
+    - found_crypt_press
+  neglect:
+    narrative: Your footsteps carry down the stair. By the time you reach the crypt, the press is gone and only candle wax remains.
+    effects:
+      set_flag: found_crypt_press
+      log_event: You failed to reach the crypt before the press was moved.
+  narrative: 'At night, the cathedral holds its breath. A narrow stair behind the sacristy leads down to the crypt, where a press clatters beneath muffled voices.'
+  options:
+  - text: Go down and face whoever is working below.
+    effects:
+      set_flag: found_crypt_press
+      change_trust:
+        ccp.organizer: 8
+        ccp.courier: 5
+      log_event: You discovered a hidden resistance printing press in the cathedral crypt.
+    followup_storylet: cathedral_crypt_choice
+  - text: Leave before anyone below hears you.
+    effects:
+      set_flag: found_crypt_press
+      log_event: You discovered the crypt's secret and left without revealing yourself.
+- id: cathedral_crypt_choice
+  timer_seconds: 120
+  location_tags:
+  - church
+  - hidden
+  trigger_chance: 0.7
+  preconditions:
+    flags_required:
+    - found_crypt_press
+    flags_missing:
+    - resolved_crypt_secret
+  neglect:
+    narrative: The press falls quiet. When you return, the crypt stands empty; the printers have made their own decision.
+    effects:
+      set_flag: resolved_crypt_secret
+      log_event: You hesitated too long, and the printers cleared the crypt.
+  narrative: The press stands in the candlelit crypt amid rows of drying pamphlets. A woman in a printer's apron looks up, her hands black with ink. 'You found us. Walk away and forget, or stay quiet when questions come.'
+  options:
+  - text: Keep the press quiet, and lend a hand when you can.
+    effects:
+      set_flag: protected_crypt_press
+      change_trust:
+        ccp.organizer: 20
+        ccp.courier: 12
+        kempeitai.informant: -10
+      change_influence:
+        ccp: 6
+      add_item: ccp_pamphlet
+      log_event: You chose to protect the resistance printing press in the cathedral crypt.
+  - text: Report the press to the authorities.
+    effects:
+      set_flag: reported_crypt_press
+      change_trust:
+        kempeitai.officer: 15
+        kempeitai.patrol: 10
+        ccp.organizer: -25
+        ccp.courier: -15
+        civilian.resident: -10
+      change_influence:
+        kempeitai: 5
+      log_event: You reported the cathedral crypt printing press to the authorities.
+- id: missing_morphine_rumour
+  timer_seconds: 120
+  location_tags:
+  - church
+  - clinic
+  trigger_chance: 0.5
+  preconditions:
+    flags_missing:
+    - heard_morphine_rumour
+  neglect:
+    narrative: The nurse is called away before you can ask more. The missing morphine joins the city’s other unanswered losses.
+    effects:
+      set_flag: heard_morphine_rumour
+      log_event: You overheard a nurse mention missing morphine but didn't investigate.
+  narrative: A nurse empties a tray of bandages beside the clinic door and mutters to a colleague. 'Third bottle this week. The lock held, the cupboard held. Someone has a key, and it is not on my ring.' She sees you, then presses her lips shut.
+  options:
+  - text: Offer to trace the missing medicine.
+    effects:
+      set_flag: heard_morphine_rumour
+      change_trust:
+        civilian.worker: 6
+      log_event: You offered to investigate the missing morphine at the clinic.
+    followup_storylet: morphine_theft_trace
+  - text: Remember it, then leave the clinic.
+    effects:
+      set_flag: heard_morphine_rumour
+      log_event: You noted the missing morphine and left the matter alone.
+- id: morphine_theft_trace
+  timer_seconds: 120
+  location_tags:
+  - clinic
+  - residence
+  trigger_chance: 0.6
+  preconditions:
+    flags_required:
+    - heard_morphine_rumour
+    flags_missing:
+    - traced_morphine_theft
+  neglect:
+    narrative: The marks end at the lane mouth. Morphine keeps disappearing, while the clinic’s patients wait on their cots.
+    effects:
+      set_flag: traced_morphine_theft
+      log_event: You failed to trace the source of the missing morphine.
+  narrative: The lock on the clinic cabinet bears no pry marks. Outside, chalk dust marks the floor, the sort dockworkers use on crates; its traces run two ways.
+  options:
+  - text: Follow one trail toward the family whose child lies ill.
+    effects:
+      set_flag: morphine_family_trail
+      change_trust:
+        civilian.worker: 8
+        civilian.resident: 6
+      log_event: You traced the missing morphine to a desperate father stealing for his child.
+  - text: Follow the other trail toward the black-market buyers.
+    effects:
+      set_flag: morphine_blackmarket_trail
+      add_item: contraband_morphine
+      change_trust:
+        green_gang.smuggler: 6
+        civilian.worker: -4
+      log_event: You traced the missing morphine to a black market operation.
+- id: dying_courier_message
+  timer_seconds: 60
+  location_tags:
+  - alley
+  - old_city
+  trigger_chance: 0.5
+  preconditions:
+    flags_required:
+    - warned_patrol_pattern
+    flags_missing:
+    - found_dying_courier
+  neglect:
+    narrative: The courier's hand goes slack. The message stays in his pocket, and the name of his contact dies with him.
+    effects:
+      set_flag: found_dying_courier
+      log_event: A courier died in an alley while you hesitated.
+  narrative: A man lies crumpled in the alley, one hand pressed to a wound that has already stopped bleeding. His eyes find you. 'Too late for me. But the message. It has to reach...' He presses a folded slip into your hand and goes still.
+  options:
+  - text: Take the message and search his body for clues.
+    effects:
+      set_flag: found_dying_courier
+      add_item: coded_message
+      change_trust:
+        civilian.resident: 4
+      log_event: You took a dying courier's message and searched his body.
+    followup_storylet: courier_message_choice
+- id: courier_message_choice
+  timer_seconds: 120
+  location_tags:
+  - alley
+  - hidden
+  trigger_chance: 0.7
+  preconditions:
+    flags_required:
+    - found_dying_courier
+    flags_missing:
+    - delivered_courier_ccp
+    - delivered_courier_gmd
+    - destroyed_courier_message
+  neglect:
+    narrative: The message stays in your pocket until the ink runs; soon the names cannot be read.
+    effects:
+      set_flag: destroyed_courier_message
+      log_event: You let the courier's message decay into illegibility.
+  narrative: In a quiet corner, you unfold the message. It gives a route, a place, and an hour for a meeting between two factions. The courier died carrying terms that may bring them to one table. The paper is now yours.
+  options:
+  - text: Carry the message to the CCP cell.
+    effects:
+      set_flag: delivered_courier_ccp
+      change_trust:
+        ccp.organizer: 20
+        ccp.courier: 15
+        gmd.spy: 5
+      change_influence:
+        ccp: 8
+      log_event: You delivered the dying courier's message to the CCP.
+    followup_storylet: courier_message_ccp_fallout
+  - text: Carry the message to the GMD contact.
+    effects:
+      set_flag: delivered_courier_gmd
+      change_trust:
+        gmd.spy: 20
+        gmd.officer: 15
+        ccp.organizer: -5
+      change_influence:
+        gmd: 8
+      log_event: You delivered the dying courier's message to the GMD.
+    followup_storylet: courier_message_gmd_fallout
+  - text: Destroy the message. Some meetings should never happen.
+    effects:
+      set_flag: destroyed_courier_message
+      change_trust:
+        ccp.organizer: -5
+        gmd.spy: -5
+      log_event: You destroyed the courier's message, preventing the meeting.
+    followup_storylet: courier_message_destroyed_fallout
+- id: courier_message_ccp_fallout
+  timer_seconds: 180
+  location_tags:
+  - old_city
+  - safehouse
+  trigger_chance: 0.7
+  preconditions:
+    flags_required:
+    - delivered_courier_ccp
+    flags_missing:
+    - resolved_courier_fallout
+  neglect:
+    narrative: The CCP safehouse is quiet when you arrive. Whatever came of the message has passed beyond your sight.
+    effects:
+      set_flag: resolved_courier_fallout
+      log_event: You missed the fallout of the courier's message.
+  narrative: A CCP contact draws you aside. 'Your delivery arrived in time. The meeting was held, and men who would never share a table have begun passing word to one another. The Kempeitai have not heard. That is enough for tonight.' He grips your shoulder.
+  options:
+  - text: Accept the thanks and ask what comes next.
+    effects:
+      set_flag: resolved_courier_fallout
+      change_trust:
+        ccp.organizer: 15
+        ccp.courier: 10
+      log_event: The CCP confirmed that the courier's message brought the meeting about.
+  - text: Say nothing and leave by the back lane.
+    effects:
+      set_flag: resolved_courier_fallout
+      log_event: You accepted the CCP's thanks in silence.
+- id: courier_message_gmd_fallout
+  timer_seconds: 180
+  location_tags:
+  - bund
+  - french
+  trigger_chance: 0.7
+  preconditions:
+    flags_required:
+    - delivered_courier_gmd
+    flags_missing:
+    - resolved_courier_fallout
+  neglect:
+    narrative: The GMD safe house is empty. Those who used it have gone elsewhere.
+    effects:
+      set_flag: resolved_courier_fallout
+      log_event: You missed the GMD operation that followed the courier's message.
+  narrative: A GMD officer in civilian clothes meets you near the Bund. 'The message reached the right people. The coordinates you brought us. We've been watching that location for months. Now we know who meets there and when.' He offers a thin smile. 'Chungking sends its regards.'
+  options:
+  - text: Accept the recognition and ask about future work.
+    effects:
+      set_flag: resolved_courier_fallout
+      change_trust:
+        gmd.spy: 15
+        gmd.officer: 10
+      log_event: The GMD confirmed the courier's message enabled a surveillance operation.
+  - text: Take the payment and leave.
+    effects:
+      set_flag: resolved_courier_fallout
+      add_item: hidden_cash
+      log_event: You accepted GMD payment for the courier's message and faded away.
+- id: courier_message_destroyed_fallout
+  timer_seconds: 180
+  location_tags:
+  - market
+  - residence
+  trigger_chance: 0.6
+  preconditions:
+    flags_required:
+    - destroyed_courier_message
+    flags_missing:
+    - resolved_courier_fallout
+  neglect:
+    narrative: The city carries on. No bell marks the meeting that never took place.
+    effects:
+      set_flag: resolved_courier_fallout
+      log_event: You destroyed the courier's message and watched nothing happen.
+  narrative: Days pass. At the market, a vendor mutters that a meeting between two resistance cells came to nothing. 'Someone’s message never arrived. Now each side blames the other, as if trust were not thin enough already.' You keep your head down.
+  options:
+  - text: Let the matter lie. Some doors stay shut for good reason.
+    effects:
+      set_flag: resolved_courier_fallout
+      change_trust:
+        civilian.resident: 4
+      log_event: You destroyed the courier's message and accepted the consequences of neutrality.
+  - text: Try to ease the breach by helping each side in turn.
+    effects:
+      set_flag: resolved_courier_fallout
+      change_trust:
+        ccp.organizer: 4
+        gmd.spy: 4
+        civilian.worker: 5
+      log_event: You tried to mend fences after destroying the courier's message.

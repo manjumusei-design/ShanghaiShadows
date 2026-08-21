@@ -1,0 +1,114 @@
+#These are the different sects(?) that each npc identifies with. This is used to determine how they react to other npcs and factions. Commenting for reference in case anyone is interested
+
+relationships:
+  # Medical Network
+  - npc_1: sister_mei
+    npc_2: dr_zhao
+    type: colleague
+    strength: 60
+    shared_secrets: []
+
+  # Kempeitai Hierarchy
+  - npc_1: captain_ishikawa
+    npc_2: lieutenant_nakamura
+    type: superior
+    strength: 70
+    shared_secrets: []
+
+  - npc_1: captain_ishikawa
+    npc_2: sergeant_hayashi
+    type: superior
+    strength: 60
+
+  - npc_1: sergeant_hayashi
+    npc_2: sergeant_yamamoto
+    type: colleague
+    strength: 50
+    shared_secrets: []
+
+  # Green Gang Network
+  - npc_1: madam_xu
+    npc_2: gangster_wu
+    type: employer
+    strength: 50
+
+  - npc_1: madam_xu
+    npc_2: qiao_ming
+    type: employer
+    strength: 45
+
+  # CCP Resistance Cell
+  - npc_1: yan_fen
+    npc_2: lao_peng
+    type: comrade
+    strength: 80
+    shared_secrets: ["ccp_cell_location"]
+
+  - npc_1: yan_fen
+    npc_2: sister_wang
+    type: comrade
+    strength: 75
+    shared_secrets: []
+
+  - npc_1: student_luo
+    npc_2: yan_fen
+    type: comrade
+    strength: 65
+
+  # GMD Network
+  - npc_1: dr_zhao
+    npc_2: courier_zheng
+    type: colleague
+    strength: 55
+    shared_secrets: []
+
+  # French Concession
+  - npc_1: father_benoit
+    npc_2: inspector_moreau
+    type: friend
+    strength: 60
+    shared_secrets: []
+
+  - npc_1: inspector_moreau
+    npc_2: diplomat_renault
+    type: colleague
+    strength: 50
+
+  # British Community
+  - npc_1: thomas_reed
+    npc_2: constable_doyle
+    type: colleague
+    strength: 55
+
+  - npc_1: hanna_rosen
+    npc_2: professor_muller
+    type: friend
+    strength: 65
+    shared_secrets: []
+
+  # Neighborhood Ties
+  - npc_1: old_wu
+    npc_2: zhang_lan
+    type: neighbor
+    strength: 40
+
+  - npc_1: liu_wei
+    npc_2: zhang_lan
+    type: neighbor
+    strength: 35
+
+  # Crossfaction Tensions
+  - npc_1: captain_ishikawa
+    npc_2: yan_fen
+    type: enemy
+    strength: 10
+
+  - npc_1: madam_xu
+    npc_2: captain_ishikawa
+    type: rival
+    strength: 30
+
+  - npc_1: gangster_wu
+    npc_2: yan_fen
+    type: enemy
+    strength: 15

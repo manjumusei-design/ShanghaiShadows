@@ -1,0 +1,301 @@
+rumors:
+- id: ccp_printers_cellar_raid
+  text: The printers' cellar on Kiukiang Road stopped its press before dawn, and the plates went down the drain before the patrols arrived.
+  kind: authored
+  category: incident
+  source_npc_id: lao_peng
+  source_location_id: ccp_base_01
+  origin_faction: ccp
+  current_faction: ccp
+  districts: [ccp_base, commercial]
+  tags: [ccp, press, roundup]
+  truth_value: 0.7
+  created_day: 1
+  parent_id: ""
+  witness_npc_ids: []
+  hop_count: 0
+- id: ccp_radio_chungking_voice
+  text: The radio room under the power station catches Chungking at midnight now, and the operators write down every broadcast before the static eats it.
+  kind: authored
+  category: street_talk
+  source_npc_id: teacher_gao
+  source_location_id: ccp_base_04
+  origin_faction: ccp
+  current_faction: ccp
+  districts: [ccp_base]
+  tags: [ccp, radio, chungking]
+  truth_value: 0.8
+  created_day: 1
+  parent_id: ""
+  witness_npc_ids: []
+  hop_count: 0
+- id: ccp_old_city_courier_line
+  text: A courier runs the lane behind the old city market twice a week, and the message never travels twice by the same hand.
+  kind: authored
+  category: street_talk
+  source_npc_id: yan_fen
+  source_location_id: oldcity_03
+  origin_faction: ccp
+  current_faction: ccp
+  districts: [old_city, commercial]
+  tags: [ccp, courier, old_city]
+  truth_value: 0.75
+  created_day: 1
+  parent_id: ""
+  witness_npc_ids: []
+  hop_count: 0
+- id: ccp_underground_clinic_shortage
+  text: The pump-house clinic is down to bandages and iodine, and the medic keeps a ledger of who still owes for the last shipment of quinine.
+  kind: authored
+  category: street_talk
+  source_npc_id: underground_doctor_li
+  source_location_id: hidden_08
+  origin_faction: ccp
+  current_faction: ccp
+  districts: [hidden_shanghai]
+  tags: [ccp, clinic, medicine]
+  truth_value: 0.85
+  created_day: 1
+  parent_id: ""
+  witness_npc_ids: []
+  hop_count: 0
+- id: gmd_chungking_radio_discipline
+  text: The Chungking radio station keeps its own hours, and every operator knows the penalty for a signal sent a minute early.
+  kind: authored
+  category: street_talk
+  source_npc_id: radio_operator_gao
+  source_location_id: gmd_office_04
+  origin_faction: gmd
+  current_faction: gmd
+  districts: [gmd_office]
+  tags: [gmd, radio, discipline]
+  truth_value: 0.8
+  created_day: 1
+  parent_id: ""
+  witness_npc_ids: []
+  hop_count: 0
+- id: gmd_dossiers_moved_south
+  text: The dossiers office has been copying its files onto thinner paper, so the whole archive can leave by boat on an hour's notice.
+  kind: authored
+  category: street_talk
+  source_npc_id: intelligence_officer_wang
+  source_location_id: gmd_office_03
+  origin_faction: gmd
+  current_faction: gmd
+  districts: [gmd_office]
+  tags: [gmd, dossiers, retreat]
+  truth_value: 0.6
+  created_day: 1
+  parent_id: ""
+  witness_npc_ids: []
+  hop_count: 0
+- id: gmd_soochow_creek_papers
+  text: At Soochow Creek the guards ask for papers twice, once at the barrier and again at the far rail. A clean answer still draws a second look.
+  kind: authored
+  category: occupation
+  source_npc_id: captain_chen
+  source_location_id: checkpoint_soochow_creek
+  origin_faction: gmd
+  current_faction: gmd
+  districts: [commercial]
+  tags: [gmd, checkpoint, papers]
+  truth_value: 0.9
+  created_day: 1
+  parent_id: ""
+  witness_npc_ids: []
+  hop_count: 0
+- id: gmd_old_city_safehouse_watch
+  text: The safehouse inside the old city wall changes its lookout every day, because a door watched by the same face becomes a door already known.
+  kind: authored
+  category: street_talk
+  source_npc_id: dr_zhao
+  source_location_id: gmd_safehouse_old_city
+  origin_faction: gmd
+  current_faction: gmd
+  districts: [old_city]
+  tags: [gmd, safehouse]
+  truth_value: 0.8
+  created_day: 1
+  parent_id: ""
+  witness_npc_ids: []
+  hop_count: 0
+- id: kempeitai_garden_bridge_passbooks
+  text: The Garden Bridge detail now compares every passbook against a second register, and the men on duty enjoy pointing out the difference.
+  kind: authored
+  category: occupation
+  source_npc_id: sergeant_hayashi
+  source_location_id: checkpoint_garden_bridge
+  origin_faction: kempeitai
+  current_faction: kempeitai
+  districts: [bund]
+  tags: [kempeitai, checkpoint, passbook]
+  truth_value: 0.9
+  created_day: 1
+  parent_id: ""
+  witness_npc_ids: []
+  hop_count: 0
+- id: kempeitai_hongkou_names_taken
+  text: Names are being taken in the Hongkou lanes again, and the list grows faster than the barracks can hold the men it names.
+  kind: authored
+  category: incident
+  source_npc_id: lieutenant_nakamura
+  source_location_id: hongkou_ruins
+  origin_faction: kempeitai
+  current_faction: kempeitai
+  districts: [hongkou]
+  tags: [kempeitai, roundup, hongkou]
+  truth_value: 0.75
+  created_day: 1
+  parent_id: ""
+  witness_npc_ids: []
+  hop_count: 0
+- id: kempeitai_radio_direction_finding
+  text: A van with a folded antenna parks on different streets each night, and the operators say it listens for radios that answer after curfew.
+  kind: authored
+  category: occupation
+  source_npc_id: sergeant_yamamoto
+  source_location_id: kempeitai_radio_post_hongkou
+  origin_faction: kempeitai
+  current_faction: kempeitai
+  districts: [hongkou]
+  tags: [kempeitai, radio, surveillance]
+  truth_value: 0.7
+  created_day: 1
+  parent_id: ""
+  witness_npc_ids: []
+  hop_count: 0
+- id: kempeitai_rice_quota_ledger
+  text: The market rice now moves against a single ledger kept at the garrison, and every sack must show its stamp before it reaches the scale.
+  kind: authored
+  category: occupation
+  source_npc_id: captain_ishikawa
+  source_location_id: old_city_market
+  origin_faction: kempeitai
+  current_faction: kempeitai
+  districts: [commercial]
+  tags: [kempeitai, rice, ration]
+  truth_value: 0.85
+  created_day: 1
+  parent_id: ""
+  witness_npc_ids: []
+  hop_count: 0
+- id: green_gang_wharf_cargo_short
+  text: A consignment off the Jardine wharf came up a crate short of its manifest, and the man who signed for it has bought a ticket south.
+  kind: authored
+  category: black_market
+  source_npc_id: qiao_ming
+  source_location_id: docks_02
+  origin_faction: green_gang
+  current_faction: green_gang
+  districts: [docks]
+  tags: [green_gang, docks, cargo]
+  truth_value: 0.8
+  created_day: 1
+  parent_id: ""
+  witness_npc_ids: []
+  hop_count: 0
+- id: green_gang_mahjong_debts_settle
+  text: The mahjong parlor keeps a second book behind the first, and a hand lost at the table can be repaid with a favor carried across the city.
+  kind: authored
+  category: street_talk
+  source_npc_id: rat_face_xiao
+  source_location_id: hidden_03
+  origin_faction: green_gang
+  current_faction: green_gang
+  districts: [hidden_shanghai]
+  tags: [green_gang, mahjong, debts]
+  truth_value: 0.7
+  created_day: 1
+  parent_id: ""
+  witness_npc_ids: []
+  hop_count: 0
+- id: green_gang_warehouse_inventory
+  text: The warehouse district has one building that never shows its full stock to the port authority, and its night watchman answers to nobody's uniform.
+  kind: authored
+  category: black_market
+  source_npc_id: gangster_wu
+  source_location_id: warehouse_01
+  origin_faction: green_gang
+  current_faction: green_gang
+  districts: [warehouse]
+  tags: [green_gang, warehouse, contraband]
+  truth_value: 0.85
+  created_day: 1
+  parent_id: ""
+  witness_npc_ids: []
+  hop_count: 0
+- id: green_gang_bar_room_ledger
+  text: The bar near the Settlement keeps its accounts in two inks, and the red column is never shown to a guest who asks about business.
+  kind: authored
+  category: street_talk
+  source_npc_id: madam_xu
+  source_location_id: international_settlement_bar
+  origin_faction: green_gang
+  current_faction: green_gang
+  districts: [bund]
+  tags: [green_gang, bar, ledger]
+  truth_value: 0.6
+  created_day: 1
+  parent_id: ""
+  witness_npc_ids: []
+  hop_count: 0
+- id: civilian_rice_dearer_again
+  text: Rice has gone dearer at the old city market for the third week running, and the stallholders give four different reasons without once mentioning the garrison.
+  kind: authored
+  category: street_talk
+  source_npc_id: zhang_lan
+  source_location_id: old_city_market
+  origin_faction: civilian
+  current_faction: civilian
+  districts: [commercial, old_city]
+  tags: [civilian, rice, price]
+  truth_value: 0.95
+  created_day: 1
+  parent_id: ""
+  witness_npc_ids: []
+  hop_count: 0
+- id: civilian_curfew_boots_in_lilong
+  text: Boots pass through the lilong most nights just after the curfew bell, and the whole lane learns to tell the difference between two men and a patrol.
+  kind: authored
+  category: street_talk
+  source_npc_id: mrs_gu
+  source_location_id: residence_03
+  origin_faction: civilian
+  current_faction: civilian
+  districts: [residential]
+  tags: [civilian, curfew, patrol]
+  truth_value: 0.9
+  created_day: 1
+  parent_id: ""
+  witness_npc_ids: []
+  hop_count: 0
+- id: civilian_refugees_tea_house
+  text: The tea house by the river lets refugees sleep against the stove until the first tram, and the price of a chair has doubled since the autumn boats arrived.
+  kind: authored
+  category: street_talk
+  source_npc_id: widow_chen
+  source_location_id: tea_house
+  origin_faction: civilian
+  current_faction: civilian
+  districts: [bund]
+  tags: [civilian, refugees, tea_house]
+  truth_value: 0.85
+  created_day: 1
+  parent_id: ""
+  witness_npc_ids: []
+  hop_count: 0
+- id: civilian_docks_hiring_fewer
+  text: The jetty hires by the hour at dawn, and there are always more hands waiting than the tally man can count through.
+  kind: authored
+  category: street_talk
+  source_npc_id: liu_wei
+  source_location_id: docks_01
+  origin_faction: civilian
+  current_faction: civilian
+  districts: [docks]
+  tags: [civilian, docks, work]
+  truth_value: 0.9
+  created_day: 1
+  parent_id: ""
+  witness_npc_ids: []
+  hop_count: 0

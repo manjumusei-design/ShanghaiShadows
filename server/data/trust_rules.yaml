@@ -1,4 +1,16 @@
 rules:
+  - action: "pickpocket"
+    deltas:
+      "{victim_faction}.{victim_role}": -3
+      civilian.resident: -1
+    visible: true
+
+  - action: "caught_pickpocket"
+    deltas:
+      "{victim_faction}.{victim_role}": -8
+      civilian.resident: -3
+    visible: true
+
   - action: "talk_to_ccp.courier"
     deltas:
       ccp.courier: 10
@@ -123,3 +135,370 @@ rules:
       "{target_faction}": 5
       civilian.resident: 2
     visible: false
+
+  # Kill trust rules - faction-based reciprocal effects
+  # Killing major faction NPCs affects trust with that faction and allies
+
+  - action: "kill_kempeitai.officer"
+    deltas:
+      kempeitai.officer: -30
+      kempeitai.patrol: -15
+      ccp.courier: 15
+      ccp.organizer: 10
+      gmd.officer: 5
+      civilian.resident: 5
+    visible: true
+
+  - action: "kill_kempeitai.informant"
+    deltas:
+      kempeitai.informant: -20
+      kempeitai.officer: -10
+      kempeitai.patrol: -5
+      ccp.courier: 15
+      ccp.organizer: 10
+      gmd.spy: 5
+    visible: true
+
+  - action: "kill_kempeitai.patrol"
+    deltas:
+      kempeitai.patrol: -20
+      kempeitai.officer: -10
+      ccp.courier: 10
+      civilian.resident: 3
+    visible: true
+
+  - action: "kill_ccp.courier"
+    deltas:
+      ccp.courier: -25
+      ccp.organizer: -15
+      kempeitai.officer: 20
+      kempeitai.patrol: 10
+      gmd.officer: -5
+    visible: true
+
+  - action: "kill_ccp.organizer"
+    deltas:
+      ccp.organizer: -30
+      ccp.courier: -20
+      kempeitai.officer: 25
+      kempeitai.patrol: 15
+      gmd.spy: 5
+    visible: true
+
+  - action: "kill_gmd.officer"
+    deltas:
+      gmd.officer: -25
+      gmd.spy: -15
+      ccp.organizer: 5
+      kempeitai.officer: 15
+      kempeitai.patrol: 10
+    visible: true
+
+  - action: "kill_gmd.spy"
+    deltas:
+      gmd.spy: -30
+      gmd.officer: -20
+      kempeitai.officer: 20
+      ccp.courier: -10
+    visible: true
+
+  - action: "kill_green_gang.smuggler"
+    deltas:
+      green_gang.smuggler: -25
+      green_gang.broker: -15
+      kempeitai.officer: 10
+      kempeitai.patrol: 5
+      civilian.vendor: 5
+    visible: true
+
+  - action: "kill_green_gang.broker"
+    deltas:
+      green_gang.broker: -30
+      green_gang.smuggler: -20
+      kempeitai.officer: 15
+      civilian.resident: -5
+    visible: true
+
+  - action: "kill_civilian.vendor"
+    deltas:
+      civilian.vendor: -20
+      civilian.resident: -15
+      kempeitai.patrol: 10
+      ccp.organizer: -5
+      gmd.officer: -5
+    visible: true
+
+  - action: "kill_civilian.resident"
+    deltas:
+      civilian.resident: -25
+      civilian.vendor: -10
+      kempeitai.patrol: 15
+      kempeitai.officer: 5
+    visible: true
+
+  - action: "kill_civilian.worker"
+    deltas:
+      civilian.worker: -20
+      civilian.resident: -10
+      civilian.vendor: -5
+      kempeitai.patrol: 10
+      kempeitai.officer: 5
+    visible: true
+
+  - action: "kill_british.dockmaster"
+    deltas:
+      british.dockmaster: -25
+      british.consul: -15
+      kempeitai.officer: 5
+      civilian.worker: -10
+    visible: true
+
+  - action: "kill_british.consul"
+    deltas:
+      british.consul: -30
+      british.dockmaster: -20
+      kempeitai.officer: 10
+      gmd.officer: -10
+    visible: true
+
+  - action: "kill_french_concession.merchant"
+    deltas:
+      french_concession.merchant: -20
+      french_concession.police: -10
+      civilian.vendor: -5
+    visible: true
+
+  - action: "kill_kempeitai.interrogator"
+    deltas:
+      kempeitai.interrogator: -30
+      kempeitai.officer: -15
+      kempeitai.patrol: -10
+      ccp.organizer: 20
+      ccp.courier: 15
+      gmd.spy: 10
+    visible: true
+
+  - action: "kill_kempeitai.civilian"
+    deltas:
+      kempeitai.civilian: -15
+      kempeitai.officer: -5
+      kempeitai.patrol: -5
+      civilian.resident: 5
+    visible: true
+
+  - action: "kill_ccp.operator"
+    deltas:
+      ccp.operator: -25
+      ccp.organizer: -15
+      ccp.courier: -10
+      kempeitai.officer: 15
+      kempeitai.patrol: 10
+    visible: true
+
+  - action: "kill_ccp.student"
+    deltas:
+      ccp.student: -20
+      ccp.organizer: -10
+      ccp.teacher: -15
+      kempeitai.officer: 10
+      kempeitai.patrol: 5
+    visible: true
+
+  - action: "kill_ccp.teacher"
+    deltas:
+      ccp.teacher: -25
+      ccp.student: -15
+      ccp.organizer: -10
+      kempeitai.officer: 15
+      kempeitai.patrol: 10
+    visible: true
+
+  - action: "kill_civilian.cleric"
+    deltas:
+      civilian.cleric: -25
+      civilian.resident: -15
+      civilian.monk: -10
+      kempeitai.patrol: 10
+    visible: true
+
+  - action: "kill_civilian.monk"
+    deltas:
+      civilian.monk: -25
+      civilian.cleric: -10
+      civilian.resident: -15
+      kempeitai.patrol: 10
+    visible: true
+
+  - action: "kill_civilian.nurse"
+    deltas:
+      civilian.nurse: -20
+      civilian.resident: -15
+      civilian.worker: -10
+      kempeitai.patrol: 10
+    visible: true
+
+  - action: "kill_civilian.orphan"
+    deltas:
+      civilian.orphan: -15
+      civilian.resident: -10
+      civilian.vendor: -5
+      kempeitai.patrol: 5
+    visible: true
+
+  - action: "kill_civilian.reporter"
+    deltas:
+      civilian.reporter: -20
+      civilian.resident: -10
+      kempeitai.officer: 10
+      kempeitai.patrol: 5
+    visible: true
+
+  - action: "kill_civilian.tailor"
+    deltas:
+      civilian.tailor: -15
+      civilian.vendor: -10
+      civilian.resident: -5
+      kempeitai.patrol: 5
+    visible: true
+
+  - action: "kill_french_concession.clerks"
+    deltas:
+      french_concession.clerks: -20
+      french_concession.police: -10
+      french_concession.merchant: -5
+    visible: true
+
+  - action: "kill_french_concession.entertainer"
+    deltas:
+      french_concession.entertainer: -15
+      french_concession.police: -10
+      civilian.resident: -5
+    visible: true
+
+  - action: "kill_green_gang.boss"
+    deltas:
+      green_gang.boss: -40
+      green_gang.broker: -25
+      green_gang.smuggler: -20
+      green_gang.cook: -10
+      green_gang.entertainer: -10
+      kempeitai.officer: 20
+      kempeitai.patrol: 10
+      civilian.resident: 10
+    visible: true
+
+  - action: "kill_green_gang.cook"
+    deltas:
+      green_gang.cook: -15
+      green_gang.smuggler: -10
+      green_gang.broker: -5
+      kempeitai.officer: 5
+    visible: true
+
+  - action: "kill_green_gang.entertainer"
+    deltas:
+      green_gang.entertainer: -15
+      green_gang.smuggler: -10
+      green_gang.broker: -5
+      civilian.resident: -5
+    visible: true
+
+  - action: "kill_british.baker"
+    deltas:
+      british.baker: -15
+      british.consul: -5
+      civilian.vendor: -5
+    visible: true
+
+  - action: "kill_british.clerks"
+    deltas:
+      british.clerks: -15
+      british.consul: -10
+      british.dockmaster: -5
+    visible: true
+
+  - action: "kill_british.engineer"
+    deltas:
+      british.engineer: -20
+      british.consul: -10
+      british.dockmaster: -5
+      civilian.worker: -5
+    visible: true
+
+  - action: "kill_british.merchant"
+    deltas:
+      british.merchant: -20
+      british.consul: -10
+      civilian.vendor: -5
+      kempeitai.officer: 5
+    visible: true
+
+  - action: "kill_german.merchant"
+    deltas:
+      german.merchant: -20
+      british.consul: -5
+      civilian.vendor: -5
+      kempeitai.officer: 5
+    visible: true
+
+  - action: "kill_french_concession.police"
+    deltas:
+      french_concession.police: -25
+      french_concession.merchant: -15
+      kempeitai.patrol: 5
+      civilian.resident: -5
+    visible: true
+
+feedback:
+  "pickpocket": "A lightened pocket leaves a mark in the Old City, where neighbours count their coins and remember the hand that was near them."
+  "caught_pickpocket": "Your hand was seen near the market purse, and Shanghai's civilian residents will keep their distance when you pass."
+  "talk_to_ccp.courier": "A courier's nod travels farther than words in Shanghai; Hongkou doors may open a little easier."
+  "talk_to_ccp.organizer": "Old City workers notice who listens without boasting, and rice queues pass that judgment quietly."
+  "talk_to_kempeitai.officer": "Kempeitai attention settles on you like a permit stamp, useful in one office and costly elsewhere."
+  "talk_to_green_gang.smuggler": "Suzhou Creek brokers hear you can bargain without flinching, and market neighbours hear it too."
+  "out_after_curfew": "Curfew gossip moves before dawn; Old City neighbours remember whose footsteps risked the lane."
+  "talk_to_gmd.officer": "Republic contacts mark your name in a Shanghai notebook that travels by careful hands."
+  "talk_to_gmd.spy": "A Bund watcher decides you understand discretion, though such approval leaves a stain elsewhere."
+  "talk_to_british.consul": "Concession clerks note your manners, and Shanghai clerks know manners can become papers."
+  "talk_to_french_concession.police": "French Concession police remember your face at checkpoints, which may comfort nobody nearby."
+  "disguise_caught": "A failed disguise becomes market talk by noon; Shanghai trusts clothing less after such mistakes."
+  "hide_failure": "The botched hiding place leaves a trace, and patrol gossip follows it through the tea shops."
+  "plant_evidence_found": "Planted evidence poisons more than one file; Old City neighbours learn to distrust convenient proof."
+  "tail_caught": "A clumsy shadow is remembered in Shanghai, especially near checkpoints where faces are traded."
+  "kill_kempeitai.officer": "An occupation officer's death reaches Hongkou before supper, carried in whispers and closed shutters."
+  "kill_kempeitai.informant": "An informant's absence changes the rice queue, where people suddenly speak one sentence more."
+  "kill_kempeitai.patrol": "A patrol death hardens Kempeitai searches, though some Shanghai lanes breathe easier after dark."
+  "kill_ccp.courier": "A missing courier breaks more than one route through Hongkou; workers notice the gap."
+  "kill_ccp.organizer": "The underground loses a careful hand, and Old City meetings grow shorter for several nights."
+  "kill_gmd.officer": "Republic channels in Shanghai close ranks, leaving fewer papers and colder answers behind."
+  "kill_gmd.spy": "A dead Nationalist watcher leaves Bund contacts nervous, and nervous contacts sell names cheaply."
+  "kill_green_gang.smuggler": "Suzhou Creek trade adjusts at once; brokers count debts before they count the dead."
+  "kill_green_gang.broker": "A broker's death disturbs market credit, and Shanghai vendors dislike disorder more than speeches."
+  "kill_civilian.vendor": "A vendor's stall stays covered in Nanking Road cloth, and neighbours remember who made it empty."
+  "kill_civilian.resident": "An Old City doorway loses its evening lamp, and civilian trust drains from the lane."
+  "kill_civilian.worker": "A worker's tools sit unused near the docks, where hunger makes every absence visible."
+  "kill_british.dockmaster": "The Bund offices hear of it before the river does, and dock permits grow harder."
+  "kill_british.consul": "Concession officials turn formal and cold, making every Shanghai paper slower to obtain."
+  "kill_french_concession.merchant": "French Concession merchants lower shutters early, and civilian buyers lose another cautious credit line."
+  "kill_kempeitai.interrogator": "Bridge House loses a feared voice, and Shanghai hears both relief and approaching retaliation."
+  "kill_kempeitai.civilian": "Even occupation families have neighbours; Shanghai notices when civilian blood is treated as politics."
+  "kill_ccp.operator": "A wireless silence spreads through Hongkou rooms, and the underground blames the hand nearest it."
+  "kill_ccp.student": "A student's desk stays empty, and Shanghai classrooms learn which questions must wait."
+  "kill_ccp.teacher": "A teacher's death closes more than one lesson, especially where banned history passed hand to hand."
+  "kill_civilian.cleric": "Temple bells in the Old City sound thinner, and civilian patience thins with them."
+  "kill_civilian.monk": "Incense burns for a monk, while Shanghai neighbours wonder who still respects sanctuary."
+  "kill_civilian.nurse": "A Bubbling Well Road sickroom loses a pair of steady hands, and mercy becomes scarcer."
+  "kill_civilian.orphan": "The Old City children stop playing near your shadow, which says more than accusation."
+  "kill_civilian.reporter": "A reporter's notebook disappears, and Shanghai loses one more witness to its own fear."
+  "kill_civilian.tailor": "A tailor's needle lies still, and French Concession coats keep their torn seams."
+  "kill_french_concession.clerks": "Concession desks become suspicious, and every permit in Shanghai feels heavier afterward."
+  "kill_french_concession.entertainer": "Music stops in one French Concession room, and gossip fills the silence badly."
+  "kill_green_gang.boss": "Green Gang collectors recalculate the city overnight, and even rice sellers feel the arithmetic."
+  "kill_green_gang.cook": "A kitchen fire goes cold, and Suzhou Creek men argue over who eats first."
+  "kill_green_gang.entertainer": "The Green Gang loses a smiling messenger, and French Concession tables grow less talkative."
+  "kill_british.baker": "A bakery shutter stays down, and Shanghai families lose one more dependable morning smell."
+  "kill_british.clerks": "Bund files stop moving neatly, and permits begin gathering dust in the wrong trays."
+  "kill_british.engineer": "A dock engine waits unrepaired, slowing rice sacks, coal carts, and every hungry argument."
+  "kill_british.merchant": "A British account closes badly, and Nanking Road traders become careful with foreign credit."
+  "kill_german.merchant": "A foreign warehouse changes locks, and Shanghai buyers wonder which flag owns the goods now."
+  "kill_french_concession.police": "French Concession patrols answer with harder eyes, and nearby civilians shorten every errand."

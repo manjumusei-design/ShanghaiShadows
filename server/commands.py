@@ -213,7 +213,7 @@ from .constants import (
     MISSION_FABI_RANGE,
     STAT_GAIN_COURAGE_COMBAT, STAT_GAIN_STEALTH_HIDE, STAT_GAIN_PERCEPTION_OBSERVE,
     COMBAT_GROWTH_FACTIONS, WANTED_LEVEL_MAX, SUSPICION_FAILED_STEALTH,
-    SEASONAL_PRICE_MULTIPLIER,
+    SEASONAL_PRICE_MULTIPLIER, MessageType,
 )
 
 if TYPE_CHECKING:
@@ -413,7 +413,8 @@ def _room(ctx: CommandContext):
 
 
 def find_item_by_name(name: str, items: List[Item]) -> Optional[Item]:
-    q = name.lower().strip()
+    import re
+    q = re.sub(r"^(?:a|an|the)\s+", "", name.lower().strip())
     for item in items:
         if item.name.lower() == q or item.id.lower() == q:
             return item
@@ -664,7 +665,7 @@ def _item_tag(item) -> str:
     if item.is_weapon:
         return "weapon: ATTACK"
     if item.is_armour:
-        return "armour: WEAR"
+        return "armour: EQUIP"
     if item.is_container:
         return "container: OPEN"
     if item.is_key:
@@ -685,7 +686,7 @@ def _item_action_hint(item, carried: bool) -> str:
     if item.is_weapon:
         acts.append("use it in ATTACK")
     if item.is_armour:
-        acts.append("WEAR/REMOVE it")
+        acts.append("EQUIP/REMOVE it")
     if item.is_container:
         acts.append("OPEN/PUT IN/TAKE FROM it")
     if item.is_map and item.map_districts:
@@ -1315,6 +1316,18 @@ COMMAND_SCHEMA: Dict[str, List[Dict[str, str]]] = {
     verb: list(definition["slots"]) for verb, definition in _COMMAND_DEFS.items() if definition["slots"]
 }
 
+_MATCH_POLICY: Dict[str, str] = {
+    "verbs": "prefix",
+    "exits": "prefix",
+    "topics": "prefix",
+    "players": "prefix",
+    "disguises": "prefix",
+    "npcs": "prefix_then_substring",
+    "items": "prefix_then_substring",
+    "take_items": "prefix_then_substring",
+    "inventory_items": "prefix_then_substring",
+}
+
 
 def build_completions(ctx: CommandContext) -> Dict[str, List[str]]:
     global _CACHED_VERBS
@@ -1322,9 +1335,18 @@ def build_completions(ctx: CommandContext) -> Dict[str, List[str]]:
         _CACHED_VERBS = [v for v in build_command_registry().keys() if v not in ("unknown", "stub")]
     npcs: List[str] = []
     items: List[str] = []
+    take_items: List[str] = []
+    inventory_items: List[str] = []
     exits: List[str] = []
     topics: List[str] = []
     ask_topics: Dict[str, List[str]] = {}
+    disguises: List[str] = []
+    for item in ctx.session.player.inventory:
+        if not item.disguise_id:
+            continue
+        disguise = ctx.disguises.get(item.disguise_id)
+        if disguise:
+            disguises.append(disguise.id.replace("_", " "))
     room = _room(ctx)
     if room:
         exits = list(room.exits.keys())
@@ -1349,9 +1371,12 @@ def build_completions(ctx: CommandContext) -> Dict[str, List[str]]:
         for item in room.items:
             if item.name:
                 items.append(item.name.lower())
+                if item.takeable:
+                    take_items.append(item.name.lower())
     for item in ctx.session.player.inventory:
         if item.name:
             items.append(item.name.lower())
+            inventory_items.append(item.name.lower())
     players = []
     if ctx.session_manager:
         for s in ctx.session_manager.get_players_in_room(ctx.session.player.current_room):
@@ -1361,11 +1386,15 @@ def build_completions(ctx: CommandContext) -> Dict[str, List[str]]:
         "verbs": list(_CACHED_VERBS),
         "npcs": _dedup(npcs),
         "items": _dedup(items),
+        "take_items": _dedup(take_items),
+        "inventory_items": _dedup(inventory_items),
         "exits": _dedup(exits),
         "topics": _dedup(topics),
         "ask_topics": ask_topics,
         "players": _dedup(players),
+        "disguises": _dedup(disguises),
         "grammar": {verb: slots for verb, slots in COMMAND_SCHEMA.items() if verb in _CACHED_VERBS},
+        "match_policy": dict(_MATCH_POLICY),
     }
 
 
@@ -1744,13 +1773,13 @@ async def apply_storylet_effects(ctx: CommandContext, effects: Dict[str, object]
     if not _apply_effect_money(player, effects):
         cost = effects.get("spend_fabi", 0) or effects.get("spend_military_yen", 0)
         currency = "fabi" if effects.get("spend_fabi") else "military yen"
-        await post_display(ctx, loc("cmd_buy.no_money").format(cost=cost, currency=currency))
+        await post_display(ctx, loc("cmd_buy.no_money").format(cost=cost, currency=currency), msg_type=MessageType.PLAYER_ACTION)
         return False
 
     if effects.get("cost_fabi"):
         cost = int(effects.get("cost_fabi", 0))
         if not spend_fabi_value(player, cost):
-            await post_display(ctx, loc("wanted.green_gang_deal_no_money").format(name="the dealer"))
+            await post_display(ctx, loc("wanted.green_gang_deal_no_money").format(name="the dealer"), msg_type=MessageType.PLAYER_ACTION)
             return False
     if active is not None:
         active.resolution_committed = True
@@ -1771,7 +1800,7 @@ async def apply_storylet_effects(ctx: CommandContext, effects: Dict[str, object]
                 price=purchase.get("price", 0),
                 currency=purchase.get("currency", "fabi"),
             ),
-            msg_type="system",
+            msg_type=MessageType.SUCCESS,
         )
         if resolution_aborted(active):
             return False
@@ -2075,7 +2104,6 @@ async def resolve_storylet_choice(ctx: CommandContext, text: str):
             next_active = ctx.session.player.active_storylets[0]
             await _display_storylet(ctx, next_active)
         else:
-            await ctx.session.send_display("", msg_type="storylet_frame")
             await cmd_look(ctx, Command(verb="look", raw="look"))
         return success("storylet_choice", facts={"storylet_choice"}, tutorial_event=tutorial_event)
     except Exception:
@@ -2124,6 +2152,7 @@ async def _complete_room_storylet(ctx: CommandContext, active: ActiveStorylet, o
         pass
 
 async def _send_room_details(ctx: CommandContext, room) -> None:
+    from .stealth_requirements import hide_requirement_for_room
     room_npcs = []
     for npc_id in room.npcs:
         npc = ctx.shared.world.npcs.get(npc_id)
@@ -2145,11 +2174,8 @@ async def _send_room_details(ctx: CommandContext, room) -> None:
             "takeable": getattr(item, 'takeable', True)
         })
 
-    room_id_for_client = room.id
-    if getattr(ctx.session.player, 'in_tutorial', False) and room.id.startswith("p_"):
-        parts = room.id.split("_", 2)
-        if len(parts) >= 3:
-            room_id_for_client = parts[2]
+    from .popup_payloads import room_key_for_client
+    room_id_for_client = room_key_for_client(ctx)
 
     await ctx.session.send_room_details({
         "room_id": room_id_for_client,
@@ -2161,6 +2187,7 @@ async def _send_room_details(ctx: CommandContext, room) -> None:
         "district": room.district if hasattr(room, 'district') else '',
             "indoors": room.indoors if hasattr(room, 'indoors') else False,
             "hiding_spots": len(room.hiding_spots) if hasattr(room, 'hiding_spots') and isinstance(room.hiding_spots, list) else (1 if hasattr(room, 'hiding_spots') and room.hiding_spots else 0),
+            "hide_requirement": hide_requirement_for_room(room),
             "safe": room.safe_room if hasattr(room, 'safe_room') else False,
     })
 
@@ -2169,7 +2196,7 @@ async def cmd_look(ctx: CommandContext, cmd: Command):
     from .trust import get_faction_perks, TRUST_TIER_NEUTRAL, get_role_trust
     room = _room(ctx)
     if not room:
-        await post_display(ctx, loc("cmd_look.nowhere"))
+        await post_display(ctx, loc("cmd_look.nowhere"), msg_type=MessageType.ERROR)
         return
 
     look_count = ctx.session.player.rooms_looked.get(room.id, 0)
@@ -2241,7 +2268,7 @@ async def cmd_look(ctx: CommandContext, cmd: Command):
         pending = _pending_room_event(ctx, room)
         if pending:
             room_text += "\n\n" + pending
-    await post_display(ctx, room_text)
+    await post_display(ctx, room_text, msg_type=MessageType.ROOM_DESCRIPTION)
 
     await _send_room_details(ctx, room)
     await _emit_terminal_guidance(ctx, room)
@@ -2272,9 +2299,9 @@ async def cmd_look(ctx: CommandContext, cmd: Command):
 
     if hidden_players_detected:
         for name in hidden_players_detected:
-            await ctx.session.send_display(loc("perception.hidden_player").format(name=name) + "\n")
+            await ctx.session.send_display(loc("perception.hidden_player").format(name=name) + "\n", msg_type=MessageType.DISCOVERY)
     elif someone_watching:
-        await ctx.session.send_display(loc("perception.someone_watching") + "\n")
+        await ctx.session.send_display(loc("perception.someone_watching") + "\n", msg_type=MessageType.DISCOVERY)
 
     perks = get_faction_perks(ctx.session.player.trust)
     for faction, perk_data in perks.items():
@@ -2301,7 +2328,8 @@ async def cmd_look(ctx: CommandContext, cmd: Command):
                 level_desc = ["suspected", "wanted", "MOST WANTED"][min(session.player.wanted_level - 1, 2)]
                 await ctx.session.send_display(
                     f"A poster on the wall shows a sketch labelled '{session.player.name}': {level_desc}. "
-                    f"Reward: {session.player.wanted_level * 20} fabi.\n"
+                    f"Reward: {session.player.wanted_level * 20} fabi.\n",
+                    msg_type=MessageType.EVENT,
                 )
 
     if room.tags:
@@ -2315,7 +2343,7 @@ async def cmd_look(ctx: CommandContext, cmd: Command):
                     key = "safehouse.ccp.mid"
                 else:
                     key = "safehouse.ccp.bare"
-                await ctx.session.send_display(loc(key) + "\n")
+                await ctx.session.send_display(loc(key) + "\n", msg_type=MessageType.AMBIENT)
             elif "gmd_safehouse" in tag_lower:
                 gmd_inf = ctx.shared.gmd_influence
                 if gmd_inf >= 80:
@@ -2324,7 +2352,7 @@ async def cmd_look(ctx: CommandContext, cmd: Command):
                     key = "safehouse.gmd.mid"
                 else:
                     key = "safehouse.gmd.bare"
-                await ctx.session.send_display(loc(key) + "\n")
+                await ctx.session.send_display(loc(key) + "\n", msg_type=MessageType.AMBIENT)
 
     await ctx.session.send_completions(build_completions(ctx))
     return success("look", facts={"room_looked"}, tutorial_event={"verb": "look"})
@@ -2412,8 +2440,30 @@ async def cmd_go(ctx: CommandContext, cmd: Command):
                     break
 
         if target_room:
+            if target_room.id == room.id:
+                await post_display(ctx, "You are already there.", msg_type="tutorial" if getattr(ctx.session.player, "in_tutorial", False) else "ambient")
+                return success("go_already_there")
             path = _bfs_find_path(ctx.shared.world, room.id, target_room.id)
             if path:
+                if getattr(ctx.session.player, "in_tutorial", False):
+                    from .tutorial import blocked_exits_for_room, get_original_tutorial_room_id, normalize_to_actionable_stage
+                    preflight_room = room
+                    stage = normalize_to_actionable_stage(ctx.session.player)
+                    for step in path:
+                        original_room_id = get_original_tutorial_room_id(
+                            getattr(ctx.session.player, "tutorial_instance_id", ""), preflight_room.id, ctx.shared,
+                        )
+                        blocked = blocked_exits_for_room(original_room_id, stage)
+                        if step.lower() in blocked:
+                            await post_display(ctx, f"You cannot go that way yet. {blocked[step.lower()]}", msg_type="tutorial")
+                            return failure("go_auto_path_blocked")
+                        destination_id = preflight_room.exits.get(step)
+                        if not destination_id:
+                            await post_display(ctx, loc("cmd_go.no_exit"), msg_type="tutorial")
+                            return failure("go_auto_path_blocked")
+                        preflight_room = ctx.shared.world.rooms.get(destination_id)
+                        if preflight_room is None:
+                            return failure("go_auto_path_blocked")
                 await post_display(ctx, loc("movement.auto_path.start").format(title=target_room.title, steps=len(path)), msg_type="ambient")
                 prev_district = room.district
                 for i, step in enumerate(path):
@@ -2471,8 +2521,13 @@ async def cmd_go(ctx: CommandContext, cmd: Command):
                         if i == len(path) - 1:
                             await post_display(ctx, loc("movement.auto_path.arrive").format(title=new_room.title), msg_type="ambient")
 
+                await cmd_look(ctx, Command(verb="look", suppress_render=False))
                 await asyncio.sleep(0.1)
-                return success("go_auto_path", facts={"movement"})
+                return success(
+                    "go_auto_path",
+                    facts={"movement"},
+                    tutorial_event={"verb": "go", "target": path[-1]} if path else None,
+                )
 
         await post_display(ctx, loc("cmd_go.no_exit"))
         return failure("go_no_exit")
@@ -2728,31 +2783,32 @@ async def cmd_take(ctx: CommandContext, cmd: Command):
                 for item in room.items if item.takeable
             ]
         if not candidates:
-            await post_display(ctx, "There is nothing here to take.")
+            await post_display(ctx, "There is nothing here to take.", msg_type=MessageType.PLAYER_ACTION)
             return failure("take_no_candidates")
         await _open_item_action_chooser(ctx, "take", loc("cmd_take.no_target"), candidates)
         return success("take_chooser", facts={"chooser_opened"})
     room = _room(ctx)
     item = find_item_exact(cmd.direct_obj, room.items if room else [])
     if not item:
-        await post_display(ctx, loc("cmd_take.not_here"))
+        await post_display(ctx, loc("cmd_take.not_here"), msg_type=MessageType.PLAYER_ACTION)
         return failure("take_not_here")
     if not item.takeable:
-        await post_display(ctx, loc("cmd_take.not_takeable"))
+        await post_display(ctx, loc("cmd_take.not_takeable"), msg_type=MessageType.PLAYER_ACTION)
         return failure("take_not_takeable")
     if len(ctx.session.player.inventory) >= ctx.session.player.max_inventory:
-        await post_display(ctx, loc("cmd_take.inventory_full"))
+        await post_display(ctx, loc("cmd_take.inventory_full"), msg_type=MessageType.PLAYER_ACTION)
         return failure("take_inventory_full")
 
     try:
         room.items.remove(item)
     except ValueError:
-        await post_display(ctx, loc("cmd_take.already_taken"))
+        await post_display(ctx, loc("cmd_take.already_taken"), msg_type=MessageType.PLAYER_ACTION)
         return failure("take_already_taken")
     ctx.session.player.inventory.append(item)
+    await ctx.session.send_completions(build_completions(ctx))
     log_event(ctx, f"You took {item.name}.")
     await _handle_mission_objectives(ctx, "collect_item", item.id)
-    await post_display(ctx, loc("cmd_take.success").format(name=item.name), msg_type="discovery")
+    await post_display(ctx, loc("cmd_take.success").format(name=item.name), msg_type=MessageType.PLAYER_ACTION)
     await maybe_trigger_storylet(ctx)
     return success(
         "take",
@@ -2767,13 +2823,13 @@ async def cmd_drop(ctx: CommandContext, cmd: Command):
         ensure_inventory_identity(ctx.session.player)
         candidates = [_action_row(item) for item in ctx.session.player.inventory]
         if not candidates:
-            await post_display(ctx, "You have nothing to drop.")
+            await post_display(ctx, "You have nothing to drop.", msg_type=MessageType.PLAYER_ACTION)
             return failure("drop_no_candidates")
         await _open_item_action_chooser(ctx, "drop", loc("cmd_drop.no_target"), candidates)
         return success("drop_chooser", facts={"chooser_opened"})
     item = find_item_exact(cmd.direct_obj, ctx.session.player.inventory)
     if not item:
-        await post_display(ctx, loc("cmd_drop.not_held"))
+        await post_display(ctx, loc("cmd_drop.not_held"), msg_type=MessageType.PLAYER_ACTION)
         return failure("drop_not_held")
     if item.is_weapon:
         ctx.session._weapon_attack_count = 0
@@ -2782,8 +2838,9 @@ async def cmd_drop(ctx: CommandContext, cmd: Command):
     room = _room(ctx)
     if room:
         room.items.append(item)
+    await ctx.session.send_completions(build_completions(ctx))
     log_event(ctx, f"You dropped {item.name}.")
-    await post_display(ctx, loc("cmd_drop.success").format(name=item.name))
+    await post_display(ctx, loc("cmd_drop.success").format(name=item.name), msg_type=MessageType.PLAYER_ACTION)
     return success("drop", facts={"item_dropped"})
 
 
@@ -3283,7 +3340,11 @@ async def cmd_status(ctx: CommandContext, cmd: Command):
     lines.append(f"Hunger: {hunger_value}/100 ({hunger_tier})")
     lines.append(f"Morale: {ctx.session.player.morale}/100")
     lines.append(f"Courage: {ctx.session.player.courage}")
-    lines.append(f"Money: {ctx.session.player.money_silver} silver, {ctx.session.player.money_fabi} fabi, {ctx.session.player.money_military_yen} military yen")
+    lines.append(
+        f"Money: {wallet_fabi_value(ctx.session.player)} fabi-value "
+        f"({ctx.session.player.money_silver} silver, {ctx.session.player.money_fabi} fabi, "
+        f"{ctx.session.player.money_military_yen} military yen)"
+    )
     lines.append(f"Disguise: {disguise.name if disguise else 'none'}")
     lines.append(f"Stealth skill: {ctx.session.player.stealth_skill}")
     world_rooms = [room for room_id, room in ctx.shared.world.rooms.items() if not room_id.startswith("p_")]
@@ -3419,23 +3480,26 @@ async def cmd_tail(ctx: CommandContext, cmd: Command):
     if resolved:
         from .equipment import resolve_disguised_tail_pierce
         from .law import wanted_consequences
-        stage = resolve_disguised_tail_pierce(
-            ctx.session.player,
-            target,
-            resolved[1],
-            wanted_bonus=wanted_consequences(ctx.session.player.wanted_level).disguise_perception_bonus,
-            stealth=ctx.stealth,
-        )
         from .stealth import PierceStage
+        if getattr(ctx.session.player, "in_tutorial", False):
+            stage = PierceStage.SUSPICION
+        else:
+            stage = resolve_disguised_tail_pierce(
+                ctx.session.player,
+                target,
+                resolved[1],
+                wanted_bonus=wanted_consequences(ctx.session.player.wanted_level).disguise_perception_bonus,
+                stealth=ctx.stealth,
+            )
         if stage == PierceStage.CHALLENGE:
             ctx.session.player.tailing_state = None
             await post_display(ctx, f"{target.name} turns and challenges you. You break off the tail.")
-            return
+            return failure("tail_challenged")
         if stage == PierceStage.EXPOSED:
             ctx.session.player.tailing_state = None
             _confiscate_disguise(ctx)
             await post_display(ctx, f"{target.name} sees through your disguise. The disguise is confiscated.")
-            return
+            return failure("tail_exposed")
         if stage == PierceStage.SUSPICION:
             await post_display(ctx, f"{target.name} studies you, but keeps moving.")
     log_event(ctx, f"You began tailing {target.name}.")
@@ -3450,18 +3514,8 @@ async def cmd_tail(ctx: CommandContext, cmd: Command):
 async def cmd_hide(ctx: CommandContext, cmd: Command):
     ctx.session.player.activity_counters["times_hidden"] = ctx.session.player.activity_counters.get("times_hidden", 0) + 1
     room = _room(ctx)
-    observers = [ctx.shared.world.npcs[npc_id] for npc_id in room.npcs] if room else []
-    from .constants import get_season
-    season = get_season(ctx.shared.game_time.day)
-    hide_succeeded, _ = ctx.stealth.hide_check(
-        ctx.session.player.stealth_skill,
-        disguise_bonus(ctx),
-        room.indoors if room else False,
-        observers,
-        season=season,
-        morale=ctx.session.player.morale,
-        hunger=ctx.session.player.hunger,
-    )
+    from .stealth_requirements import hide_requirement_for_room
+    hide_succeeded = ctx.session.player.stealth_skill >= hide_requirement_for_room(room)
     ctx.session.player.hidden = hide_succeeded
     if hide_succeeded:
         log_event(ctx, "You found a place to hide.")
@@ -3502,7 +3556,7 @@ async def _purchase_newspaper(ctx: CommandContext, vendor_name: str, *, active=N
         return False
 
     if not can_afford_fabi(ctx.session.player, NEWSPAPER_COST_FABI):
-        await post_display(ctx, f"A newspaper costs {NEWSPAPER_COST_FABI} fabi. You have {wallet_fabi_value(ctx.session.player)} fabi-value.")
+        await post_display(ctx, f"A newspaper costs {NEWSPAPER_COST_FABI} fabi. You have {wallet_fabi_value(ctx.session.player)} fabi-value.", msg_type=MessageType.PLAYER_ACTION)
         return False
 
     room_id = room.id.lower()
@@ -3529,10 +3583,10 @@ async def _purchase_newspaper(ctx: CommandContext, vendor_name: str, *, active=N
             active=active,
         )
     except Exception:
-        await post_display(ctx, "The newspaper press cannot produce an issue right now.")
+        await post_display(ctx, "The newspaper press cannot produce an issue right now.", msg_type=MessageType.PLAYER_ACTION)
         return False
     if newspaper is None:
-        await post_display(ctx, "You cannot purchase a newspaper right now.")
+        await post_display(ctx, "You cannot purchase a newspaper right now.", msg_type=MessageType.PLAYER_ACTION)
         return False
     log_event(ctx, f"You bought a newspaper from {vendor_name} for {NEWSPAPER_COST_FABI} fabi.")
     await post_display(ctx, f"You bought a newspaper from {vendor_name} for {NEWSPAPER_COST_FABI} fabi.", msg_type="system")
@@ -3626,7 +3680,7 @@ async def _read_death_journal(ctx: CommandContext, cmd: Command):
     room = ctx.room
     entries = ctx.shared.death_journals.get(room.id, []) if room else []
     if not entries:
-        await post_display(ctx, loc("cmd_read.no_journal"))
+        await post_display(ctx, loc("cmd_read.no_journal"), msg_type=MessageType.PLAYER_ACTION)
         return failure("read_journal_empty")
     direct = cmd.direct_obj or ""
     chosen = next((e for e in entries if e.get("event_id") and e["event_id"] in direct), None)
@@ -3639,10 +3693,10 @@ async def _read_death_journal(ctx: CommandContext, cmd: Command):
             chosen = matches[0]
         elif len(matches) > 1:
             names = ", ".join(f"{e['character_name']} (Day {e['day_of_death']})" for e in matches)
-            await post_display(ctx, loc("cmd_read.journal_ambiguous").format(names=names))
+            await post_display(ctx, loc("cmd_read.journal_ambiguous").format(names=names), msg_type=MessageType.PLAYER_ACTION)
             return failure("read_journal_ambiguous")
         else:
-            await post_display(ctx, loc("cmd_read.journal_no_match").format(name=cmd.direct_obj))
+            await post_display(ctx, loc("cmd_read.journal_no_match").format(name=cmd.direct_obj), msg_type=MessageType.PLAYER_ACTION)
             return failure("read_journal_no_match")
     elif chosen is None:
         chosen = entries[-1]
@@ -3652,13 +3706,13 @@ async def _read_death_journal(ctx: CommandContext, cmd: Command):
         claimed = claim_death_journal(ctx.session, ctx.shared, event_id)
         if claimed is None:
             log_event(ctx, f"You read the journal of {chosen['character_name']}, but its knowledge is already claimed.")
-            await post_display(ctx, f"The journal of {chosen['character_name']} yields nothing new; its knowledge has already been claimed.")
+            await post_display(ctx, f"The journal of {chosen['character_name']} yields nothing new; its knowledge has already been claimed.", msg_type=MessageType.DISCOVERY)
             return success("read_journal", facts={"journal_absorbed"})
         added = len(claimed.get("conversations", []))
     else:
         added = absorb_death_journal(ctx.session.player.conversation_history, chosen)
     log_event(ctx, f"You read the journal of {chosen['character_name']}, recovering {added} notes.")
-    await post_display(ctx, loc("cmd_read.journal_absorbed").format(name=chosen["character_name"], n=added))
+    await post_display(ctx, loc("cmd_read.journal_absorbed").format(name=chosen["character_name"], n=added), msg_type=MessageType.DISCOVERY)
     return success("read_journal", facts={"journal_absorbed"})
 
 
@@ -3687,7 +3741,7 @@ async def cmd_read(ctx: CommandContext, cmd: Command):
                     "description": f"The journal of {entry.get('character_name', 'unknown')}, who died on Day {entry.get('day_of_death', '?')}.",
                 }, disabled=claimed, disabled_reason="knowledge already claimed" if claimed else ""))
         if not rows:
-            await post_display(ctx, "You have nothing to read.")
+            await post_display(ctx, "You have nothing to read.", msg_type=MessageType.PLAYER_ACTION)
             return failure("read_no_candidates")
         await _open_item_action_chooser(ctx, "read", loc("cmd_read.no_target"), rows)
         return success("read_chooser", facts={"chooser_opened"})
@@ -3700,22 +3754,22 @@ async def cmd_read(ctx: CommandContext, cmd: Command):
     if item is None and target == "newspaper":
         from .newspaper import format_newspaper_for_display
         if not ctx.session.player.newspapers:
-            await post_display(ctx, "You have no purchased newspaper to read.")
+            await post_display(ctx, "You have no purchased newspaper to read.", msg_type=MessageType.PLAYER_ACTION)
             return failure("read_newspaper_empty")
-        await post_display(ctx, format_newspaper_for_display(ctx.session.player.newspapers[-1]))
+        await post_display(ctx, format_newspaper_for_display(ctx.session.player.newspapers[-1]), msg_type=MessageType.DISCOVERY)
         return success("read", facts={"newspaper_read"})
     if not item:
-        await post_display(ctx, loc("cmd_read.not_held"))
+        await post_display(ctx, loc("cmd_read.not_held"), msg_type=MessageType.PLAYER_ACTION)
         return failure("read_not_held")
     if item.id == "newspaper":
         from .newspaper import format_newspaper_for_display
         if not ctx.session.player.newspapers:
-            await post_display(ctx, "You have no purchased newspaper to read.")
+            await post_display(ctx, "You have no purchased newspaper to read.", msg_type=MessageType.PLAYER_ACTION)
             return failure("read_newspaper_empty")
-        await post_display(ctx, format_newspaper_for_display(ctx.session.player.newspapers[-1]))
+        await post_display(ctx, format_newspaper_for_display(ctx.session.player.newspapers[-1]), msg_type=MessageType.DISCOVERY)
         return success("read", facts={"newspaper_read"})
     if not item.readable_text:
-        await post_display(ctx, loc("cmd_read.nothing_written"))
+        await post_display(ctx, loc("cmd_read.nothing_written"), msg_type=MessageType.PLAYER_ACTION)
         return failure("read_nothing_written")
 
     effects = getattr(item, 'on_read_effects', {}) or {}
@@ -3755,7 +3809,7 @@ async def cmd_read(ctx: CommandContext, cmd: Command):
     from .journal import record_testimony_read
     record_testimony_read(ctx.session.player, item, ctx.shared.game_time.day)
 
-    await post_display(ctx, item.readable_text)
+    await post_display(ctx, item.readable_text, msg_type=MessageType.DISCOVERY)
     return success("read", facts={"read_document"})
 
 
@@ -3765,7 +3819,7 @@ async def cmd_journal(ctx: CommandContext, cmd: Command):
         character_name = cmd.direct_obj
         archived = get_archived_journal(character_name, ctx.shared)
         if not archived:
-            await post_display(ctx, loc("cmd_journal.no_archive").format(name=character_name))
+            await post_display(ctx, loc("cmd_journal.no_archive").format(name=character_name), msg_type=MessageType.PLAYER_ACTION)
             return
         lines = [f"=== Archived Journal: {character_name} ===", ""]
         for event in archived[-20:]:
@@ -3773,7 +3827,7 @@ async def cmd_journal(ctx: CommandContext, cmd: Command):
                 lines.append(str(event.get("text", event)))
             else:
                 lines.append(str(event))
-        await post_display(ctx, "\n".join(lines))
+        await post_display(ctx, "\n".join(lines), msg_type=MessageType.DISCOVERY)
         return success("journal_archive", facts={"journal_archive_read"})
 
     from .journal import format_testimony_summary
@@ -3781,7 +3835,7 @@ async def cmd_journal(ctx: CommandContext, cmd: Command):
     ctx.session.set_open_popup("journal", {})
     payload = journal_payload(ctx, ctx.session.open_popup["generation"])
     await send_popup(ctx.session, "journal_menu", payload)
-    await post_display(ctx, format_testimony_summary(ctx.session.player))
+    await post_display(ctx, format_testimony_summary(ctx.session.player), msg_type=MessageType.DISCOVERY)
     return success("journal", facts={"journal_opened"}, tutorial_event={"verb": "journal"})
 
 
@@ -3805,7 +3859,7 @@ def _help_targets(ctx: CommandContext, verb: str) -> str:
         return "You could give: " + ", ".join(inv_items) + ("" if not npc_names else ", to: " + ", ".join(npc_names) + ".")
     if verb in ("take", "take from", "search"):
         return ("Here: " + ", ".join(room_items) + ".") if room_items else "Nothing here to take."
-    if verb in ("eat", "wear", "remove", "drop", "sell", "read", "open", "mod weapon"):
+    if verb in ("eat", "remove", "drop", "sell", "read", "open", "mod weapon"):
         return ("You carry: " + ", ".join(inv_items) + ".") if inv_items else "You carry nothing."
     if verb in ("go",):
         return ("Exits: " + ", ".join(exits) + ".") if exits else "No way out from here."
@@ -3860,24 +3914,14 @@ async def cmd_skip_tutorial(ctx: CommandContext, cmd: Command):
     await post_display(ctx, loc("cmd_skip_tutorial.confirm"), msg_type="tutorial")
 
 
-async def cmd_eat(ctx: CommandContext, cmd: Command):
-    if not cmd.direct_obj:
-        from .equipment import ensure_inventory_identity
-        ensure_inventory_identity(ctx.session.player)
-        candidates = [_action_row(item) for item in ctx.session.player.inventory if item.food_value > 0]
-        if not candidates:
-            await post_display(ctx, "You have nothing to eat.")
-            return failure("eat_no_candidates")
-        await _open_item_action_chooser(ctx, "eat", loc("cmd_eat.no_target"), candidates)
-        return success("eat_chooser", facts={"chooser_opened"})
-    item = find_item_exact(cmd.direct_obj, ctx.session.player.inventory)
+async def consume_food_item(ctx: CommandContext, item):
     if not item:
-        await post_display(ctx, loc("cmd_eat.not_held"))
+        await post_display(ctx, loc("cmd_eat.not_held"), msg_type=MessageType.PLAYER_ACTION)
         return failure("eat_not_held")
     food_value = item.food_value
     morale_restore = item.morale_restore
     if food_value == 0:
-        await post_display(ctx, loc("cmd_eat.not_food"))
+        await post_display(ctx, loc("cmd_eat.not_food"), msg_type=MessageType.PLAYER_ACTION)
         return failure("eat_not_food")
     ctx.session.player.inventory.remove(item)
     await _refresh_inventory_if_open(ctx)
@@ -3892,8 +3936,19 @@ async def cmd_eat(ctx: CommandContext, cmd: Command):
         lines.append(f"Hunger: {hunger_before} → {ctx.session.player.hunger}")
     if ctx.session.player.morale != morale_before:
         lines.append(f"Morale: {morale_before} → {ctx.session.player.morale}")
-    await post_display(ctx, "\n".join(lines))
+    await post_display(ctx, "\n".join(lines), msg_type=MessageType.PLAYER_STATUS)
     return success("eat", facts={"food_eaten"}, tutorial_event={"verb": "eat", "target": item.id or item.name})
+
+
+async def cmd_eat(ctx: CommandContext, cmd: Command):
+    from .equipment import ensure_inventory_identity
+    ensure_inventory_identity(ctx.session.player)
+    candidates = [_action_row(item) for item in ctx.session.player.inventory if item.food_value > 0]
+    if not candidates:
+        await post_display(ctx, "You have nothing to eat.", msg_type=MessageType.PLAYER_ACTION)
+        return failure("eat_no_candidates")
+    await _open_item_action_chooser(ctx, "eat", loc("cmd_eat.no_target"), candidates)
+    return success("eat_chooser", facts={"chooser_opened"})
 
 
 async def cmd_bond(ctx: CommandContext, cmd: Command):
@@ -4026,7 +4081,7 @@ async def cmd_whisper(ctx: CommandContext, cmd: Command):
 async def cmd_give(ctx: CommandContext, cmd: Command):
     parts = cmd.raw.split()
     if len(parts) < 4 or "to" not in parts:
-        await post_display(ctx, loc("cmd_give.usage"))
+        await post_display(ctx, loc("cmd_give.usage"), msg_type=MessageType.PLAYER_ACTION)
         return failure("give_usage")
     to_index = parts.index("to")
     item_name = parts[1]
@@ -4034,7 +4089,7 @@ async def cmd_give(ctx: CommandContext, cmd: Command):
 
     item = find_item_by_name(item_name, ctx.session.player.inventory)
     if not item:
-        await post_display(ctx, f"You don't have {item_name}.")
+        await post_display(ctx, f"You don't have {item_name}.", msg_type=MessageType.PLAYER_ACTION)
         return failure("give_not_held")
     
     target_session = _find_player_in_room(ctx, target_name)
@@ -4042,8 +4097,8 @@ async def cmd_give(ctx: CommandContext, cmd: Command):
         ctx.session.player.inventory.remove(item)
         target_session.player.inventory.append(item)
         log_event(ctx, f"You gave {item.name} to {target_session.player.name}.")
-        await post_display(ctx, loc("cmd_give.success").format(item=item.name, target=target_session.player.name))
-        await target_session.send_display(loc("cmd_give.received").format(name=ctx.session.player.name, item=item.name))
+        await post_display(ctx, loc("cmd_give.success").format(item=item.name, target=target_session.player.name), msg_type=MessageType.PLAYER_ACTION)
+        await target_session.send_display(loc("cmd_give.received").format(name=ctx.session.player.name, item=item.name), msg_type=MessageType.SOCIAL)
         return success("give", facts={"item_given"})
 
     npc_id = resolve_npc(ctx, target_name)
@@ -4072,7 +4127,7 @@ async def cmd_give(ctx: CommandContext, cmd: Command):
                     _modify_relationship(ctx, npc_id, {"friendship": bonus, "trust": bonus})
                     log_event(ctx, f"Gave contraband to {npc.name}. Friendship +{bonus}.")
             else:
-                await post_display(ctx, loc("cmd_give.success").format(item=item.name, target=npc.name))
+                await post_display(ctx, loc("cmd_give.success").format(item=item.name, target=npc.name), msg_type=MessageType.PLAYER_ACTION)
             current_day = ctx.shared.game_time.day
             npc_memory_system.record_interaction(
                 npc, ctx.session.player.name, "gave_gift",
@@ -4162,7 +4217,7 @@ async def _apply_historical_kill(ctx: CommandContext, npc) -> None:
     if flag not in ctx.session.player.flags:
         ctx.session.player.flags.append(flag)
     grow_stat(ctx.session.player, "morale", 10)
-    await post_display(ctx, loc("combat.npc_falls").format(name=format_bold(npc.name), parts=', '.join(parts)), msg_type="combat")
+    await post_display(ctx, loc("combat.npc_falls").format(name=format_bold(npc.name), parts=', '.join(parts)), msg_type="combat_narration")
 
     from .victory import _select_template
     from .newspaper import generate_newspaper
@@ -4351,7 +4406,7 @@ async def _attack_npc(ctx: CommandContext, npc_id: str, courage_mult: float = 1.
 
             if npc.faction in COMBAT_GROWTH_FACTIONS:
                 grow_stat(player, "courage", STAT_GAIN_COURAGE_COMBAT)
-                await post_display(ctx, loc("combat.hardened"), msg_type="combat")
+                await post_display(ctx, loc("combat.hardened"), msg_type="combat_narration")
             if npc.is_historical_figure:
                 await _apply_historical_kill(ctx, npc)
             if not tutorial_kill:
@@ -4404,7 +4459,7 @@ async def _attack_npc(ctx: CommandContext, npc_id: str, courage_mult: float = 1.
                 from .milestones import apply_milestone_effects
                 for m in mm.check_action("action_kill_npc"):
                     if apply_milestone_effects(player, m, ctx.shared):
-                        await post_display(ctx, f"\n{m.narrative}\n", msg_type="combat")
+                        await post_display(ctx, f"\n{m.narrative}\n", msg_type="combat_narration")
             outcome = success(
                 "attack",
                 facts={"npc_defeated"},
@@ -4413,7 +4468,7 @@ async def _attack_npc(ctx: CommandContext, npc_id: str, courage_mult: float = 1.
         else:
             npc.wounded = True
             npc.wound_type = "combat"
-            await post_display(ctx, loc("combat.npc_wounded").format(name=format_bold(npc.name), hp=npc.hp), msg_type="combat")
+            await post_display(ctx, loc("combat.npc_wounded").format(name=format_bold(npc.name), hp=npc.hp), msg_type="combat_narration")
             outcome = failure("attack_npc_wounded")
         await _degrade_and_notify_weapon(ctx, weapon, True)
     else:
@@ -4453,7 +4508,7 @@ async def _trigger_death(ctx: CommandContext, death_msg: str) -> None:
                     ctx.session.player.flags.append("friend_saves_player")
                     ctx.session.player.health = 15
                     await post_display(ctx, f"\n{format_bold(npc.name)} pulls you from the shadows. 'Not today. Go, before they see you.'\n", msg_type="event")
-                    await post_display(ctx, f"You narrowly escape death thanks to {format_bold(npc.name)}'s intervention.\n", msg_type="combat")
+                    await post_display(ctx, f"You narrowly escape death thanks to {format_bold(npc.name)}'s intervention.\n", msg_type="combat_narration")
                     current_day = ctx.shared.game_time.day
                     npc_memory_system.record_interaction(
                         npc, ctx.session.player.name, "saved_player_life",
@@ -4580,7 +4635,7 @@ async def _attack_player(ctx: CommandContext, target_session: Session, courage_m
     if result.won:
         target.health = max(0, target.health - 20)
         if attack_sound.locally_visible:
-            await broadcast_to_room(ctx, loc("combat.player_strikes").format(name=player.name, target=format_bold(target.name)), msg_type="combat")
+            await broadcast_to_room(ctx, loc("combat.player_strikes").format(name=player.name, target=format_bold(target.name)), msg_type="combat_narration")
         log_event(ctx, f"You attacked {target.name}.")
         if target.health <= 0:
             target_context = _context_for_session(ctx, target_session)
@@ -4588,7 +4643,7 @@ async def _attack_player(ctx: CommandContext, target_session: Session, courage_m
     else:
         if result.attacker_damaged > 0:
             player.health = max(0, player.health - result.attacker_damaged)
-        await post_display(ctx, loc("combat.attack_fails").format(name=format_bold(target.name), target=format_bold(target.name)), msg_type="combat")
+        await post_display(ctx, loc("combat.attack_fails").format(name=format_bold(target.name), target=format_bold(target.name)), msg_type="combat_narration")
 
     await _degrade_and_notify_weapon(ctx, weapon, result.won)
 
@@ -4819,7 +4874,7 @@ async def cmd_sell(ctx: CommandContext, cmd: Command):
     if not cmd.direct_obj:
         candidates = [_action_row(item) for item in _sellable_items(ctx)]
         if not candidates:
-            await post_display(ctx, "You have nothing to sell.")
+            await post_display(ctx, "You have nothing to sell.", msg_type=MessageType.PLAYER_ACTION)
             return failure("sell_no_candidates")
         await _open_item_action_chooser(ctx, "sell", loc("cmd_sell.no_target"), candidates)
         return success("sell_chooser", facts={"chooser_opened"})
@@ -4827,13 +4882,13 @@ async def cmd_sell(ctx: CommandContext, cmd: Command):
     ensure_inventory_identity(ctx.session.player)
     item = find_item_exact(cmd.direct_obj, ctx.session.player.inventory)
     if not item:
-        await post_display(ctx, loc("cmd_sell.not_held"))
+        await post_display(ctx, loc("cmd_sell.not_held"), msg_type=MessageType.PLAYER_ACTION)
         return failure("sell_not_held")
 
     vendor = _selling_vendor(ctx)
     from .economy import economy_system as _econ, DISTRICT_TO_REGION
     if not vendor:
-        await post_display(ctx, loc("cmd_sell.no_value"))
+        await post_display(ctx, loc("cmd_sell.no_value"), msg_type=MessageType.PLAYER_ACTION)
         return failure("sell_no_value")
     npc, _stock, represented_categories = vendor
     if (
@@ -4846,7 +4901,7 @@ async def cmd_sell(ctx: CommandContext, cmd: Command):
         }
         or _econ.get_item_category(item.id) not in represented_categories
     ):
-        await post_display(ctx, loc("cmd_sell.no_value"))
+        await post_display(ctx, loc("cmd_sell.no_value"), msg_type=MessageType.PLAYER_ACTION)
         return failure("sell_no_value")
 
     base_cost = _econ.get_item_base_price(item.id, getattr(ctx.shared.world, "item_catalog", None))
@@ -4861,13 +4916,13 @@ async def cmd_sell(ctx: CommandContext, cmd: Command):
         season_multiplier=SEASONAL_PRICE_MULTIPLIER.get(_season_from_day(ctx.shared.game_time.day), 1.0),
     )
     if sell_price <= 0:
-        await post_display(ctx, loc("cmd_sell.no_value"))
+        await post_display(ctx, loc("cmd_sell.no_value"), msg_type=MessageType.PLAYER_ACTION)
         return failure("sell_no_value")
 
     ctx.session.player.inventory.remove(item)
     _earn_money(ctx.session.player, sell_price)
     log_event(ctx, f"You sold {item.name} for {sell_price} fabi.")
-    await post_display(ctx, loc("cmd_sell.success").format(name=item.name, price=sell_price))
+    await post_display(ctx, loc("cmd_sell.success").format(name=item.name, price=sell_price), msg_type=MessageType.PLAYER_ACTION)
     return success("sell", facts={"item_sold"})
 
 
@@ -4965,7 +5020,7 @@ async def cmd_equip(ctx: CommandContext, cmd: Command):
     if not cmd.direct_obj:
         from .popup_payloads import has_any_equipment
         if not has_any_equipment(ctx.session.player):
-            await post_display(ctx, "You have nothing to equip.")
+            await post_display(ctx, "You have nothing to equip.", msg_type=MessageType.PLAYER_ACTION)
             return failure("equip_no_items")
         await _open_equipment_popup(ctx)
         return
@@ -4975,23 +5030,26 @@ async def cmd_equip(ctx: CommandContext, cmd: Command):
     if item is None:
         item = find_item_by_name(cmd.direct_obj, ctx.session.player.inventory)
     if not item:
-        await post_display(ctx, loc("cmd_equip.not_held"))
+        await post_display(ctx, loc("cmd_equip.not_held"), msg_type=MessageType.PLAYER_ACTION)
         return failure("equip_not_held")
 
     item_identity = item.instance_id
     if item.disguise_id and item.disguise_id in ctx.disguises:
         ctx.session.player.equipped_disguise_item_id = item_identity
-        ctx.session.player.disguise = item.disguise_id
-        await post_display(ctx, loc("cmd_disguise_as.success").format(name=ctx.disguises[item.disguise_id].name, description=ctx.disguises[item.disguise_id].description))
+        await post_display(ctx, loc("cmd_equip.weapon_ready").format(name=item.name), msg_type=MessageType.PLAYER_ACTION)
     elif item.is_armour:
+        worn = _get_worn_armour(ctx.session.player)
+        if worn and worn.id == item.id:
+            await post_display(ctx, loc("cmd_equip.already"), msg_type=MessageType.PLAYER_ACTION)
+            return failure("equip_already_worn")
         ctx.session.player.worn_armour_id = item_identity
-        await post_display(ctx, loc("cmd_equip.armour").format(name=item.name, defense=item.defense_value))
+        await post_display(ctx, loc("cmd_equip.armour").format(name=item.name, defense=item.defense_value), msg_type=MessageType.PLAYER_ACTION)
     elif item.is_weapon:
         ctx.session.player.equipped_weapon_id = item_identity
         ctx.session._weapon_attack_count = 0
-        await post_display(ctx, loc("cmd_equip.weapon_ready").format(name=item.name))
+        await post_display(ctx, loc("cmd_equip.weapon_ready").format(name=item.name), msg_type=MessageType.PLAYER_ACTION)
     else:
-        await post_display(ctx, loc("cmd_equip.not_equipable"))
+        await post_display(ctx, loc("cmd_equip.not_equipable"), msg_type=MessageType.PLAYER_ACTION)
         return failure("equip_not_equipable")
     await _refresh_inventory_if_open(ctx)
     await _refresh_equipment_if_open(ctx)
@@ -5194,7 +5252,7 @@ async def cmd_examine(ctx: CommandContext, cmd: Command):
         hint = _item_action_hint(item, carried)
         if hint:
             lines.append(hint)
-        await post_display(ctx, "\n".join(lines))
+        await post_display(ctx, "\n".join(lines), msg_type=MessageType.ROOM_DESCRIPTION)
         return success(
             "examine",
             facts={"item_examined"},
@@ -5233,10 +5291,10 @@ async def cmd_examine(ctx: CommandContext, cmd: Command):
             short = _short_name(npc.name)
             if not getattr(ctx.session.player, "in_tutorial", False):
                 lines.append(f"You can: TALK TO {short}, ASK {short} ABOUT <topic>, ATTACK, PICKPOCKET.")
-            await post_display(ctx, "\n".join(lines))
+            await post_display(ctx, "\n".join(lines), msg_type=MessageType.ROOM_DESCRIPTION)
             return
 
-    await post_display(ctx, loc("cmd_examine.not_found"))
+    await post_display(ctx, loc("cmd_examine.not_found"), msg_type=MessageType.PLAYER_ACTION)
 
 
 async def cmd_assess(ctx: CommandContext, cmd: Command):
@@ -5244,14 +5302,14 @@ async def cmd_assess(ctx: CommandContext, cmd: Command):
     from .parser import DIRECTIONS
 
     if not cmd.direct_obj:
-        await post_display(ctx, loc("cmd_assess.no_target"))
+        await post_display(ctx, loc("cmd_assess.no_target"), msg_type=MessageType.PLAYER_ACTION)
         return
 
     direction = cmd.direct_obj.strip().lower()
     if direction in DIRECTIONS:
         weapon = _get_equipped_weapon(ctx.session.player)
         if not weapon or "scope" not in weapon.mods:
-            await post_display(ctx, "You can't see clearly from here.")
+            await post_display(ctx, "You can't see clearly from here.", msg_type=MessageType.PLAYER_ACTION)
             return
 
         room = _room(ctx)
@@ -5260,18 +5318,18 @@ async def cmd_assess(ctx: CommandContext, cmd: Command):
 
         dest_id = room.exits.get(direction)
         if not dest_id:
-            await post_display(ctx, loc("cmd_go.nowhere"))
+            await post_display(ctx, loc("cmd_go.nowhere"), msg_type=MessageType.PLAYER_ACTION)
             return
 
         dest_room = ctx.shared.world.rooms.get(dest_id)
         if not dest_room or not dest_room.npcs:
-            await post_display(ctx, "You see no one in that direction.")
+            await post_display(ctx, "You see no one in that direction.", msg_type=MessageType.PLAYER_ACTION)
             return
 
         npc_id = dest_room.npcs[0]
         npc = ctx.shared.world.npcs.get(npc_id)
         if not npc:
-            await post_display(ctx, "You see no one in that direction.")
+            await post_display(ctx, "You see no one in that direction.", msg_type=MessageType.PLAYER_ACTION)
             return
 
         lines = [f"Through your scope, you assess {npc.name} in the {direction} room."]
@@ -5300,7 +5358,7 @@ async def cmd_assess(ctx: CommandContext, cmd: Command):
                 if w:
                     lines.append(f"Armed with: {w.name}")
 
-        await post_display(ctx, "\n".join(lines))
+        await post_display(ctx, "\n".join(lines), msg_type=MessageType.DISCOVERY)
         return
 
     room = _room(ctx)
@@ -5315,17 +5373,17 @@ async def cmd_assess(ctx: CommandContext, cmd: Command):
         lines.append(f"Morale: {target_player.morale}")
         lines.append(f"Courage: {target_player.courage}")
         lines.append(f"Perception: {target_player.perception}")
-        await post_display(ctx, "\n".join(lines))
+        await post_display(ctx, "\n".join(lines), msg_type=MessageType.DISCOVERY)
         return success("assess", facts={"assessed"}, tutorial_event={"verb": "assess", "target": cmd.direct_obj or ""})
 
     npc_id = resolve_npc(ctx, cmd.direct_obj)
     if not npc_id:
-        await post_display(ctx, loc("cmd_examine.not_found"))
+        await post_display(ctx, loc("cmd_examine.not_found"), msg_type=MessageType.PLAYER_ACTION)
         return
 
     npc = ctx.shared.world.npcs.get(npc_id)
     if not npc:
-        await post_display(ctx, loc("cmd_examine.not_found"))
+        await post_display(ctx, loc("cmd_examine.not_found"), msg_type=MessageType.PLAYER_ACTION)
         return
 
     lines = [f"You assess {npc.name}."]
@@ -5361,13 +5419,13 @@ async def cmd_assess(ctx: CommandContext, cmd: Command):
     if not getattr(ctx.session.player, "in_tutorial", False):
         lines.append(f"You can: TALK TO {short}, ASK {short} ABOUT <topic>, ATTACK, PICKPOCKET.")
 
-    await post_display(ctx, "\n".join(lines))
+    await post_display(ctx, "\n".join(lines), msg_type=MessageType.DISCOVERY)
     return success("assess", facts={"assessed"}, tutorial_event={"verb": "assess", "target": cmd.direct_obj or ""})
 
 
 async def cmd_open(ctx: CommandContext, cmd: Command):
     if not cmd.direct_obj:
-        await post_display(ctx, loc("cmd_open.no_target"))
+        await post_display(ctx, loc("cmd_open.no_target"), msg_type=MessageType.PLAYER_ACTION)
         return
 
     item = _find_container(ctx, cmd.direct_obj)
@@ -5378,7 +5436,7 @@ async def cmd_open(ctx: CommandContext, cmd: Command):
     if (getattr(ctx.session.player, "in_tutorial", False)
             and getattr(item, "id", "").startswith("refugee_iron_safe")
             and getattr(ctx.session.player, "tutorial_stage", 0) < 23):
-        await post_display(ctx, "The soldier stands between you and the safe.")
+        await post_display(ctx, "The soldier stands between you and the safe.", msg_type=MessageType.PLAYER_ACTION)
         from .tutorial import _send_tutorial_hint, STAGE_ACTIONS as _OS_STAGES
         stage = ctx.session.player.tutorial_stage
         _os_action = _OS_STAGES.get(stage, {})
@@ -5389,7 +5447,7 @@ async def cmd_open(ctx: CommandContext, cmd: Command):
     consumed_key = None
     if item.locked:
         if not _has_key_for_container(ctx.session.player, item):
-            await post_display(ctx, loc("container.locked"))
+            await post_display(ctx, loc("container.locked"), msg_type=MessageType.PLAYER_ACTION)
             return
         item.locked = False
         consumed_key = _consume_key(ctx.session.player, item.key_id)
@@ -5397,27 +5455,27 @@ async def cmd_open(ctx: CommandContext, cmd: Command):
     item.is_open = True
     await _open_container_popup(ctx, item)
 
-    await post_display(ctx, loc("container.opened").format(name=item.name))
+    await post_display(ctx, loc("container.opened").format(name=item.name), msg_type=MessageType.PLAYER_ACTION)
     if consumed_key:
-        await post_display(ctx, loc("container.key_snapped").format(name=consumed_key.name))
+        await post_display(ctx, loc("container.key_snapped").format(name=consumed_key.name), msg_type=MessageType.PLAYER_ACTION)
     if item.container_items:
         contents = ", ".join(ci.name for ci in item.container_items)
-        await post_display(ctx, loc("container.contents").format(items=contents))
+        await post_display(ctx, loc("container.contents").format(items=contents), msg_type=MessageType.PLAYER_ACTION)
     else:
-        await post_display(ctx, loc("container.empty"))
+        await post_display(ctx, loc("container.empty"), msg_type=MessageType.PLAYER_ACTION)
     return success("open", facts={"container_opened"}, tutorial_event={"verb": "open", "target": cmd.direct_obj or ""})
 
 
 async def close_container(ctx: CommandContext, container) -> CommandOutcome:
     container.is_open = False
     await _close_container_popup_if_open(ctx, container.id, "closed")
-    await post_display(ctx, loc("container.closed").format(name=container.name))
+    await post_display(ctx, loc("container.closed").format(name=container.name), msg_type=MessageType.PLAYER_ACTION)
     return success("close", facts={"container_closed"})
 
 
 async def cmd_take_from(ctx: CommandContext, cmd: Command):
     if not cmd.direct_obj or not cmd.indirect_obj:
-        await post_display(ctx, loc("cmd_take_from.usage"))
+        await post_display(ctx, loc("cmd_take_from.usage"), msg_type=MessageType.PLAYER_ACTION)
         return failure("take_from_usage")
 
     container = _find_container(ctx, cmd.indirect_obj)
@@ -5426,30 +5484,30 @@ async def cmd_take_from(ctx: CommandContext, cmd: Command):
         return failure("take_from_not_container")
 
     if container.locked:
-        await post_display(ctx, loc("container.locked"))
+        await post_display(ctx, loc("container.locked"), msg_type=MessageType.PLAYER_ACTION)
         return failure("take_from_locked")
 
     if not container.is_open:
-        await post_display(ctx, loc("container.closed").format(name=container.name))
+        await post_display(ctx, loc("container.closed").format(name=container.name), msg_type=MessageType.PLAYER_ACTION)
         return failure("take_from_closed")
 
     item = find_item_exact(cmd.direct_obj, container.container_items)
     if not item:
-        await post_display(ctx, loc("container.not_in_there"))
+        await post_display(ctx, loc("container.not_in_there"), msg_type=MessageType.PLAYER_ACTION)
         return failure("take_from_missing")
 
     max_cap = getattr(ctx.session.player, "max_inventory", 12)
     current_count = len([i for i in ctx.session.player.inventory
                          if not getattr(i, "is_worn", False) and not getattr(i, "is_equipped", False)])
     if current_count >= max_cap:
-        await post_display(ctx, loc("cmd_generic.inventory_full"))
+        await post_display(ctx, loc("cmd_generic.inventory_full"), msg_type=MessageType.PLAYER_ACTION)
         return failure("take_from_inventory_full")
 
     container.container_items.remove(item)
     ctx.session.player.inventory.append(item)
     await _refresh_inventory_if_open(ctx)
     await _refresh_container_if_open(ctx, container)
-    await post_display(ctx, loc("container.take").format(item=item.name, container=container.name))
+    await post_display(ctx, loc("container.take").format(item=item.name, container=container.name), msg_type=MessageType.PLAYER_ACTION)
     return success(
         "take_from",
         facts={"item_taken"},
@@ -5457,50 +5515,11 @@ async def cmd_take_from(ctx: CommandContext, cmd: Command):
     )
 
 
-async def cmd_wear(ctx: CommandContext, cmd: Command):
-    if not cmd.direct_obj:
-        from .popup_payloads import has_any_equipment
-        if not has_any_equipment(ctx.session.player):
-            await post_display(ctx, "You have no armour to wear.")
-            return failure("wear_no_items")
-        await _open_equipment_popup(ctx)
-        return
-
-    from .equipment import ensure_inventory_identity
-    ensure_inventory_identity(ctx.session.player)
-    item = next((candidate for candidate in ctx.session.player.inventory if candidate.instance_id == cmd.direct_obj), None)
-    if item is None:
-        item = find_item_by_name(cmd.direct_obj, ctx.session.player.inventory)
-    if not item:
-        await post_display(ctx, loc("cmd_generic.not_held"))
-        return failure("wear_not_held")
-
-    if not item.is_armour:
-        await post_display(ctx, loc("cmd_wear.cant"))
-        return failure("wear_not_armour")
-
-    if ctx.session.player.worn_armour_id:
-        old_armour = _get_worn_armour(ctx.session.player)
-        if old_armour and old_armour.id == item.id:
-            await post_display(ctx, loc("cmd_wear.already"))
-            return failure("wear_already_worn")
-
-    ctx.session.player.worn_armour_id = item.instance_id
-    await post_display(ctx, loc("cmd_wear.success").format(name=item.name, defense=item.defense_value))
-    await _refresh_inventory_if_open(ctx)
-    await _refresh_equipment_if_open(ctx)
-    return success(
-        "wear",
-        facts={"equipment_changed"},
-        tutorial_event={"verb": "wear", "target": item.id or item.name},
-    )
-
-
 async def cmd_remove(ctx: CommandContext, cmd: Command):
     if not cmd.direct_obj:
         from .popup_payloads import has_any_equipment
         if not has_any_equipment(ctx.session.player):
-            await post_display(ctx, loc("cmd_remove.nothing"))
+            await post_display(ctx, loc("cmd_remove.nothing"), msg_type=MessageType.PLAYER_ACTION)
             return
         await _open_equipment_popup(ctx)
         return
@@ -5512,7 +5531,7 @@ async def cmd_remove(ctx: CommandContext, cmd: Command):
                 ctx.session.player.worn_armour_id = ""
                 await _refresh_inventory_if_open(ctx)
                 await _refresh_equipment_if_open(ctx)
-                await post_display(ctx, loc("cmd_remove.success").format(name=worn.name))
+                await post_display(ctx, loc("cmd_remove.success").format(name=worn.name), msg_type=MessageType.PLAYER_ACTION)
                 return
         if "weapon" in target or ctx.session.player.equipped_weapon_id:
             item = equipped_weapon(ctx.session.player) if "weapon" in target else find_item_by_name(cmd.direct_obj, ctx.session.player.inventory)
@@ -5520,11 +5539,11 @@ async def cmd_remove(ctx: CommandContext, cmd: Command):
                 ctx.session.player.equipped_weapon_id = ""
                 await _refresh_inventory_if_open(ctx)
                 await _refresh_equipment_if_open(ctx)
-                await post_display(ctx, f"You unequip {item.name}.")
+                await post_display(ctx, f"You unequip {item.name}.", msg_type=MessageType.PLAYER_ACTION)
                 return
         if "disguise" in target or ctx.session.player.disguise:
             if getattr(ctx.session.player, "in_tutorial", False) and getattr(ctx.session.player, "tutorial_stage", 0) in (28, 29, 30, 31, 32):
-                await post_display(ctx, "This is not the place to discard the uniform.")
+                await post_display(ctx, "This is not the place to discard the uniform.", msg_type=MessageType.PLAYER_ACTION)
                 from .tutorial import _send_tutorial_hint, STAGE_ACTIONS as _RM_STAGES
                 stage = ctx.session.player.tutorial_stage
                 _rm_action = _RM_STAGES.get(stage, {})
@@ -5535,14 +5554,14 @@ async def cmd_remove(ctx: CommandContext, cmd: Command):
             ctx.session.player.equipped_disguise_item_id = ""
             await _refresh_inventory_if_open(ctx)
             await _refresh_equipment_if_open(ctx)
-            await post_display(ctx, "You remove your disguise.")
+            await post_display(ctx, "You remove your disguise.", msg_type=MessageType.PLAYER_ACTION)
             return success(
                 "remove",
                 facts={"disguise_removed"},
                 tutorial_event={"verb": "remove", "target": "disguise"},
             )
 
-        await post_display(ctx, loc("cmd_remove.not_worn"))
+        await post_display(ctx, loc("cmd_remove.not_worn"), msg_type=MessageType.PLAYER_ACTION)
         return failure("remove_not_worn")
 
 
@@ -5684,12 +5703,12 @@ async def cmd_mod_weapon(ctx: CommandContext, cmd: Command):
     if not cmd.direct_obj:
         candidates = [_action_row(mod) for mod in _mod_candidates(ctx.session.player)]
         if not candidates:
-            await post_display(ctx, "You have no compatible mods to attach.")
+            await post_display(ctx, "You have no compatible mods to attach.", msg_type=MessageType.PLAYER_ACTION)
             return failure("mod_weapon_no_candidates")
         await _open_item_action_chooser(ctx, "mod_weapon", "Attach what?", candidates, stage="mod", context={"expected_stage": "mod"})
         return success("mod_weapon_chooser", facts={"chooser_opened"})
     if not cmd.indirect_obj:
-        await post_display(ctx, loc("cmd_mod.usage"))
+        await post_display(ctx, loc("cmd_mod.usage"), msg_type=MessageType.PLAYER_ACTION)
         return failure("mod_weapon_usage")
 
     weapon_name = cmd.direct_obj
@@ -5697,23 +5716,23 @@ async def cmd_mod_weapon(ctx: CommandContext, cmd: Command):
 
     weapon = find_item_exact(weapon_name, ctx.session.player.inventory)
     if not weapon or not weapon.is_weapon:
-        await post_display(ctx, loc("cmd_mod.no_weapon"))
+        await post_display(ctx, loc("cmd_mod.no_weapon"), msg_type=MessageType.PLAYER_ACTION)
         return failure("mod_weapon_no_weapon")
 
     mod = find_item_exact(mod_name, ctx.session.player.inventory)
     if not mod or not mod.is_mod:
-        await post_display(ctx, loc("cmd_mod.no_mod"))
+        await post_display(ctx, loc("cmd_mod.no_mod"), msg_type=MessageType.PLAYER_ACTION)
         return failure("mod_weapon_no_mod")
 
     if mod.id == "extended_magazine" and weapon.weapon_type != "firearm":
-        await post_display(ctx, "An extended magazine only fits a firearm.")
+        await post_display(ctx, "An extended magazine only fits a firearm.", msg_type=MessageType.PLAYER_ACTION)
         return failure("mod_weapon_incompatible")
 
     weapon.mods = getattr(weapon, 'mods', [])
     weapon.mod_slots = getattr(weapon, 'mod_slots', [])
 
     if len(weapon.mods) >= len(weapon.mod_slots):
-        await post_display(ctx, loc("cmd_mod.no_slot"))
+        await post_display(ctx, loc("cmd_mod.no_slot"), msg_type=MessageType.PLAYER_ACTION)
         return failure("mod_weapon_no_slot")
 
     def apply_courage_bonus(w, v):
@@ -5742,7 +5761,7 @@ async def cmd_mod_weapon(ctx: CommandContext, cmd: Command):
 
     ctx.session.player.inventory.remove(mod)
     log_event(ctx, f"You added {mod.name} to {weapon.name}.")
-    await post_display(ctx, loc("cmd_mod.success").format(mod=mod.name, weapon=weapon.name, type=mod.mod_type, bonus=mod.mod_bonus))
+    await post_display(ctx, loc("cmd_mod.success").format(mod=mod.name, weapon=weapon.name, type=mod.mod_type, bonus=mod.mod_bonus), msg_type=MessageType.PLAYER_ACTION)
     return success("mod_weapon", facts={"weapon_modded"})
 
 
@@ -5758,7 +5777,12 @@ async def cmd_search(ctx: CommandContext, cmd: Command):
 
     detail_lower = detail.lower()
 
-    base_chance = 40 + (ctx.session.player.perception - 30)
+    is_tutorial_loose_brick = (
+        getattr(ctx.session.player, "in_tutorial", False)
+        and detail_lower == "loose brick"
+        and any(drop.get("signal") == "loose brick" for drop in room.dead_drops)
+    )
+    base_chance = 100 if is_tutorial_loose_brick else 40 + (ctx.session.player.perception - 30)
     base_chance = max(10, min(100, base_chance))
     if random.randint(1, 100) > base_chance:
         await post_display(ctx, loc("cmd_search.nothing").format(detail=detail))
@@ -5774,6 +5798,7 @@ async def cmd_search(ctx: CommandContext, cmd: Command):
                 item = drop["item"]
                 room.items.append(item)
                 room.dead_drops.remove(drop)
+                await ctx.session.send_completions(build_completions(ctx))
                 await post_display(ctx, loc("cmd_search.found_drop").format(detail=detail, name=item.name), msg_type="discovery")
                 await _send_room_details(ctx, room)
                 return success(
@@ -6020,51 +6045,51 @@ async def cmd_repair(ctx: CommandContext, cmd: Command):
 
     room = _room(ctx)
     if not room:
-        await post_display(ctx, loc("cmd_repair.nowhere"))
+        await post_display(ctx, loc("cmd_repair.nowhere"), msg_type=MessageType.PLAYER_ACTION)
         return failure("repair_nowhere")
 
     room_tags = getattr(room, "tags", [])
     if "gmd_safehouse" not in room_tags:
-        await post_display(ctx, loc("cmd_repair.not_gmd_safehouse"))
+        await post_display(ctx, loc("cmd_repair.not_gmd_safehouse"), msg_type=MessageType.PLAYER_ACTION)
         return failure("repair_not_gmd_safehouse")
 
     weapon_name = cmd.direct_obj
     if not weapon_name:
         candidates = [_action_row(weapon) for weapon in _repairable_weapons(ctx.session.player)]
         if not candidates:
-            await post_display(ctx, "You have no damaged weapons to repair.")
+            await post_display(ctx, "You have no damaged weapons to repair.", msg_type=MessageType.PLAYER_ACTION)
             return failure("repair_no_candidates")
         await _open_item_action_chooser(ctx, "repair", "Repair what?", candidates)
         return success("repair_chooser", facts={"chooser_opened"})
     weapon = find_item_exact(weapon_name, ctx.session.player.inventory)
     if not weapon:
-        await post_display(ctx, loc("cmd_repair.weapon_not_found"))
+        await post_display(ctx, loc("cmd_repair.weapon_not_found"), msg_type=MessageType.PLAYER_ACTION)
         return failure("repair_weapon_not_found")
 
     if not weapon.is_weapon:
-        await post_display(ctx, loc("cmd_repair.not_a_weapon"))
+        await post_display(ctx, loc("cmd_repair.not_a_weapon"), msg_type=MessageType.PLAYER_ACTION)
         return failure("repair_not_a_weapon")
 
     if weapon.durability == -1 or weapon.max_durability <= 0:
-        await post_display(ctx, loc("cmd_repair.indestructible"))
+        await post_display(ctx, loc("cmd_repair.indestructible"), msg_type=MessageType.PLAYER_ACTION)
         return failure("repair_indestructible")
 
     if weapon.durability >= weapon.max_durability:
-        await post_display(ctx, loc("cmd_repair.already_repaired"))
+        await post_display(ctx, loc("cmd_repair.already_repaired"), msg_type=MessageType.PLAYER_ACTION)
         return failure("repair_already_repaired")
 
     is_ally = has_faction_perk(ctx.session.player.trust, "gmd")
 
     if is_ally:
         weapon.durability = weapon.max_durability
-        await post_display(ctx, loc("cmd_repair.ally_success").format(weapon=weapon.name))
+        await post_display(ctx, loc("cmd_repair.ally_success").format(weapon=weapon.name), msg_type=MessageType.PLAYER_ACTION)
         log_event(ctx, f"Your {weapon.name} was repaired by the GMD armorer for free.")
     else:
         damage = weapon.max_durability - weapon.durability
         cost = damage * 5
 
         if not can_afford_fabi(ctx.session.player, cost):
-            await post_display(ctx, loc("cmd_repair.cannot_afford").format(cost=cost))
+            await post_display(ctx, loc("cmd_repair.cannot_afford").format(cost=cost), msg_type=MessageType.PLAYER_ACTION)
             return failure("repair_cannot_afford")
 
         spend_fabi_value(ctx.session.player, cost)
@@ -6445,7 +6470,6 @@ def _build_command_registry() -> Dict[str, Callable]:
             "missions": cmd_missions,
             "search": cmd_search,
             "examine": cmd_examine,
-            "wear": cmd_wear,
             "remove": cmd_remove,
             "open": cmd_open,
             "take from": cmd_take_from,

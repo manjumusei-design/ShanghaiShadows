@@ -1,205 +1,2367 @@
 districts:
-  - prefix: bund
-    room_prefix: bund
-    title_prefix: "Bund Promenade"
-    count: 25
-    tags: [bund, river, checkpoint]
-    indoors_every: 5
-    item_cycle: [ration_card, photograph, newspaper, brass_key]
-    description_templates:
-      - "River mist drifts around bollards and broken reflections while clerks hurry by with their collars turned up."
-      - "The embankment smells of coal smoke and wet rope, and every footstep seems to carry farther than it should."
-      - "Across the water, cranes and gunmetal hulls hold the dawn in a hard, metallic silence."
-      - "Foreign stone facades glow weakly through the haze, pretending the century has not been split open."
-      - "Rickshaw wheels hiss over damp paving while watchful soldiers make the promenade feel narrower than it is."
-    special_ids:
-      "1": bund_dawn
-    special_names:
-      "1": "The Bund, Dawn"
-    connectors:
-      - at: 1
-        direction: west
-        to: nanjing_road
-      - at: 25
-        direction: south
-        to: docks_01
+- prefix: bund
+  room_prefix: bund
+  title_prefix: Bund Promenade
+  count: 25
+  tags:
+  - bund
+  - river
+  - checkpoint
+  indoors_every: 5
+  item_cycle:
+  - ration_card
+  - photograph
+  - newspaper
+  - brass_key
+  description_templates:
+  - River mist drifts around bollards and broken reflections while clerks hurry by with their collars turned up against the Huangpu wind.
+  - The embankment smells of coal smoke and wet rope, and every footstep seems to carry farther than it should.
+  - Cranes and gunmetal hulls across the water hold the dawn in a hard silence while porters count cargo under their breath.
+  - Foreign stone facades glow weakly through the haze, pretending the century has not been split open by flags and requisition notices.
+  - Rickshaw wheels hiss over damp paving while watchful soldiers make the promenade feel narrower than its broad stones suggest.
+  special_ids:
+    '1': bund_dawn
+    '8': tea_house
+    '12': international_settlement_bar
+    '18': gmd_safehouse_bund
+    '22': checkpoint_garden_bridge
+  special_names:
+    '1': The Bund, Dawn
+    '5': Customs House
+    '7': HSBC Building
+    '8': The Tea House on the Bund
+    '12': International Settlement Bar
+    '18': Nationalist Safe House
+    '22': Garden Bridge Checkpoint
+  special_items:
+    '22':
+    - testimony_bridge_refugee
+  special_descriptions:
+    '1': The Huangpu River gleams silver under a pale sky. Cargo vessels crowd the wharves, their superstructures bristling
+      with Japanese naval flags. A bitter wind carries the smell of coal smoke and rotting fish from the docks.
+    '5': The great neoclassical clock tower of the Customs House dominates the Bund skyline. British clerks hurry past with
+      ledgers tucked under their arms, while Japanese military police eye them from across the street. The smell of river
+      brine drifts through the marble corridors.
+    '7': The HSBC Building's grand dome gleams dully through the river fog. Once the headquarters of the Hongkong and Shanghai
+      Banking Corporation, it now houses Japanese financial administration. Chinese clerks move through its corridors with
+      downcast eyes, serving new masters in the same marble halls.
+  special_detailed_descriptions:
+    '1': The Bund's grand European facades stand as monuments to another era, their stone shoulders shrugging off the Japanese
+      occupation flags that drape from every balcony. Hawkers sell roasted chestnuts from tin drums, their smoke mixing with
+      the river fog. A beggar with no legs wheels himself between rickshaws, his empty trouser legs folded neatly beneath
+      him. Somewhere behind the Customs House clock tower, a flag snaps in the wind, and you catch the faint smell of opium
+      drifting from a waterfront den.
+    '5': The Customs House rises above the Bund like a granite monument to lost empire. Its clock, the largest in Asia, still
+      keeps time for a city that no longer belongs to those who built it. Inside the marble lobby, the echoes of boot heels
+      and murmured orders bounce off columns carved with maritime motifs. Japanese officers have taken over the upper floors,
+      their flags hanging where the British ensign once flew. Outside, rickshaw pullers wait for fares they know will never
+      come, their faces etched with the patient despair of the conquered.
+    '7': The HSBC Building was once called the most magnificent building on the Bund, its dome visible from the Huangpu River's
+      mouth. Now the banking halls that once teemed with international commerce have been converted into offices for the Japanese
+      financial overseers. The mosaic floor, a masterpiece of Italian craftsmanship, is trampled daily by boots that were
+      never meant to walk here. Chinese employees who once managed accounts now fetch tea and bow to occupation officials.
+      The building's great bronze doors still swing open each morning, but the men who enter are no longer bankers, they are
+      administrators of conquest.
+  connectors:
+  - at: 1
+    direction: west
+    to: nanjing_road
+  - at: 25
+    direction: south
+    to: docks_01
+- prefix: commercial
+  room_prefix: commercial
+  title_prefix: Commercial Street
+  count: 8
+  tags:
+  - commercial
+  - market
+  - teahouse
+  - printshop
+  - office
+  - food
+  indoors_every: 4
+  item_cycle:
+  - silk_scarf
+  - newspaper
+  - ration_card
+  - hidden_cash
+  description_templates:
+  - Shop shutters rattle in the wind and painted signs peel over windows that no longer trust daylight or easy credit.
+  - The lane carries perfume, frying oil, and the stale fear of people learning to bargain without speaking plainly.
+  - A tram line cuts through the street like a memory of speed from a calmer decade, its rails polished by anxious crossings.
+  - Neon tubes buzz above shops that trade in luxury by day and quieter obligations after the shutters fall.
+  - Teahouses, tailors, and pawnshops lean close enough to share secrets across the street without raising their voices.
+  special_ids:
+    '1': nanjing_road
+    '8': checkpoint_soochow_creek
+    '2': old_city_market
+  special_names:
+    '1': Nanjing Road
+    '2': Foochow Road Bookshops
+    '3': Sincere Department Store
+    '4': Broadway Warehouses
+    '5': Wing On Company
+    '6': Honan Road Ironmongers
+    '7': The Sun Sun Store
+    '8': Soochow Creek Checkpoint
+  special_items:
+    '1':
+    - testimony_nanjing_teacher
+  special_descriptions:
+    '1': Honking horns and bicycle bells fill the air along Shanghai's most famous shopping street. Refugees and shoppers
+      alike weave between rickshaws and trams, their bundles held close. Department store windows display mannequins in summer
+      silks, oblivious to the war just beyond the city limits.
+    '3': Sincere Department Store rises six stories above Nanking Road, its neon sign flickering against the grey sky. Shoppers
+      crowd the ground floor cosmetics counters, pretending the occupation has not changed everything. The rooftop tea garden
+      offers a view of clerks, officers, and messengers crossing paths below without admitting they recognize one another.
+    '5': Wing On Company stands across from its rival Sincere, a monument to Chinese commercial ambition. The store's escalators
+      carry businessmen and housewives between floors of luxury goods that grow scarcer by the month. Japanese officers browse
+      the silk department with their mistresses, and the staff smile through gritted teeth.
+    '7': The Sun Sun Store squeezes between its larger competitors, a smaller emporium known for quality dry goods and discretion.
+      Its side entrance opens onto a lane where black market money changers conduct business in whispers. The third floor
+      manager's office has a back door that opens onto a neighbouring roof.
+    '8': Sandbags and sawhorses narrow the crossing at Soochow Creek, where soldiers inspect papers beside water dark with
+      oil and refuse. The checkpoint smells of wet wool, cigarette ash, and fear kept politely behind closed mouths.
+  special_detailed_descriptions:
+    '1': Shanghai's premier thoroughfare stretches before you, a canyon of neon signs and department store windows. The street
+      is choked with rickshaws, bicycles, and the occasional black sedan flying a Japanese flag. Hawkers sell everything from
+      roasted chestnuts to forged travel permits, their voices competing with tram bells and propaganda broadcasts from loudspeakers
+      mounted on every corner. The crowd moves with a collective wariness, eyes scanning for patrols, pickpockets, and familiar
+      faces that might be informants. Despite the occupation, commerce continues, a stubborn assertion that life must go on.
+    '3': Sincere Department Store embodies Chinese resilience in the face of occupation. Its vast ground floor, filled with
+      perfumes, silks, and imported luxuries, serves as a meeting point for Shanghai's elite and those who serve them. The
+      escalators carry a cross-section of the city, wealthy Chinese merchants, Japanese officers' wives, foreign journalists
+      nursing whiskies in the rooftop cafe. On the fourth floor, a tailor's shop hides resistance message
+      drops. The store's basement houses a generator that runs after curfew, powering secret meetings below the darkened floors.
+    '5': Wing On Company, Sincere's great rival, occupies a magnificent building with art deco detailing that speaks to Shanghai's
+      pre-war ambition. The shoe department on the second floor has become an unlikely meeting point for Chinese intelligence
+      agents, who pass messages between displays of leather oxfords and canvas sneakers. Japanese military police patrol the
+      aisles with visible suspicion, certain the store moves information but unable to prove it. The basement cafeteria serves
+      noodles to employees who speak in coded language about the war.
+    '7': The Sun Sun Store occupies a narrow building between its wealthier competitors, its facade less grand but its trade
+      no less vital. The store specializes in everyday goods, buttons, thread, cooking oil, and matches. These humble wares
+      make it useful cover for resistance supply chains. The third floor houses a tailor who alters uniforms for Japanese
+      officers by day and sews hidden pockets into resistance jackets by night. A trapdoor in the storage room leads to an
+      attic where fugitives sometimes hide during raids.
+  connectors:
+  - at: 1
+    direction: east
+    to: bund_dawn
+  - at: 2
+    direction: south
+    to: french_concession_safehouse
+  - at: 4
+    direction: south
+    to: gmd_safehouse_old_city
+  - at: 1
+    direction: north
+    to: checkpoint_north_gate
+- prefix: old_city
+  room_prefix: oldcity
+  title_prefix: Old City Lane
+  count: 8
+  tags:
+  - old_city
+  - alley
+  - shrine
+  - residence
+  - school
+  - bridge
+  - clinic
+  indoors_every: 3
+  item_cycle:
+  - temple_talisman
+  - prayer_beads
+  - bloodied_message
+  - photograph
+  description_templates:
+  - Grey brick walls hold the night's damp, and laundry lines sag like tired flags over families counting breakfast.
+  - Small courtyards open and close between walls inked with rain, handbills, and names scratched out before inspection.
+  - The lane smells of cooking rice, old incense, and drains that never quite dry after the morning buckets pass.
+  - Wooden doors sit shoulder to shoulder, each one thin enough to hear worry and thick enough to deny it.
+  - A shrine niche flickers from somewhere unseen, giving the alley more conscience than light.
+  connectors:
+  - at: 1
+    direction: north
+    to: commercial_04
+  - at: 4
+    direction: west
+    to: checkpoint_south_docks
+  - at: 1
+    direction: east
+    to: university
+  special_ids:
+    '1': gmd_safehouse_old_city
+    '2': hongkou_detention
+  special_names:
+    '1': Old City Safe House
+    '2': Hongkou Detention Center
+    '3': Yuyuan Garden Gate
+    '5': City God Temple
+    '7': Tortoise Shell Alley
+  special_items:
+    '5':
+    - testimony_archive_box
+  special_descriptions:
+    '1': The Old City Safe House is a nondescript residence tucked into a maze of identical lanes. From the street, it looks
+      like any other shikumen house with its grey brick facade and wooden door. Inside, the windows have been blacked out
+      and the furniture arranged to provide clear sightlines to every entrance.
+    '2': The Hongkou Detention Center is a grim concrete building surrounded by barbed wire. The windows are barred and the
+      walls are lined with damp. The sounds of interrogation echo through the corridors at all hours.
+    '3': The ornate gate of the Yuyuan Garden opens onto a world of winding paths and hidden pavilions. Old women burn incense
+      at small shrines tucked between rockeries, their prayers mingling with the smoke. Japanese officers photograph the Ming
+      dynasty architecture while their minders watch the crowd for dissidents.
+    '5': The City God Temple's curved eaves rise above the old city's rooftops, its incense smoke a constant presence. Worshippers
+      light candles for ancestors and for the souls of those killed in the recent massacres. The temple courtyard has become
+      an unofficial market where news travels faster than the Kempeitai can track it.
+    '7': Tortoise Shell Alley threads between crumbling residential compounds, so narrow that laundry lines from opposing
+      windows nearly touch. Children kick stones in the gutter while their mothers haggle over vegetables at a corner stall.
+      The alley's walls are covered with fading propaganda posters peeling beneath newer layers of damp and time.
+  special_detailed_descriptions:
+    '1': The Old City Safe House is a two-storey shikumen residence that blends perfectly into the surrounding lane. The front
+      room appears to be a modest parlour with worn furniture and family photographs on the walls. Behind a false wall in
+      the kitchen, a narrow staircase leads to a hidden basement where resistance operatives plan missions, store weapons,
+      and shelter fugitives. The basement has a radio set tuned to frequencies monitored by no legitimate authority.
+    '2': The Hongkou Detention Center is a place of concrete and despair. The holding cells are small, windowless boxes where
+      prisoners are kept in darkness for days at a time. The interrogation rooms are equipped with tools that leave no marks
+      on the body but break the spirit. The detention center is run by the Kempeitai, and the guards are men who have been
+      selected for their capacity for cruelty.
+    '3': The Yuyuan Garden Gate marks the entrance to one of Shanghai's most treasured historical sites, a Ming dynasty garden
+      of pavilions, rockeries, and koi ponds. The garden's famous zigzag bridge still arches over its carp-filled waters,
+      but the pavilions now bear Japanese propaganda posters alongside ancient calligraphy. Old men play weiqi in the shadow
+      of pagodas, their games stretching through the afternoons while the city burns around them. The tea house within the
+      garden serves as a meeting point for those who wish to appear as tourists while conducting business that would interest
+      the authorities.
+    '5': The City God Temple, Chenghuangmiao, stands at the heart of the old Chinese city, its incense burners never cold
+      despite the occupation. Worshippers come to pray for protection, for news of missing sons, for the strength to endure,
+      their whispered petitions rising with the smoke. The temple's side halls house small shrines to local deities, each
+      one tended by devotees who also tend the networks of resistance that operate in the temple's shadow. Outside, the bazaar
+      offers everything from prayer beads to forged identity papers, sold with the same neutral expression.
+    '7': Tortoise Shell Alley is the kind of lane that exists nowhere else but in Shanghai's old city, so narrow that a man
+      can touch both walls, so crooked that daylight reaches the ground only at noon. The residents know each other's business,
+      which makes secrets impossible and conspiracy an art form. A noodle shop at the alley's midpoint serves the best hand-pulled
+      noodles in the district and acts as a message drop for the neighborhood resistance cell. The alley connects to a dozen
+      similar lanes, forming a maze that occupation patrols avoid unless heavily armed.
+- prefix: hongkou
+  room_prefix: hongkou
+  title_prefix: Hongkou Street
+  count: 8
+  tags:
+  - hongkou
+  - checkpoint
+  - refugee
+  - station
+  - clinic
+  indoors_every: 4
+  item_cycle:
+  - forged_pass
+  - patrol_route
+  - ration_card
+  - newspaper
+  description_templates:
+  - Patrol boots scrape over tram grit while signboards in several languages stare past one another in official silence.
+  - Cheap boarding houses and military trucks share the same street under a sky the color of dirty tin.
+  - A refugee line knots around the corner, watched by rifles too tired to lower themselves before noon.
+  - Soot, diesel, and brittle patience gather around people waiting for permission to move three streets farther.
+  - Tea steam rises from chipped bowls and disappears before it reaches the barbed wire. The street pays for its tea in silence.
+  connectors:
+  - at: 1
+    direction: south
+    to: nanjing_road
+  - at: 2
+    direction: west
+    to: gmd_safehouse_old_city
+  - at: 4
+    direction: south
+    to: docks_01
+  special_ids:
+    '1': checkpoint_north_gate
+    '5': kempeitai_hq
+    '2': university
+    '3': kempeitai_radio_post_hongkou
+    '4': hongkou_ruins
+  special_names:
+    '1': North Gate Checkpoint
+    '2': Shanghai University
+    '3': Japanese Bathhouse Lane
+    '4': Hongkou Ruins
+    '5': Kempeitai Headquarters
+    '7': Dōbun Shoin Academy Gate
+  special_descriptions:
+    '1': Barbed wire and sandbags frame the entrance to Hongkou, where Japanese soldiers check papers with practiced disdain.
+      Refugees queue in the shadow of a watchtower, clutching documents that may or may not save them. The air smells of diesel
+      fumes and the anxiety of hundreds of people waiting for permission to pass.
+    '3': Steam rises from the bathhouse vents, carrying the scent of sulfur and cedar into the narrow lane. Japanese residents
+      shuffle past in wooden geta, towels draped over their shoulders, heads bowed against the cold. The bathhouse keeper
+      knows everyone's name and pretends not to notice the late-night visitors who use his establishment's back entrance.
+    '5': A reinforced building commands the intersection, its windows sandbagged and its entrance guarded by military police.
+      Inside, interrogators work through the night, their methods known throughout the city. The Kempeitai Headquarters is
+      not a place one visits voluntarily, and those who enter rarely leave unchanged.
+    '7': The gate of the Dōbun Shoin Academy stands as a cultural bridge between Japan and China, its architecture blending
+      both traditions. Students in uniforms pass through with books tucked under their arms, studying the language of their
+      occupiers. The campus grounds contain secrets that go beyond the curriculum, intelligence operations conducted under
+      the cover of education.
+  special_detailed_descriptions:
+    '1': North Gate Checkpoint is the throat of Hongkou, a bottleneck where the occupation asserts its authority over every
+      soul that passes. Japanese soldiers man the barrier with the particular boredom of men who have done this a thousand
+      times, their rifles slung but their eyes sharp. The queue stretches fifty metres on busy days, refugees and workers
+      alike submitting to the ritual of document inspection, bowing, and the wait for a dismissive wave. A photograph on the
+      guardhouse wall shows the Emperor, his gaze as indifferent as the soldiers'. The checkpoint closes at curfew, and anyone
+      caught on the wrong side sleeps in the gutter or worse.
+    '3': Japanese Bathhouse Lane runs behind a row of commercial buildings, its cobblestones slick with steam and spilled
+      water. The bathhouse itself is a two-storey wooden structure built in the Japanese style, its chimney puffing coal smoke
+      from dawn until midnight. Inside, men soak in deep wooden tubs, discussing business in murmured Japanese while the bathhouse
+      attendant refills sake cups. The back door opens onto an alley that connects to the resistance's secret routes, a fact
+      the bathhouse keeper knows but never speaks of.
+    '5': The Kempeitai Headquarters occupies a former bank building, its marble lobby now stripped of elegance and furnished
+      with steel desks and filing cabinets. The cells in the basement are never empty, and the sounds that rise through the
+      ventilation system are not meant for civilian ears. Interrogators work in shifts, employing techniques refined in Manchuria
+      and tested on Chinese prisoners. The building's roof bears a radio antenna that intercepts transmissions across the
+      city, and the staff includes Japanese linguists who specialize in Shanghai dialects.
+    '7': The Dōbun Shoin Academy occupies a campus of low modern buildings behind a traditional Japanese gate. By day, the
+      classrooms teach economics, language, and cultural studies to students from both China and Japan. By night, certain
+      offices host longer meetings, where officers in civilian clothes discuss matters far beyond the academy's stated mission.
+      The library contains a collection of maps and regional studies that would be of great interest to the Chinese resistance,
+      if anyone could get past the locked stacks.
+- prefix: french
+  room_prefix: french
+  title_prefix: French Concession Lane
+  count: 7
+  tags:
+  - french
+  - balcony
+  - church
+  - office
+  - rooftop
+  - safehouse
+  - attic
+  indoors_every: 2
+  item_cycle:
+  - silk_scarf
+  - coded_ledger
+  - hidden_cash
+  - temple_talisman
+  description_templates:
+  - Plane trees drag their shadows over cracked paving and pale stucco facades with shuttered eyes.
+  - Balconies lean overhead with ironwork elegant enough to make the war feel like an insult to architecture.
+  - Coffee, wine, and sewer water compete in the air while servants carry market baskets past polished gates.
+  - A church bell somewhere nearby hesitates before each note as though even sound needs permission.
+  - Clerks, exiles, and opportunists pass under striped awnings with practiced indifference. The cafés keep their chairs turned toward the street.
+  connectors:
+  - at: 1
+    direction: north
+    to: old_city_market
+  - at: 3
+    direction: east
+    to: oldcity_04
+  - at: 4
+    direction: south
+    to: docks_06
+  special_ids:
+    '1': french_concession_safehouse
+    '2': gmd_safehouse_french_concession
+    '3': checkpoint_south_docks
+  special_names:
+    '1': French Concession Safe House
+    '2': Nationalist Safe House
+    '3': Avenue Joffre Market
+    '5': Cercle Sportif Français
+    '7': Rue du Consulat Gardens
+  special_descriptions:
+    '3': The Avenue Joffre Market spills across the pavement with stalls of fresh bread, cheese, and silk scarves. White Russian
+      women bargain with Chinese vendors in a mix of languages that defines the Concession. The market's ironwork arches are
+      hung with strings of garlic and sausages, oblivious to the war.
+    '5': The Cercle Sportif Français stands behind wrought-iron gates, its tennis courts and swimming pool reserved for the
+      European elite. Refugees press their faces against the railings, watching children splash in the pool. The clubhouse
+      bar serves cocktails to men who pretend the occupation is a temporary inconvenience.
+    '7': The Rue du Consulat Gardens offer a pocket of Parisian elegance in wartime Shanghai. Plane trees line the gravel
+      paths where nannies push prams and old men play pétanque. The gardens smell of damp earth and jasmine, a fragile peace
+      maintained by French neutrality.
+  special_detailed_descriptions:
+    '3': Avenue Joffre Market is the belly of the French Concession, a covered market where the city's culinary traditions
+      collide. Stalls overflow with baguettes and bok choy, wheels of brie and jars of pickled turnips, the bounty of two
+      continents laid out under a single roof. The butchers speak Shanghainese, the fishmongers speak French, and everyone
+      understands the language of the black market that operates beneath the legitimate trade. Japanese officers' wives shop
+      here for provisions their servants cannot find elsewhere, their presence a reminder that even French soil is not truly
+      neutral.
+    '5': The Cercle Sportif Français occupies a sprawling compound of tennis courts, a swimming pool, and a clubhouse that
+      has seen better decades. Its members, mostly European expatriates and wealthy Chinese who have purchased the right connections,
+      gather for gin and tonics on the veranda as though the world beyond the gates does not exist. The basement locker room
+      contains a safe where members store valuables, and a smaller compartment behind the boiler where documents are passed
+      between hands that never meet. The swimming pool is drained in winter, its empty basin a perfect meeting space for those
+      who know how to access it.
+    '7': Rue du Consulat Gardens stretch along the street that houses the French, British, and American consulates, a ribbon
+      of green in the urban grey. The gardens were designed by a French landscape architect who imported plane trees from
+      Provence, their bark peeling in the Shanghai humidity. Children play beneath the watchful eyes of amahs while their
+      parents discuss politics on park benches in voices that carry no further than the next bench. The consulate staff use
+      the gardens as neutral ground for meetings that cannot occur inside official buildings, strolling the paths with papers
+      folded into newspapers.
+- prefix: docks
+  room_prefix: docks
+  title_prefix: Huangpu Dock
+  count: 7
+  tags:
+  - dock
+  - river
+  - warehouse
+  - gambling
+  indoors_every: 6
+  item_cycle:
+  - dock_manifest
+  - truncheon
+  - hidden_cash
+  - contraband_morphine
+  description_templates:
+  - Cargo hooks creak over black water while foremen count men the way they count crates. The river carries what the ledgers will not.
+  - Oil sheens spread rainbow-thin across puddles beside stacks of marked timber and unmarked fear.
+  - Warehouse doors slam in the wind and every slam sounds like guilt correcting itself. Nobody looks up.
+  - The wharf smells of brine, rope tar, and fish gone past salvage after the morning auction.
+  - Dice rattle somewhere behind the sheds even when the sirens start. The game does not stop for the alarm.
+  connectors:
+  - at: 1
+    direction: north
+    to: bund_25
+  - at: '7'
+    direction: north
+    to: hongkou_ruins
+  special_ids:
+    '4': dock_warehouse
+  special_names:
+    '1': Customs House Jetty
+    '2': Jardine Matheson Wharf
+    '3': Nanshi Fisherman's Pier
+    '4': Dock Warehouse
+    '5': Imperial Army Wharf
+    '7': Quai de France Landing
+  special_descriptions:
+    '1': The Customs House Jetty juts into the Huangpu's brown water, a stone pier where revenue cutters once moored. Now
+      Japanese cargo ships tie up here, their holds swallowing the wealth of the city. Dock workers in padded jackets move
+      crates with mechanical efficiency, their eyes on the ground.
+    '3': Nanshi Fisherman's Pier smells of brine and fish guts, a working wharf where the day's catch is unloaded at dawn.
+      Sampans cluster at the water's edge, their nets drying in the weak sun. The fishermen know every patrol boat's schedule
+      and have learned to read the river's moods.
+    '5': Imperial Army Wharf bristles with military activity, a secured zone where Japanese supply ships unload ammunition
+      and reinforcements. Armed sentries patrol the perimeter while stevedores work under the muzzles of machine guns. The
+      wharf is a target the resistance dreams of hitting.
+    '7': Quai de France Landing retains its French colonial charm despite the war, its iron lampposts and stone coping speaking
+      of a more gracious era. River sampans ferry goods between ocean-going vessels and the shore, a constant dance of commerce.
+      The landing is popular with photographers who pretend to capture scenery while documenting ship movements.
+    '4': Dock Warehouse squats behind a row of cranes, its corrugated doors streaked with rust and river damp. Men move
+      crates through the half-light while a clerk marks the manifest slowly enough to notice which boxes avoid inspection.
+  special_detailed_descriptions:
+    '1': Customs House Jetty extends into the Huangpu like an accusatory finger, its stone surface worn smooth by decades
+      of boots and cargo. The jetty was built by the Imperial Maritime Customs Service, whose British commissioners once controlled
+      Shanghai's trade, but the flags flying from the masthead now bear the rising sun. Dock workers in blue cotton jackets
+      and conical hats move crates of rice, ammunition, and machinery between ship and shore under the watch of Japanese naval
+      guards. The crane at the jetty's end groans with every lift, its iron骨架 a silhouette against the grey sky.
+    '3': Nanshi Fisherman's Pier is the oldest working wharf on the Huangpu, a clatter of sampans and junks that have tied
+      up at the same spot for generations. The fish market that operates from dawn until mid-morning is a chaos of auction
+      shouts, wooden scales, and buckets of silver catch. The fishermen, men whose faces are carved by wind and salt, know
+      every channel and sandbar in the river, knowledge that becomes valuable when the resistance needs to move goods past
+      Japanese patrols. A noodle stall at the pierhead serves the best fish soup in the district, and its proprietor hears
+      every rumour that comes up the river.
+    '5': Imperial Army Wharf is a military installation disguised as a commercial dock, its true purpose visible in the concrete
+      bunkers at each corner and the machine gun nests overlooking the water. Japanese supply ships dock here around the clock,
+      unloading artillery shells, vehicle parts, and sometimes troops in civilian clothes. The stevedores are Korean labourers
+      conscripted into service, their faces as expressionless as the guards'. A high fence topped with barbed wire separates
+      the wharf from the rest of the docks, and the gate is guarded by men who shoot first and ask questions of the corpse.
+    '7': Quai de France Landing occupies a bend in the river where the French Concession meets the Huangpu, its stone steps
+      leading down to the water. The landing was built for elegance, with iron railings and gas lamps, but now serves as a
+      commercial dock for Concession-bound goods. The French flag still flies above the landing's small customs office, a
+      gesture of sovereignty that grows more hollow with each passing month. The landing is a favourite spot for smugglers,
+      who find the French authorities more accommodating than the Japanese for the right price.
+- prefix: ccp_base
+  room_prefix: ccp_base
+  title_prefix: Underground Base
+  count: 4
+  tags:
+  - ccp
+  - underground
+  - guerrilla
+  indoors_every: 1
+  description_templates:
+  - 'A cellar beneath a noodle shop where the walls are lined with maps of Japanese military positions. Each red pin marks
+    an act of sabotage: a bridge damaged, a supply train derailed. The smell of gunpowder mingles with broth from above.'
+  - A hidden printing press churns out resistance newspapers by candlelight. The operators work in silence, their faces lit
+    by the dim glow of type being set. One wrong move and the Kempeitai would burn this place and everyone in it.
+  - Stacks of rice and dried fish line the walls, supplies for guerrilla fighters hiding in the hills outside the city. A
+    chalkboard lists the names of villages burned by Japanese soldiers last month.
+  - A radio set crackles in the corner, receiving coded transmissions from comrades in the field. The operator transcribes
+    each message with practiced speed, her hands never shaking despite the death penalty for what she does.
+  - Wounded fighters rest on straw mats, their bandages stained with blood and mud. A young woman tends to them with what
+    few medical supplies remain, her face grim but unwavering.
+  - A planning table covered in hand-drawn maps shows the routes of Japanese supply convoys. Red circles mark targets. Someone
+    has written 'For Nanking' in the margin.
+  - Propaganda leaflets are stacked knee-deep, each one a bullet of truth against the lies of the occupation. They speak of
+    Japanese atrocities such as the massacres, the comfort women, the forced labour camps.
+  - A narrow tunnel leads deeper underground, its walls reinforced with stolen Japanese timber. At the far end, a heavy door
+    opens onto a weapons cache that reveals rifles and grenades captured from ambushed patrols.
+  special_names:
+    '1': The Printers' Union Cellar
+    '2': Power Station Underground Bunker
+    '3': Guerrilla Supply Cache
+    '4': Radio Communications Room
+  special_descriptions:
+    '1': The Printers' Union Cellar in Zhabei is a low-ceilinged chamber beneath a print shop, its walls lined with cases
+      of type and stacks of paper. The union members who meet here are compositors and pressmen by day, resistance printers
+      by night. The cellar smells of ink, lead, and the particular mustiness of underground spaces.
+    '2': Power Station Underground Bunker is a reinforced chamber beneath the Yangpu electrical works, its walls thick enough
+      to withstand a direct hit. The bunker draws power from the station above, running lights, a radio, and a small machine
+      shop. The heat from the turbines above makes the bunker uncomfortably warm.
+  special_detailed_descriptions:
+    '1': The Printers' Union Cellar is reached through a trapdoor in the floor of a print shop on a Zhabei side street, the
+      kind of establishment that prints flyers and invoices for local businesses. The cellar extends beneath the shop and
+      the building next door, a space of about thirty feet by twenty with a ceiling so low that a tall man must stoop. The
+      walls are lined with wooden type cases, their compartments filled with characters in dozens of fonts. A hand-operated
+      printing press occupies the centre of the room, its mechanism polished by decades of use. The union members who operate
+      the press at night produce leaflets that appear on the streets by morning, their messages of resistance spreading through
+      the city like a contagion.
+    '2': The Power Station Underground Bunker was built as an emergency control centre for the electrical grid, a reinforced
+      concrete chamber twenty feet below the main turbine hall. The bunker has its own generator, tapped into the station's
+      output, and a ventilation system that draws air from above. The space is divided into three rooms consisting of a communications
+      centre with radio equipment, a meeting room with a table and chairs, and a storage room for supplies. The constant hum
+      of the turbines above provides cover for conversations and radio transmissions. The resistance uses the bunker for planning
+      operations and for sheltering operatives who need to lie low.
+  connectors:
+  - at: 1
+    direction: north
+    to: hidden_05
+- prefix: gmd_office
+  room_prefix: gmd_office
+  title_prefix: Intelligence Office
+  count: 4
+  tags:
+  - gmd
+  - military
+  - intelligence
+  indoors_every: 1
+  description_templates:
+  - Behind a false wall in a tea merchant's shop, Nationalist intelligence officers decode intercepted Japanese orders. The
+    ink is still wet on reports of another massacre in the countryside. These men carry the weight of a retreating government
+    and the fury of those left behind.
+  - A codebook lies open on a desk, its pages filled with columns of numbers. Maps of Japanese naval movements in the Huangpu
+    River are pinned to the wall, each annotated with dates and vessel names.
+  - 'A filing cabinet overflows with dossiers on Kempeitai officers: their habits, their routes, their weaknesses. Information
+    is the only weapon that works in a city under the boot of the occupier.'
+  - A shortwave radio receives broadcasts from Chungking, the voice of Free China audible above the static. The announcer
+    speaks of resistance and the certainty of victory. It is the only truth left in a city drowning in propaganda.
+  - Photographs of Japanese war crimes are spread across a table, evidence being compiled for the day of reckoning. Each image
+    is a reminder of why surrender is unthinkable.
+  - 'A cramped office where forged documents are made by steady hands: travel passes, identity cards, ration books. Each
+    forgery gives someone one more chance to pass a checkpoint.'
+  - A listening post where agents monitor Japanese military communications. The work is tedious and dangerous. Discovery means
+    torture and execution. But the intelligence saves lives.
+  special_names:
+    '1': Customs House Back Office
+    '2': Intelligence Bureau Annex
+    '3': Kempeitai Dossiers Office
+    '4': Chungking Radio Station
+  special_descriptions:
+    '1': The Customs House Back Office is a nondescript room behind the grand marble lobby of the Customs House, accessible
+      through a staircase that no sign marks. Nationalist intelligence officers work here in civilian clothes, processing
+      reports from agents across the city. The room smells of cigarette smoke, ink, and the particular tension of men who
+      know they are surrounded by enemies.
+    '2': The Intelligence Bureau Annex occupies a second-floor office above a stationery shop in the Xujiahui district. The
+      windows face the street, offering a clear view of anyone approaching. The office is furnished with desks, filing cabinets,
+      and a safe that holds the bureau's most sensitive files.
+  special_detailed_descriptions:
+    '1': The Customs House Back Office is a windowless room on the second floor of the Customs House, reachable through a
+      service staircase that begins behind a door marked 'Authorised Personnel Only.' The room is furnished with four desks,
+      each bearing a typewriter, a lamp, and stacks of paper. The walls are covered with maps of Shanghai marked with coloured
+      pins indicating Japanese positions, resistance safe houses, and the routes of patrol boats on the Huangpu. The men who
+      work here are Nationalist intelligence officers, their cover stories as varied as their backgrounds. They process reports
+      from a network of agents that extends across the city, coordinating operations that range from information gathering
+      to sabotage.
+    '2': The Intelligence Bureau Annex is a two-room office on the second floor of a commercial building in Xujiahui, above
+      a stationery shop that sells paper and ink to the mission school across the street. The outer room contains a desk where
+      a secretary receives visitors and maintains the appearance of a legitimate import-export office. The inner room, accessed
+      through a door disguised as a filing cabinet, holds the bureau's communications equipment, a shortwave radio, a codebook,
+      and a safe bolted to the floor. The annex is the liaison point between the Xujiahui resistance network and the Nationalist
+      command structure, a nerve centre disguised as a place of business.
+  connectors:
+  - at: 1
+    direction: south
+    to: french_05
+- prefix: refugee_entry
+  room_prefix: refugee_entry
+  title_prefix: Refugee Entry
+  count: 10
+  tags:
+  - refugee
+  - entry
+  - tutorial
+  indoors_every: 4
+  description_templates:
+  - The refugee route narrows between temporary notices, damp bundles, and officials calling names from lists already smudged by rain.
+  - Lanterns cast long shadows over people learning which counters demand papers and which demand patience.
+  - A quiet corner of the entry quarter holds bedrolls, chipped enamel cups, and the guarded silence of new arrivals.
+  - Footsteps echo off damp stone walls while families keep one hand on their luggage and one on their children.
+  special_ids:
+    '1': refugee_entry_checkpoint
+    '2': refugee_entry_tea_house
+    '3': refugee_entry_back_alley
+    '4': refugee_entry_market_street
+    '5': refugee_entry_warehouse
+    '6': refugee_entry_outpost
+    '7': refugee_entry_rooftop
+    '8': refugee_entry_dock
+    '9': refugee_entry_cellar
+    '10': refugee_entry_bund_exit
+  special_names:
+    '1': Nanking Road Checkpoint
+    '2': Tea House
+    '3': Back Alley
+    '4': Market Street
+    '5': Abandoned Warehouse
+    '6': Kempeitai Outpost
+    '7': Rooftop Escape
+    '8': Harbour Dock
+    '9': Safehouse Cellar
+    '10': The Bund, Dawn
+  special_descriptions:
+    '1': "Arc lamps cast flat white circles across the damp concrete. Refugees wait between rope barriers with passbooks held against their coats, advancing whenever a guard motions from the table. Uncle Liu stands beneath the lamps with two stacks of documents at his elbow. He checks each photograph, turns the page toward the stamp clerk, and calls the next name without raising his voice. East, the road returns to the Bund. At the southern side of the barrier, a narrow lane runs between shuttered offices toward the weather instruments on the next roof."
+    '10': "The cellar passage opens onto the stone esplanade beside the Whangpoo. Mist lies low over the water, softening the cranes and masts beyond the quay. Sampans knock against the pilings below, their mooring ropes creaking with each wash from the river. Porters wheel handcarts between stacked bales while clerks queue beneath occupation flags with passbooks held ready. West, weak arc lamps burn above the striped barrier of the Nanking Road checkpoint. A tram bell sounds inland, followed by the scrape of a truck changing gear."
+    '2': "Oil lamps burn low along the counter, and steam from the clay pots drifts through their light in slow coils. Mrs. Lin's hands set the day's baozi in rows on the tray, never hurrying, never stopping. The street front stands open to the lane, and wet wool and scorched soy drift in with the passers-by. Low voices come from the benches along the walls, talk kept at the level of resting, cups steaming on the boards between the talkers. At the far end of the room the eastern door is held shut by a soldier, and the lamplight stops short of that corner. A customer pays, takes his baozi wrapped in paper, and the coins ring on the counter. Mrs. Lin counts them into the drawer without looking up from the tray."
+    '3': "The lane narrows between damp walls. Laundry hangs overhead, dripping onto the wet stones, while delivery carts stand beneath sacking along one side. Boiled cabbage and coal smoke drift from a doorway without a door. Comrade Chen waits in the angle of the far wall, where the light thins. Beside him, one brick sits slightly forward of its neighbours, its mortar worn away. Voices from the tea house carry faintly through the western door. Beyond the eastern gate comes the distant clatter of the market."
+    '4': "Scales clatter beneath the patched awnings, and fish shine on wet boards under oil lamps. Sawdust has gone dark beneath the day's feet. Vendors call out rice by the jin, salted fish by the string, and cloth by the arm's length. At the next stall, a woman makes the rice seller weigh her sack a second time before she pays. Old Gao's stall stands midway down the row. A wooden club hangs above the counter, its grip polished by use. Beside it, a padded quilted jacket droops from a peg, one shoulder restitched with darker thread. Gao keeps a brass scale at his elbow and wipes the pan clean between customers. The western gate opens toward the alley. Handcarts crowd the eastern lane toward the warehouse."
+    '5': "Boot prints cross and recross the floor, rat tracks thread the dust along the walls, and one clean path runs from the doorway to the crates and back. Grey daylight lies in long pale slabs across the concrete, and a single lamp holds the dust suspended in its light. The air carries the smell of old wood. A Kempeitai soldier stands by the crates, rifle resting against his shoulder, watching the east end of the hall, his breath showing in small white plumes. The rusted iron safe sits behind the stack, half out of shadow, its door scarred, its hinges red with rust. The crates around it stand older than the safe, their wood gone grey, the iron strapping rusted to the staves. The market's noise reaches the west opening as a low murmur, thin through the crates. Light finds the safe's door."
+    '6': "The officer's hands lie on the open ledger, and the pen keeps its pace when the door admits you. The desk is neat in the way occupied things are neat: papers squared to their edges, the rubber stamp at the corner, the pen tray aligned with the blotter. Ink and boot polish sit in the air with the cold tobacco of a cigarette smoked down to the stub. His pen moves, stops, moves again, and the day's names pass under his hand. Fang Jie waits in the shadow of a filing cabinet near the eastern stairwell, her stillness as practised as the officer's pen. The corridor beyond her runs into the building's quiet. The desk's wood is oiled dark, and a single lamp pools its light on the ledger. The boards before the desk are worn where the chair has turned, day after day. The day's names pass under his hand, and the pen does not slow."
+    '7': "The stairwell opens onto a tarred roof hemmed by low brick parapets. Grey tiles step west toward the market, broken by chimney pots and lines of washing that snap in the winter wind. Beyond the warehouse roofs, the Whangpoo shows in pale strips between cranes and masts. A patrol whistle carries from the streets below, then disappears beneath the rattle of a tram. The Kempeitai officer stands at the western parapet with his back to the stairhead, studying the alleys below. Laundry hung between iron posts breaks the sightline across the roof. At the eastern end, a second stairwell descends toward the dock sheds."
+    '8': "You hear the water slap the pilings, and the sound comes up through the boards. The shed roof keeps the weather off. The light inside is grey and even, the light of the river strained through canvas. Beyond the shed mouth the moored boats ride at their ropes, and every creak of the moorings answers in the wet wood of the wharf. Diesel and wet rope share the air with the river's cold underneath. Crates stand stacked along the wall in a low square, and beside them Doctor Li waits, his worn leather bag at his feet, the clasp polished by years of carrying. His hands rest on the bag and do not move as the floorboards creak. His knuckles carry small cuts. At the west end the stairs climb back to the roof line, and dockworkers cross the shed mouth on their rounds, boards bending to each trip. The bag is the only thing in the shed that is not cargo. A dockworker crosses the shed mouth, and the boards bend under his load."
+    '9': "Candle smoke hangs level in the low air, too heavy to rise, the whole room under the weight of the street above. The cellar runs east as a low passage, plaster damp along the walls, and along the north wall a row of candle stubs burns on a ledge, each burned down to its base, the wicks black knots in the wax. Bedrolls lie against the wall, the cloth worn where shoulders have lain. Chipped enamel cups stand in a row on a shelf at even intervals, rims worn on the same side, each cup set square to its neighbour. One cup holds a finger of water gone still. The cold sits in the concrete floor and comes up through the bedrolls. West, the stairway climbs back toward the dock, its treads worn hollow. East, the passage narrows beneath the foundations before bending toward a strip of grey daylight. River noise carries faintly through the brick. A draught from the stairway leans the candle flames, and the close air carries smoke, damp plaster, and the faint soap of cloth washed in cold water."
+  special_detailed_descriptions:
+    '1': "The notices paper the sandbags in layers, the newest sheets on top, the damp curling the edges of the older ones. Uncle Liu's hands do the work without his eyes: the passbook opens to a marked page, the stamp lifts, comes down, lifts again. Behind him the queue waits in the arc light, some watching the hands, some watching the ground. His voice moves down the queue, a name, a pause, the shuffle of feet. The checked stack grows, the waiting stack shrinks. A man at the front tucks his passbook inside his coat and steps toward the lane south. The stamp comes down behind him."
+    '10': "The mist is lifting in sheets off the water, and the river shows itself in grey bands between. Gulls work the pilings where the sampans are tied, stabbing at the weed line with quick heads. Boot marks cross the wet stone and turn, a few heel-deep where someone stood and watched the water. Canvas slaps once against a pole as a gust finds the esplanade, and the flags stir a little before settling. Lamplight from the checkpoint window lies flat and yellow on the railings, already outmatched by the day. A hawser creaks. A window lights on the far shore, and below it a tram's first run shivers the rails. A cart reaches down the passage from the street beyond, then a voice calling something out of sight. The boot marks dry slowly at the edges."
+    '2': "The lamp flames lean as someone comes in from the street, and the regulars on the benches do not look up. Their cups sit half-drunk, talk running on in the register of people keeping a seat warm. A soldier's shadow lies across the east shutter, long and still, and nobody at the counter glances toward it twice. Mrs. Lin refills a cup without being asked, and the man takes it in silence. Oil smoke leans from the lamp glass and threads toward the open front. A bench creaks, and someone shifts. The laugh is short, and the talk settles back to its level."
+    '3': "Drain water runs in rivulets between the stones, pale with the lime of the walls, and gathers at the drain by the alley's mouth. Under the nearest cart's sacking the corners of crates show, rope lashed tight over the pile. Up close, the brick in the far wall sits proud of its mortar, the joints clean at the edges where a hand has found them, dusty in the gaps. The murmur of the tea house comes through the locked door west, muffled by the boards. The market's noise stays on the far side of the locked gate. Between the two, nothing moves but the water in the gutter."
+    '4': "The calling nearest the entrance drops half a tone when uniforms pass, and the haggling flattens until the boots fade. Bids and counters move in pairs: a price called low, an answer lower, a settlement somewhere between. Old Gao flicks a few grains of rice from the scale's pan back into the sack, and the pan comes up empty. The club and the vest hang above his counter, the vest's quilting worn at the shoulder, the club's grip darkened by a hand. On the far side of the hall the awnings angle so the goods show and the hands do not. The sawdust holds the day's footprints, deepest where the bargaining runs long. A scale clatters mid-weigh, and the calls begin again."
+    '5': "The safe's dial carries fine scratches in a circling pattern, the work of fingers that have returned to the same numbers. Among the many boot prints on the floor, one path stands out: it approaches the safe at an angle, pauses, and returns the way it came, while the rest of the traffic crosses and recrosses without pattern. A coat of dust lies over the crates, even and unbroken except where a sleeve has brushed a corner. The roof light falls at a slant that keeps the far wall in shadow, and the soldier's shape stays at the edge of the light, still as the crates, his breath pluming in the cold air. The ground before the safe is the cleanest in the room, the dust thin as paper."
+    '6': "Later, each paper on the desk lies flush with its neighbour, the stack's edges running true as a ruler's line. The stamp waits near the lamp, its handle dark from use, and beside it the telephone sits in its cradle, the cord coiled once. A glass ashtray holds one cigarette end, crushed flat. Fang Jie's shadow lies still across the boards. Through the doorway behind her the corridor stands empty. The pen stands in its tray at an exact angle, and the blotter shows the day's letters in reverse, still legible. The coat on the hook hangs so its seams fall straight. He does not reach for it."
+    '7': "The pigeons lift and settle on the chimney pots, and their shadows pass over the drying wash. The shirts have faded to the grey of the sky, and the soap is nearly gone from the cloth. Between two chimneys the parapet bricks are worn smooth at the top, where hands and elbows have rested at the edge of the drop. The roofs fall away in steps of tar and tile to a courtyard below, where a line still hangs, half taken in. From down there, rising through the wind, comes the sound of boots on stone, regular and unhurried, moving somewhere out of sight. The river lies flat and bright beyond the sheds. The wind tugs the nearest sheet and lets it fall. The boots keep their time."
+    '8': "A steamer's horn comes in off the river, low and long, and fills the shed without echo. The gangplanks lie at their angles along the quay, numbers painted on the wood, the surfaces worn pale by every trip they have taken. Inside, the floor boards run east and darken where the shed meets its far wall. The crates throw shadow there, and in the shadow the boards are scuffed in a broad patch, the grain scoured by traffic that does not reach the rest of the floor. Doctor Li watches the shed mouth, his gaze on the dockworkers' rounds, his hands folded over the bag's clasp. The mooring ropes creak in a slow rhythm. The river light rocks on the wet boards. The scuffed patch lies in the shadow, worn pale by traffic that arrives without a sound."
+    '9': "From the east end the cellar shows its whole length, the candle flames standing between here and the stairway. The bedrolls lie against the wall, most rolled tight and tied with cord, one left open on the floor, its blanket pushed back and not straightened. The enamel cups sit at even intervals on the shelf, one chipped at the rim, one worn through to the grey metal, each set square to its neighbour. Sounds reach the cellar from the street above: a cart crossing boards, a shout cut short, feet that pass without pausing. Each sound lands in the close air and fades into the damp. The candle flames lean together in the draught and stand straight again."
+  connectors:
+  - at: 10
+    direction: south
+    to: bund_dawn
+  - at: 10
+    direction: west
+    to: refugee_entry_checkpoint
+  - at: 1
+    direction: south
+    to: orientation_weather
+- prefix: orientation
+  room_prefix: orientation
+  title_prefix: Orientation Route
+  count: 8
+  tags:
+  - tutorial
+  - orientation
+  indoors_every: 2
+  description_templates:
+  - A borrowed room has been arranged for instruction, with chairs facing the door and voices kept below street level.
+  - Chalk marks, ration papers, and cold tea suggest someone expected trouble before you arrived.
+  special_ids:
+    '1': orientation_weather
+    '2': orientation_trust
+    '3': orientation_wanted
+    '4': orientation_blackmarket
+    '5': orientation_rumors
+    '6': orientation_eavesdrop
+    '7': orientation_contact
+    '8': orientation_alley
+  special_names:
+    '1': Weather Station
+    '2': Safehouse Common Room
+    '3': Police Checkpoint
+    '4': Black Market Alley
+    '5': Information Broker's Den
+    '6': Eavesdropper's Perch
+    '7': Resistance Contact Point
+    '8': Dark Alley
+  special_descriptions:
+    '1': "The barometer needle rests between fair and change. A thumb-smear on the case glass marks the place where the same hand presses each morning. Meteorologist Zhang works at the window, comparing the sky with the instruments before adding another line of figures to the slate. A barograph drum turns slowly beside it, its needle tracing the week's pressure in violet ink. Wall charts cover the boards behind him, pressure and wind marked in different inks. Beyond the glass, low cloud moves inland above the roofs. A strip of blackout cloth has been tied back from the upper pane. The eastern door leads into a common room beyond the instrument tables."
+    '2': "On the low stove, a rice pot clicks as steam gathers beneath the lid. Elder Brother Qian wipes the table, folds the cloth into quarters, and hangs it from a nail beside the stove. Bunks line the far wall, their blankets pulled tight and shoes paired underneath. Enamel cups stand rim-down on a shelf above a washbasin. A blackout curtain covers the high window, pinned back at one corner to admit a strip of morning light. The stove warms the centre of the room, but the air near the eastern door remains cool enough to keep coats buttoned. Qian checks the rice with the tip of a wooden spoon, replaces the lid, and lowers the flame."
+    '3': "Wanted notices cover the wall behind Inspector Park, their corners held flat beneath narrow strips of glass. Park sits at a scarred desk with an open ledger beneath one hand and a rubber stamp beside the other. Files are stacked by district, each bundle tied with cotton tape and marked in red pencil. A stopped wall clock hangs above a cabinet of fingerprint cards. West, the corridor returns to the common room. East, the notices continue toward a narrower passage where the electric light gives way to lamps hidden behind shutters."
+    '4': "The passage narrows between brick walls patched with planks and sheets of corrugated tin. Most of the shutters remain closed, though lamplight leaks through the cracks and catches on parcels wrapped in old newspaper. Tea crates serve as counters along one wall, their contents covered with sacking whenever footsteps pass the western entrance. Old Mother Jin sits behind a low folding table with a brass hand scale, a pencil stub and three unmarked tins arranged within reach. A loaded handcart occupies half the eastern passage. West, electric light shows beneath the door to the police corridor. East, the smell of ink carries from a partitioned desk."
+    '5': "A green-shaded lamp throws light across a desk crowded with ledgers, copied notices and folded slips of paper. Scribe Wen sits behind it with a brush held above an unfinished line, waiting for the last line of ink to dry. Shelves cover the brick wall at his back, their account books tied with string and their labels turned inward. A teapot stands beside a jar of brushes, and a shallow tray of blotting sand rests near Wen's elbow. The western partition opens toward Old Mother Jin's alley. East, a narrow corridor continues past a row of closed doors toward the listening post. Footsteps pass outside at intervals, slowing near the partition before continuing."
+    '6': "The window stands ajar over the street, and the city comes up through it as sound: cart wheels, a hawker's call, the even wash of feet. The chair faces the door, its back to the window, one side of the seat worn lower than the other. Floorboards creak under Old Crane's step as he moves from the sill to the wall and turns one ear toward the listening pipe. Grey light from the window reaches the worn chair but leaves the eastern door in shade. A listening pipe runs from the sill to the floor, its brass mouth dulled where his ear has rested. The door is plain wood, with no window in it."
+    '7': "Sister Zhao sits at a small table with a warm kettle and two enamel cups set between her hands. She has poured tea into one cup but has not touched it. A single coat hook is fixed beside the western door, and the bare plaster wall above the table carries a chalk mark rubbed down to a pale smudge. A folded newspaper covers the lower half of the window. Beneath the table, a canvas satchel rests against Zhao's chair with its buckle turned inward. West, the passage returns to the listening room. East, a plain wooden door is secured by a bolt set high on the frame."
+    '8': "The passage runs between damp brick walls toward the river road. Dawn shows at the southern mouth as a pale strip across the cobbles, broken whenever a cart passes outside. A merchant sits against the western wall with his collar open and a bottle hanging loosely from one hand. His breathing comes in short, uneven bursts. Near the alley mouth, a patrol guard stands beneath a patched awning with his arms folded, watching the traffic on the road. Rainwater drips from a bent gutter into a shallow channel along the wall. West, a plain door returns to the resistance contact room. South, wheels and bicycle bells pass along the road above the river."
+  special_detailed_descriptions:
+    '1': "The glass cases hold their instruments in rows: a thermometer, a wind gauge, a tube of mercury in its bracket. Chalk dust lies along the bottom edge of the reading slate, and the newest numbers are still crisp where older ones have smeared under a wet cloth. Zhang's hands are never still: he taps the barometer case, straightens a chart's corner, crosses to the window and back, and the pencil in his pocket rides loose against the ledger spine, notched at the thumb. Outside, cloud moves slowly past the roof line, and Zhang does not look up at it."
+    '2': "Grey daylight reaches through one window and thins at the floor's edge. The stove's fire is banked low, a coal glow under ash, and the rice pot steams above it. Along the far wall the bunks stand in a row, and above them a beam carries a smoke stain that is older than the paint around it. Qian crosses the room. The floorboards answer only at one place near the door, worn smooth by every foot. He sets the pot down on the hearth stone and stands at the window with his hands clasped behind him."
+    '3': "Inspector Park's hands move in a steady order: turn, read, stamp, stack. Up close, the ledger's pages are soft at the corners, and the rubber stamp's handle is worn where the fingers grip it. The ink pad is dry at one corner where the stamp has missed. Dust lies thin on the clock glass above the desk, though nothing in the room consults it; the wall clock points at an hour. The papers turn."
+    '4': "The light at either mouth of the covered passage falls short of the middle, where Old Mother Jin works her scales. The brass pans are dulled at the rims, and the weights beside them are worn smooth by handling. Folded wrappers lie in a neat stack at her elbow; each parcel leaves the table folded the same way, the fingers creasing each corner before the hands let go. A customer leans close, names a price in a whisper, and steps back. The pan clicks to rest, the loudest sound in the passage. The customer leaves without a word."
+    '5': "Steam thins against the lamp's light, and Scribe Wen reads a line twice before he turns the page, his pen waiting beside the ledger. The files stand in stacks of different heights, their edges catching the lamplight at the margins, and the teapot steams among the ledgers. He turns the page. A name is written, crossed out, written again, and the ledger's edge shows the marks of many such crossings."
+    '6': "The dust beside Old Crane's elbow is worn into the shape of an arm. He leans at the sill, and through the window a bicycle bell comes, a woman calling a price. The floorboards run the room's length: one loose board near the door, one silent board in the middle, the rest even underfoot. Beyond the chair, the room is bare wall and bare boards. Boots cross the cobbles below, then the sound fades and the street gives the window back its silence."
+    '7': "The kettle sings low, its steam rising straight and thin over the cup Zhao has poured and left untouched. The coat hook stands by the western door, its nail showing bare against the whitewash. The chalk smudge sits at shoulder height, close enough that a hand reaching for the hook would cover it. Zhao answers the door more than the table, her voice kept low, and when she speaks the bolt on the eastern door stays within reach of her glance. Set down, the second cup stands square to the table's edge, and the smudge keeps its place while the tea cools."
+    '8': "The bottle lies empty on its side where the merchant dropped it, and his open hand has come to rest on it. The guard shifts his weight from one foot to the other and back again, unhurried. Through the passage mouth a tram bell comes, the rattle of a cart. The merchant's breathing saws, undisturbed. The guard's shadow lies long across the floor, and when he moves, it is only to stand where he was standing."
+  connectors:
+  - at: 8
+    direction: south
+    to: bund_dawn
+- prefix: hidden_shanghai
+  room_prefix: hidden
+  title_prefix: Hidden Shanghai
+  count: 10
+  tags:
+  - hidden
+  - resistance
+  - safe
+  - dangerous
+  - secret
+  indoors_every: 1
+  description_templates:
+  - Behind a bookcase that shifts on quiet hinges, a narrow passage leads to rooms the patrols have missed.
+  - The attic smells of dust and lamp smoke. By candlelight, hands draw patrol maps and fold them away before dawn.
+  - At the basement shrine, resistance members leave incense for those who failed to return. One candle burns to its stub.
+  - Mortar flakes from the walls. Each footstep is weighed against the sound it may carry upstairs.
+  - Between two houses, a forgotten corridor offers a way out, provided the next door has not been watched.
+  - Candlelight flickers over coded messages pinned to peeling wallpaper, waiting for eyes that know how to read them.
+  - Behind the false wall, an old wireless set waits beneath a blanket, its valves cold until someone risks a broadcast.
+  - The low ceiling forces every voice down to a murmur; even a true name can become evidence in a room like this.
+  - Jars of sulfa powder and bandages stand in the corners, saved from hospitals that no longer admit the poor.
+  - A trapdoor opens on a deeper cellar, where people without papers wait for a runner to return.
+  - Resistance members take turns on thin mats, listening for a knock that means the lane has turned against them.
+  - Cigarette smoke hangs under the ceiling while people count who came back from the night's raid.
+  - Patrol maps cover one wall, red crosses marking streets a courier should avoid after curfew.
+  - A transmitter rests on a small table, its aerial wire tucked under a loose tile until the appointed hour.
+  - Footsteps sound in the passage and every hand stops moving. A door shuts somewhere beyond the wall.
+  - 'Coffee rings, blunted pencils, and papers scored through with names show how many nights have been spent here.'
+  - A small altar takes one corner, candles burning for people taken by the occupation and never accounted for.
+  - The clutter has been arranged with drill-ground care. Maps, ration books, and cartridges each have their place.
+  - Wounded runners lie on cots at the back, breathing shallowly beneath blankets that smell of iodine.
+  - A codebook lies open on the desk; one page could bring a patrol to three households.
+  - The room waits with its lamps turned low and its papers covered, ready for the next word from outside.
+  - Beneath a tea house, this room has heard addresses traded over cold cups and remembered by no one afterward.
+  - Resistance leaders meet over a chipped table while the city above settles into curfew.
+  - A tunnel mouth opens in the floor to passages known only by their turns. The lamps burn low enough to deny.
+  - Crates of goods brought past checkpoints crowd the room, each marked in pencil with a destination or a name.
+  - Photographs of the missing line the walls. Names are spoken softly and never put on the papers.
+  - A hidden press sits under a tarpaulin, waiting for the next sheet to be pulled before daylight.
+  - The cramped room permits plain speech for an hour, if the lookout on the stairs keeps watch.
+  - Reports cover one table, their information paid for in favours, bribes, or a courier's nerve.
+  - A receiver crackles with coded broadcasts from beyond Shanghai, then falls silent before the signal can be traced.
+  - Banned books fill the shelves, their spines wrapped in old account paper against a search.
+  - Resistance cells meet here to assign work, since a single betrayal could empty every room in the lane.
+  - A false door opens onto a decoy room, buying a few moments when a raid reaches the stairs.
+  - Gun oil clings to the room. Someone has been readying what cannot be put back in its drawer.
+  - Bandages and medicines sit in labelled rows. Dust has gathered, but the shelves remain ready for the next wounded visitor.
+  - Messages in invisible ink cover the wall, legible only when warmed over a lamp.
+  - Ceiling panels lift away to reach the roof, where a runner may cross before the street patrol sees.
+  - Resistance members practise with weapons hidden inside ordinary tools, careful not to scar the floorboards.
+  - A map of the city's buried passages is pinned to the wall, its routes threading beneath occupation posts.
+  - People here have chosen a side and keep their voices low, because the price of that choice waits outside.
+  - 'The room holds a smuggled wireless, forged papers, and a photograph of someone who did not come back.'
+  - Shared secrets make the air close. Everyone knows one loose tongue might cost the rest their rooms.
+  - Planners work through the night, setting times and routes that may save a household or expose it.
+  - A hidden microphone catches police transmissions, then passes their words to people the police have been hunting.
+  - The desk holds stamps, blanks, and seals for travel passes, identity cards, and ration books.
+  - Resistance members sleep in shifts, knowing the next morning may bring the knock they dread.
+  - Weapons lie beneath the floorboards, wrapped in oilcloth for the hour when no safer choice remains.
+  - Escape routes cover the walls, each one drawn by a hand that has had to use it.
+  - Couriers pass through this room with messages for cells that must never know one another's names.
+  - The people gathered here keep at their work despite the odds, leaving no trace above the shop.
+  - Beneath a merchant's shop, this space has heard more resistance business than the pavement outside.
+  - A coded board lets cells pass instructions without bringing two couriers face to face.
+  - 'The room keeps the traces of small refusals: a false permit, a hidden ration card, a name carried out of Hongkou.'
+  - Resistance members mourn the fallen here, then divide the work left behind.
+  special_names:
+    '1': Behind the Russian Bakery
+    '2': Tea House Back Room
+    '3': Mahjong Parlor Back Room
+    '4': Tailor's Fitting Room Hideaway
+    '5': Dance Hall Storage Room
+    '6': Boiler Room Basement
+    '7': Cotton Bale Hideout
+    '8': Disused Pump House
+    '9': Coal Bunker Hideaway
+    '10': Factory Floor Crawlspace
+  special_descriptions:
+    '1': Behind the Russian Bakery, a loose board in the fence opens onto a narrow passage between buildings. The passage
+      leads to a cellar where White Russian emigres and Chinese resistance members meet in uneasy alliance. The smell of baking
+      bread masks the odour of damp concrete and conspiracy.
+    '2': The Tea House Back Room is a private chamber behind a respectable establishment near the old city market. The room
+      is furnished with worn armchairs and a scarred wooden table where maps are spread and plans are made. The tea house
+      owner pretends not to notice the late-night meetings.
+    '3': The Mahjong Parlor Back Room is hidden behind a curtain of beads, accessible only to regulars who know the password.
+      The clatter of tiles from the main room covers the sound of hushed conversations. The room smells of cigarette smoke,
+      cheap tea, and the particular tension of people planning illegal acts.
+    '4': The Tailor's Fitting Room Hideaway is a tiny room behind a false mirror in a clothing shop near the French Concession.
+      The tailor keeps fugitives here for days or weeks, bringing food and news. The space is barely larger than a coffin,
+      but it has saved a dozen lives.
+    '5': The Dance Hall Storage Room is crammed with broken chairs, old costumes, and forgotten dreams. Behind a stack of
+      dusty prop trunks, a hidden door leads to a space where messages are exchanged. The music from the dance floor covers
+      the sound of the radio transmitter.
+    '6': The Boiler Room Basement is accessed through a coal chute in a Zhabei factory, a subterranean chamber where the heat
+      is constant and the air is thick. The boiler's rumble covers conversation, and the coal dust covers tracks. The resistance
+      uses it for weapons storage and occasional meetings.
+    '7': Cotton Bale Hideout is a hollow space within a stack of cotton bales in the Hongkew warehouse district. The space
+      is cramped and itchy, filled with lint that makes breathing difficult. It is a transit point for fugitives moving between
+      safe houses.
+    '8': The Disused Pump House stands at the edge of a Yangpu canal, its machinery rusted and its windows boarded. The pump
+      house floor hides a trapdoor that opens onto a dry well. The well connects to the drainage tunnels that run beneath
+      the industrial district.
+    '9': The Coal Bunker Hideaway is a reinforced space behind a false wall in a Yangpu coal yard. The bunker was built for
+      shelter during air raids but now serves a different purpose. It holds fugitives, weapons, and the hope of those who
+      refuse to surrender.
+    '10': Factory Floor Crawlspace is a gap between the ceiling of one floor and the machinery of the next, accessible through
+      a ventilation shaft. The space is hot, noisy, and filled with the vibration of the factory. It is an ideal hiding place
+      for documents and small weapons.
+  special_detailed_descriptions:
+    '1': The passage behind the Russian Bakery begins between two buildings so close together that a man must turn sideways
+      to enter. The walls are damp with condensation, and the ground underfoot is a mixture of mud and coal dust. The passage
+      opens after twenty feet into a low-ceilinged cellar where a single bare bulb provides the only light. The cellar is
+      furnished with crates that serve as chairs and a plank-and-barrel table that holds maps and documents. The bakery above
+      produces bread and pastries that feed the neighbourhood, and the heat from its ovens warms the cellar floor. The smell
+      of fresh bread is constant, a strangely reassuring presence in a place where every conversation could be someone's last.
+    '2': The Tea House Back Room is reached through a door disguised as a cupboard in the main tearoom, a space of about twelve
+      feet square with walls of dark wood and a single window that looks out onto a light well. The room is furnished with
+      four armchairs whose upholstery has been worn smooth by years of clandestine meetings. A tea service sits on a low table,
+      always ready, a prop for conversations that are really about something else. The room has a second exit, a trapdoor
+      in the floor that leads to a tunnel connecting to the old city's drainage system.
+    '3': The Mahjong Parlor Back Room is a windowless space behind a beaded curtain, its walls covered with faded velvet wallpaper
+      that was fashionable twenty years ago. The room contains a large table covered with green baize, a sideboard holding
+      bottles of rice wine and cups, and a telephone that rings only in code. The clatter of mahjong tiles from the main room
+      provides a constant backdrop of noise that makes eavesdropping difficult. The room is used by couriers who pass messages
+      and packages without exchanging a word of recognition.
+    '4': The Tailor's Fitting Room Hideaway is a triangular space created by a false wall in the back of a walk-in wardrobe.
+      The space is barely four feet wide at its broadest and six feet deep, furnished with a mattress, a bucket, and a shelf
+      of books. The tailor keeps the hideaway stocked with canned food and water, and he checks it daily for occupants. The
+      longest anyone has stayed is three weeks, a Jewish refugee from Vienna who was smuggled out in a bolt of cloth.
+    '5': The Dance Hall Storage Room occupies the back of a popular dance hall near Nanking Road, a cavernous space filled
+      with the detritus of a decade of entertainment. The room is a maze of stacked chairs, rolled carpets, mannequins in
+      outdated costumes, and trunks of sheet music. Behind a stack of dusty theatrical flats, a section of wall swings open
+      to reveal a smaller room where a radio operator works in shifts. The music from the dance hall, played by a Filipino
+      band that knows every popular song from Shanghai to San Francisco, covers the sound of Morse code.
+    '6': The Boiler Room Basement is a chamber beneath a textile mill in Zhabei, accessed through a coal chute that requires
+      squeezing past the boiler itself. The chamber was originally a sump for the boiler's drainage, but it was enlarged by
+      the resistance over several months. The temperature in the chamber rarely drops below thirty degrees Celsius, and the
+      air is thick with the smell of coal dust and stale sweat. The boiler's rumble is constant, a vibration that can be felt
+      in the bones, but it makes the chamber one of the safest meeting places in the district.
+    '7': The Cotton Bale Hideout is a space no larger than a wardrobe, created by arranging cotton bales in a hollow square
+      and covering the top with a tarpaulin. The space is located in the corner of a Hongkew warehouse where the light is
+      poor and the guard's patrol is irregular. The bales absorb sound, making the space surprisingly quiet despite the warehouse
+      noise. The hideout is used primarily as a temporary holding point for fugitives awaiting transfer to the next safe house.
+    '8': The Disused Pump House is a small brick building at the edge of a canal in Yangpu, its door secured with a padlock
+      that has rusted open. The pump machinery, a massive iron contraption from the 1910s, still occupies the centre of the
+      floor, its pipes descending into the concrete. One of the access panels at the base of the pump opens onto a ladder
+      that descends into a dry well. The well connects to a drainage tunnel that runs for half a mile, emerging in the basement
+      of an abandoned factory.
+    '9': The Coal Bunker Hideaway was built as an air raid shelter by the factory owners in the 1930s, a reinforced concrete
+      chamber beneath the coal yard. The entrance is hidden beneath a pile of coal that must be shifted to access the hatch.
+      The chamber is about fifteen feet square, with bunk beds along one wall and shelves of supplies along another. A ventilation
+      shaft, disguised as a chimney, provides fresh air. The bunker can hold up to twelve people, and it has a small generator
+      for power.
+    '10': The Factory Floor Crawlspace runs between the ceiling of the ground floor and the floor of the first storey, a space
+      about three feet high created by the building's unusual construction. The crawlspace is accessed through a ventilation
+      grille in a storage closet, and it extends the length of the factory building. The space is filled with pipes, conduits,
+      and the constant vibration of the machinery below. Despite the discomfort, the crawlspace is an ideal hiding place for
+      documents, weapons, and the occasional person who can endure the confined conditions.
+  connectors:
+  - at: 1
+    direction: north
+    to: french_concession_safehouse
+  - at: 10
+    direction: east
+    to: hongkou_detention
+  - at: '10'
+    direction: south
+    to: commercial_04
+  - at: '10'
+    direction: west
+    to: oldcity_06
+- prefix: residential
+  room_prefix: residence
+  title_prefix: Residential Lane
+  count: 7
+  tags:
+  - residence
+  - lilong
+  - civilian
+  - family
+  indoors_every: 2
+  item_cycle:
+  - rice_bowl
+  - tea
+  - newspaper
+  - photograph
+  description_templates:
+  - Family dinners happen behind paper windows, with conversations that stop when footsteps pass outside.
+  - Laundry lines crisscross between buildings like invisible bonds of domestic resistance. The wash is taken in before curfew.
+  - The lane smells of cooking oil, laundry soap, and the quiet fear of families trying to maintain normal life.
+  - Children play games that have adapted to occupation, their laughter muted but persistent. The games teach the alleys' shortcuts.
+  - Neighbors exchange news in glances and small favors that could save lives if noticed. Nothing is said aloud.
+  - Each door represents a family's struggle to survive in a city that doesn't want them. The lock is the only luxury.
+  - The lane feels lived-in and loved, making every intrusion by occupation forces feel like violence.
+  - Small shrines in alley corners hold candles for those who haven't returned from the checkpoints.
+  - The sound of distant sirens makes everyone freeze, until they're sure it's not coming here.
+  - Families share limited resources in a quiet system of mutual aid and whispered warnings. A knock has three meanings.
+  special_names:
+    '1': Astor House Alley
+    '2': Embassy Row Flats
+    '3': Yuyuan Garden Lane
+    '4': City God Temple Backstreets
+    '5': Little Tokyo Row Houses
+    '6': Seward Road Tenements
+    '7': Avenue Joffre Walk-up
+  special_descriptions:
+    '1': A narrow lane behind the Astor House Hotel, where porters and kitchen staff live in cramped quarters above the stable
+      block. The alley smells of coal smoke and cooking oil from a hundred small stoves. Laundry lines crisscross between
+      windows, a patchwork of worn cotton and mended linen.
+    '2': The residential quarter near the embassies houses foreign clerks and their families in tidy apartment blocks. Uniformed
+      nannies push prams along the pavement while diplomats' cars glide past. The street is quieter than most, patrolled by
+      consulate guards who answer to no one.
+    '3': A residential lane off Yuyuan Garden where old Shanghai families have lived for generations. The lane opens onto
+      a small courtyard with a well and a mulberry tree that has shaded four generations. Grandmothers shell peas on doorsteps
+      while children chase chickens through the gutter.
+    '4': The backstreets behind the City God Temple are warrens of cramped housing and tiny workshops. Paper lanterns strung
+      between buildings cast the lane in amber light each evening. Every room holds a family, and every family holds a story
+      they tell only in whispers.
+    '5': Little Tokyo clusters near the Japanese quarter of Hongkou, a block of wooden houses built in the Japanese style.
+      Shoji screens glow with candlelight after dark, and the air smells of miso and grilled fish. The residents keep to themselves,
+      which is precisely why the Kempeitai watches them.
+    '6': Seward Road Tenements house the working poor of Hongkou in five-storey walk-ups built wall to wall. The stairwells
+      echo with shouts in a dozen languages and the crying of infants. Each narrow apartment holds twice as many people as
+      it was built for, refugees packed into every corner.
+    '7': A walk-up apartment building on Avenue Joffre where the French Concession's lower middle class lives in dignified
+      poverty. The building's wrought-iron balcony overlooks the plane trees, and the concierge knows everyone's name and
+      business.
+  special_detailed_descriptions:
+    '1': Astor House Alley runs behind the grand Astor House Hotel, a service lane where the hotel's laundry, kitchen, and
+      maintenance operations churn day and night. The upper floors house hotel staff in tiny rooms that smell of starch and
+      sweat. The alley is a shortcut known to delivery boys, thieves, and anyone who needs to move through the Bund without
+      being seen on the main street. At night, the hotel's jazz music drifts down through open windows, a reminder of a world
+      that is still dancing while the rest of the city holds its breath.
+    '2': Embassy Row Flats occupy a block of dignified early twentieth-century apartment buildings near the consulate district.
+      The buildings are four storeys of ochre brick with white trim, their entrances guarded by porters in brass-buttoned
+      uniforms. The flats are spacious by Shanghai standards, with high ceilings, working fireplaces, and bathrooms with claw-foot
+      tubs. The tenants include minor diplomats, journalists, and the more prosperous merchants, people who maintain a careful
+      neutrality while the war swirls around them.
+    '3': Yuyuan Garden Lane is one of the old city's most desirable residential addresses, a narrow lane of traditional houses
+      that have been in the same families for centuries. The lane dead-ends at a small gate that leads to the Yuyuan Garden
+      itself, and residents enjoy a privilege denied to the general public, the garden keeper lets them in after hours for
+      a small fee. The houses are built around internal courtyards with fish ponds and potted bamboo, pockets of tranquillity
+      in the crowded old city.
+    '4': City God Temple Backstreets form a labyrinth of residential lanes and tiny courtyards behind the temple complex.
+      The buildings are old, some dating to the Ming dynasty, their timber frames sagging with age. Each courtyard houses
+      multiple families who share a single water tap and a communal stove. The backstreets are a world unto themselves, a
+      village within the city where everyone knows everyone and strangers are noted and discussed before they reach the next
+      corner.
+    '5': Little Tokyo is a cluster of wooden houses and small businesses centered on a Japanese grocery and a community hall.
+      The houses are built in the traditional Japanese style with sliding doors and tatami mats, a deliberate assertion of
+      cultural identity in the heart of occupied Shanghai. The residents are Japanese civilians, merchants, and their families
+      who moved to Shanghai during the boom years and stayed through the war. The community is tight-knit and insular, its
+      members reporting any suspicious activity to the local Kempeitai office, but some of them harbour sympathies for the
+      Chinese that they dare not express openly.
+    '6': Seward Road Tenements stretch along a four-block stretch of Hongkou's main artery, a wall of identical five-storey
+      walk-ups built in the 1920s. The facades are streaked with soot and rain, their windows a mosaic of cracked glass and
+      cardboard patches. The buildings are fire traps, their stairwells clogged with stored belongings and their wiring a
+      death wish. Yet the tenements are full to bursting, refugees from the countryside packed into every available space,
+      paying rent to landlords who never fix a thing.
+    '7': Avenue Joffre Walk-up occupies a corner lot on the Concession's grandest boulevard, a six-storey building of pale
+      stucco with a mansard roof and iron balconies. The apartment doors open onto a central courtyard where a fountain stands
+      dry and a single plane tree drops its leaves on everything. The tenants are a mix of European pensioners, White Russian
+      exiles, and Chinese professionals, each group inhabiting a different floor and a different social world. The building
+      has a basement shelter that residents share during air raids, the only time the social barriers come down.
+  connectors:
+  - at: 1
+    direction: north
+    to: gmd_safehouse_old_city
+- prefix: warehouse
+  room_prefix: warehouse
+  title_prefix: Warehouse District
+  count: 6
+  tags:
+  - warehouse
+  - industrial
+  - labor
+  - contraband
+  indoors_every: 8
+  item_cycle:
+  - dock_manifest
+  - truncheon
+  - hidden_cash
+  - coded_ledger
+  description_templates:
+  - Cranes loom over rusted iron structures like skeletons of industrial dreams from better times.
+  - The district smells of diesel, rust, and the desperate sweat of workers who cannot afford to stop.
+  - Warehouse doors stand open like mouths, swallowing and spewing goods in a rhythm that never stops.
+  - Foremen shout orders in multiple languages while workers move in patterns too coordinated to be random.
+  - Hidden pockets between buildings become markets for things that cannot be sold openly. The police know; the police are paid.
+  - The district operates on its own rules, where occupation forces are tolerated but never truly welcome.
+  - Workers know better than to ask questions about certain cargo that arrives at certain times.
+  - The sound of machinery never stops, a constant reminder that the city must keep moving or it dies.
+  - Resistance members work here as laborers, using warehouse chaos as cover for their operations.
+  special_ids:
+    '3': warehouse_district
+  special_names:
+    '1': Customs Bonded Huozhan
+    '2': Nanshi Tea Duizhan
+    '3': Central Warehouse
+    '4': Rue Montauban Silk Huozhan
+    '5': Sincere & Co. Goods Stack
+    '6': Mission Supply Huozhan
+  special_descriptions:
+    '1': The Customs Bonded Huozhan stands near the Bund, a cavernous godown where imported goods await clearance. The air
+      is thick with the smell of tea, spices, and the camphor used to protect woollens. Customs inspectors move between stacks
+      of crates, their stamps marking the fate of every shipment.
+    '2': Nanshi Tea Duizhan is a timber yard where crates of tea from Fujian and Yunnan are stacked to the rafters. The sweet
+      smell of dried leaves hangs over everything, mingling with the wood smoke from the watchman's brazier. The duizhanmaster
+      knows the value of every chest and the destination of every shipment, knowledge he sells to the highest bidder.
+    '3': Central Warehouse fills its block with concrete, barred windows, and the sour smell of cotton lint. Workers move
+      bales under electric light while supervisors pretend not to see which loads are weighed twice.
+    '4': Rue Montauban Silk Huozhan occupies a narrow building in the French Concession, its upper floors filled with raw
+      silk from the countryside. The silk is weighed, graded, and packed for export to Lyon and Milan, trade that continues
+      despite the war. The huozhan office is a hub of commercial intelligence, where prices and politics are discussed in
+      equal measure.
+    '5': Sincere & Co. Goods Stack is an open yard behind the department store where unsold inventory accumulates. Crates
+      of last season's fashions sit beside barrels of cooking oil and stacks of rice sacks. The yard manager supplements his
+      income by allowing certain goods to leave through a side gate after dark.
+    '6': Mission Supply Huozhan is run by the Catholic mission near Xujiahui, a warehouse for relief supplies sent from overseas.
+      The crates bear the marks of charities from a dozen countries, their contents meant for refugees. The Japanese allow
+      the shipments to arrive but take their cut at the warehouse door.
+  special_detailed_descriptions:
+    '1': The Customs Bonded Huozhan is a vast brick warehouse near the Bund, its iron doors large enough to admit a lorry.
+      Inside, the space is divided into bays, each one stacked with goods awaiting customs clearance, crates of Japanese machinery,
+      bales of Indian cotton, barrels of American kerosene. The air is a mixture of competing smells, each bay contributing
+      its own note. The customs inspectors have their office at the front of the building, a glass-walled room where they
+      review manifests and accept bribes with equal professionalism.
+    '2': Nanshi Tea Duizhan is a two-storey timber structure in the old city's warehouse district, its walls stained dark
+      with years of tea dust. The ground floor is a sorting room where tea chests are opened, sampled, and graded by tasters
+      who can identify a tea's origin by its aroma alone. The upper floor holds the best stock, teas aged and cured for the
+      most discerning palates. The duizhan operates on a system of trust and long relationships, but the war has made cash
+      the only language that matters.
+    '3': Hongkew Cotton Huozhan is a brutalist concrete structure that dominates its block, its windows barred and its doors
+      reinforced. The interior is a single vast room filled with bales of raw cotton stacked ten high, their white surfaces
+      glowing under the electric lights. The ginning machines rumble day and night, separating seeds from fibre with mechanical
+      determination. The workers, mostly women, move between the machines with the precision of long practice, their faces
+      wrapped in cloth against the lint. The cotton is destined for Japanese mills in Osaka, but some bales never reach their
+      destination, diverted to resistance workshops that make bandages and uniforms.
+    '4': Rue Montauban Silk Huozhan occupies a narrow four-storey building on a quiet French Concession street, its facade
+      giving no hint of the wealth within. Each floor holds a different stage of the silk trade, raw cocoons on the ground
+      floor, reeling on the first, grading on the second, and packing on the third. The silk is destined for the looms of
+      Europe, but with the war, more and more is diverted to Japanese military uses. The huozhan's owner is a Shanghainese
+      merchant who has survived every regime by being indispensable to each.
+    '5': Sincere & Co. Goods Stack is a walled yard behind the department store, its gate guarded by a night watchman who
+      accepts cigarettes as payment for entry. The yard is a chaos of crates, barrels, and bales, the detritus of commerce
+      that could not be sold. Goods that arrive here have multiple fates -- some are returned to suppliers, some are donated
+      to charities for the tax write-off, and some disappear through the side gate to the black market. The yard manager,
+      a man named Chen, runs a side business in unrecorded goods that makes him one of the wealthiest men in the district.
+    '6': Mission Supply Huozhan is a clean, well-organised warehouse attached to the Xujiahui mission compound, its shelves
+      stocked with canned food, medicine, and clothing. The supplies arrive by ship from American and European charities,
+      addressed to the Catholic Relief Mission for distribution to refugees. The Japanese military takes a percentage of every
+      shipment, claiming it as a tax, and the mission must decide whether to protest or accept the loss. The warehouse holds
+      more than relief supplies, hidden behind a false wall are medicines and documents destined for the resistance.
+  connectors:
+  - at: 1
+    direction: north
+    to: docks_01
+- prefix: church
+  room_prefix: church
+  title_prefix: Church District
+  count: 6
+  tags:
+  - church
+  - spiritual
+  - sanctuary
+  - secret
+  indoors_every: 3
+  item_cycle:
+  - prayer_beads
+  - temple_talisman
+  - newspaper
+  - silk_scarf
+  description_templates:
+  - Church spires rise above shop roofs and laundry poles, pointing toward a heaven that feels farther away each winter.
+  - Sacred spaces shelter secular errands, and prayers sometimes pause while a warning passes from pew to pew.
+  - Incense, old wood, and damp wool gather around choices made quietly in confessionals. The priest hears more sins than he records.
+  - Faith has learned caution, with sermons shaped around survival more often than triumph. Hymns double as signals.
+  - Sanctuary offers momentary peace, though even the confessional curtain moves when boots pass outside.
+  - Medals, candles, and prayer cards carry new meanings when occupation threatens the faithful.
+  - Church bells answer sirens with softer notes, as if hope has learned to ring under its breath.
+  - Confessionals and side doors carry secrets between prayers, errands, and families who need shelter.
+  - The city tries to keep its soul intact with candle wax, patched kneelers, and names spoken softly.
+  special_names:
+    '1': St. Joseph's Church, Nanshi
+    '2': Église Saint-Pierre, Avenue Joffre
+    '3': Holy Trinity Cathedral, Kiukiang Road
+  special_descriptions:
+    '1': St. Joseph's Church rises from the old city's grey brick maze, its twin spires a beacon of Catholic faith in the
+      Chinese quarter. The church was built in 1860 and has survived war, rebellion, and occupation. Its interior smells of
+      incense, old wood, and the quiet desperation of parishioners praying for absent sons.
+    '2': Église Saint-Pierre stands on Avenue Joffre, a graceful neo-Romanesque building of pale stone that would not look
+      out of place in provincial France. The church serves the French Concession's Catholic population, its pews filled with
+      European refugees and Chinese converts. The priest delivers sermons in French and Shanghainese, serving two congregations
+      with practised diplomacy.
+  special_detailed_descriptions:
+    '1': St. Joseph's Church, Nanshi, stands on a site that has been a Catholic church since 1860, surviving the Taiping Rebellion,
+      the Republican era, and now the Japanese occupation. The church is built of grey brick in a restrained Gothic style,
+      its interior cool and dim even on the brightest days. The stained glass windows, imported from France, depict saints
+      whose stories of persecution resonate with the congregation's current suffering. The parish priest, a French Jesuit
+      who has served in Shanghai for thirty years, knows more about the city's secrets than any Kempeitai interrogator. The
+      confessional boxes are never empty, and the sins confessed there are sometimes political.
+    '2': Église Saint-Pierre, Avenue Joffre, is the spiritual heart of the French Concession's Catholic community, a building
+      of pale limestone with a rose window that casts a kaleidoscope of colour across the nave at noon. The church was built
+      in the 1920s to serve the growing European population, its architecture deliberately evoking the Romanesque churches
+      of rural France. The parish is run by French Jesuits who maintain careful relations with both the Vichy-aligned French
+      authorities and the Japanese occupiers. The church's crypt contains a small chapel used for private prayer, and the
+      priest knows that some of his parishioners use it for meetings that have nothing to do with worship.
+  connectors:
+  - at: 1
+    direction: north
+    to: gmd_safehouse_old_city
+- prefix: school
+  room_prefix: school
+  title_prefix: School District
+  count: 5
+  tags:
+  - school
+  - education
+  - propaganda
+  - resistance
+  indoors_every: 4
+  item_cycle:
+  - newspaper
+  - coded_ledger
+  - photograph
+  - temple_talisman
+  description_templates:
+  - School buildings stand silent, their classrooms repurposed for indoctrination and whispered resistance.
+  - Blackboards display slogans in multiple languages, each one a different version of the same truth.
+  - Teachers face impossible choices between educating children and protecting them from propaganda.
+  - Schoolyards that once rang with laughter now echo with orders and the silence of suppressed thought.
+  - Hidden textbooks teach banned subjects, with lessons passed between students in secret codes.
+  - The district represents the battle for the future, fought in classrooms and school corridors.
+  - Children learn to read between the lines of occupation propaganda, their eyes seeing what adults pretend not to notice.
+  special_names:
+    '1': Tōa Dōbun Shoin Academy
+    '2': McTyeire School for Girls
+    '3': Mill Workers' Night School
+    '4': Technical College Workshop
+    '5': Shanghai Public School, Boone Road
+  special_descriptions:
+    '1': The Tōa Dōbun Shoin Academy occupies a modern campus on North Sichuan Road, a Japanese-run school for East Asian
+      studies. Students in military-style uniforms march between classes, their textbooks printed in Tokyo. The academy produces
+      linguists and administrators for Japan's Greater East Asia Co-Prosperity Sphere.
+    '2': McTyeire School for Girls stands behind wrought-iron gates, a Methodist mission school founded in 1892. The school's
+      motto, 'Light and Truth,' is carved above the entrance. Inside, Chinese girls receive an education that would be illegal
+      in most of occupied China.
+    '3': Mill Workers' Night School operates in a converted factory canteen in Zhabei, its rough wooden benches filled after
+      the evening shift. The teachers are volunteers who risk arrest for teaching literacy to the poor. The lessons are basic,
+      but the ideas they plant are not.
+    '4': Technical College Workshop clatters with the sound of lathes and drills, a vocational school training the next generation
+      of machinists. The students learn skills that keep the city's industry running, skills the Japanese need every bit as
+      much as the Chinese. The workshop foreman is a nationalist who teaches sabotage alongside soldering.
+  special_detailed_descriptions:
+    '1': The Tōa Dōbun Shoin Academy is a modern educational institution established by Japanese educators to train specialists
+      in East Asian affairs. The campus consists of several concrete buildings arranged around a courtyard where students
+      gather between classes. The curriculum includes intensive language training in Japanese, Chinese, and English, along
+      with economics, geography, and political science. The academy is widely believed to be a cover for Japanese intelligence
+      operations, training agents who will serve in the occupation administration. The library contains books banned throughout
+      the rest of Shanghai, a fact that makes it a magnet for scholars of forbidden knowledge.
+    '2': McTyeire School for Girls is a mission school founded by American Methodists in 1892, an institution that has educated
+      generations of Shanghai's elite women. The school buildings are red brick with white trim, set around a lawn where students
+      play volleyball and badminton. The curriculum includes English literature, mathematics, science, and music, taught by
+      a staff that includes both Western missionaries and Chinese converts. The Japanese tolerate the school because its American
+      affiliation provides a thin cover, but the school's real danger lies in the ideas it imparts -- independence, critical
+      thinking, and the belief that women deserve education.
+    '3': The Mill Workers' Night School is not a formal institution but a clandestine classroom that moves between locations
+      to avoid detection. The current location is a factory canteen in Zhabei, its long wooden tables still sticky with the
+      day's spills. The students are men and women who work twelve-hour shifts in the mills and factories, then spend their
+      few free hours learning to read and write. The lessons use workers' songs and copied newspaper columns as primers, and the teachers are Communist
+      Party members who see literacy as the first step toward discipline. The school is illegal, and discovery means arrest,
+      torture, or worse.
+    '4': Technical College Workshop is a cavernous space filled with lathes, drill presses, and welding equipment, the smell
+      of cutting oil and metal shavings heavy in the air. The students are young men who will become the machinists, fitters,
+      and mechanics that Shanghai's industry depends on. The Japanese have allowed the workshop to continue operating because
+      they need skilled labour, but they do not know that the foreman spends half his teaching time showing students how to
+      sabotage machinery in ways that are difficult to detect. The workshop also produces parts for resistance weapons, hidden
+      among legitimate orders for industrial equipment.
+  connectors:
+  - at: 1
+    direction: north
+    to: gmd_safehouse_old_city
 
-  - prefix: commercial
-    room_prefix: commercial
-    title_prefix: "Commercial Street"
-    count: 25
-    tags: [commercial, market, teahouse, printshop, office, food]
-    indoors_every: 4
-    item_cycle: [silk_scarf, newspaper, ration_card, hidden_cash]
-    description_templates:
-      - "Shop shutters rattle in the wind and painted signs peel over windows that no longer trust daylight."
-      - "The lane carries perfume, frying oil, and the stale fear of people learning to bargain without speaking plainly."
-      - "A tram line cuts through the street like a memory of speed from a calmer decade."
-      - "Neon tubes buzz fitfully above shops that trade in luxury by day and whispers by night."
-      - "Teahouses, tailors, and pawnshops lean close enough to share secrets across the street."
-    special_ids:
-      "1": nanjing_road
-    special_names:
-      "1": "Nanjing Road"
-    connectors:
-      - at: 1
-        direction: east
-        to: bund_dawn
-      - at: 10
-        direction: south
-        to: french_01
-      - at: 20
-        direction: south
-        to: oldcity_01
-      - at: 25
-        direction: north
-        to: hongkou_01
 
-  - prefix: old_city
-    room_prefix: oldcity
-    title_prefix: "Old City Lane"
-    count: 25
-    tags: [old_city, alley, shrine, residence, school, bridge, clinic]
-    indoors_every: 3
-    item_cycle: [temple_talisman, prayer_beads, bloodied_message, photograph]
-    description_templates:
-      - "Grey brick walls hold the night's damp, and laundry lines sag like tired flags over the alley."
-      - "Small courtyards open and close between walls inked with rain and propaganda."
-      - "The lane smells of cooking rice, old incense, and drains that never quite dry."
-      - "Wooden doors sit shoulder to shoulder, each one thin enough to hear worry through."
-      - "A shrine niche flickers from somewhere unseen, giving the alley more conscience than light."
-    connectors:
-      - at: 1
-        direction: north
-        to: commercial_20
-      - at: 12
-        direction: west
-        to: french_10
-      - at: 25
-        direction: east
-        to: hongkou_10
-
-  - prefix: hongkou
-    room_prefix: hongkou
-    title_prefix: "Hongkou Street"
-    count: 25
-    tags: [hongkou, checkpoint, refugee, station, clinic]
-    indoors_every: 4
-    item_cycle: [forged_pass, patrol_route, ration_card, newspaper]
-    description_templates:
-      - "Patrol boots scrape over tram grit while signboards in several languages stare past one another in silence."
-      - "Cheap boarding houses and military trucks share the same street under a sky the color of dirty tin."
-      - "A refugee line knots around the corner, watched by rifles too tired to lower themselves."
-      - "The district carries soot, diesel, and the brittle patience of people waiting for permission to move."
-      - "Tea steam rises from chipped bowls and disappears before it reaches the barbed wire."
-    connectors:
-      - at: 1
-        direction: south
-        to: commercial_25
-      - at: 10
-        direction: west
-        to: oldcity_25
-      - at: 20
-        direction: south
-        to: docks_15
-
-  - prefix: french
-    room_prefix: french
-    title_prefix: "French Concession Lane"
-    count: 25
-    tags: [french, balcony, church, office, rooftop, safehouse, attic]
-    indoors_every: 2
-    item_cycle: [silk_scarf, coded_ledger, hidden_cash, temple_talisman]
-    description_templates:
-      - "Plane trees drag their shadows over cracked paving and pale stucco facades with shuttered eyes."
-      - "Balconies lean overhead with ironwork elegant enough to make the war feel like an insult to architecture."
-      - "Coffee, wine, and sewer water compete in the air with no clear victor."
-      - "A church bell somewhere nearby hesitates before each note as though even sound needs permission."
-      - "Clerks, exiles, and opportunists pass under striped awnings with practiced indifference."
-    connectors:
-      - at: 1
-        direction: north
-        to: commercial_10
-      - at: 10
-        direction: east
-        to: oldcity_12
-      - at: 25
-        direction: south
-        to: docks_20
-
-  - prefix: docks
-    room_prefix: docks
-    title_prefix: "Huangpu Dock"
-    count: 25
-    tags: [dock, river, warehouse, gambling]
-    indoors_every: 6
-    item_cycle: [dock_manifest, truncheon, hidden_cash, contraband_morphine]
-    description_templates:
-      - "Cargo hooks creak over black water while foremen count men the way they count crates."
-      - "Oil sheens spread rainbow-thin across puddles beside stacks of marked timber and unmarked fear."
-      - "Warehouse doors slam in the wind and every slam sounds like guilt correcting itself."
-      - "The wharf smells of brine, rope tar, and fish gone past salvage."
-      - "Dice rattle somewhere behind the sheds even when the sirens start."
-    connectors:
-      - at: 1
-        direction: north
-        to: bund_25
-      - at: 15
-        direction: north
-        to: hongkou_20
-
-  - prefix: ccp_base
-    room_prefix: ccp_base
-    title_prefix: "Underground Base"
-    count: 8
-    tags: [ccp, underground, guerrilla]
-    indoors_every: 1
-    description_templates:
-      - "A cellar beneath a noodle shop where the walls are lined with maps of Japanese military positions. Each red pin marks an act of sabotage: a bridge damaged, a supply train derailed. The smell of gunpowder mingles with broth from above."
-      - "A hidden printing press churns out resistance newspapers by candlelight. The operators work in silence, their faces lit by the dim glow of type being set. One wrong move and the Kempeitai would burn this place and everyone in it."
-      - "Stacks of rice and dried fish line the walls, supplies for guerrilla fighters hiding in the hills outside the city. A chalkboard lists the names of villages burned by Japanese soldiers last month."
-      - "A radio set crackles in the corner, receiving coded transmissions from comrades in the field. The operator transcribes each message with practiced speed, her hands never shaking despite the death penalty for what she does."
-      - "Wounded fighters rest on straw mats, their bandages stained with blood and mud. A young woman tends to them with what few medical supplies remain, her face grim but unwavering."
-      - "A planning table covered in hand-drawn maps shows the routes of Japanese supply convoys. Red circles mark targets. Someone has written 'For Nanking' in the margin."
-      - "Propaganda leaflets are stacked knee-deep, each one a bullet of truth against the lies of the occupation. They speak of Japanese atrocities such as the massacres, the comfort women, the forced labour camps."
-      - "A narrow tunnel leads deeper underground, its walls reinforced with stolen Japanese timber. At the far end, a heavy door opens onto a weapons cache that reveals rifles and grenades captured from ambushed patrols."
-    special_names:
-      "1": "The Noodle Shop Cellar"
-      "2": "The Secret Printing Press"
-      "3": "Guerrilla Supply Cache"
-      "4": "Radio Communications Room"
-      "5": "Underground Field Hospital"
-      "6": "Operations Planning Room"
-      "7": "Propaganda Workshop"
-      "8": "Weapons Storehouse"
-    connectors:
-      - at: 1
-        direction: north
-        to: hidden_05
-
-  - prefix: gmd_office
-    room_prefix: gmd_office
-    title_prefix: "Intelligence Office"
-    count: 7
-    tags: [gmd, military, intelligence]
-    indoors_every: 1
-    description_templates:
-      - "Behind a false wall in a tea merchant's shop, Nationalist intelligence officers decode intercepted Japanese orders. The ink is still wet on reports of another massacre in the countryside. These men carry the weight of a retreating government and the fury of those left behind."
-      - "A codebook lies open on a desk, its pages filled with columns of numbers. Maps of Japanese naval movements in the Huangpu River are pinned to the wall, each annotated with dates and vessel names."
-      - "A filing cabinet overflows with dossiers on Kempeitai officers: their habits, their routes, their weaknesses. Information is the only weapon that works in a city under the boot of the occupier."
-      - "A shortwave radio receives broadcasts from Chungking, the voice of Free China audible above the static. The announcer speaks of resistance and the certainty of victory. It is the only truth left in a city drowning in propaganda."
-      - "Photographs of Japanese war crimes are spread across a table, evidence being compiled for the day of reckoning. Each image is a reminder of why surrender is unthinkable."
-      - "A cramped office where forged documents are produced with meticulous care: travel passes, identity cards, ration books. Each forgery is a small act of defiance against the machinery of occupation."
-      - "A listening post where agents monitor Japanese military communications. The work is tedious and dangerous. Discovery means torture and execution. But the intelligence saves lives."
-    special_names:
-      "1": "Tea Shop Back Room"
-      "2": "Codebreaking Bureau"
-      "3": "Kempeitai Dossiers Office"
-      "4": "Chungking Radio Station"
-      "5": "War Crimes Archive"
-      "6": "Forgery Workshop"
-      "7": "Signals Intercept Station"
-    connectors:
-      - at: 1
-        direction: south
-        to: french_12
+authored_rooms:
+- id: venue_french_cafe_backroom
+  title: French Jazz Cafe
+  description: "Behind the cafe, bottles crowd a scarred shelf and the brass from the main room reaches here as a tired murmur."
+  exits:
+    south: french_concession_safehouse
+  indoors: true
+  tags:
+  - french
+  district: french
+- id: venue_french_jazz_cafe
+  title: French Jazz Cafe
+  description: "Blue smoke gathers beneath the low lamps, while a pianist worries the same refrain and patrons study their small glasses."
+  exits:
+    south: french_concession_safehouse
+  indoors: true
+  tags:
+  - french
+  district: french
+- id: venue_french_cafe_bar
+  title: French Jazz Cafe
+  description: "The bar is polished around old burns, with imported bottles displayed like trophies and a Chinese barman counting fabi beneath the counter."
+  exits:
+    south: french_concession_safehouse
+  indoors: true
+  tags:
+  - french
+  district: french
+- id: venue_hongkou_refugee_lane
+  title: Hongkou Refugee Quarter
+  description: Laundry hangs between cramped upper windows, stiff with coal dust. A handcart rattles over broken paving while families keep their bundles close.
+  exits:
+    south: checkpoint_north_gate
+  indoors: false
+  tags:
+  - hongkou
+  district: hongkou
+- id: venue_hongkou_refugee_shelter
+  title: Hongkou Refugee Quarter
+  description: A former shop has been divided by blankets and packing crates. Thin cooking smoke gathers beneath the eaves, and nobody lingers in the doorway.
+  exits:
+    south: checkpoint_north_gate
+  indoors: false
+  tags:
+  - hongkou
+  district: hongkou
+- id: venue_hongkou_refugee_courtyard
+  title: Hongkou Refugee Quarter
+  description: The courtyard pump gives brown water after a long struggle. Children wait beside enamel bowls while adults speak in low voices near the wall.
+  exits:
+    south: checkpoint_north_gate
+  indoors: false
+  tags:
+  - hongkou
+  district: hongkou
+- id: venue_hongkou_checkpoint_square
+  title: Hongkou Occupation Checkpoint
+  description: Sandbags divide the square into narrow passages beneath a hard white lamp. Paper scraps turn in the wind around a sentry box.
+  exits:
+    south: checkpoint_north_gate
+  indoors: false
+  tags:
+  - hongkou
+  - checkpoint
+  district: hongkou
+- id: venue_hongkou_checkpoint_cordon
+  title: Hongkou Occupation Checkpoint
+  description: A rope cordon has worn a pale groove into the mud. People queue without pressing forward, watching the armbands at the far end.
+  exits:
+    south: checkpoint_north_gate
+  indoors: false
+  tags:
+  - hongkou
+  - checkpoint
+  district: hongkou
+- id: venue_old_city_tea_corner
+  title: Old City Tea House
+  description: The tea has gone thin beneath the tiled eaves, but each cup still receives a careful wipe before it touches the dark wood.
+  exits:
+    south: gmd_safehouse_old_city
+  indoors: true
+  tags:
+  - old_city
+  district: old_city
+- id: venue_hongkou_refugee_block
+  title: Hongkou Refugee Quarter
+  description: Doorways stand open to catch what little air reaches the lane. Rice husks cling to the gutters, and a radio murmurs behind a cracked shutter.
+  exits:
+    south: checkpoint_north_gate
+  indoors: false
+  tags:
+  - hongkou
+  district: hongkou
+- id: venue_old_city_refugee_courtyard
+  title: Old City Refugee Courtyard
+  description: Bedrolls press against the damp brick, leaving a narrow path around a water jar and a cooking brazier gone cold.
+  exits:
+    south: gmd_safehouse_old_city
+  indoors: false
+  tags:
+  - old_city
+  district: old_city
+- id: venue_hongkou_refugee_shelter_gate
+  title: Hongkou Refugee Quarter
+  description: A warped wooden gate marks the crowded shelter yard. Names have been pencilled beside it, then crossed out when no reply came.
+  exits:
+    south: checkpoint_north_gate
+  indoors: false
+  tags:
+  - hongkou
+  district: hongkou
+- id: venue_old_city_market_lane
+  title: Old City Market Stall
+  description: Awnings sag above baskets of greens, and every customer studies the scales before handing over a folded note of fabi.
+  exits:
+    south: gmd_safehouse_old_city
+  indoors: false
+  tags:
+  - old_city
+  - market
+  district: old_city
+- id: venue_commercial_office_front
+  title: Commercial Office
+  description: A brass directory hangs beside the stairwell, its tenants reduced to paper slips and a clerk's careful handwriting.
+  exits:
+    south: nanjing_road
+  indoors: true
+  tags:
+  - commercial
+  - office
+  district: commercial
+- id: venue_old_city_market_hub
+  title: Old City Market Stall
+  description: The lane narrows around stacked crates and hanging poultry, where traders speak softly while passersby brush their sleeves against the goods.
+  exits:
+    south: gmd_safehouse_old_city
+  indoors: false
+  tags:
+  - old_city
+  - market
+  district: old_city
+- id: venue_commercial_backroom_market
+  title: Commercial Black Market
+  description: Behind a locked inner door, parcels change hands beneath a single shaded bulb while the street noise covers the counting.
+  exits:
+    south: nanjing_road
+  indoors: true
+  tags:
+  - commercial
+  - market
+  district: commercial
+- id: venue_commercial_black_market
+  title: Commercial Black Market
+  description: Men linger under an awning with goods wrapped in newspaper, watching Nanking Road before they name a price.
+  exits:
+    south: nanjing_road
+  indoors: false
+  tags:
+  - commercial
+  - market
+  district: commercial
+- id: venue_old_city_black_market
+  title: Old City Black Market
+  description: Goods change hands beneath patched canvas, wrapped in newspaper and carried away before anyone can ask where they came from.
+  exits:
+    south: gmd_safehouse_old_city
+  indoors: false
+  tags:
+  - old_city
+  - market
+  district: old_city
+- id: venue_old_city_cramped_courtyard
+  title: Old City Courtyard
+  description: Laundry hangs over a yard scarcely wide enough for two people to pass, its wet hems brushing a cracked stone basin.
+  exits:
+    south: gmd_safehouse_old_city
+  indoors: false
+  tags:
+  - old_city
+  district: old_city
+- id: venue_old_city_back_courtyard
+  title: Old City Courtyard
+  description: A back door stands shut beside a pile of ash, while the surrounding windows keep their paper screens drawn tight.
+  exits:
+    south: gmd_safehouse_old_city
+  indoors: false
+  tags:
+  - old_city
+  district: old_city
+- id: venue_old_city_clinic
+  title: Old City Clinic
+  description: The clinic smells of boiled cloth and camphor, with chipped enamel basins waiting beneath a shelf of nearly empty bottles.
+  exits:
+    south: gmd_safehouse_old_city
+  indoors: true
+  tags:
+  - old_city
+  - clinic
+  district: old_city
+- id: venue_old_city_tea_intersection
+  title: Old City Tea House
+  description: At the crossing, tea drinkers sit behind steamed windows and listen for boots in the street before lowering their voices.
+  exits:
+    south: gmd_safehouse_old_city
+  indoors: true
+  tags:
+  - old_city
+  district: old_city
+- id: venue_hongkou_checkpoint_station
+  title: Hongkou Occupation Checkpoint
+  description: The checkpoint kiosk smells of wet wool and machine oil. A dented tin roof beats time with the rain above the waiting line.
+  exits:
+    south: checkpoint_north_gate
+  indoors: false
+  tags:
+  - hongkou
+  - checkpoint
+  district: hongkou
+- id: venue_commercial_office_district
+  title: Commercial Office
+  description: Carbon copies curl in wire trays, and the air carries ink, damp wool, and the stale smoke of a long afternoon.
+  exits:
+    south: nanjing_road
+  indoors: true
+  tags:
+  - commercial
+  - office
+  district: commercial
+- id: venue_commercial_market_stalls
+  title: Commercial Market Stall
+  description: A canvas stall offers combs, thread, and tins with their labels rubbed thin by too many hands.
+  exits:
+    south: nanjing_road
+  indoors: false
+  tags:
+  - commercial
+  - market
+  district: commercial
+- id: venue_commercial_arcade
+  title: Commercial Arcade
+  description: The covered arcade smells of wet stone and shop dust, its small windows bright against the gray street beyond.
+  exits:
+    south: nanjing_road
+  indoors: true
+  tags:
+  - commercial
+  district: commercial
+- id: venue_old_city_residential_lane
+  title: Old City Courtyard
+  description: Doorways open straight onto the lane, each one marked by a charcoal stove, a washbasin, or shoes left to dry.
+  exits:
+    south: gmd_safehouse_old_city
+  indoors: false
+  tags:
+  - old_city
+  - residential
+  district: old_city
+- id: venue_old_city_market_street
+  title: Old City Market Stall
+  description: Sellers keep their wares close to the wall, leaving the centre clear for carts, rickshaws, and people with somewhere urgent to be.
+  exits:
+    south: gmd_safehouse_old_city
+  indoors: false
+  tags:
+  - old_city
+  - market
+  district: old_city
+- id: venue_french_boulevard
+  title: French Boulevard
+  description: "Plane trees shade the broad pavement, where rickshaws slip past shuttered villas and a foreign motorcar leaves blue smoke at the curb."
+  exits:
+    south: french_concession_safehouse
+  indoors: false
+  tags:
+  - french
+  district: french
+- id: venue_french_cafe_boulevard
+  title: French Concession Boulevard
+  description: "A cafe window glows onto the boulevard, its tables laid for people who can still afford coffee while Chinese servants wait in the rain."
+  exits:
+    south: french_concession_safehouse
+  indoors: true
+  tags:
+  - french
+  district: french
+- id: venue_shopping_arcade_french
+  title: Shopping Arcade French
+  description: "Under the glass roof, shopfronts offer French soap and Swiss watches, each price card a quiet insult to a week's wages."
+  exits:
+    south: french_concession_safehouse
+  indoors: true
+  tags:
+  - french
+  district: french
+- id: venue_hongkou_refugee_clinic
+  title: Hongkou Refugee Clinic
+  description: White sheets have been boiled too often and dried beside the stove. Bottles crowd the shelves, their labels faded by damp fingers.
+  exits:
+    south: checkpoint_north_gate
+  indoors: true
+  tags:
+  - hongkou
+  - clinic
+  district: hongkou
+- id: venue_hongkou_field_hospital
+  title: Hongkou Field Hospital
+  description: Cots fill a bare room beneath blackout cloth. Orderlies move quietly between them with basins, gauze, and the practiced haste of a long night.
+  exits:
+    south: checkpoint_north_gate
+  indoors: true
+  tags:
+  - hongkou
+  - hospital
+  district: hongkou
+- id: venue_hongkou_factory_floor
+  title: Hongkou Factory Floor
+  description: Belt wheels turn above the floor and leave a greasy tremor in the air. Workers keep their heads down beneath the factory windows.
+  exits:
+    south: checkpoint_north_gate
+  indoors: true
+  tags:
+  - hongkou
+  - factory
+  district: hongkou
+- id: venue_church_parish_room
+  title: Church Parish Room
+  description: Damp cotton coats crowd the parish hooks, and the ledger holds names from Hongkou written beside last known addresses.
+  exits:
+    south: church_01
+  indoors: true
+  tags:
+  - church
+  district: church
+- id: venue_church_side_chapel
+  title: Church Side Chapel
+  description: Candle wax has gathered beneath the votive stand; Chinese prayer cards rest among shawls folded over the back pews.
+  exits:
+    south: church_01
+  indoors: true
+  tags:
+  - church
+  district: church
+- id: venue_church_refugee_clinic
+  title: Church Refugee Clinic
+  description: Carbolic and boiled linen cling to the clinic, where chipped enamel basins stand beneath a window curtained against the street.
+  exits:
+    south: church_01
+  indoors: true
+  tags:
+  - church
+  - clinic
+  district: church
+- id: venue_residential_clergy_house
+  title: Residential Clergy House
+  description: A narrow clergy house off the Yangpu lanes, where damp cassocks hang beside ration tins and a brass crucifix catches the coal-smoke light.
+  exits:
+    south: residence_01
+  indoors: true
+  tags:
+  - residential
+  district: residential
+- id: venue_residential_tenant_house
+  title: Residential Tenant House
+  description: The Bund is close enough for distant horns to reach this tenant house, though its stairwell smells of boiled cabbage, lamp oil, and wet shoes.
+  exits:
+    south: residence_01
+  indoors: true
+  tags:
+  - residential
+  district: residential
+- id: venue_residential_courtyard_house
+  title: Residential Tenant House
+  description: In this Old City courtyard house, washing sags above cracked flagstones while a grandmother counts rice grains into a chipped porcelain bowl.
+  exits:
+    south: residence_01
+  indoors: true
+  tags:
+  - residential
+  district: residential
+- id: venue_residential_lane_house
+  title: Residential Tenant House
+  description: This Zhabei lane house has paper pasted over its broken panes, and every room carries the close hush of families making do with less.
+  exits:
+    south: residence_01
+  indoors: true
+  tags:
+  - residential
+  district: residential
+- id: venue_resistance_training_room
+  title: Resistance Training Room
+  description: Straw mats cover the warped boards, and a chipped enamel basin waits beneath a shelf of folded jackets. Rain ticks somewhere above the low ceiling.
+  exits:
+    south: hidden_01
+  indoors: true
+  tags:
+  - hidden_shanghai
+  - resistance
+  district: hidden_shanghai
+- id: venue_resistance_meeting_room
+  title: Resistance Meeting Room
+  description: A scarred table stands beneath a shaded bulb, its tea rings layered around a map of Shanghai with several corners worn soft by handling.
+  exits:
+    south: hidden_01
+  indoors: true
+  tags:
+  - hidden_shanghai
+  - resistance
+  district: hidden_shanghai
+- id: venue_resistance_press_room
+  title: Resistance Print Room
+  description: Ink darkens the wooden press and settles in the grain of the workbench. A faint chemical smell clings to the close air.
+  exits:
+    south: hidden_01
+  indoors: true
+  tags:
+  - hidden_shanghai
+  - resistance
+  district: hidden_shanghai
+- id: venue_resistance_copy_room
+  title: Resistance Print Room
+  description: Thin paper lies weighted beneath a brass ruler, while purple smudges mark the fingertips of anyone who has worked at the narrow desk.
+  exits:
+    south: hidden_01
+  indoors: true
+  tags:
+  - hidden_shanghai
+  - resistance
+  district: hidden_shanghai
+- id: venue_resistance_cellar_room
+  title: Resistance Cellar Room
+  description: A bare bulb burns above a table marked by ink and candle wax; the cellar walls sweat through their limewash, and folded blankets have been stacked beneath the stairs.
+  exits:
+    south: ccp_base_01
+  indoors: true
+  tags:
+  - ccp_base
+  - resistance
+  district: ccp_base
+- id: venue_old_city_courtyard_room
+  title: Old City Courtyard
+  description: Inside, a low table bears tea stains and a stub of candle, while rain-darkened plaster curls away from the ceiling.
+  exits:
+    south: gmd_safehouse_old_city
+  indoors: true
+  tags:
+  - old_city
+  district: old_city
+- id: venue_old_city_courtyard_lane
+  title: Old City Courtyard
+  description: This lane bends between old walls stained by cookfire smoke, carrying the sound of quarrels from rooms no wider than closets.
+  exits:
+    south: gmd_safehouse_old_city
+  indoors: false
+  tags:
+  - old_city
+  district: old_city
+- id: venue_docks_cargo_berth
+  title: Docks Cargo Berth
+  description: Under a corrugated roof, damp gunny sacks lean against tea chests, and the air tastes of coal dust, hemp, and the river beyond the boards.
+  exits:
+    south: docks_01
+  indoors: true
+  tags:
+  - docks
+  - dock
+  district: docks
+- id: venue_warehouse_cargo_bay
+  title: Warehouse Cargo Bay
+  description: Tall shutters keep the river damp outside, while handcarts rattle over scarred boards beneath a haze of coal dust and hemp.
+  exits:
+    south: warehouse_01
+  indoors: true
+  tags:
+  - warehouse
+  district: warehouse
+- id: venue_church_altar_room
+  title: Church Altar Room
+  description: Tarnished brass catches the candlelight around the altar, while the congregation's worn hymnals carry Shanghai names in their flyleaves.
+  exits:
+    south: church_01
+  indoors: true
+  tags:
+  - church
+  district: church
+- id: venue_hidden_altar_undercroft
+  title: Hidden Altar Undercroft
+  description: Wet stone and coal dust fill the undercroft, where a discarded hymn sheet bears water stains from the long winter rains.
+  exits:
+    south: church_01
+  indoors: true
+  tags:
+  - church
+  - hidden
+  - secret
+  district: church
+- id: venue_church_confessional_room
+  title: Church Confessional Room
+  description: The confessional's varnish has worn thin beneath countless hands, and the narrow grille cuts a pale bar across the kneeler.
+  exits:
+    south: church_01
+  indoors: true
+  tags:
+  - church
+  district: church
+- id: venue_hidden_confessional_passage
+  title: Hidden Confessional Passage
+  description: Damp brickwork closes around the passage, and old plaster flakes beneath the slow drip of a pipe behind the chapel wall.
+  exits:
+    south: church_01
+  indoors: true
+  tags:
+  - church
+  - hidden
+  - secret
+  district: church
+- id: venue_old_city_courtyard_north
+  title: Old City Courtyard
+  description: A persimmon tree rises from the north end of the court, its branches bare above broken tiles and a hand pump.
+  exits:
+    south: gmd_safehouse_old_city
+  indoors: false
+  tags:
+  - old_city
+  district: old_city
+- id: venue_hidden_old_city_false_wall_chamber
+  title: Hidden Old City False Wall Chamber
+  description: Behind the false wall, dust settles on a narrow chamber where the air tastes of old timber and extinguished lamp oil.
+  exits:
+    south: gmd_safehouse_old_city
+  indoors: true
+  tags:
+  - old_city
+  - hidden
+  - secret
+  district: old_city
+- id: venue_french_apartment_flat
+  title: French Apartment
+  description: "A narrow flat of patterned wallpaper and locked drawers, where a gramophone stands silent beside a basin of cold water."
+  exits:
+    south: french_concession_safehouse
+  indoors: true
+  tags:
+  - french
+  district: french
+- id: venue_french_mirror_apartment
+  title: French Apartment
+  description: "Tall mirrors multiply the dim room and its rented furniture, making the drawn curtains seem to hide twice as many people."
+  exits:
+    south: french_concession_safehouse
+  indoors: true
+  tags:
+  - french
+  district: french
+- id: venue_hidden_mirror_corridor
+  title: Hidden Mirror Corridor
+  description: "A close corridor runs behind the apartment mirrors, smelling of dust and plaster, with old fingerprints clouding the glass."
+  exits:
+    south: french_concession_safehouse
+  indoors: true
+  tags:
+  - french
+  - hidden
+  - secret
+  district: french
+- id: venue_residential_coal_chute_house
+  title: Residential Coal Chute House
+  description: Soot darkens the kitchen walls of this Old City house, where a coal bucket, a cleaver, and a cold brazier wait beneath the lingering smell of ash.
+  exits:
+    south: residence_01
+  indoors: true
+  tags:
+  - residential
+  district: residential
+- id: venue_hidden_kitchen_coal_chute
+  title: Hidden Kitchen Coal Chute
+  description: Brick presses close around the old coal chute. Dust clings to the floor, and somewhere above, crockery knocks softly in a kitchen.
+  exits:
+    south: residence_01
+  indoors: true
+  tags:
+  - residential
+  - hidden
+  - secret
+  district: residential
+- id: venue_commercial_printshop
+  title: Commercial Printshop
+  description: Type cases line the walls, and the press leaves a steady black sheen on the printer's rags and cuffs.
+  exits:
+    south: nanjing_road
+  indoors: true
+  tags:
+  - commercial
+  - printshop
+  district: commercial
+- id: venue_hidden_printshop_bookshelf_compartment
+  title: Hidden Printshop Bookshelf Compartment
+  description: The false shelf gives onto a cramped recess smelling of pasteboard, dust, and old ink pressed into the timber.
+  exits:
+    south: nanjing_road
+  indoors: true
+  tags:
+  - commercial
+  - printshop
+  - hidden
+  - secret
+  district: commercial
+- id: venue_hidden_boarding_house_hatch
+  title: Hidden Boarding House Hatch
+  description: Beneath loose boards, a narrow hatch smells of dust and old lamp oil. The boarding house noise fades to a muffled scrape overhead.
+  exits:
+    south: checkpoint_north_gate
+  indoors: true
+  tags:
+  - hongkou
+  - hidden
+  - secret
+  district: hongkou
+- id: venue_warehouse_crate_storage
+  title: Warehouse Crate Storage
+  description: Stacked tea chests and broken packing cases narrow the room into dim aisles, each marked with fading chalk from a shipment long since claimed.
+  exits:
+    south: warehouse_01
+  indoors: true
+  tags:
+  - warehouse
+  district: warehouse
+- id: venue_hidden_crate_door_cache
+  title: Hidden Crate Door Cache
+  description: Behind a false face of splintered crates, the air smells of old straw and machine oil, shut away from the warehouse's clatter.
+  exits:
+    south: warehouse_01
+  indoors: true
+  tags:
+  - warehouse
+  - hidden
+  - secret
+  district: warehouse
+- id: venue_old_city_tea_lane
+  title: Old City Tea House
+  description: A brass kettle murmurs in the tea lane, its lid trembling whenever a gust carries the street dust through the doorway.
+  exits:
+    south: gmd_safehouse_old_city
+  indoors: true
+  tags:
+  - old_city
+  district: old_city
+- id: venue_commercial_nightclub_stage
+  title: Commercial Nightclub
+  description: A scuffed platform faces empty tables, where yesterday's cigarette ash lies beneath the blue light of the sign.
+  exits:
+    south: nanjing_road
+  indoors: true
+  tags:
+  - commercial
+  district: commercial
+- id: venue_residential_tenant_block
+  title: Residential Apartment
+  description: The Hongkou apartment is divided by thin partitions and patched curtains, its corridors alive with low voices, mended uniforms, and the smell of millet gruel.
+  exits:
+    south: residence_01
+  indoors: true
+  tags:
+  - residential
+  district: residential
+- id: venue_old_city_tea_room
+  title: Old City Tea House
+  description: Small tables crowd this tea room beneath a smoke-yellowed lantern, where strangers turn their cups slowly between both hands.
+  exits:
+    south: gmd_safehouse_old_city
+  indoors: true
+  tags:
+  - old_city
+  district: old_city
+- id: venue_bund_river_promenade
+  title: Bund Promenade
+  description: Along the river wall, foreign facades hold the last light while sampans knock softly below and policemen watch the pavement from beneath their capes.
+  exits:
+    south: bund_dawn
+  indoors: false
+  tags:
+  - bund
+  district: bund
+- id: venue_french_cafe_lounge
+  title: French Jazz Cafe
+  description: "Deep chairs face a dead fireplace, and the guests speak French or English softly whenever a uniform passes the front door."
+  exits:
+    south: french_concession_safehouse
+  indoors: true
+  tags:
+  - french
+  district: french
+- id: venue_commercial_market_street
+  title: Commercial Market Stall
+  description: Hawkers call from beneath patched umbrellas, their wares crowded close against the bicycles and rickshaws passing south.
+  exits:
+    south: nanjing_road
+  indoors: false
+  tags:
+  - commercial
+  - market
+  district: commercial
+- id: venue_french_cafe_dance_floor
+  title: French Jazz Cafe
+  description: "The dance floor has been waxed to a dull sheen, though few couples risk drawing eyes when the city is counting papers."
+  exits:
+    south: french_concession_safehouse
+  indoors: true
+  tags:
+  - french
+  district: french
+- id: venue_warehouse_loading_bay
+  title: Warehouse Cargo Bay
+  description: A loading winch hangs silent above the bay, its rope black with grease; daylight reaches the floor only in a pale strip beneath the doors.
+  exits:
+    south: warehouse_01
+  indoors: true
+  tags:
+  - warehouse
+  district: warehouse
+- id: venue_resistance_guard_room
+  title: Resistance Guard Room
+  description: One hard chair faces a bare wall, beside a dented thermos and an ashtray crowded with cold cigarette ends. The plaster has been patched more than once.
+  exits:
+    south: hidden_01
+  indoors: true
+  tags:
+  - hidden_shanghai
+  - resistance
+  district: hidden_shanghai
+- id: venue_french_cafe_stage
+  title: French Jazz Cafe
+  description: "A velvet curtain frames the little stage, where a microphone waits beneath dust and the bandstand remembers fuller evenings."
+  exits:
+    south: french_concession_safehouse
+  indoors: true
+  tags:
+  - french
+  district: french
+- id: venue_commercial_nightclub_room
+  title: Commercial Nightclub
+  description: Velvet seats have gone threadbare at the arms, but the room still holds the heat of music and expensive perfume.
+  exits:
+    south: nanjing_road
+  indoors: true
+  tags:
+  - commercial
+  district: commercial
+- id: venue_docks_fishing_quay
+  title: Docks Fishing Quay
+  description: Split bamboo baskets hold silver fish beneath a film of river water, while gulls wheel over the stained stone and the sharp smell of brine catches in the throat.
+  exits:
+    south: docks_01
+  indoors: false
+  tags:
+  - docks
+  - dock
+  district: docks
+- id: venue_french_bakery
+  title: French Bakery
+  description: "Warm yeast and coal smoke drift from the bakery door, where pale loaves sit behind glass beyond most purses."
+  exits:
+    south: french_concession_safehouse
+  indoors: false
+  tags:
+  - french
+  district: french
+- id: venue_commercial_watchmaker_shop
+  title: Commercial Watchmaker Shop
+  description: Pocket watches tick behind the glass while a jeweller's loupe waits beside a tray of springs no wider than a fingernail.
+  exits:
+    south: nanjing_road
+  indoors: false
+  tags:
+  - commercial
+  district: commercial
+- id: venue_commercial_gang_office
+  title: Commercial Gang Office
+  description: Red lacquer chairs stand around a desk cleared of everything but a tea cup, a ledger, and a heavy paperweight.
+  exits:
+    south: nanjing_road
+  indoors: true
+  tags:
+  - commercial
+  - office
+  district: commercial
+- id: venue_french_newspaper_office
+  title: French Newspaper Office
+  description: "Typewriters sit under a yellowing deadline board, and yesterday's proofs carry white gaps where the censor's pencil travelled."
+  exits:
+    south: french_concession_safehouse
+  indoors: true
+  tags:
+  - french
+  - office
+  district: french
+- id: venue_school_dormitory
+  title: School Classroom School
+  description: Narrow iron bedsteads crowd beneath a ceiling stained by winter rain; exercise books lie under folded blankets, while the street's muffled traffic reaches the shuttered windows.
+  exits:
+    south: school_01
+  indoors: true
+  tags:
+  - school
+  district: school
+- id: venue_hongkou_checkpoint_gate
+  title: Hongkou Occupation Checkpoint
+  description: The gate frame bears fresh paint over older bullet scars. Beyond it, Hongkou narrows into lanes where each passerby checks who is watching.
+  exits:
+    south: checkpoint_north_gate
+  indoors: false
+  tags:
+  - hongkou
+  - checkpoint
+  district: hongkou
+- id: venue_commercial_market_lane
+  title: Commercial Market Stall
+  description: This narrow lane catches cooking smoke between its brick walls, with baskets of odds and ends set low by the curb.
+  exits:
+    south: nanjing_road
+  indoors: false
+  tags:
+  - commercial
+  - market
+  district: commercial
+- id: venue_hongkou_tenement
+  title: Hongkou Tenement
+  description: The tenement stairwell is dark even at noon, with cabbage leaves caught against the steps. A distant baby cries, then falls silent.
+  exits:
+    south: checkpoint_north_gate
+  indoors: false
+  tags:
+  - hongkou
+  district: hongkou
+- id: venue_warehouse_provision_store
+  title: Warehouse Provision Store
+  description: Ledger shelves lean above burlap sacks and dented tins, where the smell of rice dust lingers after the clerks have gone home.
+  exits:
+    south: warehouse_01
+  indoors: true
+  tags:
+  - warehouse
+  district: warehouse
+- id: venue_commercial_office_back
+  title: Commercial Office
+  description: The rear office keeps its blinds half drawn, leaving the account books and green-shaded lamp in a pool of dim light.
+  exits:
+    south: nanjing_road
+  indoors: true
+  tags:
+  - commercial
+  - office
+  district: commercial
+- id: venue_bund_settlement_bar
+  title: Bund Settlement Bar
+  description: Tobacco smoke hangs beneath the shaded lamps, where clerks nurse imported spirits and lower their voices whenever the door admits a wet gust from the Bund.
+  exits:
+    south: bund_dawn
+  indoors: true
+  tags:
+  - bund
+  district: bund
+- id: venue_hongkou_market_stall
+  title: Hongkou Market Stall
+  description: A canvas awning sags above a few vegetables and jars of pickled greens. The vendor weighs each portion twice before wrapping it.
+  exits:
+    south: checkpoint_north_gate
+  indoors: false
+  tags:
+  - hongkou
+  - market
+  district: hongkou
+- id: venue_bund_tea_house
+  title: Bund Tea House
+  description: Porcelain cups click against saucers in a narrow room smelling of damp wool and jasmine, with the river traffic murmuring beyond the steamed windows.
+  exits:
+    south: bund_dawn
+  indoors: true
+  tags:
+  - bund
+  district: bund
+- id: venue_commercial_arcade_office
+  title: Commercial Office
+  description: Above the arcade, a narrow office overlooks the shop roofs and the restless ribbon of Nanking Road.
+  exits:
+    south: nanjing_road
+  indoors: true
+  tags:
+  - commercial
+  - office
+  district: commercial
+- id: venue_hongkou_checkpoint_lane
+  title: Hongkou Occupation Checkpoint
+  description: Boots have churned the lane into ridges of dark mud. A pasted order peels from the brickwork, its official seal blurred by rain.
+  exits:
+    south: checkpoint_north_gate
+  indoors: false
+  tags:
+  - hongkou
+  - checkpoint
+  district: hongkou
+- id: venue_french_consulate_front
+  title: French Consulate Office
+  description: "The public office smells of sealing wax and damp wool, with stamped forms arranged beneath a portrait no one looks at."
+  exits:
+    south: french_concession_safehouse
+  indoors: true
+  tags:
+  - french
+  - office
+  district: french
+- id: venue_french_consulate_back
+  title: French Consulate Office
+  description: "Past the formal desks, filing cabinets line a quieter office where carbon copies lie beneath a shaded green lamp."
+  exits:
+    south: french_concession_safehouse
+  indoors: true
+  tags:
+  - french
+  - office
+  district: french
+- id: venue_french_boulevard_stage
+  title: French Concession Boulevard
+  description: "A small open platform faces the boulevard, its peeling posters advertising concerts from before the soldiers became part of the view."
+  exits:
+    south: french_concession_safehouse
+  indoors: true
+  tags:
+  - french
+  district: french
+- id: venue_commercial_research_office
+  title: Commercial Research Office
+  description: Clippings and trade circulars cover the desk, each pinned note competing with the rain-streaked view of the street.
+  exits:
+    south: nanjing_road
+  indoors: true
+  tags:
+  - commercial
+  - office
+  district: commercial
+- id: venue_french_boulevard_cafe_edge
+  title: French Concession Boulevard
+  description: "At the cafe's edge, cane chairs turn toward the street and waiters keep one eye on the tables, another on passing armbands."
+  exits:
+    south: french_concession_safehouse
+  indoors: true
+  tags:
+  - french
+  district: french
+- id: venue_french_tree_lined_boulevard
+  title: French Concession Boulevard
+  description: "Wet leaves collect along the kerb beneath the plane trees, and the avenue's quiet makes each bicycle bell sound indecently loud."
+  exits:
+    south: french_concession_safehouse
+  indoors: false
+  tags:
+  - french
+  district: french
+- id: venue_resistance_print_room
+  title: Resistance Print Room
+  description: A hand roller rests beside stacked type blocks, their metal faces dull with use. Dry ink dust has settled along the windowless sill.
+  exits:
+    south: hidden_01
+  indoors: true
+  tags:
+  - hidden_shanghai
+  - resistance
+  district: hidden_shanghai
+- id: venue_commercial_printshop_office
+  title: Commercial Office
+  description: Proof sheets lie under a ruler beside the printer's accounts, their red corrections sharp against the cheap paper.
+  exits:
+    south: nanjing_road
+  indoors: true
+  tags:
+  - commercial
+  - printshop
+  - office
+  district: commercial
+- id: venue_hongkou_checkpoint_post
+  title: Hongkou Occupation Checkpoint
+  description: The sentry post stands under a patched tarpaulin beside stacked fuel tins. A whistle hangs from a nail, motionless in the damp air.
+  exits:
+    south: checkpoint_north_gate
+  indoors: false
+  tags:
+  - hongkou
+  - checkpoint
+  district: hongkou
+- id: venue_commercial_produce_market
+  title: Commercial Produce Market
+  description: Wilted greens and bruised pears sit in shallow baskets, priced in chalk that changes before the market closes.
+  exits:
+    south: nanjing_road
+  indoors: false
+  tags:
+  - commercial
+  - market
+  district: commercial
+- id: venue_school_classroom
+  title: School Classroom School
+  description: Chalk dust whitens the worn desks, and a map of China has been pinned back into place above the blackboard; the little stove stands cold beside it.
+  exits:
+    south: school_01
+  indoors: true
+  tags:
+  - school
+  district: school
+- id: venue_school_lecture_room
+  title: School Classroom School
+  description: Long benches face a scarred lectern, where ink bottles and borrowed texts wait beneath a blackout curtain that keeps the afternoon light thin and grey.
+  exits:
+    south: school_01
+  indoors: true
+  tags:
+  - school
+  district: school
+- id: venue_french_cafe_parlor
+  title: French Jazz Cafe
+  description: "The parlor keeps its flowered sofas and chipped porcelain, a polite room where laughter ends whenever the door latch lifts."
+  exits:
+    south: french_concession_safehouse
+  indoors: true
+  tags:
+  - french
+  district: french
+- id: venue_french_cafe_table
+  title: French Jazz Cafe
+  description: "One small table stands near the curtain, marked by cigarette burns and a ring of spilled vermouth on the cloth."
+  exits:
+    south: french_concession_safehouse
+  indoors: true
+  tags:
+  - french
+  district: french
+- id: venue_french_parish_house
+  title: French Parish House
+  description: "The parish house holds a cold kitchen, a row of umbrellas, and parish notices that grow thinner as families leave Shanghai."
+  exits:
+    south: french_concession_safehouse
+  indoors: true
+  tags:
+  - french
+  district: french
+- id: venue_docks_river_landing
+  title: Docks River Landing
+  description: Mud-dark steps fall to the Huangpu, where tied sampans knock softly against their fenders and a pale scum turns at the edge of the current.
+  exits:
+    south: docks_01
+  indoors: false
+  tags:
+  - docks
+  - dock
+  district: docks
+- id: venue_bund_safehouse
+  title: Bund Safehouse
+  description: The rented room has a coal brazier, a cracked washbasin, and curtains drawn against the river glare, as though its tenants expect to leave before dawn.
+  exits:
+    south: bund_dawn
+  indoors: true
+  tags:
+  - bund
+  - safehouse
+  district: bund
+- id: venue_commercial_office_counter
+  title: Commercial Office
+  description: A high wooden counter separates visitors from the files, where a clerk's stamp lands with measured finality.
+  exits:
+    south: nanjing_road
+  indoors: true
+  tags:
+  - commercial
+  - office
+  district: commercial
+- id: venue_docks_ferry_quay
+  title: Docks Ferry Quay
+  description: A rusted rail hems the quay, its paint rubbed away by wet sleeves and parcel corners; across the water, factory smoke settles low over the foreign buildings.
+  exits:
+    south: docks_01
+  indoors: false
+  tags:
+  - docks
+  - dock
+  district: docks
+- id: venue_old_city_courtyard_south
+  title: Old City Courtyard
+  description: The southern court catches little sun between leaning roofs, and puddles hold a grey reflection of washing lines above.
+  exits:
+    south: gmd_safehouse_old_city
+  indoors: false
+  tags:
+  - old_city
+  district: old_city
+- id: venue_docks_courier_wharf
+  title: Docks Courier Wharf
+  description: Chalk marks fade on the planks beside coils of tarred rope, and paper-wrapped bundles lie under an oilcloth that snaps whenever the river wind rises.
+  exits:
+    south: docks_01
+  indoors: false
+  tags:
+  - docks
+  - dock
+  district: docks
+- id: venue_hongkou_refugee_house
+  title: Hongkou Refugee Quarter
+  description: A family has made one room serve as kitchen, bedchamber, and refuge. Steam rises from a pot while a bundle of papers rests beneath a cup.
+  exits:
+    south: checkpoint_north_gate
+  indoors: true
+  tags:
+  - hongkou
+  district: hongkou
+- id: venue_commercial_occupation_office
+  title: Commercial Occupation Office
+  description: Notices in Japanese and Chinese cover the walls, their official seals catching the light above a row of waiting chairs.
+  exits:
+    south: nanjing_road
+  indoors: true
+  tags:
+  - commercial
+  - office
+  district: commercial
+- id: venue_french_concession_boulevard
+  title: French Concession Boulevard
+  description: "The boulevard's Art Deco fronts catch the afternoon light, but behind their shutters tenants listen for the changing patrol sound."
+  exits:
+    south: french_concession_safehouse
+  indoors: false
+  tags:
+  - french
+  district: french
+- id: venue_old_city_tenement_court
+  title: Old City Courtyard
+  description: Tenement doors crowd the court so closely that supper smells, crying children, and whispered bargains drift from one household to another.
+  exits:
+    south: gmd_safehouse_old_city
+  indoors: false
+  tags:
+  - old_city
+  district: old_city
+- id: venue_old_city_inner_courtyard
+  title: Old City Courtyard
+  description: A chipped shrine cup rests beneath a wall niche in the inner court, protected from the lane by two crooked passages.
+  exits:
+    south: gmd_safehouse_old_city
+  indoors: false
+  tags:
+  - old_city
+  district: old_city
+- id: venue_commercial_noodle_stall
+  title: Commercial Noodle Stall
+  description: Steam clouds the stall's glass case as the cook works a ladle through broth, keeping one ear on the road.
+  exits:
+    south: nanjing_road
+  indoors: false
+  tags:
+  - commercial
+  district: commercial
+- id: venue_hidden_old_city_shrine_floorboard
+  title: Hidden Old City Shrine Floorboard Stairs
+  description: The shrine floorboards lift over a steep dark stair, and old incense clings to the boards above the hidden descent.
+  exits:
+    south: hidden_08
+  indoors: true
+  tags:
+  - old_city
+  - hidden
+  - secret
+  district: old_city
+- id: venue_hidden_french_wardrobe_trapdoor
+  title: Hidden French Apartment Wardrobe Trapdoor
+  description: "A wardrobe stands against the wall with its cedar scent gone sour, its warped floorboards hiding a darker hollow below."
+  exits:
+    south: hidden_01
+  indoors: true
+  tags:
+  - french
+  - hidden
+  - secret
+  district: french

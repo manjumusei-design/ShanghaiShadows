@@ -1,0 +1,681 @@
+pools:
+  merchant_x_worker:
+    archetypes:
+    - merchant
+    - worker
+    cooldown_minutes: 10
+    meeting_windows:
+    - npc_ids: [vendor_lin, liu_wei]
+      room_id: oldcity_07
+      windows:
+      - start_minute: 660
+        end_minute: 664
+      - start_minute: 680
+        end_minute: 684
+      - start_minute: 700
+        end_minute: 704
+    exchanges:
+    - id: rice_shortage
+      lines:
+      - The rice sacks came light again, and the wholesaler smiled as if hunger were a clerical mistake.
+      - At the docks, honest weight changes hands twice before noon, once for papers and once for passage.
+      - I can stretch millet through soup, but I cannot stretch a mother with no fabi left.
+      - Keep one sack behind the broom, xiansheng. Some customers pay late because shame slows their feet.
+    - id: dock_schedule_changes
+      lines:
+      - The Nantao dock opens at five now, though the notice still says six for ordinary men.
+      - Then the notice is for fools, and the real hour belongs to whoever paid the clerk.
+      - A man with white gloves changed the ledger, never touching a crate or meeting a porter?s eyes.
+      - White gloves stay clean because other hands lift the dirt. I know that breed of office man.
+    - id: missing_cargo
+      lines:
+      - Silk bolts marked for Wenmiao Street left the morning ferry, but my buyer says the street saw nothing.
+      - I saw crates turn north before breakfast, with two soldiers counting shadows instead of seals.
+      - North means the Sichuan Road warehouse, unless your memory has learned caution since dawn.
+      - My memory carries crates, not accusations. If you value silk, ask before the second bell.
+  merchant_x_civilian:
+    archetypes:
+    - merchant
+    - civilian
+    cooldown_minutes: 10
+    meeting_windows:
+    - npc_ids: [zhang_lan, orphan_xiao]
+      room_id: bund_09
+      windows:
+      - start_minute: 660
+        end_minute: 664
+      - start_minute: 680
+        end_minute: 684
+      - start_minute: 700
+        end_minute: 704
+    exchanges:
+    - id: soap_and_oil
+      lines:
+      - The foreign soap arrived in twelve bars only, wrapped like temple offerings and priced like medicine.
+      - Twelve bars will start twelve quarrels before noon, and my wife will send me back empty-handed.
+      - Take one bar and the cloudy lamp oil, before the warehouse invents another customs delay.
+      - Cloudy oil still burns. A clean shirt matters less when everyone smells of coal smoke.
+    - id: customer_who_owes
+      lines:
+      - Old Mrs. Guo came with her credit book again, folded in both hands like a prayer.
+      - Her son?s Hong Kong money still has not arrived, I suppose, though hope travels slower than mail.
+      - I wrote half the debt in pencil, because ink feels cruel when a woman counts coins twice.
+      - Pencil is mercy until the wholesaler comes. Then even mercy needs a receipt.
+    - id: morning_prices
+      lines:
+      - Cabbage rose before sunrise, and the farmer blamed a checkpoint that kept the cart sweating in heat.
+      - Yesterday the heads were smaller, and today the price is larger. That is Shanghai arithmetic now.
+      - Rotten leaves still cost fabi when a guard decides vegetables need permission to enter the city.
+      - Buy early, then. Hunger does not wait for honest arithmetic or official stamps.
+  worker_x_worker:
+    archetypes:
+    - worker
+    - worker
+    cooldown_minutes: 12
+    meeting_windows:
+    - npc_ids: [liu_wei, rickshaw_puller_ah_foo]
+      room_id: oldcity_07
+      windows:
+      - start_minute: 660
+        end_minute: 664
+      - start_minute: 680
+        end_minute: 684
+      - start_minute: 700
+        end_minute: 704
+    exchanges:
+    - id: shift_change
+      lines:
+      - The night shift is missing three men, and the foreman speaks as if machines can lift themselves.
+      - Sick, arrested, or hiding from debt, it all means our backs carry their hours.
+      - One broke curfew by ten minutes, and now his stool sits empty beside the press.
+      - Empty stools do not slow production. They only remind the living to keep working.
+    - id: the_foreman
+      lines:
+      - Foreman Wang has a new wool coat, and our pay packets came thin again this week.
+      - Good wool finds warm shoulders, especially when a man signs forms for hungry workers.
+      - He says the factory suffers like everyone, but suffering seldom has buttons that shine.
+      - Lower your voice near the loading door. Coats hear better than men when promotion is involved.
+    - id: who_got_the_work
+      lines:
+      - They chose three men for Bund warehouse work, paid triple and told them not to ask why.
+      - Triple wages usually mean double danger, or a crate that must not appear on paper.
+      - I would take danger for triple wages, if my children could eat the difference.
+      - Then pray they come back paid. Some special jobs settle accounts with silence.
+  doctor_x_refugee:
+    archetypes:
+    - doctor
+    - refugee
+    cooldown_minutes: 15
+    meeting_windows:
+    - npc_ids: [nurse_su, refugee_woman]
+      room_id: commercial_05
+      windows:
+      - start_minute: 660
+        end_minute: 664
+      - start_minute: 680
+        end_minute: 684
+      - start_minute: 700
+        end_minute: 704
+    exchanges:
+    - id: infected_wound
+      lines:
+      - That cut has turned angry, and river water has never been medicine, however poor a man becomes.
+      - Four days ago I washed it by the Huangpu, because soap costs more than my courage.
+      - I have old ointment, half strength, but clean cloth will do more than pride.
+      - Half strength is enough if it keeps my arm useful. I still have a child to carry.
+    - id: no_medicine
+      lines:
+      - The boy shakes at night, Doctor, and every pharmacy window says quinine has gone elsewhere.
+      - Elsewhere means checkpoint shelves, then black market boxes, then prices no mother can meet.
+      - Tell me which alley sells it, and I will bargain with whatever dignity remains.
+      - Do not bargain alone. Men who sell fever medicine know desperation by its footsteps.
+    - id: orphan_by_the_temple
+      lines:
+      - Five children sleep by the temple wall, sharing one blanket and coughing before dawn.
+      - I saw the smallest one yesterday, trying to warm his hands over an incense pot.
+      - I can look at them after dusk, though looking is poorer than medicine.
+      - Looking is still a kindness, Doctor. Most people step around children as if they were puddles.
+  merchant_x_merchant:
+    archetypes:
+    - merchant
+    - merchant
+    cooldown_minutes: 12
+    meeting_windows:
+    - npc_ids: [vendor_lin, tailor_zhou]
+      room_id: oldcity_07
+      windows:
+      - start_minute: 660
+        end_minute: 664
+      - start_minute: 680
+        end_minute: 684
+      - start_minute: 700
+        end_minute: 704
+    exchanges:
+    - id: cutting_prices
+      lines:
+      - The silk shop on Fuzhou Road sells below cost, and my regulars now count my bolts like accusations.
+      - A merchant selling at a loss is either drowning or baiting a hook for neighbors.
+      - He draws customers with cheap silk today, then tomorrow he will own their credit books.
+      - Let him burn capital. Smoke travels, and creditors follow smoke faster than customers.
+    - id: supplier_who_fled
+      lines:
+      - Mr. Jin vanished overnight, leaving fourteen ceramic crates promised and three creditors at my door.
+      - The Yuyao Road gambling room stripped him clean, unless the men behind it preferred that explanation.
+      - He owed half the district, and now every debt has walked into my ledger wearing his hat.
+      - Close that page carefully. A missing supplier can still send trouble by messenger.
+    - id: credit_to_neighbors
+      lines:
+      - The tailor?s daughter asked for credit again, eyes lowered as if hunger were bad manners.
+      - You gave it, because you are soft when a child stands beside the counter.
+      - I gave half, and wrote the rest small enough that shame would not see it.
+      - Small writing fills ledgers fastest now. Promises are becoming the city?s common currency.
+  merchant_x_green_gang:
+    archetypes:
+    - merchant
+    - green_gang
+    cooldown_minutes: 15
+    meeting_windows:
+    - npc_ids: [zhang_lan, madam_xu]
+      room_id: bund_09
+      windows:
+      - start_minute: 660
+        end_minute: 664
+      - start_minute: 680
+        end_minute: 684
+      - start_minute: 700
+        end_minute: 704
+    exchanges:
+    - id: weekly_payment
+      lines:
+      - The weekly payment is due, xiansheng, and this week has become heavier than last week.
+      - I paid last week with real silver, not promises, and my shelves are still half-empty.
+      - Protection protects the road before goods reach you, so the price changes before the stall does.
+      - Then protection eats before customers. Leave me enough rice to pretend this is business.
+    - id: special_delivery
+      lines:
+      - I need your back room tonight, just until morning, with no lamp and no questions.
+      - Goods without lamps usually bring soldiers with lanterns, and my wife sleeps above that room.
+      - Two months reduced fees, plus nobody bothers your nephew?s permit at the checkpoint.
+      - Put the crates behind the bean sacks. If dawn finds them there, the price changes.
+    - id: debt_collection
+      lines:
+      - The noodle vendor in Lane Three owes Mr. Zhang, and politeness has finished its work.
+      - He has two children and a cart with one wheel. I will not break either for your ledger.
+      - No one asked for broken wheels, only a conversation that reminds him debts have memory.
+      - I will talk. If your memory grows teeth, find another neighbor to hold the leash.
+  worker_x_cowardly_civilian:
+    archetypes:
+    - worker
+    - cowardly_civilian
+    cooldown_minutes: 15
+    meeting_windows:
+    - npc_ids: [rickshaw_ah_fook, kempeitai_informant]
+      room_id: oldcity_07
+      windows:
+      - start_minute: 660
+        end_minute: 664
+      - start_minute: 680
+        end_minute: 684
+      - start_minute: 700
+        end_minute: 704
+    exchanges:
+    - id: patrol_on_the_corner
+      lines:
+      - Two new patrolmen stand by the tea house, watching the alley more than the street.
+      - Keep walking, and keep your eyes where ordinary men keep them, on mud and prices.
+      - Someone has used that alley after curfew, because fresh boot marks stop at the side door.
+      - Then you saw rain, not boots. Men live longer when weather explains everything.
+    - id: stay_quiet
+      lines:
+      - Old Tang was taken three days ago, and the boarding house pretends his room was always empty.
+      - I heard nothing, and if asked twice I will remember hearing even less.
+      - You worked beside him ten years, carrying coal from the same cart every winter.
+      - Coal dust washes off. Questions do not. Let the empty room keep its own counsel.
+    - id: heads_down
+      lines:
+      - The foreman wants names from anyone who spoke to the printshop man about wages.
+      - I know no printshop man, no wages worth naming, and no courage for borrowed trouble.
+      - He carried folded papers, not tools, and someone saw him near the loading gate.
+      - Then someone saw poorly. A man with family cannot afford sharp eyes.
+  civilian_x_merchant:
+    archetypes:
+    - civilian
+    - merchant
+    cooldown_minutes: 10
+    meeting_windows:
+    - npc_ids: [orphan_xiao, waiter_chen]
+      room_id: bund_09
+      windows:
+      - start_minute: 660
+        end_minute: 664
+      - start_minute: 680
+        end_minute: 684
+      - start_minute: 700
+        end_minute: 704
+    exchanges:
+    - id: flour_price
+      lines:
+      - Four yuan a jin for flour, and that is before the mill invents tomorrow?s excuse.
+      - Last week two yuan bought enough for dumplings, not this handful of pale dust.
+      - The mill was closed by order, and orders make fine flour for men with official kitchens.
+      - Then weigh it carefully. My children cannot eat decrees from the district office.
+    - id: hoarding_rumors
+      lines:
+      - They say Guangxi Road has salt stacked to the ceiling behind a locked warehouse door.
+      - A warehouse full of salt can also be a warehouse full of lies priced by the spoonful.
+      - My cousin unloaded the sacks himself, and his shirt still tasted of brine afterward.
+      - Buy what you can carry without envy following you home. Salt makes neighbors talk.
+    - id: what_is_worth_buying
+      lines:
+      - Fifteen yuan is all I have, so tell me what lasts longer than fear.
+      - Dried beans, matches, and a little oil if your household still remembers celebrations.
+      - Beans for a week, matches for a month, and oil only when someone is ill.
+      - Then give me beans and matches. We will celebrate by keeping the stove alive.
+  refugee_x_refugee:
+    archetypes:
+    - refugee
+    - refugee
+    cooldown_minutes: 15
+    meeting_windows:
+    - npc_ids: [hanna_rosen, refugee_woman]
+      room_id: commercial_05
+      windows:
+      - start_minute: 660
+        end_minute: 664
+      - start_minute: 680
+        end_minute: 684
+      - start_minute: 700
+        end_minute: 704
+    exchanges:
+    - id: missing_family
+      lines:
+      - My brother was beside me at the bridge, then the crowd folded and swallowed him whole.
+      - Check the Ningbo Road temple again. Lists there grow by evening, even when morning says no.
+      - Twice I checked, and twice his name was missing from every careful page.
+      - Pages miss people. Stay near us tonight, and tomorrow we ask with fresh feet.
+    - id: where_to_sleep
+      lines:
+      - The police clear the Bund steps before midnight now, with batons new enough to shine.
+      - Move to the Nanking Road arcade when the shop shutters finish closing.
+      - The arcade leaks when rain comes through the broken glass above the sign.
+      - Leaking stone is kinder than a baton. Follow the woman with the blue bundle.
+    - id: survival_tips
+      lines:
+      - Do not drink from the market tap, even if the queue makes it look respectable.
+      - Bad pipe, bad water, or bad luck, which one took the man sick by evening?
+      - All three, perhaps. The printshop well is safer, and the owner still lets refugees draw water.
+      - A man who gives water freely is either good or watched. I will thank him quietly.
+  student_x_worker:
+    archetypes:
+    - student
+    - worker
+    cooldown_minutes: 12
+    meeting_windows:
+    - npc_ids: [student_luo, liu_wei]
+      room_id: oldcity_07
+      windows:
+      - start_minute: 660
+        end_minute: 664
+      - start_minute: 680
+        end_minute: 684
+      - start_minute: 700
+        end_minute: 704
+    exchanges:
+    - id: education_vs_survival
+      lines:
+      - The modern history professor was arrested because his lessons did not match the approved calendar.
+      - Outside the classroom, approval comes from rifles, and history is what survives the search.
+      - If they close the school, we lose the only place left where young people learn to ask why.
+      - Asking why is costly. Learn when to ask it, and when to carry sacks instead.
+    - id: pamphlets
+      lines:
+      - You dropped these papers, student, and the top sheet speaks too boldly about factory owners.
+      - Give them back quietly, please. The patrol reads better than it pretends.
+      - I can read too, which is why I know paper can weigh more than iron.
+      - Then keep one if you must, but hide it where fear will not search first.
+    - id: knowing_too_much
+      lines:
+      - You know too much for a student who claims he only studies examination books.
+      - The best lessons in Shanghai are not printed where inspectors can underline them.
+      - I knew a man with excellent lessons. His family now says he went to the countryside.
+      - Then I will learn silence as well. It seems to be the city?s hardest subject.
+  kempeitai_x_civilian:
+    archetypes:
+    - kempeitai
+    - civilian
+    cooldown_minutes: 20
+    meeting_windows:
+    - npc_ids: [captain_ishikawa, orphan_xiao]
+      room_id: bund_09
+      windows:
+      - start_minute: 660
+        end_minute: 664
+      - start_minute: 680
+        end_minute: 684
+      - start_minute: 700
+        end_minute: 704
+    exchanges:
+    - id: papers_check
+      lines:
+      - Present your papers, and keep both hands visible while I compare the photograph.
+      - Yes, sir. The photograph is old, but the residence stamp is current.
+      - Old photographs invite current questions. State your district, street, and employer without correction.
+      - Old City, Zhaozhou Road near Yu Yuan, textile accounts when the office has work.
+    - id: questioning
+      lines:
+      - You live on the third floor, so you will know who receives visitors beneath you.
+      - A dock family rents below, sir, and visitors are mostly cousins when rice permits it.
+      - Mostly cousins is not an answer fit for a security report. Give me a name.
+      - Everyone calls him Old Qian. Shanghai has many rooms and few full introductions.
+    - id: intimidation
+      lines:
+      - You were seen near the checkpoint after dark, when loyal residents were indoors.
+      - I was home before curfew, sir. My wife boiled tea, and the neighbors heard the kettle.
+      - Wives and neighbors repeat what fear teaches them. Do not mistake that for truth.
+      - I understand, sir. I will give the checkpoint a wider road than it gives me.
+  resistance_x_merchant:
+    archetypes:
+    - resistance
+    - merchant
+    cooldown_minutes: 20
+    meeting_windows:
+    - npc_ids: [ccp_contact_teacher, teahouse_owner]
+      room_id: oldcity_07
+      windows:
+      - start_minute: 660
+        end_minute: 664
+      - start_minute: 680
+        end_minute: 684
+      - start_minute: 700
+        end_minute: 704
+    exchanges:
+    - id: medical_supplies
+      lines:
+      - I need clean bandages and iodine, wrapped like ordinary cloth and ready before dusk.
+      - The Nanking Road pharmacy sells such things to people who enjoy answering questions.
+      - Your back room asks fewer questions, and you know why wounded men avoid bright counters.
+      - I know enough to triple the price, because my children cannot eat patriotic gratitude.
+    - id: coded_request
+      lines:
+      - Is the fish fresh today, and can three parcels feed six people before the evening bell?
+      - The fish came at dawn, and three large parcels can feed six if nobody unwraps them early.
+      - Wrap them separately, with the plain string, and send the quiet boy by the side lane.
+      - Plain string costs no extra. Quiet boys cost more when patrols learn their faces.
+    - id: storage_favor
+      lines:
+      - I need to leave a crate in your cellar, one night only, behind the wine barrels.
+      - Books again, I suppose, though your books clank more loudly than scholars prefer.
+      - Heavy covers, merchant. The kind that teach soldiers to duck when lessons begin.
+      - Then the lesson leaves by sunrise. My cellar is not a schoolhouse for metal books.
+  soldier_x_civilian:
+    archetypes:
+    - soldier
+    - civilian
+    cooldown_minutes: 20
+    meeting_windows:
+    - npc_ids: [captain_chen, orphan_xiao]
+      room_id: bund_09
+      windows:
+      - start_minute: 660
+        end_minute: 664
+      - start_minute: 680
+        end_minute: 684
+      - start_minute: 700
+        end_minute: 704
+    exchanges:
+    - id: curfew_stop
+      lines:
+      - It is past curfew, and your factory pass looks tired enough to have served two men.
+      - Night shift at the textile mill, sir. The office stamped it yesterday after supper.
+      - The date has been scratched, and scratched dates often walk beside dishonest mouths.
+      - The ink smeared in rain. I can fetch the clerk tomorrow if tomorrow allows it.
+    - id: suspicion_at_the_market
+      lines:
+      - Stop there. Open the large bag and explain why a vegetable seller carries emptiness.
+      - Because the vegetables sold before noon, sir, and an empty bag is lighter than hunger.
+      - There is mud at the bottom, and mud sometimes hides paper better than pockets.
+      - Potatoes yesterday, sir. They leave the same dirt on bags as they leave on hands.
+    - id: pass_check
+      lines:
+      - Where is your residence permit, and why did you believe rice could be bought without identity?
+      - At home, sir. I have lived on this street twenty years, and every vendor knows me.
+      - I do not know you, and familiar streets have hidden fugitives before breakfast.
+      - Then tomorrow I will carry the permit with the rice bowl, since both are necessary now.
+  student_x_resistance:
+    archetypes:
+    - student
+    - resistance
+    cooldown_minutes: 18
+    meeting_windows:
+    - npc_ids: [student_luo, yan_fen]
+      room_id: oldcity_07
+      windows:
+      - start_minute: 660
+        end_minute: 664
+      - start_minute: 680
+        end_minute: 684
+      - start_minute: 700
+        end_minute: 704
+    exchanges:
+    - id: underground_newspaper
+      lines:
+      - The new issue is printed, page three carrying the conscription article under a harmless headline.
+      - The headline is harmless only to careless readers. Who wrote the second paragraph?
+      - Names do not travel with ink anymore. I can say the writer understands mothers.
+      - Good. Understanding mothers reaches farther than slogans, and brings fewer arrests to the printer.
+    - id: meeting_spot
+      lines:
+      - Is the old classroom by the east gate still safe after evening bell?
+      - Safe enough, because the janitor listens better than inspectors and sweeps away chalk marks.
+      - What sign cancels the meeting if the west gate patrol changes again?
+      - No chalk near the map cabinet means stay away. A clean wall can save lives.
+    - id: building_trust
+      lines:
+      - Why did you trust me with the book, when any student could have read it aloud?
+      - Because you returned it quietly, with the underlined passages still hidden against your sleeve.
+      - I thought it belonged to you, and belonging still matters in a school full of inspections.
+      - That is why I trusted you. You protected a small thing without asking its price.
+  official_x_civilian:
+    archetypes:
+    - official
+    - civilian
+    cooldown_minutes: 18
+    meeting_windows:
+    - npc_ids: [inspector_moreau, orphan_xiao]
+      room_id: bund_09
+      windows:
+      - start_minute: 660
+        end_minute: 664
+      - start_minute: 680
+        end_minute: 684
+      - start_minute: 700
+        end_minute: 704
+    exchanges:
+    - id: form_trouble
+      lines:
+      - Your application lacks the district stamp for Section Four, so this counter cannot receive it.
+      - The district office sent me here after three hours in their courtyard queue.
+      - Then they sent you incorrectly, which is unfortunate but not administratively surprising.
+      - Unfortunate costs a day?s wages. Tell me which window sells the correct stamp.
+    - id: permit_delays
+      lines:
+      - My vendor permit has been processing three weeks, though the form needs one stamp and one signature.
+      - Many permits wait ahead of yours, and paper moves according to proper order.
+      - Proper order has a price in this office, unless I have mistaken the clerk?s open drawer.
+      - Fifty yuan moves paper faster. Speak softly, or morality will slow us both.
+    - id: the_right_price
+      lines:
+      - The shipment papers lack the original customs declaration, and copies do not open warehouses.
+      - The original is at my office, thirty minutes away, while your warehouse closes in twenty.
+      - Tomorrow brings storage fees, spoilage, and a fresh inspection by men who dislike delays.
+      - Then name the solution plainly. I am tired of paying poetry to clerks.
+  doctor_x_worker:
+    archetypes:
+    - doctor
+    - worker
+    cooldown_minutes: 15
+    meeting_windows:
+    - npc_ids: [underground_doctor_li, rickshaw_ah_fook]
+      room_id: oldcity_07
+      windows:
+      - start_minute: 660
+        end_minute: 664
+      - start_minute: 680
+        end_minute: 684
+      - start_minute: 700
+        end_minute: 704
+    exchanges:
+    - id: factory_injury
+      lines:
+      - The machine took two fingers, and the foreman told you cloth could replace a doctor.
+      - A floor rag stopped the bleeding enough for me to finish the shift.
+      - The rag brought filth with it. Sit down before infection takes more than fingers.
+      - I cannot afford stitches, Doctor, but I cannot afford losing the hand either.
+    - id: lack_of_medicine
+      lines:
+      - That cough sits deep now, the kind cotton dust leaves when factories eat lungs slowly.
+      - Three weeks of it, and the mill windows stay shut because coal is cheaper than air.
+      - I have herbs, not imported medicine, but your grandmother would recognize their use.
+      - Then give me grandmother?s medicine. Old remedies ask fewer questions than pharmacies.
+    - id: exhaustion
+      lines:
+      - Sixteen-hour shifts have put grey under your eyes and tremor in your hands.
+      - The factory does not close because one man shakes, Doctor. It only finds another man.
+      - One shaking man becomes ten, and then the machines learn how fragile schedules are.
+      - Schedules are stronger than bodies now. We discovered that before the foreman did.
+  refugee_x_merchant:
+    archetypes:
+    - refugee
+    - merchant
+    cooldown_minutes: 15
+    meeting_windows:
+    - npc_ids: [abramowitz, vendor_lin]
+      room_id: oldcity_07
+      windows:
+      - start_minute: 660
+        end_minute: 664
+      - start_minute: 680
+        end_minute: 684
+      - start_minute: 700
+        end_minute: 704
+    exchanges:
+    - id: selling_belongings
+      lines:
+      - This coat is good wool, worn thin at the elbows but still holding my father?s winter.
+      - Good wool remembers better days, but buyers pay for cloth, not memory.
+      - Thirty yuan bought it before the war. I need enough rice to make parting useful.
+      - Nine yuan, because the elbows are honest and the child beside you is too quiet.
+    - id: begging_for_credit
+      lines:
+      - I need rice for two days and have nothing left except a promise I dislike making.
+      - Promises fill my ledger already, and wholesalers do not accept hungry handwriting.
+      - I will sweep, carry water, mend sacks, anything that lets my child sleep without crying.
+      - Half a bag, then. Pay when the city permits decency to become possible again.
+    - id: sending_a_message
+      lines:
+      - Do you know a carter bound for Suzhou who can carry a family letter?
+      - Letters are dangerous cargo now, especially when families write what officials prefer unspoken.
+      - It says only that I live, and asks whether my sister?s door still stands.
+      - That is enough danger. I will ask him, but seal it without tears.
+  neighbor_x_neighbor:
+    archetypes:
+    - neighbor
+    - neighbor
+    cooldown_minutes: 12
+    meeting_windows:
+    - npc_ids: [sister_mei, old_wu]
+      room_id: commercial_05
+      windows:
+      - start_minute: 660
+        end_minute: 664
+      - start_minute: 680
+        end_minute: 684
+      - start_minute: 700
+        end_minute: 704
+    exchanges:
+    - id: who_disappeared
+      lines:
+      - Have you seen the old man from Number Seven since Tuesday, when his cat started crying?
+      - His door stayed locked through market hour, and the milk bowl outside has gone sour.
+      - Should we tell someone, or does telling turn concern into evidence?
+      - We feed the cat first. Living things should not wait for official permission.
+    - id: keeping_watch
+      lines:
+      - A new man rents above the bakery, young and nervous, carrying one bag everywhere.
+      - A bag can hold books, tools, or enough trouble to empty the building.
+      - He leaves before dawn and keeps his lamp burning after curfew shutters close.
+      - I will watch the window, not the man. Windows betray people more politely.
+    - id: shared_concern
+      lines:
+      - The laundry woman has not collected clothes in three days, and her basin still stands outside.
+      - She never leaves wet linen out. Pride would bring her downstairs if sickness did not.
+      - A military truck stopped near her lane last week, late enough for curtains to move.
+      - Tomorrow morning we knock together. Two neighbors make a question harder to punish.
+  worker_x_student:
+    archetypes:
+    - worker
+    - student
+    cooldown_minutes: 12
+    meeting_windows:
+    - npc_ids: [liu_wei, student_luo]
+      room_id: oldcity_07
+      windows:
+      - start_minute: 660
+        end_minute: 664
+      - start_minute: 680
+        end_minute: 684
+      - start_minute: 700
+        end_minute: 704
+    exchanges:
+    - id: late_night_movements
+      lines:
+      - You are late for a student, and the patrols treat books as badly as knives.
+      - The library reading room closes at six, but the back room keeps different hours.
+      - Back rooms collect books that front shelves are too frightened to hold.
+      - Then carry them carefully. Forbidden pages grow heavier after curfew.
+    - id: books_vs_bread
+      lines:
+      - You study all day, but knowledge does not put bean cakes in a hungry stomach.
+      - No, but it keeps a mind from becoming another room the occupation has searched.
+      - I have seen educated men trade books for bread and apologize to both.
+      - Then we each carry our hunger differently. Mine happens to have pages.
+    - id: the_future
+      lines:
+      - When the war ends, I will return to my village and see whether the roof remembers me.
+      - And if the house is gone, will you build again from ashes?
+      - If my hands still work, yes. What will a student build from burned books?
+      - A classroom, first. A city that burned books will need teachers most.
+  neighbor_x_civilian:
+    archetypes:
+    - neighbor
+    - civilian
+    cooldown_minutes: 10
+    meeting_windows:
+    - npc_ids: [mrs_gu, orphan_xiao]
+      room_id: bund_09
+      windows:
+      - start_minute: 660
+        end_minute: 664
+      - start_minute: 680
+        end_minute: 684
+      - start_minute: 700
+        end_minute: 704
+    exchanges:
+    - id: community_news
+      lines:
+      - The corner vegetable vendor had a baby girl, and we are collecting milk money by the bowl.
+      - Put me down for two yuan, though my purse complains louder than my conscience.
+      - The tailor gave five, and the bakery promised a small cake if flour arrives.
+      - A cake in these times is almost a public declaration of hope. Keep my name small.
+    - id: shared_food
+      lines:
+      - I made too much soup, which is a lie polite enough for hungry neighbors to accept.
+      - You have barely enough for your own table, and I dislike eating another household?s courage.
+      - We all see your lamp burning late and your rice jar emptying faster than wages arrive.
+      - Then I will return the bowl tomorrow, with thanks folded under the cloth.
+    - id: looking_out
+      lines:
+      - Your son crossed the market after curfew and spoke with a boy carrying folded papers.
+      - I told him straight home, but youth hears warnings as if they are rain on tile.
+      - Talk to him before someone else does, because pamphlets make boys older very quickly.
+      - I will speak tonight. Thank you for watching without making a public kindness of it.
