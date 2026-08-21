@@ -1,19 +1,25 @@
 from typing import Dict, List
 
-COMMAND_DEFS: Dict[str, Dict] = (
+COMMAND_DEFS: Dict[str, Dict] = {
     "ask": {
         "help": "ASK <name> about a topic, or ASK without a topic to list what they discuss.",
-        "slots": [{"category": "npcs", "separator": " "}],
+        "slots": [
+            {"category": "npcs", "separator": " about "},
+            {"category": "topics", "separator": " ", "context": {"collection": "ask_topics", "source_slot": 0}},
+        ],
         "aliases": [],
     },
     "ask about": {
         "help": "ASK <name> ABOUT <topic>. Ask a person without a topic to list what they will discuss.",
-        "slots": [{"category": "npcs", "separator": " about "}, {"category": "topics", "separator": " "}],
+        "slots": [
+            {"category": "npcs", "separator": " about "},
+            {"category": "topics", "separator": " ", "context": {"collection": "ask_topics", "source_slot": 0}},
+        ],
         "aliases": [],
     },
     "assess": {
         "help": "ASSESS <target> sizes up a person or thing before you act.",
-        "slots": [],
+        "slots": [{"category": "npcs", "separator": " "}],
         "aliases": [],
     },
     "attack": {
@@ -43,27 +49,27 @@ COMMAND_DEFS: Dict[str, Dict] = (
     },
     "disguise as": {
         "help": "DISGUISE AS <faction role> to pass as one of them.",
-        "slots": [],
+        "slots": [{"category": "disguises", "separator": " "}],
         "aliases": [],
     },
     "drop": {
         "help": "DROP <item>, or bare DROP to choose from a chooser.",
-        "slots": [{"category": "items", "separator": " "}],
+        "slots": [{"category": "inventory_items", "separator": " "}],
         "aliases": ["discard"],
     },
     "eat": {
-        "help": "EAT <food>, or bare EAT to choose from a chooser.",
-        "slots": [{"category": "items", "separator": " "}],
+        "help": "EAT opens a chooser of food you carry.",
+        "slots": [],
         "aliases": [],
     },
     "equip": {
-        "help": "EQUIP <weapon> readies a held weapon for combat.",
-        "slots": [{"category": "items", "separator": " "}],
-        "aliases": [],
+        "help": "EQUIP <item> readies a held weapon or wears armour.",
+        "slots": [{"category": "inventory_items", "separator": " "}],
+        "aliases": ["wear"],
     },
     "examine": {
         "help": "EXAMINE <npc/item> for detail and what you can do with it.",
-        "slots": [{"category": "items", "separator": " "}],
+        "slots": [{"category": "inventory_items", "separator": " "}],
         "aliases": [],
     },
     "favor": {
@@ -73,7 +79,7 @@ COMMAND_DEFS: Dict[str, Dict] = (
     },
     "give": {
         "help": "GIVE <item> TO <name>.",
-        "slots": [{"category": "items", "separator": " to "}, {"category": "npcs", "separator": " "}],
+        "slots": [{"category": "inventory_items", "separator": " to "}, {"category": "npcs", "separator": " "}],
         "aliases": [],
     },
     "go": {
@@ -128,7 +134,7 @@ COMMAND_DEFS: Dict[str, Dict] = (
     },
     "open": {
         "help": "OPEN <container> is the only way to unlock a locked container.",
-        "slots": [{"category": "items", "separator": " "}],
+        "slots": [{"category": "containers", "separator": " "}],
         "aliases": [],
     },
     "pickpocket": {
@@ -148,17 +154,17 @@ COMMAND_DEFS: Dict[str, Dict] = (
     },
     "read": {
         "help": "READ <item>, or bare READ to choose from a chooser.",
-        "slots": [{"category": "items", "separator": " "}],
+        "slots": [{"category": "inventory_items", "separator": " "}],
         "aliases": [],
     },
     "remove": {
         "help": "REMOVE <armour>.",
-        "slots": [{"category": "items", "separator": " "}],
+        "slots": [{"category": "inventory_items", "separator": " "}],
         "aliases": [],
     },
     "repair": {
         "help": "REPAIR <weapon>, or bare REPAIR to choose a weapon.",
-        "slots": [{"category": "items", "separator": " "}],
+        "slots": [{"category": "inventory_items", "separator": " "}],
         "aliases": [],
     },
     "retrieve": {
@@ -193,7 +199,7 @@ COMMAND_DEFS: Dict[str, Dict] = (
     },
     "sell": {
         "help": "SELL <item>, or bare SELL to choose from a chooser.",
-        "slots": [{"category": "items", "separator": " "}],
+        "slots": [{"category": "inventory_items", "separator": " "}],
         "aliases": [],
     },
     "skip tutorial": {
@@ -218,7 +224,7 @@ COMMAND_DEFS: Dict[str, Dict] = (
     },
     "take": {
         "help": "TAKE <item>, or bare TAKE to choose from a chooser.",
-        "slots": [{"category": "items", "separator": " "}],
+        "slots": [{"category": "take_items", "separator": " "}],
         "aliases": ["get", "grab"],
     },
     "take from": {
@@ -246,11 +252,6 @@ COMMAND_DEFS: Dict[str, Dict] = (
         "slots": [],
         "aliases": [],
     },
-    "wear": {
-        "help": "WEAR <armour>.",
-        "slots": [{"category": "items", "separator": " "}],
-        "aliases": [],
-    },
     "whisper": {
         "help": "WHISPER <name> <message>.",
         "slots": [{"category": "players", "separator": " "}],
@@ -266,4 +267,4 @@ COMMAND_DEFS: Dict[str, Dict] = (
         "slots": [],
         "aliases": [],
     },
-)
+}
