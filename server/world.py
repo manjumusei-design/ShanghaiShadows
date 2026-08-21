@@ -127,6 +127,8 @@ class Item:
     testimony_provenance: Dict[str, Any] = field(default_factory=dict)
 
     def __post_init__(self):
+        import re
+        self.name = re.sub(r"^(?:a|an|the)\s+", "", self.name, flags=re.IGNORECASE)
         if not isinstance(self.examine_text, str):
             raise ValueError(f"item examine_text must be a string: {self.id}")
 
