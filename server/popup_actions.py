@@ -10,6 +10,7 @@ from .commands import (
     resolve_storylet_choice,
     validate_vendor_purchase_context,
 )
+from .constants import MessageType
 from .locales import get as loc
 from .parser import Command
 from .popup_payloads import room_key_for_client
@@ -19,7 +20,7 @@ STALE_CHOICE = "That choice is no longer available."
 VERB_ACTIONS = {
     "eat": "eat",
     "equip": "equip",
-    "wear": "wear",
+    "wear": "equip",
     "remove": "remove",
     "drop": "drop",
     "read": "read",
@@ -29,7 +30,6 @@ VERB_ACTIONS = {
 NOT_HELD_LOC = {
     "eat": "cmd_eat.not_held",
     "equip": "cmd_equip.not_held",
-    "wear": "cmd_drop.not_held",
     "drop": "cmd_drop.not_held",
     "read": "cmd_read.not_held",
     "examine": "cmd_drop.not_held",
@@ -155,7 +155,7 @@ async def _route_container_close(ctx: Any, session: Any, data: Dict[str, Any]) -
     from .commands import close_container
     container = _find_container(ctx, data.get("context_id", ""))
     if not container:
-        await post_display(ctx, loc("container.not_container"))
+        await post_display(ctx, loc("container.not_container"), msg_type=MessageType.PLAYER_ACTION)
         return failure("popup_not_container")
     return await close_container(ctx, container)
 
@@ -193,7 +193,7 @@ async def _route_item_action(ctx: Any, session: Any, data: Dict[str, Any]) -> Co
     else:
         item = find_item_by_instance(target_id, session.player.inventory)
         if not item:
-            await post_display(ctx, loc(NOT_HELD_LOC.get(action, "cmd_drop.not_held")))
+            await post_display(ctx, loc(NOT_HELD_LOC.get(action, "cmd_drop.not_held")), msg_type=MessageType.PLAYER_ACTION)
             return failure("popup_not_held")
         if action == "eat":
             from .commands import consume_food_item
@@ -283,13 +283,13 @@ async def _route_take_from(ctx: Any, session: Any, data: Dict[str, Any]) -> Comm
         return failure("popup_stale_context")
     container = _find_container(ctx, data.get("context_id", ""))
     if not container:
-        await post_display(ctx, loc("container.not_container"))
+        await post_display(ctx, loc("container.not_container"), msg_type=MessageType.PLAYER_ACTION)
         return failure("popup_not_container")
     ensure_items_identity(container.container_items)
     target_id = data.get("target_id", "")
     item = find_item_by_instance(target_id, container.container_items)
     if not item:
-        await post_display(ctx, loc("container.not_in_there"))
+        await post_display(ctx, loc("container.not_in_there"), msg_type=MessageType.PLAYER_ACTION)
         return failure("popup_item_missing")
     cmd = Command(verb="take from", direct_obj=target_id, indirect_obj=container.name, raw=f"take {target_id} from {container.name}")
     return await _dispatch_verb(ctx, "take from", cmd)
