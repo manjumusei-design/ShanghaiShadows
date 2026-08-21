@@ -41,7 +41,7 @@ interface Row {
   actionLabel: string
 }
 
-const ACTION_LABELS: Record<string, string> = { equip: 'EQUIP', wear: 'WEAR', remove: 'REMOVE' }
+const ACTION_LABELS: Record<string, string> = { equip: 'EQUIP', remove: 'REMOVE' }
 
 export default defineComponent({
   name: 'EquipmentPopup',
@@ -101,8 +101,8 @@ export default defineComponent({
         key: item.id,
         name: item.name,
         item,
-        action: item.is_weapon ? 'equip' : 'wear',
-        actionLabel: item.is_weapon ? 'EQUIP' : 'WEAR',
+        action: 'equip',
+        actionLabel: 'EQUIP',
       }))
       if (eligible.length) {
         built.push({ label: 'Eligible Carried Equipment', rows: eligible })
