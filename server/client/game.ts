@@ -299,7 +299,7 @@ const set_initial_state = (): GameState => ({
 const game: Module<GameState, any> = {
   namespaced: true,
 
-  state: set_initial_state(),
+  state: set_initial_state,
 
   mutations: {
     RESET_STATE(state) {
@@ -763,9 +763,9 @@ const game: Module<GameState, any> = {
 				case 'audio':
           {
             const soundName = data.sound || ''
-            const isAmbient = soundName.startsWith('rain') || soundName.startsWith('storm') || soundName === 'ambient_city'
-            const isStop = soundName.endsWith('_stop')
-            const channel = isAmbient ? 'ambient' : 'effects'
+            const baseName = soundName.replace(/_start$|_stop$/g, '')
+            const AMBIENT_SOUNDS = ['rain', 'storm', 'fog', 'snow', 'ambient_city']
+            const isAmbient = AMBIENT_SOUNDS.includes(baseName)
 
             if (isStop) {
               commit('STOP_AUDIO_CHANNEL', channel)
