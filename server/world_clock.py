@@ -195,7 +195,11 @@ def tutorial_sound_investigator_allowed(npc_id: str, clone_ids: set, npc) -> boo
     if npc_id not in clone_ids or not npc_id.endswith("tutorial_kempeitai_officer"):
         return False
     blackboard = getattr(npc, "_blackboard", None)
-    return bool(blackboard and blackboard.get("last_heard_sound"))
+    if not blackboard:
+        return False
+    return bool(
+        blackboard.get("last_heard_sound") or blackboard.get("sound_investigation")
+    )
 
 
 class WorldClock:
@@ -646,6 +650,14 @@ class WorldClock:
             if room.id in self.shared.cloned_tutorial_rooms:
                 continue
             process_gossip_room(self.shared, room)
+
+    def trigger_sanctioned_tutorial_meetings(self) -> None:
+        for pool_key, pool in self._social_dialogue.dialogue_pools.items():
+            if not isinstance(pool, dict) or not pool.get("exchanges"):
+                continue
+            for meeting in pool.get("meeting_windows", []):
+                if isinstance(meeting, dict) and meeting.get("tutorial_demonstration"):
+                    self._run_sanctioned_tutorial_meeting(str(pool_key), pool, meeting)
 
     def _run_authored_meetings(self) -> None:
         from .npc import get_npc_archetype
@@ -2066,6 +2078,15 @@ class WorldClock:
             if sound:
                 bb.set("last_heard_sound", sound)
             bb.set("heard_hostile_sound", npc_bb.get("heard_hostile_sound", False))
+            investigation = npc_bb.get("sound_investigation")
+            if investigation:
+                bb.set("sound_investigation", investigation)
+
+    OPPOSITE_DIRECTION = {
+        "north": "south", "south": "north",
+        "east": "west", "west": "east",
+        "up": "down", "down": "up",
+    }
 
     def _npc_investigate_action(self, npc, bb):
         from .behavior_tree import Status
@@ -2077,8 +2098,25 @@ class WorldClock:
         if not target_room_id:
             return Status.FAILURE
         npc_id = bb.get("npc_id")
+        if isinstance(sound, dict) and sound.get("actionable") and not bb.get("sound_investigation"):
+            return Status.FAILURE
         current_room_id = self.shared.world.npc_locations.get(npc_id)
         if current_room_id == target_room_id:
+            investigation = bb.get("sound_investigation")
+            if (
+                isinstance(investigation, dict)
+                and investigation.get("source_room") == current_room_id
+            ):
+                if investigation.get("phase") == "travel":
+                    search_room = self._select_search_room(current_room_id, investigation)
+                    if search_room:
+                        investigation["phase"] = "search"
+                        self._move_npc_between_rooms(npc_id, current_room_id, search_room)
+                        return Status.RUNNING
+                    self._finish_sound_search(bb, npc)
+                    return Status.SUCCESS
+                self._finish_sound_search(bb, npc)
+                return Status.SUCCESS
             self._clear_npc_sound_memory(npc, bb)
             return Status.SUCCESS
         current_room = self.shared.world.rooms.get(current_room_id) if current_room_id else None
@@ -2097,6 +2135,9 @@ class WorldClock:
         if dest_id:
             rooms_with_players = self._rooms_with_players()
             self._move_npc_between_rooms(npc_id, current_room_id, dest_id, direction)
+            investigation = bb.get("sound_investigation")
+            if isinstance(investigation, dict) and investigation.get("phase") == "travel":
+                investigation["approach_direction"] = direction
             movement_message = f"{npc.name} moves purposefully {direction}."
             if current_room_id in rooms_with_players or dest_id in rooms_with_players:
                 for session in self.session_manager.get_players_in_room(current_room_id):
@@ -2111,6 +2152,30 @@ class WorldClock:
             return Status.RUNNING
         self._clear_npc_sound_memory(npc, bb)
         return Status.FAILURE
+
+    def _select_search_room(self, room_id: str, investigation: dict):
+        room = self.shared.world.rooms.get(room_id)
+        if not room or not room.exits:
+            return None
+        approach = investigation.get("approach_direction") or ""
+        forward = room.exits.get(approach)
+        if forward and self.shared.world.rooms.get(forward):
+            return forward
+        opposite = self.OPPOSITE_DIRECTION.get(approach)
+        fallbacks = [
+            dest for direction, dest in room.exits.items()
+            if direction != opposite and self.shared.world.rooms.get(dest)
+        ]
+        if fallbacks:
+            return fallbacks[0]
+        return None
+
+    def _finish_sound_search(self, bb, npc) -> None:
+        bb.clear("sound_investigation")
+        npc_bb = getattr(npc, "_blackboard", None)
+        if npc_bb:
+            npc_bb.clear("sound_investigation")
+        self._clear_npc_sound_memory(npc, bb)
 
     @staticmethod
     def _clear_npc_sound_memory(npc, bb) -> None:
@@ -2198,9 +2263,10 @@ class WorldClock:
             for session in list(self.session_manager.sessions.values()):
                 if tutorial_blocks_world_events(session.player):
                     continue
-                if apply_milestone_effects(session.player, m, self.shared):
+                if m.narrative and apply_milestone_effects(session.player, m, self.shared):
                     asyncio.create_task(session.send_display(f"\n{m.narrative}\n", msg_type=MessageType.ROOM_DESCRIPTION))
-            await self._broadcast_display(f"\n[MILESTONE] {m.narrative}\n", msg_type=MessageType.ROOM_DESCRIPTION)
+            if m.narrative:
+                await self._broadcast_display(f"\n[MILESTONE] {m.narrative}\n", msg_type=MessageType.ROOM_DESCRIPTION)
 
     async def _check_storylet_timers_all_sessions(self):
         from .storylets import is_storylet_expired
