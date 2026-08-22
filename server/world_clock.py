@@ -2195,7 +2195,7 @@ class WorldClock:
             "winter": (("clear", 40), ("snow", 30), ("fog", 15), ("rain", 10), ("storm", 5)),
         }
         states, weights = zip(*weather_weights[season])
-        previous = getattr(self.shared, "weather", "clear)")
+        previous = getattr(self.shared, "weather", "clear")
         self.shared.weather = random.choices(states, weights=weights, k=1)[0]
         if self.shared.weather == "rain":
             self._apply_weather_degradation()
@@ -2203,6 +2203,7 @@ class WorldClock:
             self._apply_weather_degradation(multiplier=2)
             if previous != "storm":
                 asyncio.create_task(self._broadcast_audio("thunder", volume=0.6))
+
     def _apply_weather_degradation(self, multiplier: int = 1):
         from .constants import DEGRADE_RAIN_RATE
         for session in list(self.session_manager.sessions.values()):
@@ -2217,10 +2218,10 @@ class WorldClock:
                 if item.durability <= 0:
                     verb = "rusts apart" if item.is_weapon else "is ruined by the rain"
                     asyncio.create_task(session.send_display(f"Your {item.name} {verb}.", msg_type=MessageType.WARNING))
+                    if getattr(session, "audio_enabled", False):
+                        asyncio.create_task(session.send_audio("item_break", volume=0.6))
                     broken.append(item)
             for item in broken:
-                if getattr(session, "audio_enabled", False):
-                        asyncio.create_task(session.send_audio("item_break", volume=0.6))
                 session.player.inventory.remove(item)
 
     async def _check_death_and_victory(self):
