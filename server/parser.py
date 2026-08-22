@@ -12,7 +12,8 @@ class Command:
     raw: str = ""
     raw_verb: str = ""
     suppress_render: bool = False
-
+    instant_revealL: bool = False
+    
 
 ARTICLES = {"the", "a", "an"}
 PREPOSITIONS = {"to", "at", "on", "with", "in", "from", "about"}
