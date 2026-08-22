@@ -85,6 +85,7 @@ export interface Message {
   text: string
   timestamp: number
   label?: string
+  istant_reveal?: boolean
 }
 
 export interface Effect {
