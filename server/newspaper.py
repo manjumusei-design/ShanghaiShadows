@@ -1,4 +1,5 @@
 import asyncio
+import copy
 import random
 from typing import Dict, List, Optional, Any, TYPE_CHECKING
 from datetime import datetime
@@ -13,6 +14,17 @@ NEWSPAPER_COST_FABI = 3
 NEWSPAPER_MASTHEAD = "弄堂消息"
 NEWSPAPER_SUBTITLE = "LONGTANG XIAOSHUO"
 NEWSPAPER_DATE_FORMAT = "Day {day}"
+
+
+NEWSPAPER_INCIDENT_FRESHNESS_DAYS = 2
+
+
+def _incident_is_fresh(day_value: Any, game_day: int) -> bool:
+    try:
+        event_day = int(day_value)
+    except (TypeError, ValueError):
+        return False
+    return event_day >= 1 and game_day - NEWSPAPER_INCIDENT_FRESHNESS_DAYS < event_day <= game_day
 
 
 def _get_district_display(district: str) -> str:
@@ -161,12 +173,16 @@ async def generate_newspaper(
 
     notable_incidents = []
     for npc_id, record in sorted((named_npc_deaths or {}).items()):
+        if not _incident_is_fresh(record.get("day"), game_day):
+            continue
         incident = _format_npc_death_record(record)
         if incident and incident not in notable_incidents:
             enhanced = await _ai_enhance_incident(ai_client, incident, game_day)
             if enhanced and enhanced not in notable_incidents:
                 notable_incidents.append(enhanced)
     for decision in world_decisions[-5:]:
+        if not _incident_is_fresh(decision.get("day"), game_day):
+            continue
         incident = _format_world_decision(decision)
         if incident and incident not in notable_incidents:
             enhanced = await _ai_enhance_incident(ai_client, incident, game_day)
@@ -198,6 +214,54 @@ async def generate_newspaper(
     return newspaper
 
 
+async def _resolve_shared_edition(
+    shared: Any,
+    game_day: int,
+    player_district: str,
+    all_rumors: List[Dict[str, Any]],
+    active_rumor_ids: List[str],
+    world_decisions: List[Dict[str, Any]],
+    rumour_mill: Dict[str, List[str]],
+    ai_client: Optional["AIClient"],
+    named_npc_deaths: Optional[Dict[str, Dict[str, Any]]],
+) -> Optional[Dict[str, Any]]:
+    if shared is None:
+        return await generate_newspaper(
+            game_day=game_day,
+            player_district=player_district,
+            all_rumors=all_rumors,
+            active_rumor_ids=active_rumor_ids,
+            world_decisions=world_decisions,
+            rumour_mill=rumour_mill,
+            ai_client=ai_client,
+            named_npc_deaths=named_npc_deaths,
+        )
+
+    edition_lock = getattr(shared, "_newspaper_edition_lock", None)
+    if edition_lock is None:
+        edition_lock = asyncio.Lock()
+        shared._newspaper_edition_lock = edition_lock
+    async with edition_lock:
+        cached = getattr(shared, "newspaper_edition", None)
+        if getattr(shared, "newspaper_edition_day", 0) == game_day and isinstance(cached, dict):
+            return cached
+        generated = await generate_newspaper(
+            game_day=game_day,
+            player_district=player_district,
+            all_rumors=all_rumors,
+            active_rumor_ids=active_rumor_ids,
+            world_decisions=world_decisions,
+            rumour_mill=rumour_mill,
+            ai_client=ai_client,
+            named_npc_deaths=named_npc_deaths,
+        )
+        if not generated:
+            return None
+        shared.newspaper_edition_day = game_day
+        shared.newspaper_edition = generated
+        return shared.newspaper_edition
+
+    
 async def purchase_newspaper(
     player: Any,
     game_day: int,
@@ -209,17 +273,23 @@ async def purchase_newspaper(
     ai_client: Optional["AIClient"] = None,
     named_npc_deaths: Optional[Dict[str, Dict[str, Any]]] = None,
     active=None,
+    shared=None,
 ) -> Optional[Dict[str, Any]]:
-    lock = getattr(player, "_newspaper_purchase_lock", None)
-    if lock is None:
-        lock = asyncio.Lock()
-        setattr(player, "_newspaper_purchase_lock", lock)
-    async with lock:
+    player_lock = getattr(player, "_newspaper_purchase_lock", None)
+    if player_lock is None:
+        player_lock = asyncio.Lock()
+        setattr(player, "_newspaper_purchase_lock", player_lock)
+    async with player_lock:
         if player.last_newspaper_day == game_day:
             return None
         if not can_afford_fabi(player, NEWSPAPER_COST_FABI):
             return None
-        newspaper = await generate_newspaper(
+        if active is not None:
+            from .commands import storylet_resolution_owned
+            if not storylet_resolution_owned(active):
+                return None
+        edition = await _resolve_shared_edition(
+            shared=shared,
             game_day=game_day,
             player_district=player_district,
             all_rumors=all_rumors,
@@ -229,17 +299,18 @@ async def purchase_newspaper(
             ai_client=ai_client,
             named_npc_deaths=named_npc_deaths,
         )
+        if not edition:
+            return None
         if active is not None:
             from .commands import storylet_resolution_owned
             if not storylet_resolution_owned(active):
                 return None
-        if not newspaper:
-            return None
         if not spend_fabi_value(player, NEWSPAPER_COST_FABI):
             return None
-        player.newspapers.append(newspaper)
+        owned_copy = copy.deepcopy(edition)
+        player.newspapers.append(owned_copy)
         player.last_newspaper_day = game_day
-        return newspaper
+        return owned_copy
 
 
 def format_newspaper_for_display(newspaper: Dict[str, Any]) -> str:
