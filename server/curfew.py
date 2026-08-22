@@ -38,8 +38,8 @@ class CurfewResolution:
     confiscated_item_ids: tuple[str, ...] = ()
 
 
-def curfew_night_key(game_time: "GameTime") -> int | None:
-    minute = int(game_time.minute) % 1440 + int(game_time.minute)
+def game_clock_total_minutes(game_time: "GameTime") -> int:
+    return (int(game_time.day) - 1) * 1440 + int(game_time.minute)
 
 
 CUSTODY_DURATION_MINUTES = 1440
@@ -54,7 +54,7 @@ def curfew_night_key(game_time: "GameTime") -> int | None:
     return int(game_time.day) - 1
 
 
-def curfew_immunity_active(player: "PlayerDatta", game_time: "GameTime") -> bool:
+def curfew_immunity_active(player: "PlayerData", game_time: "GameTime") -> bool:
     try:
         expiry = int(getattr(player, "curfew_immunity_expires_at", -1))
     except (TypeError, ValueError):
@@ -74,9 +74,9 @@ def _has_matching_safehouse(room: "Room", faction: str) -> bool:
 
 
 def curfew_arrest_chance(
-        player: "PlayerData",
-        room: "Room",
-        disguises: Mapping[str, "Disguise"],
+    player: "PlayerData",
+    room: "Room",
+    disguises: Mapping[str, "Disguise"],
 ) -> int:
     base = _clamp_percent(calculate_curfew_arrest_chance(player))
     resolved = equipped_disguise(player, disguises)
@@ -100,7 +100,7 @@ def _context_room(ctx: "CommandContext"):
     room = getattr(ctx, "room", None)
     if room is not None:
         return room
-    player =  ctx.session.player
+    player = ctx.session.player
     world = getattr(ctx.shared, "world", None)
     getter = getattr(world, "get_room", None)
     return getter(player.current_room) if getter else None
@@ -175,9 +175,10 @@ async def _post_arrest_feedback(ctx: "CommandContext", status: str, room_title: 
         if getattr(session, "audio_enabled", False):
             await session.send_audio("whistle", volume=0.7)
 
+
 async def resolve_curfew_encounter(
     ctx: "CommandContext",
-    trigger: "CurfewTrigger",
+    trigger: CurfewTrigger,
     *,
     randint: Callable[[int, int], int] = random.randint,
     escape_move: Callable[["CommandContext", str], Awaitable[None]] | None = None,
@@ -214,6 +215,8 @@ async def resolve_curfew_encounter(
         move_handler = escape_move or _default_escape_move
         await move_handler(ctx, direction)
         resolved_status = "escape"
+        if getattr(getattr(ctx, "session", None), "audio_enabled", False):
+            await ctx.session.send_audio("escape_charge", volume=0.7)
     else:
         _begin_custody(player, room, game_time)
         resolved_status = "custody"
