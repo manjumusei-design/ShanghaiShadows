@@ -291,6 +291,8 @@ class WorldClock:
         )
         if any(effect.get("curfew_start") for effect in effects):
             asyncio.create_task(self._broadcast_audio("gong", volume=0.6))
+        if self.shared.weather == "storm" and self.shared.game_time.minute % 60 == 0:
+            asyncio.create_task(self._broadcast_audio("thunder", volume=0.5))
 
     async def _broadcast_audio(self, sound: str, volume: float = 0.7) -> None:
         for session in list(self.session_manager.sessions.values()):
@@ -847,6 +849,8 @@ class WorldClock:
                             created_day=self.shared.game_time.day,
                         )
                         asyncio.create_task(session.send_display(event_text, msg_type=MessageType.WARNING))
+                        if getattr(session, "audio_enabled", False):
+                            asyncio.create_task(session.send_audio("alert", volume=0.6))
                         if getattr(session, "audio_enabled", False):
                             asyncio.create_task(session.send_audio("alert", volume=0.6))
                         triggered = True
@@ -2126,12 +2130,14 @@ class WorldClock:
             "winter": (("clear", 40), ("snow", 30), ("fog", 15), ("rain", 10), ("storm", 5)),
         }
         states, weights = zip(*weather_weights[season])
+        previous = getattr(self.shared, "weather", "clear)")
         self.shared.weather = random.choices(states, weights=weights, k=1)[0]
         if self.shared.weather == "rain":
             self._apply_weather_degradation()
         elif self.shared.weather == "storm":
             self._apply_weather_degradation(multiplier=2)
-
+            if previous != "storm":
+                asyncio.create_task(self._broadcast_audio("thunder", volume=0.6))
     def _apply_weather_degradation(self, multiplier: int = 1):
         from .constants import DEGRADE_RAIN_RATE
         for session in list(self.session_manager.sessions.values()):
@@ -2148,6 +2154,8 @@ class WorldClock:
                     asyncio.create_task(session.send_display(f"Your {item.name} {verb}.", msg_type=MessageType.WARNING))
                     broken.append(item)
             for item in broken:
+                if getattr(session, "audio_enabled", False):
+                        asyncio.create_task(session.send_audio("item_break", volume=0.6))
                 session.player.inventory.remove(item)
 
     async def _check_death_and_victory(self):
