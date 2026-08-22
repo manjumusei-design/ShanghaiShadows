@@ -282,6 +282,8 @@ class SharedWorldState:
     social_consequences: Dict[str, Dict[str, Any]] = field(default_factory=dict)
     social_consequence_cooldowns: Dict[str, int] = field(default_factory=dict)
     applied_cancellation_event_ids: List[str] = field(default_factory=list)
+    newspaper_edition_day: int = 0
+    newspaper_edition: Optional[Dict[str, Any]] = None
 
     def get_trust_value(self, key: str, player_trust: TrustMap) -> int:
         if "." in key:
@@ -497,6 +499,8 @@ def serialize_world_state(state: SharedWorldState) -> Dict[str, object]:
         },
         "active_authored_rumor_ids": list(state.active_authored_rumor_ids),
         "layout_seed": state.layout_seed,
+        "newspaper_edition_day": int(state.newspaper_edition_day),
+        "newspaper_edition": state.newspaper_edition if isinstance(state.newspaper_edition, dict) else None,
     }
     return payload
 
@@ -746,6 +750,10 @@ def deserialize_world_state(data: Dict[str, object], world: World) -> SharedWorl
     tutorial_coords = layout_tutorial_rooms(world.rooms)
     layout_coords.update(tutorial_coords)
 
+    raw_newspaper_edition = data.get("newspaper_edition")
+    newspaper_edition = dict(raw_newspaper_edition) if isinstance(raw_newspaper_edition, dict) else None
+    newspaper_edition_day = int(data.get("newspaper_edition_day", 0) or 0) if newspaper_edition else 0
+
     state = SharedWorldState(
         world=world,
         game_time=game_time,
@@ -780,6 +788,8 @@ def deserialize_world_state(data: Dict[str, object], world: World) -> SharedWorl
         code_to_room={code: rid for rid, code in room_codes.items()},
         room_layout_coords=layout_coords,
         layout_seed=layout_seed,
+        newspaper_edition_day=newspaper_edition_day,
+        newspaper_edition=newspaper_edition,
     )
 
     from .rumors import migrate_world_rumors
