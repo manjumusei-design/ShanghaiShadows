@@ -106,6 +106,7 @@ class PlayerData:
     tutorial_confirmation: Dict[str, Any] = field(default_factory=dict)
     tutorial_read_note: bool = False
     tutorial_journal_lessons: Dict[str, str] = field(default_factory=dict)
+    tutorial_social_exchanges:  Dict[str, Dict[str, Any]] = field(default_factory=dict)
     escape_charge_available: bool = True
     custody_until: int = -1
     custody_detention_room: str = ""
@@ -284,6 +285,10 @@ def serialize_player(player: PlayerData) -> Dict[str, object]:
         "tutorial_confirmation": player.tutorial_confirmation,
         "tutorial_read_note": player.tutorial_read_note,
         "tutorial_journal_lessons": dict(player.tutorial_journal_lessons),
+        "tutorial_social_exchanges":  {
+            identity: dict(record)
+            for identity, record in sorted(player.tutorial_social_exchanges.items())
+        },
         "last_trust_interaction": player.last_trust_interaction,
         "escape_charge_available": player.escape_charge_available,
         "custody_until": player.custody_until,
@@ -441,6 +446,11 @@ def deserialize_player(data: Dict[str, object], storylet_manager=None) -> Player
     player.tutorial_journal_lessons = {
         str(stage_key): str(text)
         for stage_key, text in _safe_dict(data.get("tutorial_journal_lessons"), {}).items()
+    }
+    player.tutorial_social_exchanges = {
+        str(identity): dict(record)
+        for identity, record in _safe_dict(data.get("tutorial_social_exchanges"), {}).items()
+        if isinstance(record, dict)
     }
     player.curfew_immunity_expires_at = _safe_int(data.get("curfew_immunity_expires_at"), -1)
     player.last_curfew_night_key = _safe_int(data.get("last_curfew_night_key"), None)
