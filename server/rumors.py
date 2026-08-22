@@ -793,6 +793,8 @@ def activate_authored_rumors(shared, day: int) -> List[str]:
         for npc_id, npc in shared.world.npcs.items():
             if _is_transient_npc_id(npc_id):
                 continue
+            if _is_tutorial_clone_npc_id(shared, npc_id):
+                continue
             if _npc_matches_record(npc, record, shared):
                 grant_npc_observation(shared, npc_id, record_id, day, [record_id])
     return active_ids
@@ -801,6 +803,11 @@ def activate_authored_rumors(shared, day: int) -> List[str]:
 def _is_transient_npc_id(npc_id: str) -> bool:
     from .patrols import is_transient_patrol_id
     return is_transient_patrol_id(npc_id)
+
+
+def _is_tutorial_clone_npc_id(shared, npc_id: str) -> bool:
+    clone_rosters = getattr(shared, "tutorial_npc_clones", None) or {}
+    return any(npc_id in roster for roster in clone_rosters.values())
 
 
 def reseed_active_rumors(shared, day: int) -> List[str]:
@@ -1141,3 +1148,20 @@ def push_gossip_to_rumour_panel(session, speaker_name: str, listener_name: str, 
         for index, line in enumerate(lines[:2])
     ]
     push_panel_entry(session, "gossip", {"speaker": speaker_name, "listener": listener_name, "turns": turns})
+
+
+def replay_durable_exchanges(session, player) -> int:
+    if not getattr(player, "in_tutorial", False):
+        return 0
+    records = getattr(player, "tutorial_social_exchanges", None) or {}
+    entries = [record for record in records.values() if record.get("fired")]
+    if not entries or getattr(session, "_tutorial_exchanges_replayed", False):
+        return 0
+    session._tutorial_exchanges_replayed = True
+    for record in entries:
+        push_panel_entry(session, record.get("action", "exchange_rumors"), {
+            "speaker": record.get("speaker", ""),
+            "listener": record.get("listener", ""),
+            "turns": record.get("turns", []),
+        })
+    return len(entries)
