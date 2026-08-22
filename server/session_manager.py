@@ -114,6 +114,8 @@ class SessionManager:
         if getattr(session.player, "in_tutorial", False):
             from .tutorial import ensure_tutorial_instance_for_player
             ensure_tutorial_instance_for_player(session.player, self.shared)
+            from .rumors import replay_durable_exchanges
+            replay_durable_exchanges(session, session.player)
 
         room = self.shared.world.get_room(session.player.current_room)
         if room and session.username not in room.npcs:
@@ -196,6 +198,37 @@ class SessionManager:
         finally:
             await self.handle_disconnect(session)
 
+    _HIDE_SPECIAL_VERBS = {"hide", "unhide", "attack", "go"}
+    _HIDE_PRESERVE_POPUP_ACTIONS = {"close"}
+
+    async def _apply_hide_policy(self, session: Session, policy_key: str, result: CommandOutcome) -> CommandOutcome:
+        from .constants import MessageType
+
+        if result is None or not result.succeeded:
+            return result
+        player = session.player
+        if not getattr(player, "hidden", False):
+            return result
+        if policy_key in self._HIDE_SPECIAL_VERBS:
+            return result
+        if "chooser_opened" in getattr(result, "facts", frozenset()) or result.code == "mod_weapon_stage":
+            return result
+        from .command_schema import COMMAND_DEFS
+        entry = COMMAND_DEFS.get(policy_key)
+        if entry is not None:
+            policy = entry.get("hide", "")
+        else:
+            policy = ("preserve" if policy_key in self._HIDE_PRESERVE_POPUP_ACTIONS else "break")
+        if policy != "break":
+            return result
+        player.hidden = False
+        try:
+            from .locales import get as loc
+            await session.send_display(loc("hide.left_cover"), msg_type=MessageType.PLAYER_ACTION)
+        except Exception:
+            pass
+        return result
+
     async def dispatch_command(self, session: Session, raw_input: str) -> CommandOutcome:
         from .commands import is_storylet_choice_input, resolve_storylet_choice
         from .popup_actions import handle_popup_action, parse_popup_action
@@ -207,7 +240,7 @@ class SessionManager:
         cmd = parse(text)
         if getattr(session.player, "custody_until", -1) >= 0 and cmd.verb not in ("status", "journal", "quit"):
             from .locales import get as loc
-            await session.send_display(loc("custody.command_blocked"))
+            await session.send_display(loc("custody.command_blocked"), msg_type=MessageType.WARNING)
             return failure("custody_blocked")
 
         ctx = self._make_context(session)
@@ -217,6 +250,7 @@ class SessionManager:
         if popup_action is not None and not blocking_storylet:
             tutorial_room = session.player.current_room
             result = await handle_popup_action(self, session, popup_action)
+            result = await self._apply_hide_policy(session, popup_action.get("action", ""), result)
             return await self._record_tutorial_outcome(session, text, result, ctx, cmd, tutorial_room)
 
         if active_storylets:
@@ -235,6 +269,7 @@ class SessionManager:
         result = await handler(ctx, cmd)
         if not isinstance(result, CommandOutcome):
             return failure("handler_no_outcome")
+        result = await self._apply_hide_policy(session, cmd.verb, result)
         result = await self._record_tutorial_outcome(session, text, result, ctx, cmd, tutorial_room)
         from .commands import _record_terminal_recovery
         await _record_terminal_recovery(ctx, cmd, result)
@@ -480,7 +515,7 @@ class SessionManager:
 
             is_visited = room_id in visited
             is_exposed = is_public_map_room(room) or is_visited
-            if not is_exposed: 
+            if not is_exposed:
                 continue
 
             zone = room.district
