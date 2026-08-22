@@ -1,7 +1,7 @@
 <template>
   <div class="list-popup">
     <div v-if="payload.key_id" class="container-keyline">
-      Key: {{ payload.key_name }}{{ payload.has_key ? ' (you have it)' : '' }}
+      {{ payload.key_name }}{{ payload.has_key ? ' (you have it)' : '' }}
     </div>
     <div ref="listEl" class="list-popup-list" tabindex="0" @keydown="onListKeydown">
       <div

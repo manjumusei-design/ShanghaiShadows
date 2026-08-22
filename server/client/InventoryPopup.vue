@@ -1,33 +1,43 @@
 <template>
   <div class="list-popup">
-    <div ref="listEl" class="list-popup-list" tabindex="0" @keydown="onListKeydown">
-      <template v-for="(section, sIdx) in sections" :key="section.label">
-        <div v-if="section.items.length" class="list-section-label">{{ section.label }}</div>
-        <div
-          v-for="(item, i) in section.items"
-          :key="item.id"
-          class="list-row"
-          :class="{ 'list-row--active': flatIndex(sIdx, i) === highlight }"
-          @click="highlight = flatIndex(sIdx, i)"
-        >
-          <span class="list-row-name">
-            {{ item.name }}
-            <span v-if="item.equipped" class="equipped-tag">{{ equippedLabel(item.equipped) }}</span>
-          </span>
-          <span class="list-row-actions">
-            <button
-              v-for="action in item.actions"
-              :key="action"
-              type="button"
-              class="row-action"
-              @click="runAction(item, action)"
-            >{{ actionLabel(action) }}</button>
-          </span>
+    <div class="inventory-layout">
+      <section class="inventory-list-pane" aria-label="Inventory items">
+        <div class="pane-caption">Inventory</div>
+        <div ref="listEl" class="list-popup-list" role="listbox" aria-label="Inventory items" tabindex="0" @keydown="onListKeydown">
+          <template v-for="(section, sIdx) in sections" :key="section.label">
+            <div v-if="section.items.length" class="list-section-label">{{ section.label }}</div>
+            <div
+              v-for="(item, i) in section.items"
+              :key="item.instance_id"
+              class="list-row"
+              :class="{ 'list-row--active': flatIndex(sIdx, i) === highlight }"
+              role="option"
+              :aria-selected="flatIndex(sIdx, i) === highlight"
+              @click="selectItem(flatIndex(sIdx, i))"
+            >
+              <span class="list-row-name">
+                {{ item.name }}
+                <span v-if="item.equipped" class="equipped-tag">{{ equippedLabel(item.equipped) }}</span>
+              </span>
+            </div>
+          </template>
+          <div v-if="visibleItems.length === 0" class="list-empty">You are carrying nothing.</div>
         </div>
-      </template>
-      <div v-if="visibleItems.length === 0" class="list-empty">You are carrying nothing.</div>
+      </section>
+      <section class="inventory-details-pane" aria-label="Selected item">
+        <div class="pane-caption">Selected Item</div>
+        <ItemDetailsSection :item="highlightedItem" />
+        <div v-if="highlightedItem && highlightedItem.actions.length" class="inventory-item-actions" aria-label="Item actions">
+          <button
+            v-for="action in highlightedItem.actions"
+            :key="action"
+            type="button"
+            class="row-action"
+            @click="runAction(highlightedItem, action)"
+          >{{ actionLabel(action) }}</button>
+        </div>
+      </section>
     </div>
-    <ItemDetailsSection :item="highlightedItem" />
     <div class="list-popup-actions">
       <button type="button" class="popup-action" @click="emit('close')">Close</button>
     </div>
@@ -35,14 +45,14 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, onMounted, ref } from 'vue'
+import { computed, defineComponent, onMounted, ref, watch } from 'vue'
 import type { PropType } from 'vue'
 import { useStore } from 'vuex'
 import ItemDetailsSection from './ItemDetailsSection.vue'
 import type { InventoryItem, InventoryPayload } from '../../store/modules/popup'
 
 const ACTION_LABELS: Record<string, string> = {
-  eat: 'EAT', equip: 'EQUIP', wear: 'WEAR', remove: 'REMOVE',
+  eat: 'EAT', equip: 'EQUIP', remove: 'REMOVE',
   drop: 'DROP', read: 'READ', examine: 'EXAMINE',
 }
 
@@ -58,6 +68,7 @@ export default defineComponent({
   setup(props, { emit }) {
     const store = useStore()
     const highlight = ref(0)
+    const selectedItemId = ref<string | null>(null)
     const listEl = ref<HTMLElement | null>(null)
 
     const equippedRows = computed(() => props.payload.items.filter((item) => !!item.equipped))
@@ -67,6 +78,24 @@ export default defineComponent({
       { label: 'Carried', items: carriedRows.value },
     ])
     const visibleItems = computed(() => [...equippedRows.value, ...carriedRows.value])
+
+    const selectItem = (index: number) => {
+      highlight.value = index
+      selectedItemId.value = visibleItems.value[index]?.instance_id || null
+    }
+
+    watch(visibleItems, (items) => {
+      if (items.length === 0) {
+        highlight.value = 0
+        selectedItemId.value = null
+        return
+      }
+      const preservedIndex = selectedItemId.value
+        ? items.findIndex((item) => item.instance_id === selectedItemId.value)
+        : -1
+      highlight.value = preservedIndex >= 0 ? preservedIndex : Math.min(highlight.value, items.length - 1)
+      selectedItemId.value = items[highlight.value].instance_id
+    }, { immediate: true })
 
     const flatIndex = (sIdx: number, rowIdx: number) => {
       let offset = 0
@@ -80,7 +109,7 @@ export default defineComponent({
     const equippedLabel = (equipped: string) => EQUIPPED_LABELS[equipped] || 'Equipped'
 
     const runAction = (item: InventoryItem, action: string) => {
-      store.dispatch('popup/sendPopupAction', { action, target_id: item.id })
+      store.dispatch('popup/sendPopupAction', { action, target_id: item.instance_id })
     }
 
     const onListKeydown = (e: KeyboardEvent) => {
@@ -88,10 +117,10 @@ export default defineComponent({
       if (count === 0) return
       if (e.key === 'ArrowDown') {
         e.preventDefault()
-        highlight.value = (highlight.value + 1) % count
+        selectItem((highlight.value + 1) % count)
       } else if (e.key === 'ArrowUp') {
         e.preventDefault()
-        highlight.value = (highlight.value - 1 + count) % count
+        selectItem((highlight.value - 1 + count) % count)
       } else if (e.key === 'Enter') {
         e.preventDefault()
         const item = visibleItems.value[highlight.value]
@@ -107,7 +136,7 @@ export default defineComponent({
 
     return {
       sections, visibleItems, flatIndex, highlightedItem,
-      actionLabel, equippedLabel, runAction, onListKeydown, highlight, listEl, emit,
+      actionLabel, equippedLabel, runAction, onListKeydown, selectItem, highlight, listEl, emit,
     }
   },
 })
@@ -115,4 +144,52 @@ export default defineComponent({
 
 <style lang="scss" scoped>
 @use '../../styles/popups' as *;
+
+.list-popup {
+  flex: 1;
+}
+
+.inventory-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 42fr) minmax(0, 58fr);
+  gap: 18px;
+  flex: 1;
+  min-height: 0;
+}
+
+.inventory-list-pane,
+.inventory-details-pane {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 0;
+}
+
+.inventory-list-pane .list-popup-list,
+.inventory-details-pane .item-details {
+  flex: 1;
+  min-height: 0;
+}
+
+.inventory-list-pane .list-popup-list {
+  max-height: none;
+}
+
+.inventory-item-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+@media (max-width: 700px) {
+  .inventory-layout {
+    grid-template-columns: 1fr;
+    overflow-y: auto;
+  }
+
+  .inventory-list-pane .list-popup-list {
+    flex: none;
+    max-height: 34vh;
+  }
+}
 </style>

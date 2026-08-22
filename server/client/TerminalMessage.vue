@@ -7,13 +7,12 @@
 <script lang="ts">
 import { computed, defineComponent, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { parseMessageText } from '@/core/textParser'
+import { resolvesToInstantReveal } from '@/core/revealRules'
 
-const REVEAL_TYPES = new Set(['room', 'npc', 'social', 'ambient', 'npc_ambient'])
 const BASE_DELAY_MS = 18
 const PAUSE_AFTER_COMMA_MS = 70
 const PAUSE_AFTER_SENTENCE_MS = 120
 const PAUSE_AFTER_PARAGRAPH_MS = 160
-const INSTANT_TEXT_STORAGE_KEY = 'ss_instant_text'
 
 type Token =
   | { kind: 'tag'; value: string }
@@ -105,40 +104,26 @@ function buildPrefix(tokens: Token[], visibleCount: number, totalText: number): 
   return output
 }
 
-function prefersReducedMotion(): boolean {
-  if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return false
-  try {
-    return window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  } catch {
-    return false
-  }
-}
-
-function instantTextPreference(): boolean {
-  try {
-    return typeof localStorage !== 'undefined' && localStorage.getItem(INSTANT_TEXT_STORAGE_KEY) === 'true'
-  } catch {
-    return false
-  }
-}
-
 export default defineComponent({
   name: 'TerminalMessage',
   props: {
     text: { type: String, required: true },
     type: { type: String, required: true },
     instantText: { type: Boolean, default: false },
+    gated: { type: Boolean, default: false },
+    previouslyRevealed: { type: Boolean, default: false },
   },
   emits: {
     'reveal-state': (active: boolean) => typeof active === 'boolean',
     'reveal-progress': (count: number) => typeof count === 'number',
+    'reveal-complete': () => true,
   },
   setup(props, { emit, expose }) {
     const isRevealing = ref(false)
     const visibleCount = ref(0)
-    const reducedMotion = ref(false)
     let timer: number | null = null
     let mounted = false
+    let initialized = false
 
     const safeHtml = computed(() => parseMessageText(props.text))
     const tokens = computed(() => tokenize(safeHtml.value))
@@ -160,6 +145,7 @@ export default defineComponent({
       if (isRevealing.value) {
         isRevealing.value = false
         emit('reveal-state', false)
+        emit('reveal-complete')
       }
     }
 
@@ -189,20 +175,31 @@ export default defineComponent({
     const startReveal = () => {
       clearTimer()
       visibleCount.value = 0
-      const immediate = !REVEAL_TYPES.has(props.type)
+      const immediate = resolvesToInstantReveal(props.type)
         || props.instantText
-        || instantTextPreference()
-        || reducedMotion.value
         || visibleChars.value.length === 0
       if (immediate) {
         isRevealing.value = false
         visibleCount.value = visibleChars.value.length
         emit('reveal-state', false)
+        emit('reveal-complete')
         return
       }
       isRevealing.value = true
       emit('reveal-state', true)
       scheduleNext()
+    }
+
+    const beginRevealCycle = () => {
+      if (initialized) return
+      initialized = true
+      if (props.previouslyRevealed) {
+        clearTimer()
+        visibleCount.value = visibleChars.value.length
+        emit('reveal-complete')
+        return
+      }
+      startReveal()
     }
 
     const skipReveal = () => {
@@ -211,8 +208,12 @@ export default defineComponent({
 
     onMounted(() => {
       mounted = true
-      reducedMotion.value = prefersReducedMotion()
-      startReveal()
+      if (props.gated) return
+      beginRevealCycle()
+    })
+
+    watch(() => props.gated, (gated) => {
+      if (mounted && !gated) beginRevealCycle()
     })
 
     watch(() => [props.text, props.type, props.instantText], () => {
