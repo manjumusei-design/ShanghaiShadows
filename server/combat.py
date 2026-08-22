@@ -14,6 +14,10 @@ def counter_damage_for(gap: int) -> int:
     return max(5, min(25, 5 + max(0, gap) // 5))
 
 
+def courage_multiplier_for(weapon) -> float:
+    return 2.0 if weapon and "extended_magazine" in weapon.mods else 1.0
+
+
 def compute_effective_courage(
     attacker_courage: int,
     attacker_weapon,
