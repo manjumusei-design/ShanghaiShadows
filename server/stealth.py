@@ -134,11 +134,12 @@ class StealthSystem:
         wanted_level: int = 0,
         season: str = "spring",
         perception_bonus: int = 0,
+        defense_bonus: int = 0,
     ) -> PierceStage:
         seasonal_mod = SEASONAL_PERCEPTION_MODIFIER.get(season, 0)
         roll = random.randint(1, 100)
         wanted_penalty = wanted_level * 10
-        effective_defense = disguise_bonus - wanted_penalty
+        effective_defense = disguise_bonus + defense_bonus - wanted_penalty
 
         total = roll + npc.perception + seasonal_mod + perception_bonus
 
