@@ -167,42 +167,77 @@ export class CompletionsEngine {
     }
   }
 
-  getMatches(category: keyof CompletionsData, prefix: string): string[] {
-    const pool = this.data[category] || []
-    if (!prefix) return pool.slice(0, 20)
-    const lower = prefix.toLowerCase()
-    return pool.filter(item => item.toLowerCase().startsWith(lower)).slice(0, 20)
+  private getContextValue(parts: string[], grammar: CommandSlot[], sourceSlot: number): string {
+    let start = 0
+    for (let index = 0; index <= sourceSlot; index++) {
+      const separator = grammar[index]?.separator.trim()
+      const separatorIndex = separator
+        ? parts.findIndex((part, candidateIndex) => candidateIndex >= start && part.toLowerCase() === separator.toLowerCase())
+        : -1
+      const end = separatorIndex === -1 ? parts.length : separatorIndex
+      if (index === sourceSlot) return parts.slice(start, end).join(' ').toLowerCase()
+      if (separatorIndex === -1) return ''
+      start = separatorIndex + 1
+    }
+    return ''
   }
 
-  tab(input: string, shiftKey: boolean): { newInput: string; suggestions: string[]; activeIndex: number } {
+  private policyFor(category: CompletionCategory): MatchPolicy {
+    return this.data.match_policy?.[category] === 'prefix_then_substring' ? 'prefix_then_substring' : 'prefix'
+  }
+
+  private matchPool(pool: string[], category: CompletionCategory, prefix: string): string[] {
+    if (!prefix) return pool.slice()
+    const lower = prefix.toLowerCase()
+    const starts = pool.filter(item => item.toLowerCase().startsWith(lower))
+    if (starts.length > 0 || this.policyFor(category) !== 'prefix_then_substring') return starts
+    return pool.filter(item => item.toLowerCase().includes(lower))
+  }
+
+  getMatches(category: CompletionCategory, prefix: string, context?: CommandSlot['context'], parts: string[] = [], grammar: CommandSlot[] = []): string[] {
+    let pool = (this.data[category] as string[] | undefined) || []
+    if (context) {
+      const collection = this.data[context.collection]
+      const sourceValue = this.getContextValue(parts, grammar, context.source_slot)
+      pool = collection && !Array.isArray(collection) && typeof collection === 'object'
+        ? collection[sourceValue] || []
+        : []
+    }
+    return this.matchPool(pool, category, prefix)
+  }
+
+  tab(input: string, shiftKey: boolean): { newInput: string; suggestions: string[]; activeIndex: number; noMatches: boolean } {
     const { slotIndex, category, prefix, verbUsed, valueStart, parts } = this.getSlotInfo(input)
     if (input !== this.lastOutput) {
       this.cycleIndex = -1
       this.commonExtended = false
       this.filteredCache = []
+      this.cycleKey = ''
     }
-    const previousCache = this.filteredCache
-    const matches = this.getMatches(category, prefix)
-    this.filteredCache = matches
+    const grammar = this.data.grammar[verbUsed]
+    const slot = grammar?.[slotIndex]
+    const slotSeparator = slot?.separator.trim() ? slot.separator : ''
+    const cycleKey = this.getCycleKey(verbUsed, slotIndex, parts, valueStart)
+    const continuesCycle = input === this.lastOutput && this.cycleKey === cycleKey && this.filteredCache.length > 0
+    const previousCache = continuesCycle ? this.filteredCache : []
+    const matches = continuesCycle ? previousCache : this.getMatches(category, prefix, slot?.context, parts, grammar)
+    if (!continuesCycle) {
+      this.filteredCache = matches
+      this.cycleKey = cycleKey
+    }
+    const exactGrammarVerb = Boolean(grammar) && input.trim().toLowerCase() === verbUsed.toLowerCase() && !input.endsWith(' ')
+
+    if (exactGrammarVerb) {
+      this.cycleIndex = -1
+      this.commonExtended = true
+      return this.emit(`${input} `, matches, -1)
+    }
 
     if (matches.length === 0) {
-      if (this.cycleIndex >= 0 && previousCache.length > 1) {
-        const cached = previousCache
-        this.filteredCache = cached
-        const maxIdx = cached.length - 1
-        if (shiftKey) {
-          this.cycleIndex = this.cycleIndex <= 0 ? maxIdx : this.cycleIndex - 1
-        } else {
-          this.cycleIndex = this.cycleIndex >= maxIdx ? 0 : this.cycleIndex + 1
-        }
-        const selected = cached[this.cycleIndex]
-        return this.emit(this.replaceSlotValue(input, selected, verbUsed, parts, valueStart), cached, this.cycleIndex)
-      }
       this.cycleIndex = -1
-      return this.emit(input, [], -1)
+      return this.emit(input, [], -1, true)
     }
 
-    const grammar = this.data.grammar[verbUsed]
     const isGrammarSlot = grammar && slotIndex < grammar.length
     const sep = isGrammarSlot ? grammar[slotIndex].separator : ' '
 
@@ -218,7 +253,7 @@ export class CompletionsEngine {
           this.cycleIndex = this.cycleIndex >= maxIdx ? 0 : this.cycleIndex + 1
         }
         const selected = cached[this.cycleIndex]
-        return this.emit(this.replaceSlotValue(input, selected, verbUsed, parts, valueStart), cached, this.cycleIndex)
+        return this.emit(this.replaceSlotCandidate(input, selected, verbUsed, parts, valueStart, slotSeparator), cached, this.cycleIndex)
       }
       this.cycleIndex = -1
       this.commonExtended = false
@@ -244,12 +279,12 @@ export class CompletionsEngine {
     }
 
     const selected = matches[this.cycleIndex]
-    return this.emit(this.replaceSlotValue(input, selected, verbUsed, parts, valueStart), matches, this.cycleIndex)
+    return this.emit(this.replaceSlotCandidate(input, selected, verbUsed, parts, valueStart, slotSeparator), matches, this.cycleIndex)
   }
 
-  private emit(newInput: string, suggestions: string[], activeIndex: number): { newInput: string; suggestions: string[]; activeIndex: number } {
+  private emit(newInput: string, suggestions: string[], activeIndex: number, noMatches = false): { newInput: string; suggestions: string[]; activeIndex: number; noMatches: boolean } {
     this.lastOutput = newInput
-    return { newInput, suggestions, activeIndex }
+    return { newInput, suggestions, activeIndex, noMatches }
   }
 
   private replaceSlotValue(input: string, replacement: string, verbUsed: string, parts: string[], valueStart: number): string {
@@ -266,14 +301,34 @@ export class CompletionsEngine {
     return verbText + tail + replacement
   }
 
+  private replaceSlotCandidate(input: string, replacement: string, verbUsed: string, parts: string[], valueStart: number, separator: string): string {
+    return this.replaceSlotValue(input, replacement, verbUsed, parts, valueStart) + separator
+  }
+
+  private getCycleKey(verbUsed: string, slotIndex: number, parts: string[], valueStart: number): string {
+    return `${verbUsed.toLowerCase()}|${slotIndex}|${parts.slice(0, valueStart).join(' ').toLowerCase()}`
+  }
+
   selectSuggestion(input: string, suggestion: string): string {
-    const { slotIndex, verbUsed } = this.getSlotInfo(input)
+    const { slotIndex, category, verbUsed, valueStart, parts } = this.getSlotInfo(input)
     const grammar = this.data.grammar[verbUsed]
     const isGrammarSlot = grammar && slotIndex < grammar.length
     const sep = isGrammarSlot ? grammar[slotIndex].separator : ' '
+    if (isGrammarSlot) {
+      const slot = grammar[slotIndex]
+      const candidates = this.getMatches(category, '', slot.context, parts, grammar)
+      const result = this.replaceSlotCandidate(input, suggestion, verbUsed, parts, valueStart, sep)
+      this.filteredCache = candidates
+      this.cycleKey = this.getCycleKey(verbUsed, slotIndex, parts, valueStart)
+      this.cycleIndex = candidates.indexOf(suggestion)
+      this.commonExtended = true
+      this.lastOutput = result
+      return result
+    }
     const result = this.replaceLastWord(input, suggestion, sep, verbUsed)
     this.cycleIndex = -1
     this.filteredCache = []
+    this.cycleKey = ''
     return result
   }
 
@@ -304,6 +359,7 @@ export class CompletionsEngine {
     this.commonExtended = false
     this.filteredCache = []
     this.lastOutput = ''
+    this.cycleKey = ''
   }
 
   getSuggestions(): string[] {
