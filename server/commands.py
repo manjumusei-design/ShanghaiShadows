@@ -748,8 +748,22 @@ def _update_npc_sound_memory(npc, source_room_id: str, intensity: int, sound_typ
     bb.set("heard_hostile_sound", npc.faction == "kempeitai" and intensity >= 2)
 
 
+async def play_sound(ctx: CommandContext, name: str, volume: float = 0.7) -> None:
+    if getattr(ctx.session, "audio_enabled", False):
+        await ctx.session.send_audio(name, volume=volume)
+
+
+MESSAGE_TYPE_SOUNDS = {
+    MessageType.SUCCESS: ("success", 0.5),
+    MessageType.DISCOVERY: ("discovery", 0.6),
+}
+
+
 async def post_display(ctx: CommandContext, text: str, msg_type: str = None) -> None:
     await ctx.session.send_display(text if text.endswith("\n") else text + "\n", msg_type=msg_type)
+    sound = MESSAGE_TYPE_SOUNDS.get(msg_type) if isinstance(msg_type, MessageType) else None
+    if sound and getattr(ctx.session, "audio_enabled", False):
+        await ctx.session.send_audio(sound[0], volume=sound[1])
 
 
 def log_event(ctx: CommandContext, text: str, *, player_side: bool = True) -> None:
@@ -941,6 +955,7 @@ async def _check_disguise_on_entry(ctx: CommandContext, room) -> None:
             continue
         stage = ctx.stealth.disguise_pierce_check(npc, bonus, wanted, season)
         if stage == PierceStage.EXPOSED:
+            await play_sound(ctx, "alert", 0.6)
             was_kempeitai = active_disguise.apparent_faction == "kempeitai"
             if _is_authority_npc(npc):
                 _record_crime(ctx)
@@ -981,6 +996,7 @@ async def _check_disguise_on_talk(ctx: CommandContext, npc: Npc) -> bool:
 
     stage = ctx.stealth.disguise_pierce_check(npc, bonus, wanted, season)
     if stage == PierceStage.EXPOSED:
+        await play_sound(ctx, "alert", 0.6)
         was_kempeitai = active_disguise.apparent_faction == "kempeitai"
         if _is_authority_npc(npc):
             _record_crime(ctx)
@@ -1065,18 +1081,50 @@ async def apply_action_trust(ctx: CommandContext, action: str, visible_room_npcs
             await post_display(ctx, loc("perk_lost").format(faction=faction.upper(), perk_name=perk_name), msg_type=MessageType.WARNING)
 
 
+AMBIENCE_BY_ROOM = (
+    ("temple_bell", ("temple", "shrine")),
+    ("villager_murmur", ("market", "market_stall")),
+    ("ambient_city", ("street",)),
+)
+
+
+def _room_ambience(room) -> str | None:
+    if room is None or getattr(room, "indoors", False):
+        return None
+    tags = {str(tag).lower() for tag in getattr(room, "tags", [])}
+    district = str(getattr(room, "district", "") or "").lower()
+    title = str(getattr(room, "title", "") or "").lower()
+    for name, keywords in AMBIENCE_BY_ROOM:
+        if any(keyword in tags or keyword in district or keyword in title for keyword in keywords):
+            return name
+    return None
+
+
 async def _sync_street_ambience(ctx: CommandContext, room) -> None:
-    street = (
-        room is not None
-        and not getattr(room, "indoors", False)
-        and "street" in getattr(room, "tags", [])
-    )
-    if street and not getattr(ctx.session, "_audio_city_active", False):
-        await ctx.session.send_audio("ambient_city_start", volume=0.5, loop=True)
-        ctx.session._audio_city_active = True
-    elif not street and getattr(ctx.session, "_audio_city_active", False):
-        await ctx.session.send_audio("ambient_city_stop")
-        ctx.session._audio_city_active = False
+    target = _room_ambience(room)
+    current = getattr(ctx.session, "_audio_ambience_name", None)
+    if target == current:
+        return
+    if current:
+        await ctx.session.send_audio(f"{current}_stop")
+    if target:
+        await ctx.session.send_audio(f"{target}_start", volume=0.5, loop=True)
+    ctx.session._audio_ambience_name = target
+
+
+async def _sync_rain_audio(ctx: CommandContext, weather: str, is_indoors: bool) -> None:
+    target = None
+    if weather == "rain":
+        target = "rain_indoor" if is_indoors else "rain"
+    active = getattr(ctx.session, "_audio_rain_variant", None)
+    if target == active:
+        return
+    if active:
+        await ctx.session.send_audio(f"{active}_stop")
+    if target:
+        volume = 0.35 if target == "rain_indoor" else 1.0
+        await ctx.session.send_audio(f"{target}_start", volume=volume, loop=True)
+    ctx.session._audio_rain_variant = target
 
 
 async def broadcast_state(ctx: CommandContext):
@@ -1157,13 +1205,7 @@ async def broadcast_state(ctx: CommandContext):
         current_room = ctx.shared.world.rooms.get(ctx.session.player.current_room)
         is_indoors = getattr(current_room, 'indoors', False) if current_room else False
 
-        if weather == "rain" and not getattr(ctx.session, '_audio_rain_active', False):
-            volume = 0.3 if is_indoors else 1.0
-            await ctx.session.send_audio('rain_start', volume=volume, loop=True)
-            ctx.session._audio_rain_active = True
-        elif weather != "rain" and getattr(ctx.session, '_audio_rain_active', False):
-            await ctx.session.send_audio('rain_stop')
-            ctx.session._audio_rain_active = False
+        await _sync_rain_audio(ctx, weather, is_indoors)
 
         if weather == "fog" and not getattr(ctx.session, '_audio_fog_active', False):
             volume = 0.3 if is_indoors else 0.3
@@ -1338,6 +1380,7 @@ _MATCH_POLICY: Dict[str, str] = {
     "topics": "prefix",
     "players": "prefix",
     "disguises": "prefix",
+    "stop_targets": "prefix",
     "npcs": "prefix_then_substring",
     "items": "prefix_then_substring",
     "take_items": "prefix_then_substring",
@@ -1346,7 +1389,7 @@ _MATCH_POLICY: Dict[str, str] = {
 }
 
 
-def build_completions(ctx: CommandContext) -> Dict[str, List[str]]:
+def build_completions(ctx: CommandContext) -> Dict[str, Any]:
     global _CACHED_VERBS
     if _CACHED_VERBS is None:
         _CACHED_VERBS = [v for v in build_command_registry().keys() if v not in ("unknown", "stub")]
@@ -1416,6 +1459,7 @@ def build_completions(ctx: CommandContext) -> Dict[str, List[str]]:
         "ask_topics": ask_topics,
         "players": _dedup(players),
         "disguises": _dedup(disguises),
+        "stop_targets": ["tail"],
         "grammar": {verb: slots for verb, slots in COMMAND_SCHEMA.items() if verb in _CACHED_VERBS},
         "match_policy": dict(_MATCH_POLICY),
     }
@@ -1825,6 +1869,7 @@ async def apply_storylet_effects(ctx: CommandContext, effects: Dict[str, object]
             ),
             msg_type=MessageType.SUCCESS,
         )
+        await play_sound(ctx, "coin_clink", 0.7)
         if resolution_aborted(active):
             return False
         if effects.get("is_black_market"):
@@ -1936,6 +1981,8 @@ async def _display_storylet(ctx: CommandContext, active: ActiveStorylet):
         expires_at=active.expires_at,
         turns=active.turns,
     )
+
+    await play_sound(ctx, "storylet", 0.5)
 
     if active.scope == "room":
         for session in ctx.session_manager.get_players_in_room(active.room_id):
@@ -2834,6 +2881,7 @@ async def cmd_take(ctx: CommandContext, cmd: Command):
     log_event(ctx, f"You took {item.name}.")
     await _handle_mission_objectives(ctx, "collect_item", item.id)
     await post_display(ctx, loc("cmd_take.success").format(name=semantic_span(item.name, "item")), msg_type=MessageType.PLAYER_ACTION)
+    await play_sound(ctx, "item_pickup", 0.6)
     await maybe_trigger_storylet(ctx)
     return success(
         "take",
@@ -3506,21 +3554,19 @@ async def cmd_tail(ctx: CommandContext, cmd: Command):
         from .equipment import resolve_disguised_tail_pierce
         from .law import wanted_consequences
         from .stealth import PierceStage
-        if getattr(ctx.session.player, "in_tutorial", False):
-            stage = PierceStage.SUSPICION
-        else:
-            stage = resolve_disguised_tail_pierce(
-                ctx.session.player,
-                target,
-                resolved[1],
-                wanted_bonus=wanted_consequences(ctx.session.player.wanted_level).disguise_perception_bonus,
-                stealth=ctx.stealth,
-            )
+        stage = resolve_disguised_tail_pierce(
+            ctx.session.player,
+            target,
+            resolved[1],
+            wanted_bonus=wanted_consequences(ctx.session.player.wanted_level).disguise_perception_bonus,
+            stealth=ctx.stealth,
+        )
         if stage == PierceStage.CHALLENGE:
             ctx.session.player.tailing_state = None
             await post_display(ctx, f"{semantic_span(target.name, 'npc')} turns and challenges you. You break off the tail.", msg_type=MessageType.WARNING)
             return failure("tail_challenged")
         if stage == PierceStage.EXPOSED:
+            await play_sound(ctx, "alert", 0.6)
             ctx.session.player.tailing_state = None
             _confiscate_disguise(ctx)
             await post_display(ctx, f"{semantic_span(target.name, 'npc')} sees through your disguise. The disguise is confiscated.", msg_type=MessageType.WARNING)
@@ -3536,6 +3582,20 @@ async def cmd_tail(ctx: CommandContext, cmd: Command):
     )
 
 
+async def cmd_stop_tail(ctx: CommandContext, cmd: Command):
+    from .equipment import end_tailing
+
+    if end_tailing(ctx.session.player):
+        await post_display(ctx, loc("cmd_stop_tail.done"), msg_type=MessageType.PLAYER_ACTION)
+        return success(
+            "stop",
+            facts={"tail_broken_off"},
+            tutorial_event={"verb": "stop", "target": "tail"},
+        )
+    await post_display(ctx, loc("cmd_stop_tail.inactive"), msg_type=MessageType.PLAYER_ACTION)
+    return failure("stop_tail_inactive")
+
+
 async def cmd_hide(ctx: CommandContext, cmd: Command):
     ctx.session.player.activity_counters["times_hidden"] = ctx.session.player.activity_counters.get("times_hidden", 0) + 1
     room = _room(ctx)
@@ -3545,6 +3605,7 @@ async def cmd_hide(ctx: CommandContext, cmd: Command):
     if hide_succeeded:
         log_event(ctx, "You found a place to hide.")
         await post_display(ctx, loc("cmd_hide.success"), msg_type=MessageType.PLAYER_ACTION)
+        await play_sound(ctx, "hide", 0.5)
         grow_stat(ctx.session.player, "stealth_skill", STAT_GAIN_STEALTH_HIDE)
         return success(
             "hide",
@@ -3560,11 +3621,13 @@ async def cmd_hide(ctx: CommandContext, cmd: Command):
 
 async def cmd_unhide(ctx: CommandContext, cmd: Command):
     if not ctx.session.player.hidden:
-        await post_display(ctx, "You are not currently hidden.", msg_type=MessageType.PLAYER_ACTION)
-        return
+        await post_display(ctx, loc("cmd_unhide.inactive"), msg_type=MessageType.PLAYER_ACTION)
+        return failure("unhide_inactive")
     ctx.session.player.hidden = False
     log_event(ctx, "You step out of hiding.")
+    await play_sound(ctx, "hide", 0.5)
     await post_display(ctx, "You step out into the open.", msg_type=MessageType.PLAYER_ACTION)
+    return success("unhide", facts={"unhidden"})
 
 
 async def _purchase_newspaper(ctx: CommandContext, vendor_name: str, *, active=None) -> bool:
@@ -3606,6 +3669,7 @@ async def _purchase_newspaper(ctx: CommandContext, vendor_name: str, *, active=N
             rumour_mill=rumour_mill,
             ai_client=getattr(ctx.shared, "ai_client", None),
             active=active,
+            shared=ctx.shared,
         )
     except Exception:
         await post_display(ctx, "The newspaper press cannot produce an issue right now.", msg_type=MessageType.PLAYER_ACTION)
@@ -3615,6 +3679,7 @@ async def _purchase_newspaper(ctx: CommandContext, vendor_name: str, *, active=N
         return False
     log_event(ctx, f"You bought a newspaper from {vendor_name} for {NEWSPAPER_COST_FABI} fabi.")
     await post_display(ctx, f"You bought a newspaper from {vendor_name} for {NEWSPAPER_COST_FABI} fabi.", msg_type="system")
+    await play_sound(ctx, "coin_clink", 0.7)
     return True
 
 
@@ -3955,6 +4020,7 @@ async def consume_food_item(ctx: CommandContext, item):
     ctx.session.player.hunger = min(100, ctx.session.player.hunger + food_value)
     ctx.session.player.morale = min(100, ctx.session.player.morale + morale_restore)
     log_event(ctx, f"You ate {item.name}.")
+    await play_sound(ctx, "eat", 0.5)
     feedback = loc("cmd_eat.success").format(name=semantic_span(item.name, "item"))
     lines = [feedback]
     if ctx.session.player.hunger != hunger_before:
@@ -4123,6 +4189,7 @@ async def cmd_give(ctx: CommandContext, cmd: Command):
         target_session.player.inventory.append(item)
         log_event(ctx, f"You gave {item.name} to {target_session.player.name}.")
         await post_display(ctx, loc("cmd_give.success").format(item=semantic_span(item.name, "item"), target=semantic_span(target_session.player.name, "npc")), msg_type=MessageType.PLAYER_ACTION)
+        await play_sound(ctx, "coin_clink", 0.7)
         await target_session.send_display(loc("cmd_give.received").format(name=semantic_span(ctx.session.player.name, "npc"), item=semantic_span(item.name, "item")), msg_type=MessageType.SOCIAL)
         return success("give", facts={"item_given"})
 
@@ -4153,6 +4220,7 @@ async def cmd_give(ctx: CommandContext, cmd: Command):
                     log_event(ctx, f"Gave contraband to {npc.name}. Friendship +{bonus}.")
             else:
                 await post_display(ctx, loc("cmd_give.success").format(item=semantic_span(item.name, "item"), target=semantic_span(npc.name, "npc")), msg_type=MessageType.PLAYER_ACTION)
+                await play_sound(ctx, "coin_clink", 0.7)
             current_day = ctx.shared.game_time.day
             npc_memory_system.record_interaction(
                 npc, ctx.session.player.name, "gave_gift",
@@ -4371,6 +4439,8 @@ async def _attack_npc(ctx: CommandContext, npc_id: str, courage_mult: float = 1.
         from .npc import trigger_npc_distress
         await trigger_npc_distress(npc, player, room, ctx.shared.world, ctx, result.sound_event)
         npc.hp = max(0, npc.hp - result.target_damage)
+        if attack_kind == "melee":
+            await play_sound(ctx, "melee_hit", 0.6)
         if npc.hp <= 0:
             from .tutorial import tutorial_blocks_world_events
             tutorial_kill = npc_id.startswith("tut_") or tutorial_blocks_world_events(ctx.session.player)
@@ -4500,6 +4570,7 @@ async def _attack_npc(ctx: CommandContext, npc_id: str, courage_mult: float = 1.
         outcome = failure("attack_failed")
         if result.attacker_damaged > 0:
             player.health = max(0, player.health - result.attacker_damaged)
+            await play_sound(ctx, "player_hurt", 0.6)
             armour_id = getattr(player, 'worn_armour_id', '')
             if armour_id:
                 armour = find_item_by_name(armour_id, player.inventory)
@@ -4532,6 +4603,7 @@ async def _trigger_death(ctx: CommandContext, death_msg: str) -> None:
                 if friendship >= 50:
                     ctx.session.player.flags.append("friend_saves_player")
                     ctx.session.player.health = 15
+                    await play_sound(ctx, "escape_charge", 0.7)
                     await post_display(ctx, f"\n{semantic_span(npc.name, 'npc')} pulls you from the shadows. 'Not today. Go, before they see you.'\n", msg_type="event")
                     await post_display(ctx, f"You narrowly escape death thanks to {semantic_span(npc.name, 'npc')}'s intervention.\n", msg_type="combat_narration")
                     current_day = ctx.shared.game_time.day
@@ -4548,6 +4620,7 @@ async def _trigger_death(ctx: CommandContext, death_msg: str) -> None:
             "\nYour vision fades. You have one final breath. Speak your last words:\n",
             msg_type=MessageType.COMBAT,
         )
+        await play_sound(ctx, "death", 0.6)
         ctx.session.awaiting_last_words = True
         return
     await handle_player_death(ctx, death_msg)
@@ -4589,6 +4662,7 @@ async def _check_kempeitai_attack_on_sight(ctx: CommandContext) -> None:
         if result.won:
             damage = result.target_damage
             player.health = max(0, player.health - damage)
+            await play_sound(ctx, "player_hurt", 0.6)
             await post_display(ctx, loc("wanted.kempeitai_damage").format(
                 name=format_bold(npc.name), damage=damage, health=player.health
             ), msg_type="combat")
@@ -4660,6 +4734,8 @@ async def _attack_player(ctx: CommandContext, target_session: Session, courage_m
 
     if result.won:
         target.health = max(0, target.health - 20)
+        if getattr(target_session, "audio_enabled", False):
+            await target_session.send_audio("player_hurt", volume=0.6)
         if attack_sound.locally_visible:
             await broadcast_to_room(ctx, loc("combat.player_strikes").format(name=player.name, target=format_bold(target.name)), msg_type="combat_narration")
         log_event(ctx, f"You attacked {target.name}.")
@@ -4669,6 +4745,7 @@ async def _attack_player(ctx: CommandContext, target_session: Session, courage_m
     else:
         if result.attacker_damaged > 0:
             player.health = max(0, player.health - result.attacker_damaged)
+            await play_sound(ctx, "player_hurt", 0.6)
         await post_display(ctx, loc("combat.attack_fails").format(name=semantic_span(target.name, "npc"), target=semantic_span(target.name, "npc")), msg_type="combat_narration")
 
     await _degrade_and_notify_weapon(ctx, weapon, result.won)
@@ -4949,6 +5026,7 @@ async def cmd_sell(ctx: CommandContext, cmd: Command):
     _earn_money(ctx.session.player, sell_price)
     log_event(ctx, f"You sold {item.name} for {sell_price} fabi.")
     await post_display(ctx, loc("cmd_sell.success").format(name=semantic_span(item.name, "item"), price=sell_price), msg_type=MessageType.PLAYER_ACTION)
+    await play_sound(ctx, "coin_clink", 0.7)
     return success("sell", facts={"item_sold"})
 
 
@@ -5079,6 +5157,7 @@ async def cmd_equip(ctx: CommandContext, cmd: Command):
         return failure("equip_not_equipable")
     await _refresh_inventory_if_open(ctx)
     await _refresh_equipment_if_open(ctx)
+    await play_sound(ctx, "item_pickup", 0.6)
     return success(
         "equip",
         facts={"equipment_changed"},
@@ -5189,6 +5268,7 @@ async def cmd_missions(ctx: CommandContext, cmd: Command):
                 giver = f" (seek {npc.name})" if npc else f" (seek {m.giver_npc_hint})"
             lines.append(f"  [{m.id}] {m.title} (faction: {m.faction}, min trust: {m.min_trust}){giver}")
         await post_display(ctx, "\n".join(lines), msg_type=MessageType.PLAYER_ACTION)
+        await play_sound(ctx, "page_turn", 0.5)
     elif sub == "accept":
         await post_display(ctx, "Mission acceptance is offered through an encounter.", msg_type="system")
     elif sub == "abandon":
@@ -5481,6 +5561,7 @@ async def cmd_open(ctx: CommandContext, cmd: Command):
     item.is_open = True
     await _open_container_popup(ctx, item)
 
+    await play_sound(ctx, "door", 0.6)
     await post_display(ctx, loc("container.opened").format(name=semantic_span(item.name, "item")), msg_type=MessageType.PLAYER_ACTION)
     if consumed_key:
         await post_display(ctx, loc("container.key_snapped").format(name=semantic_span(consumed_key.name, "item")), msg_type=MessageType.PLAYER_ACTION)
@@ -5887,6 +5968,7 @@ async def cmd_rumors(ctx: CommandContext, cmd: Command):
         generation=ctx.session.rumors_panel_generation,
     )
     await ctx.session.send_rumor_web(payload)
+    await play_sound(ctx, "page_turn", 0.5)
     return success("rumors", facts={"rumors_read"}, tutorial_event={"verb": "rumors"})
 
 
@@ -5901,10 +5983,12 @@ async def advance_time_one_minute(ctx: CommandContext):
         from .economy import economy_system
         economy_system.update_market_conditions(ctx.shared.game_time.day)
 
-    ctx.shared.scheduler.process(
+    effects = ctx.shared.scheduler.process(
         ctx.shared.game_time,
         lambda msg: asyncio.create_task(post_display(ctx, msg, msg_type=MessageType.AMBIENT)),
     )
+    if any(effect.get("curfew_start") for effect in effects):
+        await play_sound(ctx, "gong", volume=0.6)
     move_npcs_if_hour_changed(ctx)
     process_gossip(ctx)
     await check_planted_evidence(ctx)
@@ -6064,6 +6148,7 @@ async def cmd_claim(ctx: CommandContext, cmd: Command):
     else:
         set_safehouse(ctx.session.username, room.id)
     await post_display(ctx, loc("cmd_claim.success").format(title=room.title), msg_type="system")
+    await play_sound(ctx, "success", 0.5)
     return success("claim", facts={"safehouse_claimed"}, tutorial_event={"verb": "claim"})
 
 
@@ -6110,6 +6195,7 @@ async def cmd_repair(ctx: CommandContext, cmd: Command):
     if is_ally:
         weapon.durability = weapon.max_durability
         await post_display(ctx, loc("cmd_repair.ally_success").format(weapon=semantic_span(weapon.name, "item")), msg_type=MessageType.PLAYER_ACTION)
+        await play_sound(ctx, "repair", 0.6)
         log_event(ctx, f"Your {weapon.name} was repaired by the GMD armorer for free.")
     else:
         damage = weapon.max_durability - weapon.durability
@@ -6283,6 +6369,7 @@ async def cmd_bribe(ctx: CommandContext, cmd: Command):
     if random.random() < 0.5:
         adjust_wanted(p, -1)
         await post_display(ctx, loc("cmd_bribe.success").format(amount=amount), msg_type=MessageType.EVENT)
+        await play_sound(ctx, "coin_clink", 0.7)
         log_event(ctx, f"Paid {amount} fabi bribe to reduce wanted level to {p.wanted_level}.")
         return success("bribe_wanted_reduction", facts={"wanted_reduced"})
     else:
@@ -6355,6 +6442,7 @@ async def _withdraw_stash_all(ctx: CommandContext) -> None:
         await post_display(ctx, loc("cmd_retrieve.empty"), msg_type=MessageType.PLAYER_ACTION)
         return
     recovered = [item.name for item in stash]
+    await play_sound(ctx, "stash", 0.6)
     await post_display(ctx, loc("cmd_retrieve.success").format(items=', '.join(recovered)), msg_type="discovery")
 
 
@@ -6479,6 +6567,7 @@ def _build_command_registry() -> Dict[str, Callable]:
             "status": cmd_status,
             "disguise as": cmd_disguise_as,
             "tail": cmd_tail,
+        "stop": cmd_stop_tail,
             "hide": cmd_hide,
             "plant": cmd_plant,
             "read": cmd_read,
