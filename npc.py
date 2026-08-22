@@ -29,6 +29,7 @@ class Npc:
     authority: int = 50
     courage: int = 50
     perception: int = 50
+    disguise_detection_modifier: int = 0
     hp: int = 100
     wounded: bool = False
     wound_type: str = ""
