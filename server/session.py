@@ -140,6 +140,8 @@ class Session:
             "seconds_remaining": seconds_remaining,
             "expires_at": expires_at,
         }))
+        if stage >= 2 and getattr(self, "audio_enabled", False):
+            await self.send_audio("whistle", volume=0.45)
 
     async def clear_patrol_warning(self, *, force: bool = False) -> None:
         if self._patrol_warning_signature is None and not force:
