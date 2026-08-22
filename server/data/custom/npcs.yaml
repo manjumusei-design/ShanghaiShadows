@@ -7503,7 +7503,8 @@ npcs:
   awareness: 65
   authority: 65
   courage: 55
-  perception: 60
+  perception: 0
+  disguise_detection_modifier: 40
   bt_archetype: kempeitai_soldier
   schedule:
     6: refugee_entry_outpost
@@ -8291,6 +8292,72 @@ npcs:
     - GO east when you are ready. Old Crane is next, and he trusts pauses more than announcements.
     - You understand rumours now. Next you must notice room talk that was not offered to you.
     - The city never stops speaking; it only changes whose mouth carries the danger.
+- id: orientation_apprentice_shen
+  name: Apprentice Shen
+  description: A quick-footed boy of sixteen with ink on his sleeves and a folded stack of handbills under one arm. He carries printed slips between the press house and Wen's desk faster than most men can walk.
+  faction: civilian
+  role: apprentice
+  personality: eager, watchful, talks first and thinks after
+  awareness: 40
+  authority: 8
+  courage: 20
+  perception: 35
+  bt_archetype: student_intellectual
+  schedule:
+    6: orientation_rumors
+    12: orientation_rumors
+    18: orientation_rumors
+    22: venue_old_city_back_courtyard
+  dialogue:
+    greeting:
+    - Handbills today, sir. Fresh off the press, if the press can be believed.
+    - Master Wen checks my slips before I deliver them. One wrong figure causes ten quarrels.
+    - You stand in the den of information. Mind the wet ink on the desk edge.
+    - I run prints all morning. I hear half the alley's talk before noon without trying.
+    - Careful where you step. Paper everywhere. Secrets dry slower than ink.
+    neutral:
+    - The press house pays by the bundle, so I run bundles. My ears come free with the job.
+    - People talk around a boy carrying paper. They think we do not count.
+    - Master Wen says every rumour has a price tag somewhere on it. Find the tag first.
+    - Two versions of one event reach me before lunch most days. Shanghai loves to disagree with itself.
+    - I fold, I stack, I deliver. And I remember which streets ask for which news.
+    friendly:
+    - Between us, the press house misprints more than prices. Names too. Dangerous work, correcting them.
+    - You treat me like a person, not a delivery cart. I will carry word for you someday, no charge.
+    - Master Wen trusts you. He counts trust like money, so that is saying something.
+    - If you ever need to know which lane heard what, ask a runner. Runners know the wind.
+    - I saved you the clean copy of the bill. The crooked ones give readers ideas.
+    hostile:
+    - Take the bills or leave them. I have deliveries that do not wait for strangers.
+    - Master Wen says nothing about you, and he says plenty about everyone. That worries me.
+    - I am only the runner. Press the printer, not the boy with the stack.
+    afraid:
+    - A man followed me three streets yesterday asking who reads my bills. I ran the long way here.
+    - The press master vanished two nights ago. His ink is still wet on the counter. Nobody asks.
+    ask:
+      press_house:
+      - The press house runs day and night now. Paper is worth more than the words printed on it.
+      - My master sets type by lantern because electricity costs more than apprentices.
+      - A crooked character in a handbill once started a street quarrel over nothing at all.
+      - We print what we are told. What we are told changes with whoever signs the order.
+      - If the press ever printed the whole truth, it would jam before the first page.
+      street_talk:
+      - Runners hear everything. Doors stay open when a boy carries paper through them.
+      - The alley argues about rice prices every morning and about patrols every night.
+      - People repeat a rumour louder when they hope someone will pay them to stop.
+      - Two streets away they tell the same story with a different villain in it.
+      - I never repeat what I hear near the press house. That rule keeps me walking.
+      prices_and_papers:
+      - Paper went up twice this season, so a handbill costs more than the news on it.
+      - Master Wen charges by the letter for letters, and by the silence for what he does not write.
+      - A forged permit feeds a family until the checkpoint learns to read it properly.
+      - Everything in this city has two prices. One for papers and one for favour.
+      - When rice climbs, even rumours about grain get expensive at the corner stalls.
+  tutorial_dialogue:
+    stage_any:
+    - Master Wen says the room talks first and explains later. The Rumours panel keeps what reached you.
+    - I carry handbills past the Bund checkpoints, and every runner hears the alleys argue about grain.
+    - You heard us talking before you said a word. In Shanghai that is how most news finds a person.
 - id: orientation_old_crane
   name: Old Crane
   description: An ancient man with a permanent stoop and a hand cupped behind his ear, as if always listening. He perches in the eavesdropper's perch like a bird waiting for crumbs of conversation to fall.
@@ -8384,6 +8451,72 @@ npcs:
     - GO east when you are ready. Sister Zhao is next. She will teach you about bonds and trust.
     - You understand nearby talk now. Next you must understand connection, because bonds keep people fed and hidden.
     - The city helps those who know which door to knock on, and which door to leave alone.
+- id: orientation_widow_kang
+  name: Widow Kang
+  description: A straight-backed old woman in a grey jacket who keeps a kettle and two chipped cups on the landing outside the listening post. She sold tea to harbour pilots for thirty years and still prices gossip by the cup.
+  faction: civilian
+  role: resident
+  personality: patient, dry-humoured, misses nothing on her stairs
+  awareness: 55
+  authority: 10
+  courage: 28
+  perception: 48
+  bt_archetype: resident
+  schedule:
+    6: orientation_eavesdrop
+    12: orientation_eavesdrop
+    18: orientation_eavesdrop
+    22: oldcity_04
+  dialogue:
+    greeting:
+    - Tea is two fen. Sitting is free, but sitting long costs better stories.
+    - Mind the third stair. It creaks, and up there the pipe carries more than voices.
+    - You have the look of someone new to these stairs. Everyone starts as a stranger.
+    - Old Crane hears the building. I hear the people waiting to climb it.
+    - Sit if you like. The kettle does not care who you are.
+    neutral:
+    - Thirty years pouring tea for pilots teaches you which weather reports are lies.
+    - The stairs bring everyone down sooner or later. Sailors, clerks, men in a hurry.
+    - A cup of tea buys you a neighbour's silence. Silence is worth more than talk here.
+    - Crane listens through brass. I listen through patience. Both work.
+    - Nothing said on my stairs leaves my stairs. That is why they say it on my stairs.
+    friendly:
+    - For you the tea is fresh, not the pot that has been warming since dawn.
+    - You sit properly and you do not repeat what you hear. You may stay as long as you like.
+    - Old Crane speaks well of you. He speaks well of almost nobody, so mind what that costs.
+    - Take the corner seat. From there you can watch both the door and the kettle.
+    - When the pilots drank here, they trusted me with their route talk. I earned it cup by cup.
+    hostile:
+    - You ask questions the way the inspectors do. Buy tea or climb on.
+    - My stairs are not for people who collect other people's words for money.
+    - I am an old woman with a kettle. Do not make me use the boiling part.
+    afraid:
+    - Two men in grey came asking about the pipe last month. I poured tea and remembered nothing.
+    - Since the customs shed business, the stairs are quieter. Quiet stairs worry me more than loud ones.
+    ask:
+      stairwell_trade:
+      - Tea costs two fen and gossip costs whatever you think it is worth afterwards.
+      - The pilots drank here before the war changed the flags on the harbour office.
+      - A kettle, two cups, and a dry step is a business. It has kept me fed alone.
+      - I sell to whoever climbs quietly. Loud men drink at the bars down the road.
+      - Everything on these stairs is honest except what people say while drinking.
+      listening_post_rumours:
+      - The pipe carries arguments from below better than any window carries the street.
+      - Last week it was a missing manifest. Before that, a name repeated in three rooms.
+      - What comes up that pipe is somebody's truth with somebody else's thumb on it.
+      - Crane writes nothing down. I remember everything. Between us we owe nobody.
+      - Listen long enough and you learn which voices shake when they lie.
+      prices_and_papers:
+      - Rice doubled since spring, so my customers sip slower and talk longer.
+      - Papers cost more than tea now. A man needs papers to be poor legally.
+      - The pilots used to trade route news for smokes. Now they want silver.
+      - Everything on the Bund has two prices, and neither one is written down.
+      - When the press prints lies for a penny, the truth must be given away free.
+  tutorial_dialogue:
+    stage_any:
+    - On these stairs you heard Crane and me before you knocked. The Rumours panel keeps what the room says.
+    - Thirty years pouring tea on the Shanghai waterfront teaches you which talk is worth carrying upstairs.
+    - Sit, listen, and let the pipe do its work. What reaches you while you stand here is yours to weigh.
 - id: orientation_sister_zhao
   name: Sister Zhao
   description: A woman in her thirties with a face that has seen hardship but a smile that has not given up. She moves through the resistance safehouse with the easy authority of someone who knows everyone and is known by all.
