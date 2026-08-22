@@ -44,6 +44,10 @@ cmd_tail.no_target: "Tail whom?"
 cmd_tail.not_here: "They aren't here."
 cmd_tail.target_vanished: "Your target has vanished into the city's folds."
 cmd_tail.start: "You begin tailing {name}."
+cmd_stop_tail.done: "You break off the tail."
+cmd_stop_tail.inactive: "You are not tailing anyone."
+hide.left_cover: "You leave cover."
+cmd_unhide.inactive: "You are not currently hidden."
 cmd_plant.no_target: "Plant what?"
 cmd_plant.not_held: "You don't have that."
 cmd_plant.success: "You planted {name}."
@@ -186,9 +190,8 @@ READ <item> - Read an item; bare READ opens a chooser
 SELL <item> - Sell an item; bare SELL opens a chooser
 REPAIR <weapon> - Repair a weapon; bare REPAIR opens a chooser
 INVENTORY - List what you carry
-WEAR <armour> - Wear armour
 REMOVE <armour> - Remove armour
-EQUIP <weapon> - Equip a weapon
+EQUIP <item> - Ready a weapon or wear armour
 OPEN <container> - The only way to unlock a locked container
 TAKE <item> FROM <container> - Retrieve from an open container
 WRITE NOTE <text> - Create a note
