@@ -1,425 +1,1822 @@
 items:
-  - id: ration_card
-    name: "a tattered ration card"
-    description: "A creased card stamped with the seal of an authority no one trusts."
-    takeable: true
-
-  - id: brass_key
-    name: "a small brass key"
-    description: "Cold to the touch, engraved with the number 42."
-    takeable: true
-
-  - id: photograph
-    name: "a faded family photograph"
-    description: "A studio smile from a world already gone."
-    takeable: true  
-    readable_text: "On the reverse, in cramped pencil: Remember the lane behind the dye shop."
-
-  - id: truncheon
-    name: "a police truncheon"
-    description: "Heavy, lacquered, and intimate in the way only instruments of force can be."
-    takeable: true
-
-  - id: newspaper
-    name: "yesterday's newspaper"
-    description: "The paper lies to everyone, but it still leaves traces of the truth between lines."
-    takeable: true
-    readable_text: "Short dispatches praise order while the margins smell faintly of panic."
-    
-  - id: bloodied_message
-    name: "a bloodied message"
-    description: "Folded into a square, damp at one edge, and written in code."
-    takeable: true
-    readable_text: "Meet after curfew at the silent kiln. Bring no one."
-
-  - id: forged_pass
-    name: "a forged transit pass"
-    description: "Convincing enough at a distance, fatal up close."
-    takeable: true
-    readable_text: "Faded stamps and a photograph that doesn't quite match the bearer. Valid for three more days -- maybe."
-
-  - id: silk_scarf
-    name: "a silk scarf"
-    description: "Too fine for the streets, but useful as a signal."
-    takeable: true
-
-  - id: contraband_morphine
-    name: "a vial of contraband morphine"
-    description: The glass is clean. The need around it is not.
-    takeable: true
-
-  - id: temple_talisman
-    name: "a temple talisman"
-    description: "Soot and prayer cling to the paper charm."
-    takeable: true
-    readable_text: "The prayer asks for a safe return, but does not promise one."
-
-  - id: coded_ledger
-    name: "a coded ledger"
-    description: "Columns of figures that look honest until you stare at them for a tad bit too long."
-    takeable: true
-    readable_text: "Ships, names, and dates shift into meaning only after the third reading."
-
-  - id: patrol_route
-    name: "a folded patrol route"
-    description: "A map of boots and rifles and boredom."
-    takeable: true
-    readable_text: "Patrol timings tighten near Hongkou after 20:00."
-    
-  - id: dock_manifest
-    name: "a dock manifest"
-    description: "Stamped, amended and nervously re-stamped."
-    takeable: true
-    readable_text: "Crates marked medical supplies are routed through Pier Six."
-
-  - id: prayer_beads
-    name: "a string of prayer beads"
-    description: "The wood has been rubbed smooth by anxious fingers."
-    takeable: true
-
-  - id: hidden_cash
-    name: "a roll of hidden cash"
-    description: "Small notes bound with twine, enough to buy silence for a night."
-    takeable: true
-
-  - id: cold_noodles
-    name: "a bowl of cold noodles"
-    description: "Stale but filling."
-    takeable: true
-    food_value: 15
-    morale_restore: 3
-
-  - id: rice_bowl
-    name: "a bowl of rice"
-    description: "Plain, but it keeps you moving."
-    takeable: true
-    food_value: 5
-    morale_restore: 3
-
-  - id: tea
-    name: "a cup of tea"
-    description: "Warm and comforting."
-    takeable: true
-    food_value: 25
-    morale_restore: 10
-
-  - id: dried_fish
-    name: "dried fish"
-    description: "Salty and preserved."
-    takeable: true
-    food_value: 25
-    morale_restore: 2
-
-  - id: street_snack
-    name: "a street vendor's snack"
-    description: "Grease and dough, filling enough" 
-    takeable: true
-    food_value: 12
-    morale_restore: 8
-
-  - id: ccp_pamphlet
-    name: "a banned resistance pamphlet"
-    description: "A folded sheet of rice paper, printed with crude ink. The text describes Japanese atrocities in Nanjing: the massacres, the looting, the systematic terror inflicted on civilians."
-    takeable: true
-    readable_text: "PEOPLE OF SHANGHAI! The Japanese imperialists murder our families, steal our land, and enslave our workers. In Nanjing they slaughtered hundreds of thousands. Women, children, the elderly, none were spared. But we will not bow. The resistance grows. Every act of defiance brings liberation closer. Distribute this paper. Tell the truth. The people's strength is in their numbers and their anger."
-
-  - id: code_book
-    name: "a leather-bound code book"
-    description: "A small book with worn leather covers, filled with columns of numbers and characters. It is the key to encoding and decoding underground messages."
-    takeable: true
-    readable_text: "The pages contain cipher tables: each number corresponds to a character, each column to a day of the month. Without the matching key, the messages are gibberish. With it, they are a lifeline."
-
-  - id: smuggled_pistol
-    name: "a Mauser C96 pistol"
-    description: "A battered but functional pistol, its serial numbers filed off. The wooden stock is carved with a small five-pointed star, the mark of the underground."
-    takeable: true
-
-  - id: japanese_travel_pass
-    name: "a forged Japanese travel pass"
-    description: "An official-looking document stamped with the puppet government's seal. It grants passage through all checkpoints in the Greater Shanghai area. The forgery is so precise even Japanese officers have trouble distinguishing it."
-    takeable: true
-
-  - id: medical_kit
-    name: "a field medical kit"
-    description: "A cloth roll containing bandages, a bottle of iodine, a needle and thread for sutures, and a small bottle of precious quinine pills stolen from a Japanese military pharmacy."
-    takeable: true
-    food_value: 0
-    morale_restore: 5
-
-  - id: quinine_bottle
-    name: "a bottle of quinine pills"
-    description: "A small brown bottle containing quinine, worth more than gold in occupied Shanghai where malaria spreads through the starving population while the Japanese hoard medicine for their own troops."
-    takeable: true
-    food_value: 0
-    morale_restore: 10
-
-  - id: resistance_map
-    name: "a hand-drawn operations map"
-    description: "A map of Shanghai drawn on the back of a tea shop menu. Red marks show Japanese patrol routes, blue marks indicate underground safe houses, and circled areas mark targets for future operations."
-    takeable: true
-    readable_text: "The map shows Japanese patrol routes through the International Settlement with precise timing. Three supply convoy routes are marked with dates. A note in the corner reads: 'The weapons shipment arrives Tuesday. Be ready.'"
-
-  - id: kempeitai_uniform
-    name: "a stolen Kempeitai uniform"
-    description: "A military police uniform taken from a Kempeitai officer who will not be needing it again. It still smells of tobacco and cruelty."
-    takeable: true
-
-  - id: rice_parcel
-    name: "a parcel of smuggled rice"
-    description: "A cloth-wrapped parcel of white rice, enough to feed a family for a week. Rice is a luxury under occupation. The Japanese seize the harvest and leave Chinese civilians to starve."
-    takeable: true
-    food_value: 40
-    morale_restore: 15
-
-  - id: chungking_broadcast
-    name: "a transcription of a Chungking radio broadcast"
-    description: "A typed sheet containing the latest broadcast from Free China's radio station in Chungking. The announcer speaks of resistance, unity, and the certainty that the occupation will end."
-    takeable: true
-    readable_text: "VOICE OF FREE CHINA: To our brothers and sisters in occupied Shanghai. You are not forgotten. Your suffering is seen. Your resistance is felt. The Japanese war machine bleeds from a thousand cuts inflicted by your courage. Hold fast. Liberation comes. The people's will cannot be broken."
-
-  - id: mauser_c96
-    name: "a Mauser C96 pistol"
-    description: "A battered but functional pistol, its serial numbers filed off. The wooden stock is carved with a small five-pointed star."
-    takeable: true
-    is_weapon: true
-    weapon_type: firearm
-    courage_bonus: 15
-    durability: 50
-    max_durability: 50
-    mod_slots: ["silencer", "stabilizer"]
-
-  - id: wooden_club
-    name: "a wooden club"
-    description: "A stout piece of lumber, wrapped in cloth at the grip. Silent and effective in close quarters."
-    takeable: true
-    is_weapon: true
-    weapon_type: melee
-    courage_bonus: 5
-    durability: 80
-    max_durability: 80
-    mod_slots: ["stock"]
-
-  - id: kitchen_knife
-    name: "a kitchen knife"
-    description: "A cleaver stolen from a street vendor's stall. Dull but heavy enough to crack bone."
-    takeable: true
-    is_weapon: true
-    weapon_type: melee
-    courage_bonus: 8
-    durability: 30
-    max_durability: 30
-    mod_slots: []
-
-  - id: smuggled_rifle
-    name: "a smuggled rifle"
-    description: "A Type 38 Arisaka rifle with the chrysanthemum crest filed off the receiver. Stolen from a Japanese supply depot."
-    takeable: true
-    is_weapon: true
-    weapon_type: firearm
-    courage_bonus: 25
-    durability: 60
-    max_durability: 60
-    mod_slots: ["scope", "stabilizer", "stock"]
-
-  - id: strangling_wire
-    name: "a length of piano wire"
-    description: "Thin, strong wire with wooden handles wrapped in cloth. Silent and personal."
-    takeable: true
-    is_weapon: true
-    weapon_type: stealth
-    courage_bonus: 12
-    durability: 20
-    max_durability: 20
-    mod_slots: []
-
-  - id: quilted_jacket
-    name: "a padded quilted jacket"
-    description: "Layers of cotton stuffed between silk. Looks ordinary but absorbs blade cuts."
-    takeable: true
-    is_armour: true
-    defense_value: 3
-    durability: 50
-    max_durability: 50
-    concealed: true
-
-  - id: leather_vest
-    name: "a stitched leather vest"
-    description: "Thick leather panels over canvas. Not bulletproof, but it turns a blade."
-    takeable: true
-    is_armour: true
-    defense_value: 5
-    durability: 40
-    max_durability: 40
-    concealed: true
-
-  - id: stolen_kempeitai_armor
-    name: "a Kempeitai flak vest"
-    description: "A military police body vest, obviously stolen. Wearing it openly invites questions."
-    takeable: true
-    is_armour: true
-    defense_value: 15
-    durability: 60
-    max_durability: 60
-    concealed: false
-
-  - id: silencer
-    name: "a improvised silencer"
-    description: "A machined cylinder that fits over a barrel. Reduces noise but adds bulk."
-    takeable: true
-    is_mod: true
-    mod_type: "stealth"
-    mod_bonus: 15
-
-  - id: stabilizer
-    name: "a barrel stabilizer"
-    description: "A counterweight that reduces muzzle climb. Improves accuracy under pressure."
-    takeable: true
-    is_mod: true
-    mod_type: "courage"
-    mod_bonus: 5
-
-  - id: scope
-    name: "a telescopic scope"
-    description: "A salvaged optic from a broken rangefinder. Magnifies distant targets."
-    takeable: true
-    is_mod: true
-    mod_type: "perception"
-    mod_bonus: 10
-
-  - id: stock
-    name: "a reinforced stock"
-    description: "A wooden or metal stock replacement that improves handling."
-    takeable: true
-    is_mod: true
-    mod_type: "courage"
-    mod_bonus: 3
-
-  - id: extended_magazine
-    name: "an extended magazine"
-    description: "A higher-capacity magazine. More rounds before reload means more staying power."
-    takeable: true
-    is_mod: true
-    mod_type: "durability"
-    mod_bonus: 10
-
-  - id: wooden_crate
-    name: "a wooden crate"
-    description: "A nailed-shut shipping crate. The wood is damp and the stencilled label has faded."
-    takeable: false
-    is_container: true
-
-  - id: iron_safe
-    name: "an iron safe"
-    description: "A heavy safe bolted to the floor. The combination dial is tarnished but intact."
-    takeable: false
-    is_container: true
-    locked: true
-    key_id: "safe_key"
-
-  - id: cloth_bag
-    name: "a cloth bag"
-    description: "A simple canvas sack with a drawstring. Light and unremarkable."
-    takeable: true
-    is_container: true
-
-  - id: old_city_map
-    name: "an old city map"
-    description: "A hand-drawn map of the Old City district, annotated with shop names and back alleys."
-    takeable: true
-    is_map: true
-    map_districts: ["old_city"]
-
-  - id: french_concession_guide
-    name: "a French Concession guide"
-    description: "A tourist pamphlet from before the war. The cafes and nightclubs listed are now barracks and brothels."
-    takeable: true
-    is_map: true
-    map_districts: ["french"]
-
-  - id: full_city_map
-    name: "a full city survey map"
-    description: "A comprehensive surveyor's map of greater Shanghai. Folded into a square and wrapped in oilcloth."
-    takeable: true
-    is_map: true
-    map_districts: ["bund", "commercial", "old_city", "hongkou", "french", "huangpu", "hidden", "residential", "warehouse", "church", "school"]
-
-  - id: safe_key
-    name: "a safe key"
-    description: "A small iron key with a square bow. Engraved on it: the number 7."
-    takeable: true
-    is_key: true
-    opens_container: "iron_safe"
-
-  - id: drawer_key
-    name: "a desk drawer key"
-    description: "A brass key with a decorative bow. It looks like it belongs to an office desk."
-    takeable: true
-    is_key: true
-    opens_container: "locked_drawer"
-
-  - id: fabi_note
-    name: "a fabi banknote"
-    description: "A crumpled one-yuan fabi note. The paper is thin and the ink is fading."
-    takeable: true
-    is_money: true
-    money_amount: 1
-    money_currency: "fabi"
-
-  - id: silver_yuan
-    name: "a silver yuan coin"
-    description: "A worn silver dollar from the Republic era. Still holds real value in any market."
-    takeable: true
-    is_money: true
-    money_amount: 10
-    money_currency: "fabi"
-
-  - id: leaflet_bundle
-    name: "a bundle of resistance leaflets"
-    description: "A thick stack of rice paper pamphlets printed with crude ink, each one calling for resistance against the occupation. The words are urgent and the paper is thin, meant to be read once and passed on."
-    takeable: true
-
-  - id: patrol_communique
-    name: "a Kempeitai patrol communique"
-    description: "A sealed military document bearing the Kempeitai crest. Inside, precise patrol schedules are laid out in neat columns, revealing the timing and routes of security sweeps near Hongkou."
-    takeable: true
-    readable_text: "Patrol timing details indicate heightened surveillance near Hongkou between 22:00 and 02:00. Sweep routes cover north-south avenues every 45 minutes with a two-man team rotating through side streets."
-
-  - id: food_parcel
-    name: "a wrapped food parcel"
-    description: "A cloth-wrapped parcel of rice and dried fish, tied with twine. Enough to sustain someone for several days in a city where hunger is a weapon of control."
-    takeable: true
-    food_value: 40
-    morale_restore: 10
-
-  - id: confiscated_supplies
-    name: "a crate of confiscated supplies"
-    description: "A wooden crate labelled with Japanese military stamps, pried open to reveal medical supplies and rations seized from the civilian population. The contents are a small fortune in occupied Shanghai."
-    takeable: true
-
-  - id: diplomatic_pouch
-    name: "a sealed diplomatic pouch"
-    description: "A leather pouch bearing the French consulate seal, secured with wax. Whatever it contains was important enough to warrant diplomatic protection, and dangerous enough that someone hid it here."
-    takeable: true
-    readable_text: "Official diplomatic correspondence detailing consular movements and protected channels. The documents reference secure transit arrangements and coded meeting protocols between foreign delegations."
-
-  - id: ration_card
-    name: "a worn ration card"
-    description: "A small cardboard card with Chinese characters and an official stamp. It entitles the bearer to a meager food allocation, if the distribution center still has supplies."
-    takeable: true
-    readable_text: "Shanghai Special Municipality: Weekly Ration Authorization. Bearer entitled to 200g rice, 50g oil. Valid through December 1937."
-
-  - id: folded_note
-    name: "a folded note"
-    description: "A small piece of rice paper, folded tightly. The handwriting is cramped and hurried."
-    takeable: true
-    readable_text: "You shouldn't read this. But if you do: the fish supplier at Huangpu Dock has been reliable. Tell him 'the carp are running.' He'll know what it means."
-
-  - id: winter_coat
-    name: "a padded winter coat"
-    description: "A thick quilted coat, well-worn but warm enough for Shanghai's damp winters."
-    takeable: true
-
-  - id: heavy_jacket
-    name: "a heavy wool jacket"
-    description: "A military-surplus wool jacket. Heavy, scratchy, but it keeps the cold out."
-    takeable: true
+- id: ration_card
+  name: a worn ration card
+  description: A thin piece of yellowing cardboard, softened at the corners from years
+    in a coat pocket. The red municipal stamp remains clear, but the printed characters
+    have faded. Such cards became a necessary part of daily life as war and occupation
+    disrupted Shanghai's food supply.
+  examine_text: The card has passed through a dozen hands along the Bund, each one smoothing its corners before the next ration queue began.
+  examine_provenance:
+    coverage_ids:
+    - loc-examine-ration-card
+    claims:
+      place:
+        value: Bund
+        span:
+          start: 0
+          end: 105
+        coverage_id: loc-examine-ration-card
+      period_basis:
+        value: ration queue
+        span:
+          start: 105
+          end: 124
+        coverage_id: loc-examine-ration-card
+      object_basis:
+        value: ration queue
+        span:
+          start: 105
+          end: 124
+        coverage_id: loc-examine-ration-card
+  takeable: true
+  readable_text: 'Shanghai Special Municipality: Weekly Ration Authorization. Bearer
+    entitled to 200g rice, 50g oil. Valid through December 1937.'
+  rarity: common
+- id: brass_key
+  name: a small brass key
+  description: A small brass key darkened by age and handling. The number 42 is engraved
+    into its bow, and faint scratches suggest it has opened the same lock countless
+    times. It may belong to a room in one of the many rented apartments crowding Shanghai's
+    longtang neighbourhoods.
+  takeable: true
+  rarity: uncommon
+- id: photograph
+  name: a faded family photograph
+  description: 'A small black-and-white photograph mounted on brittle cardboard. A
+    family sits stiffly in a studio portrait: parents in their best clothes, children
+    standing carefully beside them. The edges have yellowed, and a fingerprint stain
+    marks one corner.'
+  examine_text: The photographer's backdrop has survived, but these faces were carried from the Old City to the Bund one room at a time.
+  examine_provenance:
+    coverage_ids:
+    - loc-examine-photograph
+    claims:
+      place:
+        value: Old City
+        span:
+          start: 80
+          end: 101
+        coverage_id: loc-examine-photograph
+      period_basis:
+        value: one room at a time
+        span:
+          start: 101
+          end: 120
+        coverage_id: loc-examine-photograph
+      object_basis:
+        value: photographer
+        span:
+          start: 0
+          end: 80
+        coverage_id: loc-examine-photograph
+  takeable: true
+  readable_text: To remember before everything changed. Behind the dye shop, second
+    lane. -- May 1937
+  rarity: common
+- id: truncheon
+  name: a police truncheon
+  description: A heavy, lacquered baton of dark wood, worn smooth at the grip. The
+    leather wrist strap is cracked with age. It bears no markings, but the weight
+    and balance speak of its purpose. Instruments like this were standard issue for
+    the Shanghai Municipal Police.
+  takeable: true
+  rarity: common
+- id: newspaper
+  name: yesterday's newspaper
+  description: A single sheet of newsprint, the ink already smudging on the fingers.
+    The headlines announce victories on distant fronts, but the small print tells
+    a different story. Shortages listed. Curfew extended. A ration cut announced in
+    the back pages.
+  takeable: true
+  readable_text: Front pages praise the new order. Page four lists this week's ration
+    allotments. Page seven carries a notice of curfew extension.
+  rarity: common
+- id: bloodied_message
+  name: a bloodied message
+  description: A scrap of paper, the edges dark with dried blood. The writing is hurried,
+    the characters barely legible. A name. A time. A location. The message never reached
+    its intended recipient, but it was important enough that someone died carrying
+    it.
+  takeable: true
+  readable_text: The message is cut off mid-sentence. A name, a time, a street intersection.
+    The bottom edge of the paper is dark and stiff.
+  rarity: common
+- id: forged_pass
+  base_cost: 50
+  name: a forged transit pass
+  description: The paper has been rubbed with tea to soften its newness, and the
+    municipal stamp is copied with a careful but anxious hand. It may pass a bored
+    checkpoint clerk in the rain, yet the photograph sits a fraction too high.
+  takeable: true
+  readable_text: Faded stamps and a photograph that doesn't quite match the bearer.
+    Valid for three more days -- maybe.
+  rarity: common
+- id: silk_scarf
+  base_cost: 25
+  name: a silk scarf
+  description: Pale silk, folded small enough for a coat pocket, with one corner
+    embroidered in thread too fine for market work. It carries a faint perfume from
+    the French Concession and a crease where someone tied it to a balcony rail.
+  examine_text: Someone tied this silk to a French Concession balcony during the blackout, then carried it home when the street grew too quiet.
+  examine_provenance:
+    coverage_ids:
+    - loc-examine-silk-scarf
+    claims:
+      place:
+        value: French Concession
+        span:
+          start: 0
+          end: 65
+        coverage_id: loc-examine-silk-scarf
+      period_basis:
+        value: blackout
+        span:
+          start: 65
+          end: 127
+        coverage_id: loc-examine-silk-scarf
+      object_basis:
+        value: blackout
+        span:
+          start: 65
+          end: 127
+        coverage_id: loc-examine-silk-scarf
+  takeable: true
+  rarity: common
+- id: contraband_morphine
+  base_cost: 60
+  name: a vial of contraband morphine
+  description: A narrow glass vial sealed with wax and wrapped in a strip of hospital
+    gauze. The label has been scraped away, but the dosage marks remain clear enough
+    for a careful nurse and tempting enough for a desperate broker.
+  takeable: true
+  rarity: common
+- id: temple_talisman
+  name: a temple talisman
+  description: Red paper folded around a brush-written prayer, smoke-darkened along
+    the edges from a temple brazier in the Old City. The cord is knotted twice, once
+    for safe passage and once for a name no one has written down.
+  takeable: true
+  readable_text: The prayer asks for a safe return, but does not promise one.
+  rarity: common
+- id: coded_ledger
+  base_cost: 40
+  name: a coded ledger
+  description: A shop ledger ruled in blue ink, its columns of rice, lamp oil, and
+    transport fees kept with suspicious neatness. Certain totals repeat at odd intervals,
+    as if the accounts are also counting ships, names, and nights.
+  takeable: true
+  readable_text: Ships, names, and dates shift into meaning only after the third reading.
+  rarity: common
+- id: patrol_route
+  base_cost: 35
+  name: a folded patrol route
+  description: A worn slip of paper listing patrol routes and shift changes in neat
+    Japanese script. The fold lines are soft from being carried inside a tunic pocket.
+    Such schedules were considered sensitive documents, never to leave the station.
+    The ink is smudged where the paper was folded while still wet.
+  takeable: true
+  readable_text: Patrol timings tighten near Hongkou after 20:00.
+  rarity: common
+- id: dock_manifest
+  base_cost: 30
+  name: a dock manifest
+  description: A cargo manifest from the Huangpu docks, stamped once in English,
+    once in Chinese, and once by an impatient Japanese clerk. The paper smells of
+    river damp and coal dust, with one crate number corrected three times.
+  examine_text: Coal dust has darkened the dock's stamps, where a clerk corrected one crate number and kept working beneath the Huangpu lamps.
+  examine_provenance:
+    coverage_ids:
+    - loc-examine-dock-manifest
+    claims:
+      place:
+        value: dock
+        span:
+          start: 0
+          end: 34
+        coverage_id: loc-examine-dock-manifest
+      period_basis:
+        value: Huangpu lamps
+        span:
+          start: 112
+          end: 126
+        coverage_id: loc-examine-dock-manifest
+      object_basis:
+        value: stamps
+        span:
+          start: 34
+          end: 112
+        coverage_id: loc-examine-dock-manifest
+  takeable: true
+  readable_text: Crates marked medical supplies are routed through Pier Six.
+  rarity: common
+- id: prayer_beads
+  base_cost: 15
+  name: a string of prayer beads
+  description: Dark wooden beads threaded on cotton cord, each bead polished by years
+    of thumb and prayer. A single bead near the tassel is cracked, perhaps from being
+    dropped on temple stone when footsteps sounded too close.
+  examine_text: One cracked bead bears the warmth of a thumb that counted prayers through curfew, while the Old City waited for footsteps to pass.
+  examine_provenance:
+    coverage_ids:
+    - loc-examine-prayer-beads
+    claims:
+      place:
+        value: Old City
+        span:
+          start: 92
+          end: 130
+        coverage_id: loc-examine-prayer-beads
+      period_basis:
+        value: curfew
+        span:
+          start: 0
+          end: 92
+        coverage_id: loc-examine-prayer-beads
+      object_basis:
+        value: curfew
+        span:
+          start: 0
+          end: 92
+        coverage_id: loc-examine-prayer-beads
+  takeable: true
+  rarity: common
+- id: hidden_cash
+  base_cost: 40
+  name: a roll of hidden cash
+  description: Small fabi notes rolled tight inside a paper sleeve and tied with
+    butcher's twine. The outer bills are nearly worthless from inflation, but a silver
+    coin hidden in the centre changes the weight in the hand.
+  examine_text: The silver coin was wrapped after the bank notes failed, a small reserve for a rice queue when a week's wages vanished overnight.
+  examine_provenance:
+    coverage_ids:
+    - loc-examine-hidden-cash
+    claims:
+      place:
+        value: rice queue
+        span:
+          start: 79
+          end: 129
+        coverage_id: loc-examine-hidden-cash
+      period_basis:
+        value: bank notes failed
+        span:
+          start: 38
+          end: 79
+        coverage_id: loc-examine-hidden-cash
+      object_basis:
+        value: silver coin
+        span:
+          start: 0
+          end: 38
+        coverage_id: loc-examine-hidden-cash
+  takeable: true
+  rarity: common
+- id: cold_noodles
+  base_cost: 8
+  name: a bowl of cold noodles
+  description: A shallow bowl of wheat noodles in a chilled broth, topped with a slice
+    of pickled radish and a sprinkle of sesame. The vendor has drizzled black vinegar
+    across the top in the shape of a character meaning peace.
+  takeable: true
+  food_value: 15
+  morale_restore: 3
+  culture: chinese
+  rarity: common
+- id: rice_bowl
+  base_cost: 10
+  name: a bowl of rice
+  description: A simple ceramic bowl, glazed a pale celadon green. A small chip marks
+    the rim, and the base is stamped with the mark of a kiln in Jiangxi. Bowls like
+    this were found in every home and stall across Shanghai,不分贫富.
+  examine_text: The Jiangxi kiln mark survived the move south, though the family who carried this bowl now measures each serving before lifting it.
+  examine_provenance:
+    coverage_ids:
+    - loc-examine-rice-bowl
+    claims:
+      place:
+        value: Jiangxi
+        span:
+          start: 0
+          end: 35
+        coverage_id: loc-examine-rice-bowl
+      period_basis:
+        value: move south
+        span:
+          start: 35
+          end: 82
+        coverage_id: loc-examine-rice-bowl
+      object_basis:
+        value: bowl
+        span:
+          start: 82
+          end: 131
+        coverage_id: loc-examine-rice-bowl
+  takeable: true
+  food_value: 5
+  morale_restore: 3
+  culture: chinese
+  rarity: common
+- id: tea
+  base_cost: 6
+  name: a cup of tea
+  description: A small ceramic cup, thin enough to warm the hands through. The interior
+    is stained a deep amber from years of use. The handle has been repaired once with
+    a careful application of lacquer. Tea houses across Shanghai served cups identical
+    to this one.
+  examine_text: At a Shanghai tea stall, this cup warmed a porter's hands between loads, when even a quiet pause had to answer to the clock.
+  examine_provenance:
+    coverage_ids:
+    - loc-examine-tea
+    claims:
+      place:
+        value: Shanghai
+        span:
+          start: 0
+          end: 14
+        coverage_id: loc-examine-tea
+      period_basis:
+        value: porter's hands
+        span:
+          start: 43
+          end: 124
+        coverage_id: loc-examine-tea
+      object_basis:
+        value: tea stall
+        span:
+          start: 14
+          end: 43
+        coverage_id: loc-examine-tea
+  takeable: true
+  food_value: 25
+  morale_restore: 10
+  culture: chinese
+  rarity: common
+- id: dried_fish
+  base_cost: 12
+  name: dried fish
+  description: A small dried fish, its skin drawn tight over the bones, eyes sunken
+    and white. It is strung on a length of twine through the gills. Dried fish was
+    a staple protein for those who could not afford fresh meat, keeping for months
+    without spoiling.
+  takeable: true
+  food_value: 25
+  morale_restore: 2
+  culture: chinese
+  rarity: common
+- id: street_snack
+  base_cost: 6
+  name: a street vendor's snack
+  description: A small paper cone of fried dough, still warm from the oil. The vendor
+    seasoned it with a pinch of salt and a dusting of five-spice powder before folding
+    the paper. Street snacks like this were a brief comfort for workers who could
+    not afford a full meal at a stall.
+  takeable: true
+  food_value: 12
+  morale_restore: 8
+  culture: chinese
+  rarity: common
+- id: sake
+  name: a bottle of sake
+  description: A squat bottle of clear rice wine, sealed with a paper label from
+    a Hongkou supplier serving Japanese officers. The glass is warm from being carried
+    under a coat, and the stopper smells faintly of cedar.
+  takeable: true
+  food_value: 5
+  morale_restore: 15
+  culture: japanese
+  rarity: common
+- id: sushi
+  name: a plate of sushi
+  description: A neat oblong of vinegared rice topped with a slice of raw fish, wrapped
+    in a strip of dried seaweed. It was prepared by a Japanese chef in one of the
+    Hongkou district's new establishments, serving tastes familiar to the occupying
+    soldiers far from home.
+  takeable: true
+  food_value: 22
+  morale_restore: 8
+  culture: japanese
+  rarity: common
+- id: mochi
+  name: a piece of mochi
+  description: A small round rice cake, soft and yielding, dusted lightly with potato
+    starch. It was handmade, stretched and folded until the texture became smooth
+    and elastic. Mochi was a taste of home for Japanese soldiers and officials stationed
+    in Shanghai.
+  takeable: true
+  food_value: 10
+  morale_restore: 12
+  culture: japanese
+  rarity: common
+- id: miso_soup
+  name: a bowl of miso soup
+  description: A lacquered bowl of miso broth, cloudy with fermented soybean paste
+    and softened scraps of tofu. It belongs to the canteens and boarding houses of
+    Hongkou, where soldiers look for familiar salt after patrol.
+  takeable: true
+  food_value: 15
+  morale_restore: 10
+  culture: japanese
+  rarity: common
+- id: rice_crackers
+  name: a bag of rice crackers
+  description: A small cloth bag of puffed rice crackers, lightly seasoned with salt.
+    The bag is tied with a twist of straw. Street vendors sold these from baskets
+    carried through the markets, their calls echoing between the buildings.
+  takeable: true
+  food_value: 12
+  morale_restore: 4
+  culture: japanese
+  rarity: common
+- id: coffee
+  name: a cup of coffee
+  description: A small cloth sack of roasted coffee beans. The beans are dark and
+    oily, and a fine dust of grounds coats the inside of the sack. Coffee houses in
+    the French Concession served espresso to journalists, spies, and refugees who
+    could afford the habit.
+  takeable: true
+  food_value: 3
+  morale_restore: 18
+  culture: western
+  rarity: uncommon
+- id: bread
+  name: a loaf of bread
+  description: A round loaf of white bread, the crust soft and pale. It is unlike
+    the steamed bread of Chinese bakeries. This was baked in a Western-style oven,
+    probably in one of the French Concession's boulangeries, where the scent of fresh
+    bread drew customers past the doorway.
+  takeable: true
+  food_value: 20
+  morale_restore: 5
+  culture: western
+  rarity: common
+- id: cheese
+  name: a wedge of cheese
+  description: A wedge of hard yellow cheese, wrapped in waxed paper. The rind is
+    marked with the stamp of a dairy in the French Concession, where European farmers
+    supplied the foreign community with tastes of home.
+  takeable: true
+  food_value: 18
+  morale_restore: 6
+  culture: western
+  rarity: common
+- id: sandwich
+  name: a wrapped sandwich
+  description: Two slices of soft white bread enclosing a thin slice of ham and a
+    leaf of lettuce. The crusts have been cut off. This is a foreign-style meal, sold
+    in the cafes of the French Concession and the International Settlement, a reminder
+    of the treaty ports' cosmopolitan past.
+  takeable: true
+  food_value: 25
+  morale_restore: 7
+  culture: western
+  rarity: common
+- id: wine
+  name: a bottle of wine
+  description: A dark glass bottle with a faded label in French. The cork is stained
+    deep purple, and a thin crust of sediment clings to the bottom. Imported from
+    Bordeaux before the war, bottles like this survived in private cellars, shared
+    cautiously among those who still remembered how to celebrate.
+  takeable: true
+  food_value: 4
+  morale_restore: 14
+  culture: western
+  rarity: common
+- id: water
+  name: a canteen of water
+  description: A clear glass bottle filled with water from a public tap. The glass
+    is warm from the hand that carried it. In Shanghai, clean water was a privilege
+    Most residents boiled theirs from wells or bought it from vendors who hauled
+    it through the streets in wooden buckets.
+  takeable: true
+  food_value: 8
+  morale_restore: 3
+  culture: universal
+  rarity: common
+- id: dried_fruit
+  name: a pouch of dried fruit
+  description: A handful of dried apricots and dates, compressed into a sticky mass
+    and wrapped in a broad leaf. The fruit was dried on woven bamboo mats in the autumn
+    sun, then stored for the winter months when fresh produce was scarce.
+  takeable: true
+  food_value: 14
+  morale_restore: 9
+  culture: universal
+  rarity: common
+- id: chocolate
+  name: a bar of chocolate
+  description: A small bar of dark chocolate wrapped in waxed paper. The paper is
+    printed with the name of a Swiss company and a price in French francs. Chocolate
+    was a luxury in occupied Shanghai, available only in foreign-run shops and on
+    the black market.
+  takeable: true
+  food_value: 10
+  morale_restore: 16
+  culture: universal
+  rarity: uncommon
+- id: noodle_bowl
+  name: a bowl of hot noodles
+  description: Thick wheat noodles sit in a steaming broth darkened with soy and
+    scallion oil. The bowl warms both hands at once, the sort of small comfort a
+    night worker buys before curfew empties the street.
+  takeable: true
+  food_value: 35
+  morale_restore: 8
+  culture: chinese
+  rarity: common
+- id: steamed_dumplings
+  name: a plate of steamed dumplings
+  description: A bamboo steamer basket containing four dumplings, their wrappers translucent
+    with steam. Each is pleated by hand in a style that marks its maker's regional
+    origin. The vinegar dipping sauce is served in a tiny porcelain dish.
+  takeable: true
+  food_value: 30
+  morale_restore: 5
+  culture: chinese
+  rarity: common
+- id: vegetable_stew
+  name: a bowl of vegetable stew
+  description: Root vegetables have been cooked slowly with ginger, greens, and a
+    little bean paste until the broth turns cloudy. There is no meat in it, but the
+    vendor has cut the carrots thick to make the bowl look generous.
+  takeable: true
+  food_value: 40
+  morale_restore: 10
+  culture: chinese
+  rarity: common
+- id: dried_meat_jerky
+  name: a strip of dried meat jerky
+  description: A strip of dark, dried meat, rubbed with salt and Sichuan pepper. The
+    surface is scored with shallow cuts where the marinade penetrated. Jerky like
+    this sustained travellers on journeys through territories where a hot meal meant
+    drawing attention.
+  takeable: true
+  food_value: 20
+  morale_restore: 4
+  culture: universal
+  rarity: common
+- id: herbal_tea
+  name: a cup of herbal tea
+  description: A twist of brown paper containing dried chrysanthemum petals and goji
+    berries. The paper is tied with coarse string. Herbal remedies like this were
+    sold by street vendors who learned their craft from generations of family knowledge.
+  takeable: true
+  food_value: 5
+  morale_restore: 15
+  culture: chinese
+  rarity: common
+- id: rice_wine_flask
+  name: a flask of rice wine
+  description: A glazed ceramic flask with a narrow neck and a cork stopper. The glaze
+    has crackled with age, and a thin layer of sediment coats the bottom. Rice wine
+    was distilled in small batches throughout the Yangtze delta, each batch bearing
+    the character of its maker.
+  takeable: true
+  food_value: 5
+  morale_restore: 20
+  culture: chinese
+  rarity: uncommon
+- id: black_bread
+  name: a loaf of black bread
+  description: A rough loaf of dark rye bread, dense and slightly sour. The crust
+    is dusted with coarse flour. This bread was common among the Russian emigre community
+    that settled in Shanghai after the revolution, sold in bakeries along Avenue Joffre.
+  takeable: true
+  food_value: 30
+  morale_restore: 3
+  culture: western
+  rarity: common
+- id: ccp_pamphlet
+  name: a banned resistance pamphlet
+  description: 'A folded sheet of rice paper, printed with crude ink. The text describes
+    Japanese atrocities in Nanjing: the massacres, the looting, the systematic terror
+    inflicted on civilians.'
+  takeable: true
+  readable_text: PEOPLE OF SHANGHAI! The Japanese imperialists murder our families,
+    steal our land, and enslave our workers. In Nanjing they slaughtered hundreds
+    of thousands. Women, children, the elderly, none were spared. But we will not
+    bow. The resistance grows. Every act of defiance brings liberation closer. Distribute
+    this paper. Tell the truth. The people's strength is in their numbers and their
+    anger.
+  rarity: common
+- id: code_book
+  base_cost: 45
+  name: a leather-bound code book
+  description: A small book with worn leather covers, filled with columns of numbers,
+    characters, and pencilled corrections. The pages are thumbed at the corners,
+    suggesting several hands have used it quickly and returned it before dawn.
+  takeable: true
+  readable_text: 'The pages contain cipher tables: each number corresponds to a character,
+    each column to a day of the month. Without the matching key, the messages are
+    gibberish. With it, they are a lifeline.'
+  rarity: common
+- id: smuggled_pistol
+  base_cost: 80
+  name: a smuggled Mauser C96 pistol
+  description: A battered but functional pistol, its serial numbers filed off. The
+    wooden stock is carved with a small five-pointed star, the mark of the underground.
+  takeable: true
+  rarity: common
+- id: japanese_travel_pass
+  base_cost: 45
+  name: a forged Japanese travel pass
+  description: An official-looking travel pass stamped with the puppet government's
+    seal and folded along the line of a coat pocket. The ink is strong, the paper
+    too clean, and the holder's photograph has been trimmed with a nervous blade.
+  takeable: true
+  rarity: common
+- id: medical_kit
+  name: a field medical kit
+  description: A cloth roll containing bandages, a bottle of iodine, a needle and
+    thread for sutures, and a small bottle of precious quinine pills stolen from a
+    Japanese military pharmacy.
+  takeable: true
+  food_value: 0
+  morale_restore: 5
+  rarity: common
+- id: worn_medical_kit
+  name: a worn medical kit
+  description: A weathered medical kit with frayed bandages and half-empty bottles.
+    The quinine is mostly gone, but the iodine and sutures remain. Doctor Li will
+    know how to use what is left.
+  takeable: true
+  food_value: 0
+  morale_restore: 3
+  rarity: common
+- id: quinine_bottle
+  base_cost: 45
+  name: a bottle of quinine pills
+  description: A small brown bottle containing quinine, worth more than gold in occupied
+    Shanghai where malaria spreads through the starving population while the Japanese
+    hoard medicine for their own troops.
+  takeable: true
+  food_value: 0
+  morale_restore: 10
+  rarity: common
+- id: resistance_map
+  base_cost: 50
+  name: a hand-drawn operations map
+  description: A map of Shanghai drawn on the back of a tea shop menu. Red marks show
+    Japanese patrol routes, blue marks indicate underground safe houses, and circled
+    areas mark targets for future operations.
+  takeable: true
+  readable_text: 'The map shows Japanese patrol routes through the International Settlement
+    with precise timing. Three supply convoy routes are marked with dates. A note
+    in the corner reads: ''The weapons shipment arrives Tuesday. Be ready.'''
+  rarity: common
+- id: kempeitai_uniform
+  name: a stolen Kempeitai uniform
+  description: A military police tunic and trousers, brushed clean but still creased
+    at the elbows from another man's posture. The collar tabs are intact, and the
+    cloth carries tobacco, sweat, and the sharp soap used in barracks laundry.
+  takeable: true
+  disguise_id: japanese_officer
+  rarity: common
+- id: rice_parcel
+  name: a parcel of smuggled rice
+  description: A cloth-wrapped bundle tied with twine. The fabric is patched in three
+    places, suggesting it has been reused many times. Parcels like this moved through
+    underground networks, carrying food to families cut off from market supplies by
+    the occupation.
+  takeable: true
+  food_value: 40
+  morale_restore: 15
+  culture: chinese
+  rarity: common
+  readable_text: The cloth is stencilled with a shipping mark from a relief organisation.
+    The contents have been repacked at least twice, each layer of wrapping signed
+    off by different hands.
+- id: chungking_broadcast
+  name: a transcription of a Chungking radio broadcast
+  description: A typed sheet containing the latest broadcast from Free China's radio
+    station in Chungking. The announcer speaks of resistance, unity, and the certainty
+    that the occupation will end.
+  takeable: true
+  readable_text: 'VOICE OF FREE CHINA: To our brothers and sisters in occupied Shanghai.
+    You are not forgotten. Your suffering is seen. Your resistance is felt. The Japanese
+    war machine bleeds from a thousand cuts inflicted by your courage. Hold fast.
+    Liberation comes. The people''s will cannot be broken.'
+  rarity: common
+- id: mauser_c96
+  base_cost: 60
+  name: a Mauser C96 pistol
+  description: A battered but functional pistol with its serial numbers filed down
+    to pale scars in the metal. The wooden stock has been darkened by sweat and oil,
+    with a small five-pointed star carved where a soldier's hand would cover it.
+  takeable: true
+  is_weapon: true
+  weapon_type: firearm
+  courage_bonus: 15
+  durability: 50
+  max_durability: 50
+  mod_slots:
+  - silencer
+  - stabilizer
+  rarity: common
+- id: wooden_club
+  base_cost: 30
+  name: a wooden club
+  description: A stout piece of lumber, wrapped in cloth at the grip. Silent and effective
+    in close quarters.
+  examine_text: Coal has settled into the grain from nights on the dock, where a watchman held the club low and listened for boots.
+  examine_provenance:
+    coverage_ids:
+    - loc-examine-wooden-club
+    claims:
+      place:
+        value: dock
+        span:
+          start: 51
+          end: 83
+        coverage_id: loc-examine-wooden-club
+      period_basis:
+        value: coal
+        span:
+          start: 0
+          end: 51
+        coverage_id: loc-examine-wooden-club
+      object_basis:
+        value: club
+        span:
+          start: 83
+          end: 115
+        coverage_id: loc-examine-wooden-club
+  takeable: true
+  is_weapon: true
+  weapon_type: melee
+  courage_bonus: 5
+  durability: 80
+  max_durability: 80
+  mod_slots:
+  - stock
+  rarity: common
+- id: kitchen_knife
+  base_cost: 20
+  name: a kitchen knife
+  description: A square-bladed kitchen cleaver with a wooden handle blackened by
+    cooking smoke. It was made for chopping greens and pork ribs, but the nicked
+    edge has clearly been used outside any kitchen.
+  takeable: true
+  is_weapon: true
+  weapon_type: melee
+  courage_bonus: 8
+  durability: 30
+  max_durability: 30
+  mod_slots: []
+  rarity: common
+- id: smuggled_rifle
+  base_cost: 120
+  name: a smuggled rifle
+  description: A Type 38 Arisaka rifle with the chrysanthemum crest filed from the
+    receiver and fresh grease worked into the bolt. The sling is Chinese canvas,
+    probably added after the weapon left a Japanese supply depot.
+  takeable: true
+  is_weapon: true
+  weapon_type: firearm
+  courage_bonus: 25
+  durability: 60
+  max_durability: 60
+  mod_slots:
+  - scope
+  - stabilizer
+  - stock
+  rarity: common
+- id: strangling_wire
+  base_cost: 40
+  name: a length of piano wire
+  description: A length of piano wire fixed between two short wooden handles wrapped
+    in dark cloth. It coils into a pocket easily, the sort of tool no honest porter
+    admits to carrying through a checkpoint.
+  takeable: true
+  is_weapon: true
+  weapon_type: stealth
+  courage_bonus: 12
+  durability: 20
+  max_durability: 20
+  mod_slots: []
+  rarity: common
+- id: improvised_knife
+  name: an improvised knife
+  description: A sharpened strip of scrap metal wrapped in rag to make a serviceable
+    grip. It has no maker's mark, only file scratches and a point narrow enough to
+    disappear inside a sleeve.
+  takeable: true
+  is_weapon: true
+  weapon_type: melee
+  courage_bonus: 8
+  durability: 20
+  max_durability: 20
+  mod_slots: []
+  rarity: common
+- id: bayonet
+  name: a military bayonet
+  description: A Type 30 bayonet with a 40cm blade and a hooked quillon. The steel
+    is darkened, and the wooden grip is wrapped in a worn cord wrap. Originally designed
+    for the Arisaka rifle, but in Shanghai it saw use as a close-quarters weapon.
+  takeable: true
+  is_weapon: true
+  weapon_type: melee
+  courage_bonus: 18
+  durability: 50
+  max_durability: 50
+  mod_slots:
+  - stock
+  rarity: common
+- id: trench_club
+  name: a trench club
+  description: A length of iron pipe wrapped in cloth tape at one end to form a grip.
+    The other end is threaded for a fitting that has been removed. Improvised weapons
+    like this appeared in every conflict zone, made from whatever materials were at
+    hand.
+  takeable: true
+  is_weapon: true
+  weapon_type: melee
+  courage_bonus: 12
+  durability: 40
+  max_durability: 40
+  mod_slots: []
+  rarity: common
+- id: throwing_knives
+  name: a set of throwing knives
+  description: A set of three balanced throwing knives, each 15cm long, held together
+    by a leather thong threaded through holes in the tangs. The blades are unadorned
+    and functional, worn in a concealed harness under the arm.
+  takeable: true
+  is_weapon: true
+  weapon_type: stealth
+  courage_bonus: 8
+  durability: 25
+  max_durability: 25
+  mod_slots: []
+  rarity: common
+- id: hidden_blade
+  name: a hidden blade
+  description: A thin-bladed knife designed to be strapped to the forearm under a
+    sleeve. The blade is narrow enough to slide between ribs. The leather sheath is
+    held in place by two straps. Pressing a catch releases the blade into the palm.
+  takeable: true
+  is_weapon: true
+  weapon_type: stealth
+  courage_bonus: 15
+  durability: 15
+  max_durability: 15
+  mod_slots: []
+  rarity: rare
+- id: quilted_jacket
+  name: a padded quilted jacket
+  description: Layers of cotton are quilted between faded cloth panels, patched at
+    the elbow and collar. It looks like common winter wear from the lanes, though
+    the extra padding has been stitched thick across the ribs.
+  examine_text: Each patch was sewn for a different winter, and the quilted jacket still carries the faint scent of Shanghai smoke from its last stove.
+  examine_provenance:
+    coverage_ids:
+    - loc-examine-quilted-jacket
+    claims:
+      place:
+        value: Shanghai
+        span:
+          start: 100
+          end: 135
+        coverage_id: loc-examine-quilted-jacket
+      period_basis:
+        value: different winter
+        span:
+          start: 0
+          end: 50
+        coverage_id: loc-examine-quilted-jacket
+      object_basis:
+        value: winter
+        span:
+          start: 36
+          end: 100
+        coverage_id: loc-examine-quilted-jacket
+  takeable: true
+  is_armour: true
+  defense_value: 3
+  durability: 50
+  max_durability: 50
+  concealed: true
+  rarity: common
+- id: leather_vest
+  name: a stitched leather vest
+  description: Thick leather panels have been stitched over rough canvas, with the
+    seams reinforced by hand. It would not stop a bullet, but a knife might skid
+    across it long enough to matter.
+  takeable: true
+  is_armour: true
+  defense_value: 5
+  durability: 40
+  max_durability: 40
+  concealed: true
+  rarity: common
+- id: stolen_kempeitai_armor
+  name: a Kempeitai flak vest
+  description: A military police body vest with the inner label cut away and one
+    shoulder strap hastily repaired. Its issue markings still show through the lining,
+    making it valuable protection and dangerous property.
+  takeable: true
+  is_armour: true
+  defense_value: 15
+  durability: 60
+  max_durability: 60
+  concealed: false
+  rarity: common
+- id: civilian_clothes
+  name: a set of civilian clothes
+  description: Plain cotton trousers and a worn jacket, washed thin at the cuffs
+    and knees. Nothing about them asks to be remembered, which is precisely why a
+    careful person might value them.
+  examine_text: The cuffs were altered for a smaller body, then let out again when a refugee family shared the jacket through two winters.
+  examine_provenance:
+    coverage_ids:
+    - ushmm-examine-civilian-clothes
+    claims:
+      place:
+        value: refugee family
+        span:
+          start: 0
+          end: 95
+        coverage_id: ushmm-examine-civilian-clothes
+      period_basis:
+        value: two winters
+        span:
+          start: 110
+          end: 122
+        coverage_id: ushmm-examine-civilian-clothes
+      object_basis:
+        value: jacket
+        span:
+          start: 95
+          end: 110
+        coverage_id: ushmm-examine-civilian-clothes
+  takeable: true
+  is_armour: true
+  defense_value: 2
+  durability: 30
+  max_durability: 30
+  concealed: true
+  rarity: common
+- id: padded_jacket
+  name: a padded winter jacket
+  description: Thick cotton padding between layers of fabric. Warm and surprisingly
+    resistant to blade cuts.
+  takeable: true
+  is_armour: true
+  defense_value: 5
+  durability: 45
+  max_durability: 45
+  concealed: true
+  rarity: common
+- id: leather_coat
+  name: a leather trench coat
+  description: Dark oiled leather falls to the knee, with rain marks across the shoulders
+    and a repaired tear near one pocket. It carries the style of the dance halls
+    and the weight of street work after midnight.
+  takeable: true
+  is_armour: true
+  defense_value: 8
+  durability: 50
+  max_durability: 50
+  concealed: false
+  rarity: common
+- id: patrol_cap
+  name: a Kempeitai patrol cap
+  description: A stiff field cap bearing the Kempeitai insignia, the band darkened
+    where sweat has soaked through. Even folded under an arm, it changes how people
+    in Hongkou lower their voices.
+  takeable: true
+  is_armour: true
+  defense_value: 1
+  durability: 20
+  max_durability: 20
+  concealed: false
+  rarity: common
+- id: officer_cap
+  name: a Kempeitai officer's cap
+  description: A peaked officer's cap with silver insignia polished brighter than
+    the cloth deserves. The brim is creased by habit, and the inside band carries
+    the scent of hair oil and barracks tobacco.
+  takeable: true
+  is_armour: true
+  defense_value: 2
+  durability: 25
+  max_durability: 25
+  concealed: false
+  rarity: common
+- id: silencer
+  name: a improvised silencer
+  description: A cylindrical metal suppressor, machined to fit a specific barrel thread.
+    The interior baffles are caked with burnt powder residue. It reduces the report
+    of a firearm to a sharp crack, still audible but no longer identifiable as gunfire
+    at a distance.
+  takeable: true
+  is_mod: true
+  mod_type: stealth
+  mod_bonus: 15
+  rarity: rare
+- id: stabilizer
+  name: a barrel stabilizer
+  description: A compact counterweight machined from blued steel, threaded for a
+    barrel by someone with access to proper tools. It is wrapped in oiled paper,
+    the kind used for spare parts moving quietly through the docks.
+  takeable: true
+  is_mod: true
+  mod_type: courage
+  mod_bonus: 5
+  rarity: common
+- id: scope
+  name: a telescopic scope
+  description: A telescopic sight in a brass tube, the lenses clean but the exterior
+    scratched. The reticle is a simple crosshair. It mounts to a rifle via a side
+    bracket. A scope turns a soldier into a marksman, and a marksman turns a distant
+    target into a casualty.
+  takeable: true
+  is_mod: true
+  mod_type: perception
+  mod_bonus: 10
+  rarity: rare
+- id: stock
+  name: a reinforced stock
+  description: A wooden rifle stock, carved from walnut and fitted with a cheek rest.
+    The grain is fine, and the finish is oiled to a deep gloss. This is not standard-issue
+    furniture. It was custom-made for a shooter who valued accuracy over conformity.
+  takeable: true
+  is_mod: true
+  mod_type: courage
+  mod_bonus: 3
+  rarity: rare
+- id: extended_magazine
+  name: an extended magazine
+  description: A curved magazine of blued steel, holding twenty rounds instead of
+    the standard ten. The spring inside is stronger, the extra weight noticeable in
+    the hand. Extended magazines were prized by anyone expecting a fight that would
+    not end quickly.
+  takeable: true
+  is_mod: true
+  mod_type: durability
+  mod_bonus: 10
+  rarity: rare
+- id: wooden_crate
+  name: a wooden crate
+  description: A nailed-shut shipping crate with damp boards and a stencilled label
+    nearly rubbed away by rope. One corner has split from rough handling, showing
+    straw packing and a smell of river mud.
+  takeable: false
+  is_container: true
+  rarity: common
+- id: iron_safe
+  name: an iron safe
+  description: A heavy iron safe bolted to the floor, its black paint scratched by
+    years of office moves. The combination dial is tarnished but intact, and dust
+    has gathered thickly around the hinges.
+  takeable: false
+  is_container: true
+  locked: true
+  key_id: safe_key
+  rarity: common
+- id: cloth_bag
+  name: a cloth bag
+  description: A simple canvas sack with a drawstring, patched from flour cloth and
+    stained by soy, coal dust, and rain. It hangs flat when empty and looks like a
+    hundred others passing through the market.
+  examine_text: Flour dust clings to the seams from a lilong kitchen where neighbours carried rice past the blackout without naming the house.
+  examine_provenance:
+    coverage_ids:
+    - ushmm-examine-cloth-bag
+    claims:
+      place:
+        value: lilong
+        span:
+          start: 0
+          end: 78
+        coverage_id: ushmm-examine-cloth-bag
+      period_basis:
+        value: blackout
+        span:
+          start: 92
+          end: 126
+        coverage_id: ushmm-examine-cloth-bag
+      object_basis:
+        value: rice
+        span:
+          start: 78
+          end: 92
+        coverage_id: ushmm-examine-cloth-bag
+  takeable: true
+  is_container: true
+  rarity: common
+- id: old_city_map
+  name: an old city map
+  description: A hand-drawn map of the Old City district, annotated with shop names,
+    shrine steps, and back alleys too narrow for carts. Several lanes are crossed
+    out where checkpoints or rubble have changed the old routes.
+  takeable: true
+  is_map: true
+  map_districts:
+  - old_city
+  rarity: common
+- id: french_concession_guide
+  name: a French Concession guide
+  description: A tourist pamphlet from before the war. The cafes and nightclubs listed
+    are now barracks and brothels.
+  takeable: true
+  is_map: true
+  map_districts:
+  - french
+  rarity: common
+- id: full_city_map
+  name: a full city survey map
+  description: A surveyor's map of greater Shanghai, dense with street names and ward
+    lines. Folded into a square and wrapped in oilcloth.
+  takeable: true
+  is_map: true
+  map_districts:
+  - bund
+  - commercial
+  - old_city
+  - hongkou
+  - french
+  - huangpu
+  - hidden
+  - residential
+  - warehouse
+  - church
+  - school
+  rarity: common
+- id: safe_key
+  name: a safe key
+  description: A small iron key with a square bow, worn bright along the teeth from
+    regular use. The number 7 is engraved unevenly near the stem, as if added by
+    a locksmith after the safe changed hands.
+  takeable: true
+  is_key: true
+  opens_container: iron_safe
+  rarity: common
+- id: drawer_key
+  name: a desk drawer key
+  description: A brass key with a decorative bow and a nick across one tooth. It
+    looks suited to an office drawer, the kind that holds receipt books, private
+    letters, or a clerk's last good cigarette.
+  takeable: true
+  is_key: true
+  opens_container: locked_drawer
+  rarity: common
+- id: fabi_note
+  name: a fabi banknote
+  description: A crumpled one-yuan fabi note, soft as cloth from too many hands and
+    too little value. The printed portrait is fading, but shopkeepers still count
+    such notes carefully before naming a higher price.
+  takeable: true
+  is_money: true
+  money_amount: 1
+  money_currency: fabi
+  rarity: common
+- id: silver_yuan
+  name: a silver yuan coin
+  description: A worn silver dollar from the Republic era, its edge rubbed smooth
+    by pockets, scales, and bargaining tables. Unlike paper fabi, it has a weight
+    that makes merchants lower their voices.
+  takeable: true
+  is_money: true
+  money_amount: 10
+  money_currency: fabi
+  rarity: common
+- id: leaflet_bundle
+  name: a bundle of resistance leaflets
+  description: A stack of printed leaflets, each the size of a hand. The ink is still
+    slightly tacky, fresh off the press. The text is in Chinese, calling for resistance
+    against the occupation. Distributing these meant risking arrest or worse.
+  takeable: true
+  rarity: common
+  readable_text: Workers of Shanghai, unite! The occupation feeds on division. Only
+    together can we break the chains. Distribute this to one person you trust.
+- id: patrol_communique
+  name: a Kempeitai patrol communique
+  description: A sealed military document bearing the Kempeitai crest. Inside, precise
+    patrol schedules are laid out in neat columns, revealing the timing and routes
+    of security sweeps near Hongkou.
+  takeable: true
+  readable_text: Patrol timing details indicate heightened surveillance near Hongkou
+    between 22:00 and 02:00. Sweep routes cover north-south avenues every 45 minutes
+    with a two-man team rotating through side streets.
+  rarity: common
+- id: patrol_roster
+  name: a Kempeitai patrol roster
+  category: document
+  description: A typed roster of Kempeitai patrol schedules and checkpoint rotations
+    for the coming week. Names are written in formal order, with red pencil marks
+    beside Hongkou night duty and a tea stain over one corporal's assignment.
+  rarity: common
+- id: food_parcel
+  base_cost: 15
+  name: a wrapped food parcel
+  description: A cloth sack stamped with the emblem of an international relief organisation.
+    Inside are tins of powdered milk, bags of flour, and vitamin supplements. These
+    parcels arrived through the blockade, a lifeline for families who had exhausted
+    every local resource.
+  takeable: true
+  food_value: 40
+  morale_restore: 10
+  culture: chinese
+  rarity: common
+- id: confiscated_supplies
+  name: a crate of confiscated supplies
+  description: A wooden crate labelled with Japanese military stamps, pried open to
+    reveal medical supplies and rations seized from the civilian population. The contents
+    are a small fortune in occupied Shanghai.
+  takeable: true
+  rarity: common
+- id: diplomatic_pouch
+  name: a sealed diplomatic pouch
+  description: A leather pouch bearing the French consulate seal, secured with wax.
+    Whatever it contains was important enough to warrant diplomatic protection, and
+    dangerous enough that someone hid it here.
+  takeable: true
+  readable_text: Official diplomatic correspondence detailing consular movements and
+    protected channels. The documents reference secure transit arrangements and coded
+    meeting protocols between foreign delegations.
+  rarity: common
+- id: folded_note
+  name: a folded note
+  description: A small piece of rice paper folded so tightly the creases have begun
+    to tear. The handwriting is cramped and hurried, with ink darker at the end where
+    the writer pressed too hard.
+  takeable: true
+  readable_text: 'You shouldn''t read this. But if you do: the fish supplier at Huangpu
+    Dock has been reliable. Tell him ''the carp are running.'' He''ll know what it
+    means.'
+  rarity: common
+- id: winter_coat
+  base_cost: 50
+  name: a padded winter coat
+  description: A heavy wool greatcoat, the lining frayed at the cuffs. Two brass buttons
+    remain; three are missing, their threads snapped. The collar is turned up in the
+    shape of the soldier who wore it. Greatcoats like this were standard issue for
+    winter campaigns.
+  takeable: true
+  rarity: uncommon
+- id: heavy_jacket
+  name: a heavy wool jacket
+  description: A military-surplus wool jacket with a scratchy collar and patched
+    lining. The buttons do not match, but the cloth keeps out the winter wind that
+    cuts along the river after dusk.
+  takeable: true
+  rarity: common
+- id: japanese_cigarettes
+  base_cost: 10
+  name: a pack of Japanese cigarettes
+  description: A tin of mild tobacco cigarettes with Japanese military stamps. A luxury
+    in occupied Shanghai, favored by collaborators and officers.
+  takeable: true
+  morale_restore: 8
+  culture: japanese
+  rarity: common
+- id: japanese_textbook
+  base_cost: 20
+  name: a Japanese language textbook
+  description: A primer for learning Japanese, printed by the occupation government.
+    Required reading for those seeking work in Japanese-run businesses or wishing
+    to eavesdrop on Kempeitai conversations.
+  takeable: true
+  readable_text: 'Lesson 1: Basic Greetings. The book introduces simple phrases with
+    Chinese translations. The margins are filled with a student''s notes, some about
+    the language, some about the teacher''s nervous habits.'
+  rarity: common
+- id: japanese_rice
+  base_cost: 15
+  name: a bag of premium Japanese rice
+  description: A plain cotton sack stamped with Japanese characters and a military
+    procurement seal. The rice inside is polished short-grain, distinct from the long-grain
+    varieties preferred by Chinese households. This sack came from a shipment reserved
+    for occupying forces.
+  takeable: true
+  food_value: 50
+  morale_restore: 15
+  culture: japanese
+  rarity: common
+- id: japanese_medicine
+  base_cost: 35
+  name: a bottle of Japanese patent medicine
+  description: A sealed bottle of factory-produced medicine, far more effective than
+    the dwindling supplies in Chinese clinics. Only available through Japanese-approved
+    channels.
+  takeable: true
+  morale_restore: 20
+  culture: japanese
+  rarity: common
+- id: kempeitai_ration
+  base_cost: 18
+  name: a Kempeitai field ration
+  description: A sealed military ration tin marked with the Kempeitai crest. Contains
+    preserved meat, rice, and a small flask of sake. Stolen from a dead man's pack,
+    or purchased from a very nervous vendor.
+  takeable: true
+  food_value: 35
+  morale_restore: 12
+  culture: japanese
+  rarity: common
+- id: refugee_iron_safe
+  name: a rusted iron safe
+  description: A heavy iron safe bolted to the warehouse floor. Rust has corroded
+    the combination dial, but the brass key hole still works.
+  takeable: false
+  is_container: true
+  locked: false
+  key_id: refugee_brass_key
+  rarity: common
+- id: refugee_pistol
+  name: a rusted Mauser pistol
+  description: A Mauser C96 pistol with a rusted barrel. The serial numbers have been
+    filed off. It still fires, but jammed badly once. Clean it before relying on it.
+  takeable: true
+  is_weapon: true
+  weapon_type: firearm
+  courage_bonus: 8
+  durability: 15
+  max_durability: 15
+  mod_slots: []
+  rarity: common
+- id: old_revolver
+  name: an old revolver
+  description: An old revolver wrapped in oilcloth, its metal dulled by rust and years
+    beneath a warehouse floorboard. It may fire if handled carefully.
+  takeable: true
+  is_weapon: true
+  weapon_type: firearm
+  courage_bonus: 8
+  durability: 15
+  max_durability: 15
+  mod_slots: []
+  rarity: common
+- id: safehouse_pass
+  name: a safehouse pass
+  description: A small paper pass marked with a quiet code used by a resistance contact.
+    It identifies the bearer to someone who already knows how to read it.
+  takeable: true
+  readable_text: The pass contains a name, a date, and a short recognition phrase.
+  rarity: common
+- id: coded_message
+  name: a coded message
+  description: A folded message written in a careful hand, with ordinary phrases hiding
+    a meaning meant for a trusted reader.
+  takeable: true
+  readable_text: The message gives a time and meeting place in phrases that sound ordinary.
+  rarity: common
+- id: refugee_coat
+  name: a Japanese officer's coat
+  description: A Kempeitai officer's greatcoat, dark with dried blood. The insignia
+    identifies the former owner as a lieutenant. Heavy and warm, it makes an excellent
+    disguise.
+  takeable: true
+  disguise_id: japanese_officer
+  is_armour: true
+  defense_value: 3
+  durability: 30
+  max_durability: 30
+  concealed: false
+  rarity: common
+- id: compass
+  name: a brass compass
+  description: A brass pocket compass, the glass face cracked. The needle swings freely,
+    settling on north with a slight tremble. The compass was made in England and sold
+    through a Shanghai outfitter whose name is engraved on the rim.
+  takeable: true
+  rarity: uncommon
+- id: lockpick_set
+  name: a set of lockpicks
+  description: A small leather roll containing several thin pieces of spring steel,
+    each shaped into a different profile. A tension wrench is tucked into a separate
+    pocket. The tools are oiled and show signs of careful use.
+  takeable: true
+  rarity: uncommon
+- id: field_bandages
+  name: a roll of field bandages
+  description: A rolled cotton bandage in a waxed paper wrapper. The wrapper carries
+    a red cross symbol and instructions in Chinese and English. Field dressings like
+    this were distributed by relief organisations and the few remaining hospitals.
+  takeable: true
+  food_value: 0
+  morale_restore: 15
+  rarity: rare
+- id: congee
+  name: Congee
+  description: A clay bowl of rice porridge, topped with preserved egg and shredded
+    ginger. The congee is still warm, the surface rippling with thin circles of oil.
+    Street stalls sold this from before dawn until late morning, when the last pot
+    was scraped clean.
+  takeable: true
+  food_value: 15
+  culture: chinese
+  rarity: common
+- id: mantou
+  name: Mantou
+  description: Plain steamed wheat buns, dense and pale, wrapped in cloth to keep
+    their heat. They offer little flavour, but a labourer can carry two in a sleeve
+    and make them last until evening.
+  takeable: true
+  food_value: 10
+  culture: chinese
+  rarity: common
+- id: cha_ye_dan
+  name: Tea Egg
+  description: A hard-boiled egg, its shell cracked in a fine web and steeped in black
+    tea, soy sauce, and star anise until the flesh is marbled brown. The stall keeper
+    fishes it from a simmering pot with a wire scoop and serves it in a scrap of newsprint.
+  takeable: true
+  food_value: 8
+  morale_restore: 5
+  culture: chinese
+  rarity: common
+- id: shengjian
+  name: Pan-Fried Pork Buns
+  description: A pan-fried pork bun, the bottom crust golden and crisp, the top dough
+    soft and steamed. The vendor lifts the lid of his heavy iron pan, releasing a
+    cloud of fragrant steam. Each bun is wrapped in a twist of waxed paper.
+  takeable: true
+  food_value: 20
+  culture: chinese
+  rarity: common
+- id: onigiri
+  name: Rice Ball
+  description: A triangular rice ball wrapped in a strip of dried seaweed. The rice
+    is seasoned lightly with salt, and a pickled plum hides at the centre. This is
+    a soldier's meal, portable and filling, carried in a cloth wrap tucked into a
+    belt pouch.
+  takeable: true
+  food_value: 15
+  culture: japanese
+  rarity: common
+- id: miso_shiru
+  name: Miso Soup
+  description: A lacquered wooden bowl filled with a pale brown broth. Cubes of soft
+    tofu and thin slices of green onion float on the surface. The miso paste was fermented
+    in barrels shipped from Japan, a taste of home for the occupying soldiers.
+  takeable: true
+  food_value: 10
+  morale_restore: 5
+  culture: japanese
+  rarity: common
+- id: tin_meat
+  name: Tinned Corned Beef
+  description: A small rectangular tin can, its label printed in Japanese characters.
+    The metal is dented at one corner, and the lid is sealed with a strip of solder.
+    Canned goods like this were part of military rations, traded on the black market
+    for fresh vegetables.
+  takeable: true
+  food_value: 25
+  culture: western
+  rarity: common
+- id: hard_bread
+  name: Ship's Biscuit
+  description: A dense loaf of dark bread, heavy and dry. The crust is scored with
+    a cross on top. This is not the steamed bread of Shanghai's bakeries. It arrived
+    with the foreign populations who brought their own tastes to the treaty ports.
+  takeable: true
+  food_value: 12
+  culture: western
+  rarity: common
+- id: baozi
+  base_cost: 10
+  name: baozi
+  description: "A steamed bun, still warm, the pleats pinched shut over pork and ginger filling. Mrs. Lin's tray keeps a few wrapped in cloth against the damp."
+  takeable: true
+  food_value: 25
+  morale_restore: 5
+  culture: chinese
+  rarity: common
+- id: search_placeholder_bund_dawn
+  name: a folded paper
+  description: "A folded paper left against the railing, weighted by a small stone. The chalk marks beside it count the days, and the paper has been handled often enough that its edges are soft."
+  takeable: true
+  rarity: common
+- id: search_placeholder_old_well
+  name: a sealed cloth bundle
+  description: "A cloth bundle wedged behind the coping stones of the well, wrapped against the damp. Whoever hid it took care that it would not be found by accident."
+  takeable: true
+  rarity: common
+- id: jade_talisman
+  name: a jade talisman
+  description: "A small green pendant carved with a protective character, its cord worn dark from years of touch. The Old City carver who shaped it is gone now, but the talisman keeps its quiet promise of luck."
+  takeable: true
+  base_cost: 30
+  rarity: common
+- id: testimony_liu_wei
+  name: Liu Wei's route map
+  description: A hand-marked route map, folded beneath a rickshaw cushion, with patrol hours, checkpoint habits, and safer turns noted in Liu Wei's careful pencil.
+  takeable: true
+  readable_text: I marked the streets from the Bund to Hongkou where a cart can turn without meeting a patrol. Beside each corner I wrote the hour, because the same road changes its face when the guards trade places.
+  is_map: true
+  map_districts:
+  - bund
+  - hongkou
+  rarity: uncommon
+  testimony_id: route-map-liu-wei
+  testimony_title: Routes Beneath the Patrol Lamps
+  testimony_date: 1938-02-11
+  testimony_place: Hongkou
+  testimony_writer: Liu Wei, bicycle courier and fictional composite
+  testimony_source: BOND keepsake
+  testimony_source_type: bond
+  testimony_source_badge: Relationship keepsake
+- id: testimony_sister_wang
+  name: Sister Wang's cipher
+  description: A charity ledger whose figures conceal a second message in the margins, where Sister Wang names hungry families without exposing their addresses to a clerk.
+  examine_text: The Old City margins hold two kinds of handwriting, one for flour and one for families who could not let the clerk see their names.
+  examine_provenance:
+    coverage_ids:
+    - ushmm-examine-testimony-sister-wang
+    claims:
+      place:
+        value: Old City
+        span:
+          start: 0
+          end: 13
+        coverage_id: ushmm-examine-testimony-sister-wang
+      period_basis:
+        value: families
+        span:
+          start: 78
+          end: 131
+        coverage_id: ushmm-examine-testimony-sister-wang
+      object_basis:
+        value: margins
+        span:
+          start: 13
+          end: 78
+        coverage_id: ushmm-examine-testimony-sister-wang
+  takeable: true
+  readable_text: 'The flour figures carry another reckoning in their margins: households short of rice, marked without an address a clerk could follow. The cipher is simple enough for a tired woman to remember and plain enough to pass for charity accounts.'
+  on_read_effects:
+    morale_bonus: 5
+    once: true
+  rarity: uncommon
+  testimony_id: cipher-sister-wang
+  testimony_title: Figures in the Charity Ledger
+  testimony_date: 1938-06-03
+  testimony_place: Old City
+  testimony_writer: Sister Wang, relief worker and fictional composite
+  testimony_source: BOND keepsake
+  testimony_source_type: bond
+  testimony_source_badge: Relationship keepsake
+- id: testimony_dr_zhao
+  name: Dr. Zhao's letter
+  description: A physician's careful letter folded around the names of patients who survived occupation shortages, ration queues, and the long absence of medicine.
+  takeable: true
+  readable_text: I wrote down those who left the clinic on their own feet, then the names whose medicine came after it could no longer help. The second list is folded twice, though I know every line without unfolding it.
+  rarity: uncommon
+  testimony_id: letter-dr-zhao
+  testimony_title: Names the Medicine Could Not Reach
+  testimony_date: 1939-01-18
+  testimony_place: Hongkou clinic
+  testimony_writer: Dr. Zhao, physician and fictional composite
+  testimony_source: BOND keepsake
+  testimony_source_type: bond
+  testimony_source_badge: Relationship keepsake
+- id: testimony_dr_zhao_parcel
+  name: Dr. Zhao's restorative parcel
+  description: A cloth parcel of rice and dried vegetables, measured for one hungry traveller who has spent too long between ration queues and closed kitchens.
+  takeable: true
+  food_value: 30
+  morale_restore: 0
+  culture: chinese
+  rarity: uncommon
+- id: testimony_lao_jin
+  name: Lao Jin's warehouse letter
+  description: A warehouse note written in a trader's hard hand, naming a door, a quiet hour, and no detail that could be used against anyone in court.
+  takeable: true
+  readable_text: The letter gives one warehouse door and the hour when its lock will answer. It says nothing of the visitor except that he must knock softly, which is all a careful man ever writes.
+  rarity: uncommon
+  testimony_id: warehouse-letter-lao-jin
+  testimony_title: A Door That Opens Quietly
+  testimony_date: 1941-09-27
+  testimony_place: Warehouse District
+  testimony_writer: Lao Jin, trader and fictional composite
+  testimony_source: BOND keepsake
+  testimony_source_type: bond
+  testimony_source_badge: Relationship keepsake
+- id: testimony_lao_jin_key
+  name: Lao Jin's warehouse key
+  description: A flat iron key with warehouse dust caught in the teeth and no maker's mark, wrapped in cloth so its weight will not announce a smuggler's errand.
+  takeable: true
+  is_key: true
+  opens_container: warehouse_lock
+  rarity: uncommon
+- id: testimony_captain_ishikawa
+  name: Captain Ishikawa's intercepted testimony
+  description: A copied patrol memorandum removed from a Kempeitai file before inspection, with Hongkou routes and timings marked beside the officer's dry corrections.
+  takeable: true
+  readable_text: The intercepted memorandum shifts the Hongkou patrols from one street to another, with times in the margin for the next inspection. Someone pressed hard over each correction, as if the paper might remember who changed the route.
+  on_read_effects:
+    patrol_intel:
+      source: captain_ishikawa
+      category: patrol
+    once: true
+  rarity: uncommon
+  testimony_id: patrol-memorandum-ishikawa
+  testimony_title: The Patrol Route Changed at Dusk
+  testimony_date: 1943-04-09
+  testimony_place: Hongkou
+  testimony_writer: Captain Ishikawa, Kempeitai officer and fictional composite
+  testimony_source: BOND keepsake
+  testimony_source_type: bond
+  testimony_source_badge: Relationship keepsake
+- id: testimony_bridge_refugee
+  name: a refugee's bridge notebook
+  description: A notebook wrapped in oilcloth, its pages crowded with names and crossings remembered after the checkpoint closed.
+  takeable: true
+  readable_text: The bridge was quiet while the guard studied the papers. A woman clutched a child's photograph and asked where the refugee camp lay; he read her name twice before turning toward the river.
+  testimony_id: bridge-notebook
+  testimony_title: The Papers at Garden Bridge
+  testimony_date: 1937-12-14
+  testimony_place: Garden Bridge
+  testimony_writer: A refugee clerk, fictional composite
+  testimony_source: World original
+  testimony_source_type: world
+  testimony_source_badge: Original
+  rarity: uncommon
+- id: testimony_nanjing_teacher
+  name: a teacher's Nanjing notebook
+  description: A school ledger whose last pages hold an account of flight, silence, and the children who kept asking questions.
+  takeable: true
+  readable_text: We left Nanjing with two blankets and forty children. At the river crossing, no one asked whose flag had fallen. They asked who could still walk, and who had a mother waiting.
+  testimony_id: nanjing-teacher-notebook
+  testimony_title: Forty Children at the River
+  testimony_date: 1937-12-22
+  testimony_place: Nanjing road northward
+  testimony_writer: A schoolteacher, fictional composite
+  testimony_source: World original
+  testimony_source_type: world
+  testimony_source_badge: Original
+  rarity: uncommon
+- id: testimony_refugee_ledger
+  name: a refugee kitchen ledger
+  description: A cloth-bound ledger recording bowls of congee served to families who arrived without ration cards.
+  takeable: true
+  readable_text: The kitchen counted bowls rather than names. A family could be missing by morning, but the empty place in the ledger still meant someone had eaten once.
+  testimony_id: refugee-kitchen-ledger
+  testimony_title: One Bowl Before Morning
+  testimony_date: 1938-03-05
+  testimony_place: Refugee camp near the Old City
+  testimony_writer: A volunteer cook, fictional composite
+  testimony_source: Container original
+  testimony_source_type: container
+  testimony_source_badge: Original
+  rarity: uncommon
+- id: testimony_archive_box
+  name: a sealed testimony box
+  description: A small wooden box hidden beneath a loose floorboard, holding a ledger wrapped against damp.
+  takeable: false
+  is_container: true
+  container_items:
+  - testimony_refugee_ledger
+  - testimony_marco_polo_bridge
+  - testimony_mutual_aid
+  rarity: uncommon
+- id: testimony_marco_polo_bridge
+  name: a Lugou Bridge witness notebook
+  description: A railway watchman's notebook carried south after the fighting at Marco Polo Bridge, its pages kept from official ledgers.
+  takeable: true
+  readable_text: At Lugou Bridge on the seventh of July, the night watch kept count of the lamps and listened for the missing patrol. By dawn, soldiers had crossed the stone span, and every question about who fired first had become dangerous to ask. I wrote the names of three railway porters on the back of a ration slip, then hid the paper beneath the signal box. The bridge still stood, but the road beyond it no longer belonged to ordinary travellers.
+  rarity: uncommon
+  testimony_id: marco-polo-bridge-watch
+  testimony_title: A Watchman's Account at Marco Polo Bridge
+  testimony_date: 1937-07-08
+  testimony_place: Lugou Bridge
+  testimony_writer: A railway watchman, fictional composite
+  testimony_source: Container original
+  testimony_source_type: container
+  testimony_source_badge: Original
+- id: testimony_gmd_requisition
+  name: a requisition witness statement
+  description: A folded statement copied by a clerk after soldiers requisitioned rice from a village outside Shanghai.
+  takeable: true
+  readable_text: The order carried the Republic's seal, but the carts went to men who sold the rice twice. The clerk kept a second copy beneath his shirt, because the first copy had already learned how to disappear.
+  testimony_id: gmd-requisition-statement
+  testimony_title: The Seal on the Empty Cart
+  testimony_date: 1938-08-19
+  testimony_place: Shanghai hinterland
+  testimony_writer: A village clerk, fictional composite
+  testimony_source: Mission reward
+  testimony_source_type: mission
+  testimony_source_badge: Mission account
+  rarity: uncommon
+- id: testimony_green_gang_ledger
+  name: a Green Gang debt ledger
+  description: A torn ledger that records protection payments beside the names of families who could not afford protection.
+  takeable: true
+  readable_text: The ledger called every payment a favour. A widow paid in brass buttons, a printer in paper, and a grocer in silence. The Green Gang never wrote down the names of men who collected.
+  testimony_id: green-gang-debt-ledger
+  testimony_title: Favours Entered in Ink
+  testimony_date: 1939-05-12
+  testimony_place: French Concession
+  testimony_writer: A grocer under protection, fictional composite
+  testimony_source: Storylet reward
+  testimony_source_type: storylet
+  testimony_source_badge: Storylet account
+  rarity: uncommon
+- id: testimony_kempeitai_reprint
+  name: a reprinted Kempeitai patrol testimony
+  description: A plainly labelled merchant reprint of a copied patrol account, sold as historical reading rather than official instruction.
+  takeable: true
+  readable_text: The patrol moved after the curfew bell, checking papers at the lane mouth and leaving the lamps burning behind them. The account says order. The missing names in its margin say something else.
+  testimony_id: kempeitai-patrol-reprint
+  testimony_title: Lamps Left Burning
+  testimony_date: 1940-11-02
+  testimony_place: Hongkou lilong
+  testimony_writer: A night watchman, fictional composite
+  testimony_source: Merchant reprint
+  testimony_source_type: merchant
+  testimony_source_badge: Merchant reprint
+  testimony_reprint: true
+  shop_inventory: true
+  base_cost: 4
+  rarity: uncommon
+- id: testimony_medical_reprint
+  name: a reprinted medical testimony
+  description: A plainly labelled merchant reprint concerning wartime medical experiments, printed without naming a real victim.
+  takeable: true
+  readable_text: The physician was ordered to record temperatures, not names. He kept both columns in a private notebook, then burned the official forms when the wards were emptied.
+  testimony_id: medical-ward-reprint
+  testimony_title: Two Columns in the Ward Book
+  testimony_date: 1942-07-16
+  testimony_place: Occupied North China, recalled in Shanghai
+  testimony_writer: A military hospital clerk, fictional composite
+  testimony_source: Merchant reprint
+  testimony_source_type: merchant
+  testimony_source_badge: Merchant reprint
+  testimony_reprint: true
+  shop_inventory: true
+  base_cost: 5
+  rarity: uncommon
+- id: testimony_ration_queue_reprint
+  name: a reprinted ration queue testimony
+  description: A merchant reprint of a market woman's account, marked as historical reading and sold beside pamphlets no clerk would admit to stocking.
+  takeable: true
+  readable_text: The queue moved only when the clerk looked away. A woman held her ration card in both hands and counted the households still waiting behind her.
+  testimony_id: ration-queue-reprint
+  testimony_title: The Queue Under the Municipal Stamp
+  testimony_date: 1940-03-17
+  testimony_place: Old City market
+  testimony_writer: A market woman, fictional composite
+  testimony_source: Merchant reprint
+  testimony_source_type: merchant
+  testimony_source_badge: Merchant reprint
+  testimony_reprint: true
+  shop_inventory: true
+  base_cost: 4
+  rarity: uncommon
+- id: testimony_kmt_arrest
+  name: a detention witness letter
+  description: A letter describing a Nationalist arrest carried out under wartime emergency powers and hidden from the public ledger.
+  takeable: true
+  readable_text: They called the detention temporary, though the family was never given a date to return. The officer spoke of the Republic while the clerk crossed out the address.
+  testimony_id: kmt-detention-letter
+  testimony_title: No Date for Return
+  testimony_date: 1941-02-28
+  testimony_place: French Concession
+  testimony_writer: A detained printer's sister, fictional composite
+  testimony_source: Mission reward
+  testimony_source_type: mission
+  testimony_source_badge: Mission account
+  rarity: uncommon
+- id: testimony_printer_sister
+  name: a printer's sister's letter
+  description: A folded letter copied by a neighbourhood helper after a printer vanished during a paper inspection, with no official receipt left for his family.
+  takeable: true
+  readable_text: They told me to wait for a receipt, then moved his name from one desk to another. I kept asking because the house needed an answer, not another stamp.
+  testimony_id: printer-sister-letter
+  testimony_title: No Receipt for the Prisoner
+  testimony_date: 1942-05-11
+  testimony_place: Hongkou detention
+  testimony_writer: A printer's sister, fictional composite
+  testimony_source: Mission reward
+  testimony_source_type: mission
+  testimony_source_badge: Mission account
+  rarity: uncommon
+- id: testimony_collaboration
+  name: a collaborator's private memorandum
+  description: A private memorandum from a Chinese clerk who served the Wang Jingwei administration and measured each compromise as necessity.
+  takeable: true
+  readable_text: The new office promised order, and I accepted the desk because my children needed rice. Each signature made the next one easier, until the ink belonged to a hand I no longer recognised.
+  testimony_id: collaboration-memorandum
+  testimony_title: The Desk and the Signature
+  testimony_date: 1942-03-21
+  testimony_place: Shanghai Special Municipality
+  testimony_writer: A municipal clerk, fictional composite
+  testimony_source: Storylet reward
+  testimony_source_type: storylet
+  testimony_source_badge: Storylet account
+  rarity: uncommon
+- id: testimony_mutual_aid
+  name: a mutual aid notebook
+  description: A notebook passed between neighbours who shared food, warnings, and a place behind a blackout curtain.
+  takeable: true
+  readable_text: No one called it resistance at the supper table. One family kept rice, another kept watch, and a third knew which door would open after the curfew patrol passed.
+  testimony_id: lilong-mutual-aid-notebook
+  testimony_title: The Door After Curfew
+  testimony_date: 1943-10-08
+  testimony_place: Lilong lane
+  testimony_writer: A neighbour's committee, fictional composite
+  testimony_source: Container original
+  testimony_source_type: container
+  testimony_source_badge: Original
+  rarity: uncommon
