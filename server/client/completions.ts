@@ -1,16 +1,29 @@
+export type CompletionCategory = string
+
+export type MatchPolicy = 'prefix' | 'prefix_then_substring'
+
 export interface CompletionsData {
+  [key: string]: unknown
   verbs: string[]
   npcs: string[]
   items: string[]
   exits: string[]
   topics: string[]
   players: string[]
+  take_items?: string[]
+  inventory_items?: string[]
+  ask_topics?: Record<string, string[]>
+  match_policy?: Record<string, MatchPolicy>
   grammar: Record<string, CommandSlot[]>
 }
 
 export interface CommandSlot {
-  category: keyof CompletionsData
+  category: CompletionCategory
   separator: string
+  context?: {
+    collection: keyof CompletionsData
+    source_slot: number
+  }
 }
 
 function commonPrefix(candidates: string[], typed: string): string {
@@ -60,6 +73,7 @@ export class CompletionsEngine {
   private commonExtended = false
   private filteredCache: string[] = []
   private lastOutput = ''
+  private cycleKey = ''
 
   updateCompletions(data: CompletionsData): void {
     this.data = data
@@ -67,9 +81,10 @@ export class CompletionsEngine {
     this.cycleIndex = -1
     this.commonExtended = false
     this.lastOutput = ''
+    this.cycleKey = ''
   }
 
-  private getSlotInfo(input: string): { slotIndex: number; category: keyof CompletionsData; prefix: string; verbUsed: string; valueStart: number; parts: string[] } {
+  private getSlotInfo(input: string): { slotIndex: number; category: CompletionCategory; prefix: string; verbUsed: string; valueStart: number; parts: string[] } {
     const trimmed = input.trim()
     const verb = getVerbPrefix(trimmed, this.data.grammar)
     const grammar = this.data.grammar[verb]
@@ -77,6 +92,13 @@ export class CompletionsEngine {
     if (!grammar) {
       const firstWord = trimmed.split(' ')[0].toLowerCase()
       const prefix = trimmed.includes(' ') ? trimmed.split(' ').pop() || firstWord : firstWord
+      const verbish = this.data.verbs.some((candidate) => {
+        const head = candidate.split(' ')[0].toLowerCase()
+        return head === firstWord || head.startsWith(firstWord)
+      })
+      if (!verbish) {
+        return { slotIndex: 0, category: '', prefix: '', verbUsed: firstWord, valueStart: 0, parts: [] }
+      }
       return { slotIndex: 0, category: 'verbs', prefix, verbUsed: firstWord, valueStart: 0, parts: [] }
     }
 
@@ -89,7 +111,7 @@ export class CompletionsEngine {
         afterVerb = ''
       }
     }
-    if (!afterVerb && !input.endsWith(' ')) {
+    if (!afterVerb && !input.endsWith(' ') && trimmed.toLowerCase() !== verb) {
       return { slotIndex: 0, category: 'verbs', prefix: trimmed, verbUsed: verb, valueStart: 0, parts: [] }
     }
 
