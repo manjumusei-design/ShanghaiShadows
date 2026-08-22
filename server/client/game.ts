@@ -14,7 +14,7 @@ export interface ServerPlayerState {
   game_time: string
   day: number
   progress_percent: number
-  ccp_infleunce: number
+  ccp_influence: number
   gmd_influence: number
   money_fabi: number
   money_silver: number
@@ -83,7 +83,7 @@ export interface Rumor {
   text: string
   factions: string[]
   districts: string[]
-  type?: string
+  type?: string 
   speaker?: string
   listener?: string
   turns?: { speaker: string; text: string; delay_ms: number }[]
@@ -496,7 +496,7 @@ const game: Module<GameState, any> = {
     },
 
     CLEAR_TUTORIAL_HINT(state) {
-      state.tutorial_hint = hint
+      state.tutorial_hint = null
     },
 
     SET_PROMPT(state, prompt: string) {
@@ -760,12 +760,14 @@ const game: Module<GameState, any> = {
           commit('REMOVE_ACTIVE_STORYLET', data.storylet_id)
           break
 
-				case 'audio':
+        case 'audio':
           {
             const soundName = data.sound || ''
             const baseName = soundName.replace(/_start$|_stop$/g, '')
-            const AMBIENT_SOUNDS = ['rain', 'storm', 'fog', 'snow', 'ambient_city']
+            const AMBIENT_SOUNDS = ['rain', 'rain_indoor', 'storm', 'fog', 'snow', 'ambient_city', 'villager_murmur', 'temple_bell']
             const isAmbient = AMBIENT_SOUNDS.includes(baseName)
+            const isStop = soundName.endsWith('_stop')
+            const channel = isAmbient ? 'ambient' : 'effects'
 
             if (isStop) {
               commit('STOP_AUDIO_CHANNEL', channel)
@@ -822,7 +824,7 @@ const game: Module<GameState, any> = {
       }
     },
 
-    handleDisplay({ commit }, data: { payload: string; msg_type?: string }) {
+    handleDisplay({ commit }, data: { payload: string; msg_type?: string; instant_reveal?: boolean }) {
       const serverType = data.msg_type || 'default'
       const displayType = getMessageType(serverType)
       if (DEBUG) console.log('[DEBUG] handleDisplay: msg_type=' + serverType + ', displayType=' + displayType + ', text preview=' + (data.payload || '').substring(0, 100))
@@ -832,13 +834,14 @@ const game: Module<GameState, any> = {
         type: displayType,
         text: data.payload,
         timestamp: Date.now(),
-        label: getMessageLabel(displayType)
+        label: getMessageLabel(displayType),
+        instant_reveal: data.instant_reveal === true
       }
       commit('ADD_MESSAGE', message)
     },
 
-		handleState({ commit, state }, data: any) {
-			if (data.health !== undefined) {
+    handleState({ commit, state }, data: any) {
+      if (data.health !== undefined) {
         commit('UPDATE_PLAYER_VITALS', {
           health: data.health,
           hunger: data.hunger,
@@ -846,18 +849,18 @@ const game: Module<GameState, any> = {
         })
       }
 
-			if (data.trust) {
-				commit('SET_PLAYER_TRUST', data.trust)
-			}
+      if (data.trust) {
+        commit('SET_PLAYER_TRUST', data.trust)
+      }
 
-			if (data.money_fabi !== undefined) {
+      if (data.money_fabi !== undefined) {
         commit('SET_PLAYER_MONEY', {
           fabi: data.money_fabi,
           silver: data.money_silver || 0,
           military_yen: data.money_military_yen || 0
         })
       }
-			if (data.wallet_fabi_value !== undefined) {
+      if (data.wallet_fabi_value !== undefined) {
         commit('SET_WALLET_FABI_VALUE', data.wallet_fabi_value)
       }
 
