@@ -5,6 +5,7 @@ from .constants import (
     HUNGER_TIER_SATISFIED,
     HUNGER_TIER_HUNGRY,
     HUNGER_TIER_STARVING,
+    MessageType,
     get_season,
 )
 from .locales import get as loc
@@ -48,12 +49,12 @@ def apply_survival_tick(player, minute: int, day: int, send_display=None) -> Non
             player.health = min(100, player.health + 1)
     elif tier == "HUNGRY":
         if minute % 60 == 0 and send_display is not None:
-            send_display(loc("hunger.hungry"))
+            send_display(loc("hunger.hungry"), msg_type=MessageType.WARNING)
     elif tier == "STARVING":
         player.health = max(0, player.health - 1)
         if send_display is not None:
-            send_display(loc("hunger.starving"))
+            send_display(loc("hunger.starving"), msg_type=MessageType.WARNING)
     elif tier == "FAMISHED":
         player.health = max(0, player.health - 2)
         if send_display is not None:
-            send_display(loc("hunger.famished"))
+            send_display(loc("hunger.famished"), msg_type=MessageType.WARNING)
