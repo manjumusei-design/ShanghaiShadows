@@ -172,7 +172,8 @@ async def _post_arrest_feedback(ctx: "CommandContext", status: str, room_title: 
             loc("arrest.custody").format(room=room_title or "a holding room"),
             msg_type="event",
         )
-
+        if getattr(session, "audio_enabled", False):
+            await session.send_audio("whistle", volume=0.7)
 
 async def resolve_curfew_encounter(
     ctx: "CommandContext",

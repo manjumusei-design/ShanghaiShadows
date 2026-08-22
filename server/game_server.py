@@ -65,6 +65,7 @@ class GameServer:
         self.session_manager = SessionManager(self.shared, self.disguises, self.stealth, self.storylet_manager)
 
         self.clock = WorldClock(self.shared, self.session_manager, self.disguises, self.stealth, self.storylet_manager)
+        self.session_manager.world_clock = self.clock
         self._world_seconds_since_save = 0
 
     def _create_shared_world(self) -> SharedWorldState:
