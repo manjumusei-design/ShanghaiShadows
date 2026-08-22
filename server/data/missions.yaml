@@ -1,552 +1,1294 @@
 missions:
-  - id: collect_intel_01
-    title: "Gather Patrol Intelligence"
-    description: "Captain Ishikawa's patrol routes have changed. Find a folded patrol route and bring it to Liu Wei."
-    faction: ccp
-    min_trust: 30
-    giver_npc_hint: "liu_wei"
-    objectives:
-      - type: collect_item
-        target: patrol_route
-        count: 1
-        current: 0
-    rewards:
-      money_fabi: 25
-      trust:
-        ccp.guerrilla: 10
-    expires_days: 7
-
-  - id: eliminate_informer_01
-    title: "Silence the Informer"
-    description: "A civilian informant is feeding information to the Kempeitai. Remove the threat quietly."
-    faction: gmd
-    min_trust: 40
-    giver_npc_hint: "madam_xu"
-    objectives:
-      - type: kill_npc
-        target: vendor_lin
-        count: 1
-        current: 0
-    rewards:
-      money_fabi: 40
-      trust:
-        gmd.spy: 15
-    expires_days: 5
-
-  - id: deliver_medicine_01
-    title: "Deliver Contraband Medicine"
-    description: "Dr Zhao needs morphine for his patients. Get a vial and deliver it to his clinic."
-    faction: civilian
-    min_trust: 20
-    giver_npc_hint: "dr_zhao"
-    objectives:
-      - type: collect_item
-        target: contraband_morphine
-        count: 1
-        current: 0
-      - type: deliver_to_npc
-        target: dr_zhao
-        count: 1
-        current: 0
-    rewards:
-      money_fabi: 15
-      trust:
-        civilian.resident: 10
-        ccp.guerrilla: 5
-      health_restore: 10
-    expires_days: 10
-
-  - id: ccp_leaflet_run
-    title: "Distribute Resistance Leaflets"
-    description: "The underground press has printed fresh leaflets calling for resistance against the occupation. Deliver three bundles to tea houses in the old city where sympathetic patrons will pass them hand to hand. Move quickly. The Kempeitai have been raiding reading circles."
-    faction: ccp
-    min_trust: 25
-    giver_npc_hint: "comrade_chen"
-    objectives:
-      - type: collect_item
-        target: leaflet_bundle
-        count: 3
-        current: 0
-      - type: visit_room
-        target: tea_house
-        count: 1
-        current: 0
-    rewards:
-      money_fabi: 15
-      trust:
-        ccp.guerrilla: 12
-      morale_restore: 5
-    expires_days: 7
-
-  - id: ccp_intercept_communique
-    title: "Intercept Kempeitai Communique"
-    description: "A high-ranking Kempeitai officer is carrying a sealed communique detailing troop redeployments along the Yangtze. Steal the document from under his nose at headquarters before it reaches the garrison commander. Every hour we waste, another village burns."
-    faction: ccp
-    min_trust: 45
-    prerequisite_mission: ccp_leaflet_run
-    giver_npc_hint: "zhang_the_silent"
-    objectives:
-      - type: collect_item
-        target: patrol_communique
-        count: 1
-        current: 0
-      - type: visit_room
-        target: kempeitai_hq
-        count: 1
-        current: 0
-    rewards:
-      money_fabi: 40
-      trust:
-        ccp.guerrilla: 20
-      influence:
-        ccp: 5
-      morale_restore: 10
-    expires_days: 5
-
-  - id: ccp_safehouse_supply
-    title: "Resupply the Hidden Safehouse"
-    description: "Comrades sheltering in a hidden safehouse beneath the old city are running low on food. A sack of rice waits at the rendezvous point. Deliver it before sundown. Starvation is a poor weapon against the occupation."
-    faction: ccp
-    min_trust: 20
-    giver_npc_hint: "auntie_mei"
-    objectives:
-      - type: collect_item
-        target: rice_parcel
-        count: 1
-        current: 0
-      - type: visit_room
-        target: hidden_shanghai
-        count: 1
-        current: 0
-    rewards:
-      money_fabi: 10
-      trust:
-        ccp.guerrilla: 10
-      health_restore: 5
-    expires_days: 6
-
-  - id: ccp_recruit_student
-    title: "Recruit a Student Activist"
-    description: "Student Luo has been writing anti-Japanese slogans on university walls under cover of darkness. His courage is real but his discipline is not. Meet him at the university, gauge his commitment, and bring him into the cell if he is ready. One careless hand can doom us all."
-    faction: ccp
-    min_trust: 30
-    giver_npc_hint: "comrade_chen"
-    objectives:
-      - type: deliver_to_npc
-        target: student_luo
-        count: 1
-        current: 0
-      - type: visit_room
-        target: university
-        count: 1
-        current: 0
-    rewards:
-      money_fabi: 12
-      trust:
-        ccp.guerrilla: 15
-      morale_restore: 8
-    expires_days: 10
-
-  - id: ccp_rescue_prisoner
-    title: "Rescue the Imprisoned Comrade"
-    description: "A comrade was seized during a midnight raid and is being held in the Hongkou detention center. The guards change shift at dusk. Reach the holding room and extract our people before the morning interrogation begins. Failure means a shallow grave in the western fields."
-    faction: ccp
-    min_trust: 50
-    giver_npc_hint: "zhang_the_silent"
-    objectives:
-      - type: visit_room
-        target: hongkou_detention
-        count: 1
-        current: 0
-    rewards:
-      money_fabi: 35
-      trust:
-        ccp.guerrilla: 25
-      health_restore: 10
-    expires_days: 5
-
-  - id: ccp_smuggle_medicine
-    title: "Smuggle Medicine to Underground Doctor"
-    description: "An underground doctor treating wounded partisans is nearly out of supplies. A medical kit has been procured from a sympathetic pharmacist on Bubbling Well Road. Deliver it without drawing the attention of the street patrols. A search would condemn the doctor and his patients alike."
-    faction: ccp
-    min_trust: 30
-    giver_npc_hint: "auntie_mei"
-    objectives:
-      - type: collect_item
-        target: medical_kit
-        count: 1
-        current: 0
-      - type: deliver_to_npc
-        target: underground_doctor_li
-        count: 1
-        current: 0
-    rewards:
-      money_fabi: 20
-      trust:
-        ccp.guerrilla: 12
-      health_restore: 15
-    expires_days: 8
-
-  - id: ccp_gather_intel
-    title: "Gather Patrol Route Intelligence"
-    description: "The Kempeitai have altered their patrol routes in the French Concession and we are blind. Speak with three contacts, a rickshaw puller, a noodle vendor, and a bar girl, who watch the soldiers come and go each day. Piece together the new pattern before the next supply run."
-    faction: ccp
-    min_trust: 25
-    giver_npc_hint: "comrade_chen"
-    objectives:
-      - type: deliver_to_npc
-        target: rickshaw_puller_ah_foo
-        count: 1
-        current: 0
-      - type: deliver_to_npc
-        target: noodle_vendor_wu
-        count: 1
-        current: 0
-      - type: deliver_to_npc
-        target: bar_girl_suyin
-        count: 1
-        current: 0
-    rewards:
-      money_fabi: 25
-      trust:
-        ccp.guerrilla: 15
-      morale_restore: 5
-    expires_days: 9
-
-  - id: ccp_sabotage_dock
-    title: "Sabotage the Dock Warehouse"
-    description: "Japanese war materiel flows through the Bund docks under cover of darkness. Between midnight and five in the morning the warehouse is guarded by a skeleton crew. Reach the dock warehouse and cripple the supply chain. A fire in the right place can delay shipments for weeks."
-    faction: ccp
-    min_trust: 45
-    giver_npc_hint: "zhang_the_silent"
-    objectives:
-      - type: visit_room
-        target: dock_warehouse
-        count: 1
-        current: 0
-    rewards:
-      money_fabi: 45
-      trust:
-        ccp.guerrilla: 20
-      morale_restore: 15
-    expires_days: 7
-    game_hour:
-      - 0
-      - 5
-
-  - id: ccp_protect_courier
-    title: "Escort the Underground Courier"
-    description: "A courier carrying coded messages must pass through two districts to reach his contact. The Green Gang has eyes everywhere and the Kempeitai are watching the main roads. Walk with him from the old city to the French Concession safehouse. If he falls, the entire network falls with him."
-    faction: ccp
-    min_trust: 35
-    giver_npc_hint: "comrade_chen"
-    objectives:
-      - type: visit_room
-        target: old_city_market
-        count: 1
-        current: 0
-      - type: visit_room
-        target: french_concession_safehouse
-        count: 1
-        current: 0
-    rewards:
-      money_fabi: 30
-      trust:
-        ccp.guerrilla: 18
-      health_restore: 5
-      morale_restore: 8
-    expires_days: 6
-
-  - id: ccp_destroy_radio
-    title: "Destroy the Kempeitai Radio Post"
-    description: "A Kempeitai radio post hidden in a Hongkou tenement coordinates naval patrols along the Whangpoo. Destroy the transmitter and blind their coastal watch. The building is guarded but the back entrance is unwatched after the second watch change."
-    faction: ccp
-    min_trust: 50
-    giver_npc_hint: "zhang_the_silent"
-    objectives:
-      - type: visit_room
-        target: kempeitai_radio_post_hongkou
-        count: 1
-        current: 0
-    rewards:
-      money_fabi: 50
-      trust:
-        ccp.guerrilla: 25
-      influence:
-        ccp: 8
-      morale_restore: 20
-    expires_days: 5
-
-  - id: gmd_weapons_manifest
-    title: "Recover the Weapons Manifest"
-    description: "A shipping manifest detailing Japanese arms shipments has been misplaced in the warehouse district, or more likely stolen by someone who does not understand its value. Find the dock manifest before the Kempeitai realize it is missing and lock down the entire harbor."
-    faction: gmd
-    min_trust: 30
-    giver_npc_hint: "major_tang"
-    objectives:
-      - type: collect_item
-        target: dock_manifest
-        count: 1
-        current: 0
-      - type: visit_room
-        target: warehouse_district
-        count: 1
-        current: 0
-    rewards:
-      money_fabi: 30
-      trust:
-        gmd.spy: 15
-      morale_restore: 5
-    expires_days: 8
-
-  - id: gmd_establish_contact
-    title: "Establish Contact with Inspector Moreau"
-    description: "Inspector Moreau of the French Concession Police is sympathetic to the Republic's cause but will not risk his position openly. Approach him with the agreed code phrase, 'the plum blossoms fall eastward', and secure his cooperation. A friend in the police is worth a company of soldiers."
-    faction: gmd
-    min_trust: 35
-    giver_npc_hint: "madam_xu"
-    objectives:
-      - type: deliver_to_npc
-        target: inspector_moreau
-        count: 1
-        current: 0
-    rewards:
-      money_fabi: 20
-      trust:
-        gmd.spy: 18
-      morale_restore: 10
-    expires_days: 7
-
-  - id: gmd_supply_network
-    title: "Provision the GMD Safe Houses"
-    description: "Three GMD safe houses across Shanghai have not been resupplied in weeks. Collect food parcels from the dead drop and deliver them to each location. A well-fed operative is an effective operative. A hungry one is a liability."
-    faction: gmd
-    min_trust: 25
-    giver_npc_hint: "major_tang"
-    objectives:
-      - type: collect_item
-        target: food_parcel
-        count: 3
-        current: 0
-      - type: visit_room
-        target: gmd_safehouse_old_city
-        count: 1
-        current: 0
-      - type: visit_room
-        target: gmd_safehouse_french_concession
-        count: 1
-        current: 0
-      - type: visit_room
-        target: gmd_safehouse_bund
-        count: 1
-        current: 0
-    rewards:
-      money_fabi: 35
-      trust:
-        gmd.spy: 15
-      health_restore: 10
-    expires_days: 10
-
-  - id: gmd_intercept_report
-    title: "Pickpocket the Sergeant's Report"
-    description: "A Japanese sergeant carrying a written assessment of garrison strength is drinking at a bar in the International Settlement. His uniform pockets are loose and his sake cup is never empty. Lift the report from his person while he is distracted. Speed and a light hand are everything."
-    faction: gmd
-    min_trust: 40
-    giver_npc_hint: "madam_xu"
-    objectives:
-      - type: visit_room
-        target: international_settlement_bar
-        count: 1
-        current: 0
-    rewards:
-      money_fabi: 25
-      trust:
-        gmd.spy: 20
-      morale_restore: 5
-    expires_days: 6
-
-  - id: gmd_rescue_pilot
-    title: "Rescue the Downed Pilot"
-    description: "A Nationalist airman was shot down over Hongkou and is hiding in the bombed-out ruins near the river. Find him before the Kempeitai do, then escort him through the back alleys to a safehouse in the French Concession. One trained pilot is worth a hundred propaganda leaflets."
-    faction: gmd
-    min_trust: 40
-    giver_npc_hint: "major_tang"
-    objectives:
-      - type: visit_room
-        target: hongkou_ruins
-        count: 1
-        current: 0
-      - type: visit_room
-        target: french_concession_safehouse
-        count: 1
-        current: 0
-    rewards:
-      money_fabi: 45
-      trust:
-        gmd.spy: 22
-      health_restore: 10
-      morale_restore: 10
-    expires_days: 5
-
-  - id: gmd_counter_intel
-    title: "Plant Counter-Intelligence Evidence"
-    description: "Merchant Sato trades in silk and secrets, selling information to whoever pays. Plant forged documents in his shop that will lead the Kempeitai on a false trail into the hinterlands. The forgeries are convincing but the window for planting them is narrow."
-    faction: gmd
-    min_trust: 35
-    giver_npc_hint: "madam_xu"
-    objectives:
-      - type: deliver_to_npc
-        target: merchant_sato
-        count: 1
-        current: 0
-    rewards:
-      money_fabi: 30
-      trust:
-        gmd.spy: 18
-      morale_restore: 8
-    expires_days: 8
-
-  - id: gmd_secure_route
-    title: "Secure the Escape Route"
-    description: "Four checkpoints along a corridor from the northern warehouse district to the southern docks must be scouted and marked for an upcoming extraction. Walk the route end to end, noting guard positions, blind spots, and fallback alleys. When the moment comes there will be no time for reconnaissance."
-    faction: gmd
-    min_trust: 30
-    giver_npc_hint: "major_tang"
-    objectives:
-      - type: visit_room
-        target: checkpoint_north_gate
-        count: 1
-        current: 0
-      - type: visit_room
-        target: checkpoint_soochow_creek
-        count: 1
-        current: 0
-      - type: visit_room
-        target: checkpoint_garden_bridge
-        count: 1
-        current: 0
-      - type: visit_room
-        target: checkpoint_south_docks
-        count: 1
-        current: 0
-    rewards:
-      money_fabi: 40
-      trust:
-        gmd.spy: 20
-      morale_restore: 10
-    expires_days: 12
-
-  - id: gmd_liberate_supplies
-    title: "Liberate Confiscated Supplies"
-    description: "The occupation forces have stockpiled confiscated rice and medicine in a dock warehouse under light guard. These supplies belong to the people of Shanghai. Enter the warehouse, secure what you can carry, and vanish before the patrol returns. The hungry cannot fight."
-    faction: gmd
-    min_trust: 35
-    giver_npc_hint: "major_tang"
-    objectives:
-      - type: visit_room
-        target: dock_warehouse
-        count: 1
-        current: 0
-      - type: collect_item
-        target: confiscated_supplies
-        count: 1
-        current: 0
-    rewards:
-      money_fabi: 35
-      trust:
-        gmd.spy: 15
-        civilian.resident: 10
-      health_restore: 10
-    expires_days: 7
-
-  - id: gmd_diplomatic_courier
-    title: "Deliver the Diplomatic Pouch"
-    description: "A sealed message from Generalissimo Chiang's headquarters in Chungking must reach a sympathetic diplomat at the French Consulate without passing through Japanese or Green Gang hands. Collect the pouch from the dead drop and deliver it in person. The contents could shift the balance of foreign sympathy."
-    faction: gmd
-    min_trust: 40
-    giver_npc_hint: "madam_xu"
-    objectives:
-      - type: collect_item
-        target: diplomatic_pouch
-        count: 1
-        current: 0
-      - type: deliver_to_npc
-        target: diplomat_renault
-        count: 1
-        current: 0
-    rewards:
-      money_fabi: 50
-      trust:
-        gmd.spy: 25
-      influence:
-        gmd: 5
-      morale_restore: 15
-    expires_days: 6
-
-  - id: gmd_assassinate_informant
-    title: "Eliminate the Green Gang Informant"
-    description: "A Green gang thug named Rat-Face Xiao has been selling names and addresses to the Kempeitai for opium money. Three operatives have already vanished. Find him in his usual haunts and ensure he never whispers another name. Make it look like a settling of underworld scores."
-    faction: gmd
-    min_trust: 50
-    giver_npc_hint: "madam_xu"
-    objectives:
-      - type: kill_npc
-        target: rat_face_xiao
-        count: 1
-        current: 0
-    rewards:
-      money_fabi: 40
-      trust:
-        gmd.spy: 25
-      influence:
-        gmd: 8
-      morale_restore: 10
-    expires_days: 5
-
-  - id: dilemma_ccp_supplies
-    title: "Divert Supplies to the Underground"
-    description: "A crate of confiscated supplies sits in a dock warehouse under light guard. The CCP underground needs medicine and food for the hidden safehouses. Secure the crate and deliver it to Comrade Chen. But be warned: the Nationalists have their eyes on the same prize."
-    faction: ccp
-    min_trust: 30
-    giver_npc_hint: "comrade_chen"
-    objectives:
-      - type: collect_item
-        target: confiscated_supplies
-        count: 1
-        current: 0
-      - type: deliver_to_npc
-        target: comrade_chen
-        count: 1
-        current: 0
-    rewards:
-      money_fabi: 25
-      trust:
-        ccp.guerrilla: 15
-      influence:
-        ccp: 8
-      morale_restore: 5
-    expires_days: 7
-
-  - id: dilemma_gmd_supplies
-    title: "Secure Supplies for the Republic"
-    description: "A crate of confiscated supplies sits in a dock warehouse under light guard. The Nationalist resistance needs these resources to arm and feed its operatives. Secure the crate and deliver it to Major Tang. The Communists are circling the same warehouse."
-    faction: gmd
-    min_trust: 30
-    giver_npc_hint: "major_tang"
-    objectives:
-      - type: collect_item
-        target: confiscated_supplies
-        count: 1
-        current: 0
-      - type: deliver_to_npc
-        target: major_tang
-        count: 1
-        current: 0
-    rewards:
-      money_fabi: 25
-      trust:
-        gmd.spy: 15
-      influence:
-        gmd: 8
-      morale_restore: 5
-    expires_days: 7
+- id: collect_intel_01
+  title: Find the New Patrol Route
+  description: Captain Ishikawa has changed the patrol tables, and the Old City rickshaw men are already losing fares to new checkpoints. Find the folded patrol route before it reaches the wrong desk. Liu Wei knows its streets may decide which passengers get home.
+  faction: ccp
+  min_trust: 30
+  giver_npc_hint: liu_wei
+  objectives:
+  - type: collect_item
+    target: patrol_route
+    count: 1
+    current: 0
+  rewards:
+    money_fabi: 25
+    trust:
+      ccp.guerrilla: 10
+  expires_days: 7
+- id: eliminate_informer_01
+  title: Visit the Stall That Talks Too Much
+  description: Vendor Lin talks to everyone who passes his stall, including men whose boots leave the market quieter afterward. Go to his commercial-district stall, where military yen changes hands beneath the market noise. The neighborhood has begun to avoid the doorway.
+  faction: civilian
+  min_trust: 20
+  giver_npc_hint: madam_xu
+  objectives:
+  - type: visit_room
+    target: commercial_03
+    count: 1
+    current: 0
+  rewards:
+    money_fabi: 20
+    trust:
+      civilian.resident: 10
+  expires_days: 7
+- id: deliver_medicine_01
+  title: Deliver Morphine to Dr. Zhao
+  description: 'Dr. Zhao has patients lying behind screens with fever cloths over their mouths, and his morphine shelf is nearly bare. Collect a vial of contraband morphine and deliver it to Dr. Zhao. The medicine is not politics to the wounded; it may buy one night of sleep before the next patrol comes through Hongkou.'
+  faction: civilian
+  min_trust: 20
+  giver_npc_hint: dr_zhao
+  objectives:
+  - type: collect_item
+    target: contraband_morphine
+    count: 1
+    current: 0
+  - type: deliver_to_npc
+    target: dr_zhao
+    item: contraband_morphine
+    count: 1
+    current: 0
+  rewards:
+    money_fabi: 15
+    trust:
+      civilian.resident: 10
+      ccp.guerrilla: 5
+    health_restore: 10
+  expires_days: 10
+- id: ccp_leaflet_run
+  title: Collect Leaflets and Visit the Tea House
+  description: The underground press has fresh leaflets, but paper is useless if it never leaves the hand press. Collect three bundles, then visit the tea house. Kempeitai raids on reading circles have made even cheap ink dangerous.
+  faction: ccp
+  min_trust: 25
+  giver_npc_hint: ccp_contact_teacher
+  objectives:
+  - type: collect_item
+    target: leaflet_bundle
+    count: 3
+    current: 0
+  - type: visit_room
+    target: tea_house
+    count: 1
+    current: 0
+  rewards:
+    money_fabi: 15
+    trust:
+      ccp.guerrilla: 12
+    morale_restore: 5
+  expires_days: 7
+- id: ccp_intercept_communique
+  title: Return to the Refugee Checkpoint
+  description: The occupation authorities have moved the old patrol hours, and families who trusted yesterday's route are being stopped after curfew. Go to the refugee checkpoint twice. Lao Peng wants rice carriers to know where the barriers stand, not to gamble on yesterday's habits.
+  faction: ccp
+  min_trust: 30
+  giver_npc_hint: lao_peng
+  objectives:
+  - type: visit_room
+    target: refugee_entry_checkpoint
+    count: 2
+    current: 0
+  rewards:
+    money_fabi: 20
+    trust:
+      ccp.organizer: 10
+    morale_restore: 5
+  expires_days: 7
+- id: ccp_safehouse_supply
+  title: Find Rice Near the Hidden Room
+  description: A sack of rice waits at the rendezvous point, and the hidden safehouse beneath the Old City is counting grains by lamplight. Collect it, then go to the hidden room before evening inspection tightens the lanes. The people sheltering there are not symbols; they are hungry, frightened, and still Chinese.
+  faction: ccp
+  min_trust: 20
+  giver_npc_hint: tea_seller_dead_drop
+  objectives:
+  - type: collect_item
+    target: rice_parcel
+    count: 1
+    current: 0
+  - type: visit_room
+    target: hidden_05
+    count: 1
+    current: 0
+  rewards:
+    money_fabi: 10
+    trust:
+      ccp.guerrilla: 10
+    health_restore: 5
+  expires_days: 6
+- id: ccp_recruit_student
+  title: Visit the University After Dark
+  description: Slogans have appeared on university walls three mornings in a row, written in cheap ink by a hand too young to fear enough. Go to the university before the Kempeitai close their hands around another student. The fresh walls carry more courage than the street can safely admit.
+  faction: ccp
+  min_trust: 20
+  giver_npc_hint: ccp_contact_teacher
+  objectives:
+  - type: visit_room
+    target: university
+    count: 1
+    current: 0
+  rewards:
+    money_fabi: 10
+    trust:
+      ccp.organizer: 10
+    morale_restore: 5
+  expires_days: 10
+- id: ccp_rescue_prisoner
+  title: Visit Hongkou Detention
+  description: A printer from the commercial district vanished after a street check, leaving his wife outside Hongkou detention with bread no guard will deliver. Go to the detention building. The cell and his family are left with the same hard silence.
+  faction: ccp
+  min_trust: 30
+  giver_npc_hint: lao_peng
+  objectives:
+  - type: visit_room
+    target: hongkou_detention
+    count: 1
+    current: 0
+  rewards:
+    money_fabi: 20
+    trust:
+      ccp.organizer: 15
+    health_restore: 5
+    add_item: testimony_printer_sister
+  expires_days: 7
+- id: ccp_smuggle_medicine
+  title: Move the Doctor's Kit
+  description: 'Doctor Li is short of gauze, iodine, and anything strong enough to quiet a wounded man. Collect the medical kit from Bubbling Well Road and deliver it to him. A searched bag would condemn the doctor, his patients, and the Old City house that hides them.'
+  faction: ccp
+  min_trust: 30
+  giver_npc_hint: tea_seller_dead_drop
+  objectives:
+  - type: collect_item
+    target: medical_kit
+    count: 1
+    current: 0
+  - type: deliver_to_npc
+    target: underground_doctor_li
+    item: medical_kit
+    count: 1
+    current: 0
+  rewards:
+    money_fabi: 20
+    trust:
+      ccp.guerrilla: 12
+    health_restore: 15
+  expires_days: 8
+- id: ccp_gather_intel
+  title: Ask the Street for Patrol Hours
+  description: The Kempeitai patrols have shifted around the French Concession, and the underground is blind where it once had habits. Speak to a rickshaw puller, a noodle vendor, and a bar girl, each of whom sees a different uniform pass. Their memories are all the street has left.
+  faction: ccp
+  min_trust: 25
+  giver_npc_hint: ccp_contact_teacher
+  objectives:
+  - type: talk_to_npc
+    target: rickshaw_puller_ah_foo
+    count: 1
+    current: 0
+  - type: talk_to_npc
+    target: noodle_vendor_wu
+    count: 1
+    current: 0
+  - type: talk_to_npc
+    target: bar_girl_suyin
+    count: 1
+    current: 0
+  rewards:
+    money_fabi: 25
+    trust:
+      ccp.guerrilla: 15
+    morale_restore: 5
+  expires_days: 9
+- id: ccp_sabotage_dock
+  title: Walk the Warehouse Edge
+  description: Military cargo moves through the Huangpu docks at night, under lamps that make porters look guilty even when their hands are empty. Visit the dock warehouse. The cargo and its guards have made the waterfront a place civilians avoid.
+  faction: ccp
+  min_trust: 30
+  giver_npc_hint: lao_peng
+  objectives:
+  - type: visit_room
+    target: dock_warehouse
+    count: 1
+    current: 0
+  rewards:
+    money_fabi: 25
+    trust:
+      ccp.organizer: 12
+    morale_restore: 8
+  expires_days: 7
+  offer_hours:
+  - 0
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+- id: ccp_protect_courier
+  title: Visit the Courier's Two Stops
+  description: A courier works between the Old City and a French Concession safehouse, with coded messages under ordinary cloth. Go to the market and then the safehouse. If he falls, addresses, kitchens, and families fall with him.
+  faction: ccp
+  min_trust: 35
+  giver_npc_hint: ccp_contact_teacher
+  objectives:
+  - type: visit_room
+    target: old_city_market
+    count: 1
+    current: 0
+  - type: visit_room
+    target: french_concession_safehouse
+    count: 1
+    current: 0
+  rewards:
+    money_fabi: 30
+    trust:
+      ccp.guerrilla: 18
+    health_restore: 5
+    morale_restore: 8
+  expires_days: 6
+- id: ccp_destroy_radio
+  title: Visit the Hongkou Radio Post
+  description: A strong signal has been heard from a Hongkou tenement where neighbours keep windows shut after dark. Go to the radio post. A foolish raid would only give the Kempeitai new names and another excuse to search.
+  faction: ccp
+  min_trust: 35
+  giver_npc_hint: lao_peng
+  objectives:
+  - type: visit_room
+    target: kempeitai_radio_post_hongkou
+    count: 1
+    current: 0
+  rewards:
+    money_fabi: 25
+    trust:
+      ccp.organizer: 15
+    influence:
+      ccp: 4
+    morale_restore: 10
+  expires_days: 7
+- id: gmd_weapons_manifest
+  title: Recover the Dock Manifest
+  description: A shipping manifest naming Japanese arms shipments has slipped loose in the warehouse district, where hungry porters know paper can be worth more than rice. Find it before the harbour locks down. Captain Chen wants the route, the cargo, and the chance to choose a disciplined response.
+  faction: gmd
+  min_trust: 30
+  giver_npc_hint: captain_chen
+  objectives:
+  - type: collect_item
+    target: dock_manifest
+    count: 1
+    current: 0
+  - type: visit_room
+    target: warehouse_district
+    count: 1
+    current: 0
+  rewards:
+    money_fabi: 30
+    trust:
+      gmd.spy: 15
+    morale_restore: 5
+  expires_days: 8
+- id: gmd_establish_contact
+  title: Speak With Inspector Moreau
+  description: Inspector Moreau will not declare himself for the Republic, but the GMD wants you to speak with him in the French Concession. Approach him without theatre. A friendly police desk can save couriers from paperwork, delay, and the wrong officer's curiosity.
+  faction: gmd
+  min_trust: 35
+  giver_npc_hint: madam_xu
+  objectives:
+  - type: talk_to_npc
+    target: inspector_moreau
+    count: 1
+    current: 0
+  rewards:
+    money_fabi: 20
+    trust:
+      gmd.spy: 18
+    morale_restore: 10
+  expires_days: 7
+- id: gmd_supply_network
+  title: Visit the Republic's Safehouses
+  description: Three GMD safehouses have not seen proper food in weeks, and a hungry operative makes mistakes that soldiers can smell. Collect the food parcels, then go to the Old City, French Concession, and Bund safehouses before the rice spoils. Discipline is harder on an empty stomach.
+  faction: gmd
+  min_trust: 25
+  giver_npc_hint: captain_chen
+  objectives:
+  - type: collect_item
+    target: food_parcel
+    count: 3
+    current: 0
+  - type: visit_room
+    target: gmd_safehouse_old_city
+    count: 1
+    current: 0
+  - type: visit_room
+    target: gmd_safehouse_french_concession
+    count: 1
+    current: 0
+  - type: visit_room
+    target: gmd_safehouse_bund
+    count: 1
+    current: 0
+  rewards:
+    money_fabi: 35
+    trust:
+      gmd.spy: 15
+    health_restore: 10
+  expires_days: 10
+- id: gmd_intercept_report
+  title: Visit the Sergeant's Bar
+  description: 'A Japanese sergeant drinks in an International Settlement bar, where a report on garrison strength sits close to his uniform. Go to the bar. The Republic needs figures, but a public scene would cost more than the paper in the nearest Old City queue.'
+  faction: gmd
+  min_trust: 40
+  giver_npc_hint: madam_xu
+  objectives:
+  - type: visit_room
+    target: international_settlement_bar
+    count: 1
+    current: 0
+  rewards:
+    money_fabi: 25
+    trust:
+      gmd.spy: 20
+    morale_restore: 5
+  expires_days: 6
+- id: gmd_rescue_pilot
+  title: Visit the Hongkou Ruins
+  description: A plane came down over Hongkou in the night, and by morning the search parties were already asking children about parachute cloth. Go to the ruins. A child's scrap of parachute cloth may be all the neighbourhood has seen.
+  faction: gmd
+  min_trust: 25
+  giver_npc_hint: captain_chen
+  objectives:
+  - type: visit_room
+    target: hongkou_ruins
+    count: 1
+    current: 0
+  rewards:
+    money_fabi: 25
+    trust:
+      gmd.spy: 12
+    health_restore: 5
+    morale_restore: 5
+    add_item: testimony_gmd_requisition
+  expires_days: 5
+- id: gmd_counter_intel
+  title: Speak With Merchant Sato
+  description: Merchant Sato sells silk with one hand and names with the other. Speak with him in his shop, where Kempeitai customers come for fabric and leave with more than they paid for. Clerks promoted by cleverness have a way of making neighbours disappear.
+  faction: gmd
+  min_trust: 35
+  giver_npc_hint: madam_xu
+  objectives:
+  - type: talk_to_npc
+    target: merchant_sato
+    count: 1
+    current: 0
+  rewards:
+    money_fabi: 30
+    trust:
+      gmd.spy: 18
+    morale_restore: 8
+    add_item: testimony_kmt_arrest
+  expires_days: 8
+- id: gmd_secure_route
+  title: Visit the Northern Checkpoints
+  description: A corridor from the northern warehouses to the southern docks may soon carry people who cannot afford a second mistake. Go to the north gate, Soochow Creek, Garden Bridge, and south-docks checkpoints. The route is made of barriers, lamps, and people who cannot afford a second mistake.
+  faction: gmd
+  min_trust: 30
+  giver_npc_hint: captain_chen
+  objectives:
+  - type: visit_room
+    target: checkpoint_north_gate
+    count: 1
+    current: 0
+  - type: visit_room
+    target: checkpoint_soochow_creek
+    count: 1
+    current: 0
+  - type: visit_room
+    target: checkpoint_garden_bridge
+    count: 1
+    current: 0
+  - type: visit_room
+    target: checkpoint_south_docks
+    count: 1
+    current: 0
+  rewards:
+    money_fabi: 40
+    trust:
+      gmd.spy: 20
+    morale_restore: 10
+  expires_days: 12
+- id: gmd_liberate_supplies
+  title: Collect the Confiscated Crate
+  description: Rice and medicine seized from Shanghai families now sit in a dock warehouse under light guard. Go to the warehouse and collect the confiscated supplies. The supplies belong to the city; the Republic's claim means little unless hungry people see some of it returned.
+  faction: gmd
+  min_trust: 35
+  giver_npc_hint: captain_chen
+  objectives:
+  - type: visit_room
+    target: dock_warehouse
+    count: 1
+    current: 0
+  - type: collect_item
+    target: confiscated_supplies
+    count: 1
+    current: 0
+  rewards:
+    money_fabi: 35
+    trust:
+      gmd.spy: 15
+      civilian.resident: 10
+    health_restore: 10
+  expires_days: 7
+- id: gmd_diplomatic_courier
+  title: Carry the Pouch to the Consulate
+  description: 'A sealed pouch from Chungking must reach Monsieur Renault at the French Consulate in the French Concession. Collect it and deliver it to him. Foreign sympathy is fragile, but a paper delivered on time can still move a concession door that soldiers cannot.'
+  faction: gmd
+  min_trust: 40
+  giver_npc_hint: madam_xu
+  objectives:
+  - type: collect_item
+    target: diplomatic_pouch
+    count: 1
+    current: 0
+  - type: deliver_to_npc
+    target: diplomat_renault
+    item: diplomatic_pouch
+    count: 1
+    current: 0
+  rewards:
+    money_fabi: 50
+    trust:
+      gmd.spy: 25
+    influence:
+      gmd: 5
+    morale_restore: 15
+  expires_days: 6
+- id: gmd_assassinate_informant
+  title: Visit Rat-Face Xiao's Haunt
+  description: 'Rat-Face Xiao has been seen meeting soldiers behind a gambling room, always after the lamps are lowered. Go to the Old City room where he has been seen. If he is selling names, Captain Chen has cause to fear what follows.'
+  faction: gmd
+  min_trust: 30
+  giver_npc_hint: madam_xu
+  objectives:
+  - type: visit_room
+    target: oldcity_05
+    count: 1
+    current: 0
+  rewards:
+    money_fabi: 20
+    trust:
+      gmd.spy: 15
+    morale_restore: 5
+  expires_days: 7
+- id: dilemma_ccp_supplies
+  title: Collect Supplies for the Underground
+  description: 'A crate of confiscated supplies sits in a dock warehouse under light guard. The CCP underground needs medicine and food for its hidden safehouses. Collect the crate and deliver it to Teacher Chen. The Nationalists are watching the same warehouse, while the dock families still wait for their rice.'
+  faction: ccp
+  min_trust: 30
+  giver_npc_hint: ccp_contact_teacher
+  dilemma_group: supplies_dock_warehouse
+  objectives:
+  - type: collect_item
+    target: confiscated_supplies
+    count: 1
+    current: 0
+  - type: deliver_to_npc
+    target: ccp_contact_teacher
+    item: confiscated_supplies
+    count: 1
+    current: 0
+  rewards:
+    money_fabi: 25
+    trust:
+      ccp.guerrilla: 15
+    influence:
+      ccp: 8
+    morale_restore: 5
+    cross_faction_penalty:
+      gmd.spy: -10
+  expires_days: 7
+- id: dilemma_gmd_supplies
+  title: Collect Supplies for the Republic
+  description: 'A crate of confiscated supplies sits in a dock warehouse under light guard. The Nationalist resistance needs it to arm and feed its men. Collect the crate and deliver it to Captain Chen. The Communists are circling the same warehouse, and the dock families still wait for their rice.'
+  faction: gmd
+  min_trust: 30
+  giver_npc_hint: captain_chen
+  dilemma_group: supplies_dock_warehouse
+  objectives:
+  - type: collect_item
+    target: confiscated_supplies
+    count: 1
+    current: 0
+  - type: deliver_to_npc
+    target: captain_chen
+    item: confiscated_supplies
+    count: 1
+    current: 0
+  rewards:
+    money_fabi: 25
+    trust:
+      gmd.spy: 15
+    influence:
+      gmd: 8
+    morale_restore: 5
+    cross_faction_penalty:
+      ccp.guerrilla: -10
+  expires_days: 7
+- id: dilemma_ccp_intel
+  title: Collect the Patrol Roster for the Underground
+  description: A Kempeitai officer's briefcase contains a roster of patrol schedules for the next month. The CCP underground cell needs the paper. Collect the roster and deliver it to Teacher Chen. The Nationalists want the same schedules for a different purpose.
+  faction: ccp
+  min_trust: 35
+  giver_npc_hint: ccp_contact_teacher
+  dilemma_group: intel_kempeitai_roster
+  objectives:
+  - type: collect_item
+    target: patrol_roster
+    count: 1
+    current: 0
+  - type: deliver_to_npc
+    target: ccp_contact_teacher
+    item: patrol_roster
+    count: 1
+    current: 0
+  rewards:
+    money_fabi: 30
+    trust:
+      ccp.guerrilla: 18
+    influence:
+      ccp: 5
+    morale_restore: 8
+    cross_faction_penalty:
+      gmd.spy: -12
+  expires_days: 6
+- id: dilemma_gmd_intel
+  title: Collect the Patrol Roster for the Republic
+  description: A Kempeitai officer's briefcase contains patrol schedules the Nationalist resistance needs. Collect the roster and deliver it to Captain Chen before the schedules grow stale. The Communists want the same paper, while clerks in the garrison keep changing the locks.
+  faction: gmd
+  min_trust: 35
+  giver_npc_hint: captain_chen
+  dilemma_group: intel_kempeitai_roster
+  objectives:
+  - type: collect_item
+    target: patrol_roster
+    count: 1
+    current: 0
+  - type: deliver_to_npc
+    target: captain_chen
+    item: patrol_roster
+    count: 1
+    current: 0
+  rewards:
+    money_fabi: 30
+    trust:
+      gmd.spy: 18
+    influence:
+      gmd: 5
+    morale_restore: 8
+    cross_faction_penalty:
+      ccp.guerrilla: -12
+  expires_days: 6
+- id: dilemma_ccp_informant
+  title: Visit the Shopkeeper's Lane
+  description: 'A shopkeeper named Old Man Zhang seems to know things he should not. Three men from his Old City lane have been taken in the past week. Go to his lane after dark. The Nationalists are watching him too, and his neighbours have begun to avoid his doorway.'
+  faction: ccp
+  min_trust: 30
+  giver_npc_hint: lao_peng
+  dilemma_group: informant_old_zhang
+  objectives:
+  - type: visit_room
+    target: oldcity_03
+    count: 1
+    current: 0
+  rewards:
+    money_fabi: 20
+    trust:
+      ccp.organizer: 12
+    influence:
+      ccp: 4
+    morale_restore: 5
+    cross_faction_penalty:
+      gmd.spy: -8
+  expires_days: 7
+- id: dilemma_gmd_informant
+  title: Visit the Shopkeeper for the Republic
+  description: 'Old Man Zhang, a shopkeeper, seems to have customers who are not buying what he sells. Someone from the garrison visits him every Tuesday. Go to his Old City lane. The Communists are watching him too, and the old man''s doorway has grown quiet.'
+  faction: gmd
+  min_trust: 30
+  giver_npc_hint: madam_xu
+  dilemma_group: informant_old_zhang
+  objectives:
+  - type: visit_room
+    target: oldcity_03
+    count: 1
+    current: 0
+  rewards:
+    money_fabi: 20
+    trust:
+      gmd.spy: 12
+    influence:
+      gmd: 4
+    morale_restore: 5
+    cross_faction_penalty:
+      ccp.organizer: -8
+  expires_days: 7
+- id: dilemma_ccp_weapons
+  title: Visit the Hidden Pistol Cache
+  description: Word in the French Concession is that a crate of old Mauser pistols sits in a basement, left behind by someone who fled the city in a hurry. Go to the basement, collect one smuggled pistol, and deliver it to Teacher Chen before another buyer reaches it.
+  faction: ccp
+  min_trust: 25
+  giver_npc_hint: ccp_contact_teacher
+  dilemma_group: weapons_french_concession
+  objectives:
+  - type: visit_room
+    target: hidden_01
+    count: 1
+    current: 0
+  - type: collect_item
+    target: smuggled_pistol
+    count: 1
+    current: 0
+  - type: deliver_to_npc
+    target: ccp_contact_teacher
+    item: smuggled_pistol
+    count: 1
+    current: 0
+  rewards:
+    money_fabi: 25
+    trust:
+      ccp.organizer: 15
+    influence:
+      ccp: 4
+    morale_restore: 8
+    cross_faction_penalty:
+      gmd.spy: -10
+  expires_days: 7
+- id: dilemma_gmd_weapons
+  title: Collect the Weapons for the Republic
+  description: A cache of smuggled pistols sits in a French Concession basement, waiting for the right buyer. Collect three smuggled pistols and deliver one to Captain Chen before the shutters open. The Communists are moving on the same target.
+  faction: gmd
+  min_trust: 35
+  giver_npc_hint: captain_chen
+  dilemma_group: weapons_french_concession
+  objectives:
+  - type: collect_item
+    target: smuggled_pistol
+    count: 3
+    current: 0
+  - type: deliver_to_npc
+    target: captain_chen
+    item: smuggled_pistol
+    count: 1
+    current: 0
+  rewards:
+    money_fabi: 40
+    trust:
+      gmd.spy: 20
+    influence:
+      gmd: 6
+    morale_restore: 10
+    cross_faction_penalty:
+      ccp.guerrilla: -15
+  expires_days: 6
+- id: dilemma_ccp_defector
+  title: Visit the Translator's Old City Stop
+  description: 'A translator who works for the garrison has been asking questions about the Old City. He says he wants to visit a sick aunt, but the garrison translator has no aunt there. Go to the Old City stop before someone else reaches it.'
+  faction: ccp
+  min_trust: 30
+  giver_npc_hint: lao_peng
+  dilemma_group: defector_kempeitai_translator
+  objectives:
+  - type: visit_room
+    target: oldcity_08
+    count: 1
+    current: 0
+  rewards:
+    money_fabi: 25
+    trust:
+      ccp.organizer: 15
+    influence:
+      ccp: 4
+    morale_restore: 8
+    cross_faction_penalty:
+      gmd.spy: -12
+  expires_days: 7
+- id: dilemma_gmd_defector
+  title: Visit the Garrison Translator's Market
+  description: A translator from the garrison has been visiting the Old City market more often than his duties require. Go to the market. Major Tang has noticed his repeated calls among the shopkeepers, beneath the awnings where the ration queues thicken by noon.
+  faction: gmd
+  min_trust: 30
+  giver_npc_hint: madam_xu
+  dilemma_group: defector_kempeitai_translator
+  objectives:
+  - type: visit_room
+    target: old_city_market
+    count: 1
+    current: 0
+  rewards:
+    money_fabi: 25
+    trust:
+      gmd.spy: 15
+    influence:
+      gmd: 4
+    morale_restore: 8
+    cross_faction_penalty:
+      ccp.organizer: -12
+  expires_days: 7
+- id: dilemma_ccp_refugees
+  title: Visit the Refugees' Two Shelters
+  description: A dozen refugees from the north are trapped in a warehouse, hiding from Japanese roundups. Go to the dock warehouse and the Old City safehouse. The Nationalists want them for labour in their camps, while the river wind carries the dock whistles through their shelter.
+  faction: ccp
+  min_trust: 25
+  giver_npc_hint: tea_seller_dead_drop
+  dilemma_group: refugees_warehouse
+  objectives:
+  - type: visit_room
+    target: dock_warehouse
+    count: 1
+    current: 0
+  - type: visit_room
+    target: hidden_05
+    count: 1
+    current: 0
+  rewards:
+    money_fabi: 20
+    trust:
+      ccp.guerrilla: 18
+    influence:
+      ccp: 4
+    morale_restore: 8
+    cross_faction_penalty:
+      gmd.spy: -12
+  expires_days: 4
+- id: dilemma_gmd_refugees
+  title: Visit the Refugees and the Bund Safehouse
+  description: Refugees from the Japanese advance are hiding in a dock warehouse. Go to the warehouse and the Bund safehouse. The Nationalists see strong backs and willing hands where the Communists see people for their hidden cells.
+  faction: gmd
+  min_trust: 25
+  giver_npc_hint: captain_chen
+  dilemma_group: refugees_warehouse
+  objectives:
+  - type: visit_room
+    target: dock_warehouse
+    count: 1
+    current: 0
+  - type: visit_room
+    target: gmd_safehouse_bund
+    count: 1
+    current: 0
+  rewards:
+    money_fabi: 20
+    trust:
+      gmd.spy: 18
+    influence:
+      gmd: 4
+    morale_restore: 8
+    cross_faction_penalty:
+      ccp.guerrilla: -12
+  expires_days: 4
+- id: dilemma_ccp_medicine
+  title: Collect Medicine for the Underground
+  description: A shipment of quinine and morphine sits in a pharmacy slated for Japanese military seizure. Collect two bottles of quinine and deliver one to Dr. Zhao before the Kempeitai arrive. The Nationalists have a buyer among the wealthy who will pay handsomely.
+  faction: ccp
+  min_trust: 30
+  giver_npc_hint: tea_seller_dead_drop
+  dilemma_group: medicine_pharmacy
+  objectives:
+  - type: collect_item
+    target: quinine_bottle
+    count: 2
+    current: 0
+  - type: deliver_to_npc
+    target: dr_zhao
+    item: quinine_bottle
+    count: 1
+    current: 0
+  rewards:
+    money_fabi: 35
+    trust:
+      ccp.guerrilla: 16
+      civilian.resident: 10
+    influence:
+      ccp: 4
+    health_restore: 15
+    cross_faction_penalty:
+      gmd.spy: -10
+  expires_days: 5
+- id: dilemma_gmd_medicine
+  title: Acquire the Medicine for the Republic
+  description: A pharmacy in the French Concession holds a cache of quinine and morphine the Japanese intend to seize. Collect two bottles of quinine, then go to the French Concession safehouse. The Communists would give the medicine away for free.
+  faction: gmd
+  min_trust: 30
+  giver_npc_hint: madam_xu
+  dilemma_group: medicine_pharmacy
+  objectives:
+  - type: collect_item
+    target: quinine_bottle
+    count: 2
+    current: 0
+  - type: visit_room
+    target: french_concession_safehouse
+    count: 1
+    current: 0
+  rewards:
+    money_fabi: 55
+    trust:
+      gmd.spy: 16
+    influence:
+      gmd: 4
+    health_restore: 10
+    cross_faction_penalty:
+      ccp.guerrilla: -15
+      civilian.resident: -5
+  expires_days: 5
+- id: kempeitai_identify_informant
+  title: Visit the Old City Market
+  description: A shopkeeper in the Old City has been passing patrol schedules to the CCP underground. Captain Ishikawa wants the market district visited, then expects a word with him. Discretion is essential. The Captain does not want the source frightened into silence.
+  faction: kempeitai
+  min_trust: 30
+  giver_npc_hint: captain_ishikawa
+  objectives:
+  - type: visit_room
+    target: old_city_market
+    count: 1
+    current: 0
+  - type: talk_to_npc
+    target: captain_ishikawa
+    count: 1
+    current: 0
+  rewards:
+    money_fabi: 25
+    trust:
+      kempeitai.officer: 15
+      kempeitai.patrol: 5
+    cross_faction_penalty:
+      ccp.guerrilla: -8
+  expires_days: 7
+- id: kempeitai_recover_documents
+  title: Recover the Stolen Documents
+  description: 'A briefcase containing patrol shift schedules was taken from a sergeant during a bar fight in the International Settlement. The thief is believed to be a civilian looking to sell to the highest bidder. Collect the documents and deliver them to Sergeant Yamamoto before Kempeitai clerks hear they are missing.'
+  faction: kempeitai
+  min_trust: 35
+  giver_npc_hint: sergeant_yamamoto
+  objectives:
+  - type: collect_item
+    target: patrol_roster
+    count: 1
+    current: 0
+  - type: deliver_to_npc
+    target: sergeant_yamamoto
+    item: patrol_roster
+    count: 1
+    current: 0
+  rewards:
+    money_fabi: 30
+    trust:
+      kempeitai.officer: 12
+      kempeitai.patrol: 8
+    cross_faction_penalty:
+      ccp.guerrilla: -10
+      gmd.spy: -5
+  expires_days: 5
+- id: kempeitai_report_suspicious
+  title: Visit the Safehouse and Headquarters
+  description: Lieutenant Nakamura has noticed traffic near the French Concession safehouse after curfew, with faces he does not recognise. Go to the safehouse and then Kempeitai headquarters. The office has become uneasy about that stretch of street.
+  faction: kempeitai
+  min_trust: 25
+  giver_npc_hint: lieutenant_nakamura
+  objectives:
+  - type: visit_room
+    target: french_concession_safehouse
+    count: 1
+    current: 0
+  - type: visit_room
+    target: kempeitai_hq
+    count: 1
+    current: 0
+  rewards:
+    money_fabi: 20
+    trust:
+      kempeitai.officer: 10
+    cross_faction_penalty:
+      ccp.guerrilla: -5
+      gmd.spy: -5
+  expires_days: 6
+- id: kempeitai_intercept_smuggling
+  title: Collect the Dockside Quinine
+  description: 'Merchant Sato reports quinine and morphine moving through the docks tonight, destined for resistance clinics. Go to the warehouse and collect two bottles of quinine. Every vial taken from the docks will be missed in a Hongkou clinic.'
+  faction: kempeitai
+  min_trust: 40
+  giver_npc_hint: merchant_sato
+  objectives:
+  - type: visit_room
+    target: dock_warehouse
+    count: 1
+    current: 0
+  - type: collect_item
+    target: quinine_bottle
+    count: 2
+    current: 0
+  rewards:
+    money_fabi: 40
+    trust:
+      kempeitai.officer: 18
+      kempeitai.informant: 10
+    influence:
+      kempeitai: 5
+    cross_faction_penalty:
+      ccp.guerrilla: -15
+      civilian.resident: -10
+  expires_days: 4
+- id: kempeitai_eliminate_courier
+  title: Return to the University
+  description: A young man named Student Luo has been seen moving between the university and the Old City at irregular hours. Go to the university twice. The Captain's office has begun to ask why he keeps returning to that quarter.
+  faction: kempeitai
+  min_trust: 35
+  prerequisite_mission: kempeitai_identify_informant
+  giver_npc_hint: captain_ishikawa
+  objectives:
+  - type: visit_room
+    target: university
+    count: 2
+    current: 0
+  rewards:
+    money_fabi: 30
+    trust:
+      kempeitai.officer: 15
+      kempeitai.patrol: 5
+    influence:
+      kempeitai: 4
+    cross_faction_penalty:
+      ccp.organizer: -15
+      civilian.resident: -3
+  expires_days: 7
+- id: greengang_collect_protection
+  title: Visit the Old City Market
+  description: Boss Zhou has business in the Old City market. Go to the shopkeepers' street, then speak with Gangster Wu. Some stalls pay for protection, while others keep their shutters low until the boots have passed.
+  faction: green_gang
+  min_trust: 25
+  giver_npc_hint: gangster_wu
+  objectives:
+  - type: visit_room
+    target: old_city_market
+    count: 1
+    current: 0
+  - type: talk_to_npc
+    target: gangster_wu
+    count: 1
+    current: 0
+  rewards:
+    money_fabi: 20
+    trust:
+      green_gang.thug: 12
+      green_gang.smuggler: 5
+    cross_faction_penalty:
+      civilian.resident: -8
+  expires_days: 5
+- id: greengang_smuggle_contraband
+  title: Visit the Docks and Hidden Cache
+  description: Wei has business at the warehouse district and near the Old City cache. Go to the docks, then the hidden room. Crates marked as rice have made the Kempeitai watchful tonight, and the river mist gives every porter an excuse to look away.
+  faction: green_gang
+  min_trust: 30
+  giver_npc_hint: qiao_ming
+  objectives:
+  - type: visit_room
+    target: dock_warehouse
+    count: 1
+    current: 0
+  - type: visit_room
+    target: hidden_05
+    count: 1
+    current: 0
+  rewards:
+    money_fabi: 35
+    trust:
+      green_gang.smuggler: 18
+      green_gang.thug: 8
+    influence:
+      green_gang: 3
+    cross_faction_penalty:
+      kempeitai.patrol: -10
+  expires_days: 4
+- id: greengang_eliminate_competitor
+  title: Visit the French Concession Merchant
+  description: A merchant in the French Concession has been offering insurance to shopkeepers on Nanking Road. Go to his premises. Boss Zhou has taken an interest in how business is conducted in that part of the city.
+  faction: green_gang
+  min_trust: 25
+  prerequisite_mission: greengang_collect_protection
+  giver_npc_hint: gangster_wu
+  objectives:
+  - type: visit_room
+    target: french_04
+    count: 1
+    current: 0
+  rewards:
+    money_fabi: 25
+    trust:
+      green_gang.thug: 12
+      green_gang.smuggler: 5
+    influence:
+      green_gang: 3
+    cross_faction_penalty:
+      civilian.resident: -8
+  expires_days: 7
+- id: greengang_intercept_intelligence
+  title: Collect the Kempeitai Route
+  description: 'Wei heard that a Kempeitai patrol route is being smuggled to the CCP. Collect the document and deliver it to Gangster Wu. Boss Zhou has no use for doctrine. He wants a paper that can buy a favour at the next table.'
+  faction: green_gang
+  min_trust: 35
+  giver_npc_hint: qiao_ming
+  objectives:
+  - type: collect_item
+    target: patrol_route
+    count: 1
+    current: 0
+  - type: deliver_to_npc
+    target: gangster_wu
+    item: patrol_route
+    count: 1
+    current: 0
+  rewards:
+    money_fabi: 30
+    trust:
+      green_gang.smuggler: 15
+      green_gang.thug: 8
+    cross_faction_penalty:
+      ccp.guerrilla: -12
+      kempeitai.officer: -5
+  expires_days: 5
+- id: greengang_secure_territory
+  title: Visit the Waterfront With Qiao Ming
+  description: 'Boss Zhou''s control over the southern Shanghai docks is being challenged by a splinter faction. Go to the dock warehouse and the south-docks checkpoint, then speak with Qiao Ming. The dockers are waiting to see whose word holds.'
+  faction: green_gang
+  min_trust: 45
+  prerequisite_mission: greengang_collect_protection
+  giver_npc_hint: gangster_wu
+  objectives:
+  - type: visit_room
+    target: dock_warehouse
+    count: 1
+    current: 0
+  - type: visit_room
+    target: checkpoint_south_docks
+    count: 1
+    current: 0
+  - type: talk_to_npc
+    target: qiao_ming
+    count: 1
+    current: 0
+  rewards:
+    money_fabi: 45
+    trust:
+      green_gang.thug: 22
+      green_gang.smuggler: 12
+    influence:
+      green_gang: 8
+    cross_faction_penalty:
+      kempeitai.patrol: -10
+      gmd.spy: -5
+  expires_days: 7
+- id: kempeitai_patrol_routing
+  title: Visit the Commercial Patrol Stops
+  description: Sergeant Hayashi's new patrol tables look orderly on paper, but paper does not stumble over market carts or frightened families near Nanking Road. Go to the assigned commercial checkpoint and Hongkou stop. The office has marked both places for attention.
+  faction: kempeitai
+  min_trust: 20
+  giver_npc_hint: sergeant_hayashi
+  objectives:
+  - type: visit_room
+    target: commercial_03
+    count: 1
+  - type: visit_room
+    target: hongkou_06
+    count: 1
+  rewards:
+    money_fabi: 25
+    trust:
+      kempeitai.patrol: 10
+  expires_days: 5
+- id: kempeitai_contraband
+  title: Collect the Dockside Pistol
+  description: Lieutenant Nakamura has received word of a smuggled Mauser moving through the Huangpu docks under false cargo marks. Collect the weapon. The report calls this public safety; the dock families will call it another search to endure.
+  faction: kempeitai
+  min_trust: 35
+  giver_npc_hint: lieutenant_nakamura
+  objectives:
+  - type: collect_item
+    target: smuggled_pistol
+    count: 1
+  rewards:
+    money_fabi: 40
+    trust:
+      kempeitai.officer: 15
+  expires_days: 5
+- id: kempeitai_warrant
+  title: Visit the Printing District
+  description: 'A suspect has been seen near the Nanking Road printing district, where ink, ration queues, and gossip all move faster than patrol orders. Go to the commercial block. Captain Ishikawa''s office has turned its attention toward that Chinese lane.'
+  faction: kempeitai
+  min_trust: 30
+  giver_npc_hint: captain_ishikawa
+  objectives:
+  - type: visit_room
+    target: commercial_05
+    count: 1
+    current: 0
+  rewards:
+    money_fabi: 30
+    trust:
+      kempeitai.officer: 12
+  expires_days: 7
+- id: kempeitai_documents
+  title: Collect the Patrol Route
+  description: 'A patrol route has been traced to a dead drop after passing through too many civilian hands. Collect it before another faction copies the schedule and turns routine inspection into an ambush. The search must not unsettle the Old City market.'
+  faction: kempeitai
+  min_trust: 45
+  giver_npc_hint: sergeant_yamamoto
+  objectives:
+  - type: collect_item
+    target: patrol_route
+    count: 1
+  rewards:
+    money_fabi: 45
+    trust:
+      kempeitai.officer: 15
+  expires_days: 5
+- id: kempeitai_informant
+  title: Speak With the Silent Informant
+  description: An Old City informant has stopped sending word, and silence can mean fear, betrayal, illness, or a better buyer. Speak to the Kempeitai informant. Do not frighten the source into vanishing before the office hears from him again.
+  faction: kempeitai
+  min_trust: 30
+  giver_npc_hint: captain_ishikawa
+  objectives:
+  - type: talk_to_npc
+    target: kempeitai_informant
+    count: 1
+  rewards:
+    money_fabi: 30
+    trust:
+      kempeitai.officer: 10
+  expires_days: 7
+- id: greengang_smuggling
+  title: Visit the Docks and Garden Bridge
+  description: A shipment has drawn attention between the docks and the Garden Bridge checkpoint. Go to the warehouse and then the checkpoint. The crates are marked as rice, which may even be true for the top layer.
+  faction: green_gang
+  min_trust: 20
+  giver_npc_hint: black_market_seller
+  objectives:
+  - type: visit_room
+    target: dock_warehouse
+    count: 1
+  - type: visit_room
+    target: checkpoint_garden_bridge
+    count: 1
+  rewards:
+    money_fabi: 30
+    trust:
+      green_gang.broker: 10
+  expires_days: 3
+- id: greengang_debt
+  title: Speak With the Late Ledger's Merchant
+  description: An Old City merchant has fallen behind on payments after soldiers took two sacks without paying. Speak with the merchant. Madam Xu wants the ledger respected, but the debt matters less than keeping the shop open for tomorrow's market.
+  faction: green_gang
+  min_trust: 25
+  giver_npc_hint: madam_xu
+  objectives:
+  - type: talk_to_npc
+    target: oldcity_merchant
+    count: 1
+  rewards:
+    money_fabi: 20
+    trust:
+      green_gang.broker: 10
+  expires_days: 5
+- id: greengang_protection
+  title: Visit the Nanking Road Stalls
+  description: New stalls on Nanking Road have not paid for protection, and everyone knows protection means different things depending on whose boots arrive first. Go to the commercial street. A ruined stall earns nothing next week.
+  faction: green_gang
+  min_trust: 30
+  giver_npc_hint: gangster_wu
+  objectives:
+  - type: visit_room
+    target: commercial_05
+    count: 1
+  rewards:
+    money_fabi: 25
+    trust:
+      green_gang.enforcer: 10
+  expires_days: 5
+- id: greengang_rival
+  title: Visit Captain Chen's Office
+  description: The GMD has been recruiting in Green Gang territory, borrowing rooms and favours without asking who already owns the doorways. Visit Captain Chen's office, then speak with him. Madam Xu wants a boundary drawn, not a fight that invites Kempeitai attention.
+  faction: green_gang
+  min_trust: 35
+  giver_npc_hint: du_yuesheng
+  objectives:
+  - type: visit_room
+    target: gmd_office_03
+    count: 1
+  - type: talk_to_npc
+    target: captain_chen
+    count: 1
+  rewards:
+    money_fabi: 35
+    trust:
+      green_gang.enforcer: 15
+  expires_days: 7
+- id: greengang_sourcing
+  title: Fetch the Quiet Medical Kit
+  description: A buyer wants restricted medical supplies from a channel that cannot survive a noisy pickup. Collect the medical kit and keep its purpose unspoken. In Shanghai, medicine may become mercy, profit, or a favour owed by sunset, and Lao Jin does not ask which word the customer prefers.
+  faction: green_gang
+  min_trust: 40
+  giver_npc_hint: black_market_seller
+  objectives:
+  - type: collect_item
+    target: medical_kit
+    count: 1
+  rewards:
+    money_fabi: 40
+    trust:
+      green_gang.broker: 15
+  expires_days: 5
+- id: cross_intel_swap
+  title: Carry the Communique Between Rivals
+  description: A GMD officer has a Kempeitai communique the CCP needs, but neither side trusts the other's doorway. Carry the paper to Cell Leader Zhou without dressing the errand in unity. For one afternoon, rival Chinese factions may share information because Japanese patrols threaten them both.
+  faction: ccp
+  min_trust: 40
+  giver_npc_hint: sister_wang
+  objectives:
+  - type: collect_item
+    target: patrol_communique
+    count: 1
+  - type: deliver_to_npc
+    target: cell_leader_zhou
+    item: patrol_communique
+    count: 1
+  rewards:
+    money_fabi: 35
+    trust:
+      ccp.guerrilla: 15
+      gmd.officer: 5
+  expires_days: 7
+- id: cross_truce
+  title: Speak With Ishikawa for Madam Xu
+  description: Madam Xu wants you to speak with Captain Ishikawa, not out of loyalty but because uncontrolled patrols are bad for business. A temporary understanding with occupation power stains the hand, yet some stains are chosen to keep doors from being kicked in.
+  faction: green_gang
+  min_trust: 35
+  giver_npc_hint: madam_xu
+  objectives:
+  - type: talk_to_npc
+    target: captain_ishikawa
+    count: 1
+  rewards:
+    money_fabi: 30
+    trust:
+      green_gang.broker: 10
+      kempeitai.officer: 5
+  expires_days: 5
+- id: cross_rescue
+  title: Ask Captain Chen for the Doctor's Key
+  description: 'A civilian doctor has been arrested, and the CCP knows he will not survive long in a cell. A GMD contact may have access to the right key or clerk. Speak with Captain Chen and make the case carefully. The doctor has patients waiting in the Old City, not a banner to carry.'
+  faction: ccp
+  min_trust: 45
+  giver_npc_hint: underground_doctor_li
+  objectives:
+  - type: talk_to_npc
+    target: captain_chen
+    count: 1
+  rewards:
+    money_fabi: 45
+    trust:
+      ccp.guerrilla: 15
+      civilian.resident: 10
+  expires_days: 7
