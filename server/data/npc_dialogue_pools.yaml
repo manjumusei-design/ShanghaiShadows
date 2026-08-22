@@ -679,3 +679,43 @@ pools:
       - I told him straight home, but youth hears warnings as if they are rain on tile.
       - Talk to him before someone else does, because pamphlets make boys older very quickly.
       - I will speak tonight. Thank you for watching without making a public kindness of it.
+
+  tutorial_den_rumors:
+    archetypes:
+    - merchant
+    - student
+    cooldown_minutes: 10
+    meeting_windows:
+    - npc_ids: [orientation_scribe_wen, orientation_apprentice_shen]
+      room_id: orientation_rumors
+      tutorial_demonstration: true
+      windows:
+      - start_minute: 600
+        end_minute: 601
+    exchanges:
+    - id: den_handbill_talk
+      lines:
+      - These handbills came back with last quarter's grain price. Someone at the press will lose wages over it.
+      - I carried them here before the market opened, master. The street already argues over which figure is true.
+      - Two versions by noon means nobody trusts either. Mark the correct price small, and let men lean close to read.
+      - Small print draws readers the way a quarrel draws a crowd. I will deliver the corrected run before dark.
+
+  tutorial_perch_exchange:
+    archetypes:
+    - merchant
+    - neighbor
+    cooldown_minutes: 10
+    meeting_windows:
+    - npc_ids: [orientation_old_crane, orientation_widow_kang]
+      room_id: orientation_eavesdrop
+      tutorial_demonstration: true
+      windows:
+      - start_minute: 600
+        end_minute: 601
+    exchanges:
+    - id: perch_manifest_talk
+      lines:
+      - The pipe carried an argument up from the rooms below all morning. A ship's manifest went missing at the customs shed.
+      - Missing paper means somebody paid for it to disappear. Tea first, old man. My knees will not wait on your mysteries.
+      - The customs clerk swears the wind took it. Wind with very clever fingers, then. Sit and drink while it is hot.
+      - Clever fingers or not, whoever reads that list before its owner does will grow rich by Sunday.
