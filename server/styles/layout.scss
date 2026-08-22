@@ -1,0 +1,15 @@
+$mobile-breakpoint: 650px;
+$mobile-site: "max-width: 649px";
+$desktop-site: "min-width: 650px";
+$site-max-width: 1150px;
+$lobby-wide-width: 850px;
+$lobby-breakpoint: 760px;
+$game-mobile-breakpoint: 768px;
+$game-mobile-site: "max-width: 768px";
+$game-desktop-site: "min-width: 769px";
+@media ($mobile-site) {
+  .mobile-hidden {
+    display: none;
+  }
+}
+$container-max-widths: (sm: 576px, md: 720px, lg: 940px, xl: 1180px);

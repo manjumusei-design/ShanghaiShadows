@@ -1,0 +1,101 @@
+
+@import './colors.scss';
+@import './layout.scss';
+@import './fonts.scss';
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+html, body {
+  height: 100%;
+  background: $color-background;
+  color: $color-text;
+}
+
+#app {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+#main {
+  flex: 1;
+  overflow: hidden;
+}
+a {
+  color: $color-primary;
+  text-decoration: none;
+
+  &:hover {
+    color: $color-secondary;
+  }
+}
+button {
+  font-family: inherit;
+  cursor: pointer;
+  background: transparent;
+  border: 1px solid $color-background-border;
+  color: $color-text;
+  padding: 8px 16px;
+  border-radius: 4px;
+
+  &:hover {
+    border-color: $color-primary;
+    color: $color-primary;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+input, textarea {
+  font-family: inherit;
+  background: $color-form-background;
+  border: 1px solid $color-form-border;
+  color: $color-text;
+  padding: 8px 12px;
+  border-radius: 4px;
+  outline: none;
+
+  &:focus {
+    border-color: $color-primary;
+  }
+
+  &::placeholder {
+    color: $color-text-hex-50;
+  }
+}
+.panel {
+  background: $color-background;
+  border: 1px solid $color-background-border;
+}
+
+.panel-header {
+  background: $color-background-header;
+  padding: 10px 14px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: $color-text-hex-60;
+  border-bottom: 1px solid $color-background-border;
+}
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: $color-background-light-border;
+  border-radius: 3px;
+
+  &:hover {
+    background: $color-text-hex-50;
+  }
+}
