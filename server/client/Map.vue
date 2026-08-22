@@ -19,15 +19,13 @@
       :style="{ left: tooltipX + 'px', top: tooltipY + 'px' }"
     >
       <div class="tooltip-name">{{ tooltipRoom.name || tooltipRoom.key }}</div>
+	  <div class="tooltip-status">{{ formatRoomStatus(tooltipRoom) }}</div>
 	      <div
 	        class="tooltip-district"
 	        :style="{ color: getDistrictColor(tooltipRoom.district) }"
 	      >
 	        {{ formatZone(tooltipRoom) }} · {{ formatDistrict(tooltipRoom.district) }}
 	      </div>
-      <div v-if="tooltipRoom.visited === false" class="tooltip-unvisited">
-        Not discovered
-      </div>
       <template v-if="tooltipRoom && tooltipRoom.visited !== false">
         <div class="tooltip-exits" v-if="getExitList(tooltipRoom).length">
           <span class="tooltip-label">Exits:</span>
@@ -90,7 +88,6 @@ const DISTRICT_COLORS: Record<string, string> = {
   "hidden_shanghai": "#4A4A4A",
   "refugee_entry": "#A0522D",
 }
-
 const ZONE_LABELS: Record<string, string> = {
   "bund": "The Bund",
   "old_city": "Old City",
@@ -103,7 +100,6 @@ const ZONE_LABELS: Record<string, string> = {
   "refugee_entry": "Tutorial",
   "orientation": "Tutorial Hub",
 }
-
 const DISTRICT_LABELS: Record<string, string> = {
   "bund": "The Bund",
   "commercial": "Commercial District",
@@ -158,12 +154,10 @@ export default defineComponent({
     const canvas = ref<HTMLCanvasElement | null>(null)
     const mapContainer = ref<HTMLDivElement | null>(null)
     let mapRenderer: MapRenderer | null = null
-
     const isPanning = ref(false)
     const lastPanX = ref(0)
     const lastPanY = ref(0)
     const hasDragged = ref(false)
-
     const tooltipRoom = ref<RoomData | null>(null)
     const tooltipX = ref(0)
     const tooltipY = ref(0)
@@ -206,6 +200,10 @@ export default defineComponent({
     const formatZone = (room: RoomData): string => {
       const z = (room as any).zone || room.district || ''
       return ZONE_LABELS[z] || formatDistrict(z)
+    }
+
+    const formatRoomStatus = (room: RoomData): string => {
+      return room.type === 'indoor' ? 'Indoors' : 'Outdoors'
     }
 
     const getExitList = (room: RoomData) => {
@@ -335,9 +333,7 @@ export default defineComponent({
           room_key = room.key.split('-exit-')[0]
         }
 
-        if (room.visited !== false) {
-          emit('travelToRoom', room_key)
-        }
+        emit('travelToRoom', room_key)
 
         const originalRoom = props.map[room_key]
         if (originalRoom) {
@@ -378,6 +374,7 @@ export default defineComponent({
       getDistrictColor,
       formatDistrict,
       formatZone,
+      formatRoomStatus,
       getExitList,
       onMouseDown,
       onMouseMove,
