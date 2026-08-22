@@ -3,6 +3,12 @@
     <div class="inventory-layout">
       <section class="inventory-list-pane" aria-label="Inventory items">
         <div class="pane-caption">Inventory</div>
+        <div class="inventory-money" role="status" aria-label="Money">
+          <span class="money-spendable">Spendable Fabi {{ payload.wallet_fabi_value }}</span>
+          <span>Fabi {{ payload.money_fabi }}</span>
+          <span>Silver {{ payload.money_silver }}</span>
+          <span>Mil. Yen {{ payload.money_military_yen }}</span>
+        </div>
         <div ref="listEl" class="list-popup-list" role="listbox" aria-label="Inventory items" tabindex="0" @keydown="onListKeydown">
           <template v-for="(section, sIdx) in sections" :key="section.label">
             <div v-if="section.items.length" class="list-section-label">{{ section.label }}</div>
@@ -179,6 +185,19 @@ export default defineComponent({
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+}
+
+.inventory-money {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 12px;
+  color: #999999;
+
+  .money-spendable {
+    color: #f5c983;
+    font-weight: 600;
+  }
 }
 
 @media (max-width: 700px) {
