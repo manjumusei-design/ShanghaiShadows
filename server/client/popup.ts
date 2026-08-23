@@ -63,6 +63,10 @@ export interface InventoryPayload {
   slots_used: number
   slots_max: number
   equipped: { weapon_id: string | null; armour_id: string | null; disguise: string | null }
+  wallet_fabi_value: number
+  money_fabi: number
+  money_silver: number
+  money_military_yen: number
   items: InventoryItem[]
 }
 
