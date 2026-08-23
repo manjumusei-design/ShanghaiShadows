@@ -24,10 +24,9 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, ref } from 'vue'
+import { computed, defineComponent, onMounted, onUnmounted, ref } from 'vue'
 
 const FOCUSABLE_SELECTOR = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-
 export default defineComponent({
   name: 'PopupFrame',
   props: {
@@ -52,14 +51,21 @@ export default defineComponent({
       height: `min(${props.height}, calc(100vh - 48px))`,
     }))
 
+    const handleWindowKeydown = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return
+      e.preventDefault()
+      emit('close')
+    }
+
+    onMounted(() => {
+      window.addEventListener('keydown', handleWindowKeydown)
+    })
+
+    onUnmounted(() => {
+      window.removeEventListener('keydown', handleWindowKeydown)
+    })
+
     const handleKeydown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        if (props.dismissible) {
-          e.preventDefault()
-          emit('close')
-        }
-        return
-      }
       if (e.key !== 'Tab') return
       const panel = panelEl.value
       if (!panel) return
