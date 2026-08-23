@@ -10,7 +10,7 @@ from typing import Any, Awaitable, Callable, Dict, List, NamedTuple, Optional, T
 import yaml
 
 from .config import get_setting, load_dotenv
-from .action_result import failure, success
+from .action_result import CommandOutcome, failure, success
 
 ROOM_NOTIFY_TIMEOUT = 0.5
 from .economy import can_afford_fabi, earn_fabi_value, spend_fabi_value, wallet_fabi_value
@@ -263,6 +263,7 @@ class VendorPurchaseContext(NamedTuple):
     access: Any
     error: str
     error_message: str
+    demo_black_market: bool = False
 
 
 def _vendor_item_id(item_data: Any) -> str:
@@ -286,15 +287,17 @@ def _deplete_tutorial_vendor_stock(ctx: CommandContext, vendor_id: str, item_id:
     vendor = ctx.shared.world.npcs.get(vendor_id)
     if not vendor:
         return
-    for index, item_data in enumerate(getattr(vendor, "shop_inventory", []) or []):
-        if _vendor_item_id(item_data) == item_id:
-            del vendor.shop_inventory[index]
-            from .tutorial import get_canonical_tutorial_npc_id, record_tutorial_vendor_depletion
-            canonical_vendor = get_canonical_tutorial_npc_id(
-                getattr(ctx.session.player, "tutorial_instance_id", ""), vendor_id,
-            )
-            record_tutorial_vendor_depletion(ctx.session.player, canonical_vendor, item_id)
-            return
+    from .tutorial import get_canonical_tutorial_npc_id, record_tutorial_vendor_depletion
+    canonical_vendor = get_canonical_tutorial_npc_id(
+        getattr(ctx.session.player, "tutorial_instance_id", ""), vendor_id,
+    )
+    for stock_attr in ("shop_inventory", "black_market_items"):
+        stock = getattr(vendor, stock_attr, []) or []
+        for index, item_data in enumerate(stock):
+            if _vendor_item_id(item_data) == item_id:
+                del stock[index]
+                record_tutorial_vendor_depletion(ctx.session.player, canonical_vendor, item_id)
+                return
 
 
 def validate_vendor_purchase_context(
@@ -329,7 +332,9 @@ def validate_vendor_purchase_context(
     shop_inventory = list(getattr(npc, "shop_inventory", []) or [])
     black_market_items = list(getattr(npc, "black_market_items", []) or [])
     from .trust import has_faction_perk
-    if black_market_items and not has_faction_perk(ctx.session.player.trust, npc.faction):
+    from .tutorial import is_tutorial_black_market_demo_vendor
+    demo_black_market = is_tutorial_black_market_demo_vendor(ctx.session.player, vendor_id)
+    if black_market_items and not demo_black_market and not has_faction_perk(ctx.session.player.trust, npc.faction):
         black_market_items = []
 
     vendor_role = str(getattr(npc, "role", "")).lower()
@@ -367,7 +372,7 @@ def validate_vendor_purchase_context(
                 _vendor_item_id(item_data)
                 for item_data in shop_inventory
             }
-            if trust_score >= 70:
+            if trust_score >= 70 or demo_black_market:
                 available_ids.update(_vendor_item_id(item_data) for item_data in black_market_items)
             if target_id not in available_ids or target_id not in ctx.shared.world.item_catalog:
                 return VendorPurchaseContext(
@@ -377,7 +382,7 @@ def validate_vendor_purchase_context(
 
     return VendorPurchaseContext(
         vendor_id, npc, room, shop_inventory, black_market_items,
-        trust_score, wanted_policy, access, "", "",
+        trust_score, wanted_policy, access, "", "", demo_black_market,
     )
 
 
@@ -2957,6 +2962,7 @@ async def cmd_take(ctx: CommandContext, cmd: Command):
         return failure("take_already_taken")
     ctx.session.player.inventory.append(item)
     await ctx.session.send_completions(build_completions(ctx))
+    await _send_room_details(ctx, room)
     log_event(ctx, f"You took {item.name}.")
     await _handle_mission_objectives(ctx, "collect_item", item.id)
     await post_display(ctx, loc("cmd_take.success").format(name=semantic_span(item.name, "item")), msg_type=MessageType.PLAYER_ACTION)
@@ -2991,6 +2997,7 @@ async def cmd_drop(ctx: CommandContext, cmd: Command):
     room = _room(ctx)
     if room:
         room.items.append(item)
+        await _send_room_details(ctx, room)
     await ctx.session.send_completions(build_completions(ctx))
     log_event(ctx, f"You dropped {item.name}.")
     await post_display(ctx, loc("cmd_drop.success").format(name=semantic_span(item.name, "item")), msg_type=MessageType.PLAYER_ACTION)
@@ -3988,7 +3995,7 @@ async def cmd_read(ctx: CommandContext, cmd: Command):
     record_testimony_read(ctx.session.player, item, ctx.shared.game_time.day)
 
     await post_display(ctx, item.readable_text, msg_type=MessageType.DISCOVERY)
-    return success("read", facts={"read_document"})
+    return success("read", facts={"read_document"}, tutorial_event={"verb": "read", "target": item.id})
 
 
 async def cmd_journal(ctx: CommandContext, cmd: Command):
@@ -4127,6 +4134,8 @@ async def cmd_eat(ctx: CommandContext, cmd: Command):
         await post_display(ctx, "You have nothing to eat.", msg_type=MessageType.PLAYER_ACTION)
         return failure("eat_no_candidates")
     await _open_item_action_chooser(ctx, "eat", loc("cmd_eat.no_target"), candidates)
+    from .tutorial import _send_popup_hint
+    await _send_popup_hint(ctx)
     return success("eat_chooser", facts={"chooser_opened"})
 
 
@@ -4971,7 +4980,9 @@ async def cmd_buy_from(ctx: CommandContext, cmd: Command):
             effects={"purchase_newspaper": npc.name},
         ))
 
-    can_access_black_market = bool(trust_score >= 70 and black_market_items)
+    can_access_black_market = bool(
+        black_market_items and (trust_score >= 70 or validation.demo_black_market)
+    )
     if can_access_black_market:
         _normalize_back_room_ledger(ctx.session.player, ctx.shared.server_cycle)
         options.append(StoryletOption(
@@ -4992,13 +5003,17 @@ async def cmd_buy_from(ctx: CommandContext, cmd: Command):
                 continue
 
             base_cost = item_data.get("base_cost", 10) if isinstance(item_data, dict) else 10
+            tutorial_price = item_data.get("tutorial_price") if isinstance(item_data, dict) else None
             from .economy import economy_system as _econ
-            final_price = int(_econ.get_item_price(
-                base_cost, item_id, econ_region, npc.faction,
-                inflation_rate=inflation_mult, season_multiplier=season_mult,
-                trust_score=trust_score, player_morale=player_morale,
-                item_rarity=item_template.rarity,
-            ) * BLACK_MARKET_MULTIPLIER)
+            if tutorial_price is not None and _is_tutorial_vendor_clone(ctx.session.player, npc_id):
+                final_price = int(tutorial_price)
+            else:
+                final_price = int(_econ.get_item_price(
+                    base_cost, item_id, econ_region, npc.faction,
+                    inflation_rate=inflation_mult, season_multiplier=season_mult,
+                    trust_score=trust_score, player_morale=player_morale,
+                    item_rarity=item_template.rarity,
+                ) * BLACK_MARKET_MULTIPLIER)
 
             item_category = getattr(_econ, 'ITEM_CATEGORIES', {}).get(item_id, 'general')
             uses_military_yen = item_category == 'japanese_goods' or npc.faction == 'kempeitai'
@@ -5230,7 +5245,9 @@ async def cmd_equip(ctx: CommandContext, cmd: Command):
             await post_display(ctx, "You have nothing to equip.", msg_type=MessageType.PLAYER_ACTION)
             return failure("equip_no_items")
         await _open_equipment_popup(ctx)
-        return
+        from .tutorial import _send_popup_hint
+        await _send_popup_hint(ctx)
+        return success("equip_chooser", facts={"chooser_opened"})
     from .equipment import ensure_inventory_identity
     ensure_inventory_identity(ctx.session.player)
     item = next((candidate for candidate in ctx.session.player.inventory if candidate.instance_id == cmd.direct_obj), None)
