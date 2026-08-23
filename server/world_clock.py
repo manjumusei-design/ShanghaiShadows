@@ -2077,7 +2077,10 @@ class WorldClock:
             sound = npc_bb.get("last_heard_sound")
             if sound:
                 bb.set("last_heard_sound", sound)
-            bb.set("heard_hostile_sound", npc_bb.get("heard_hostile_sound", False))
+            bb.set("heard_hostile_sound", npc_bb.get("heard_hostile_sound", False) if npc_bb else False)
+        investigation = npc_bb.get("sound_investigation") if npc_bb else None
+        if investigation:
+            bb.set("sound_investigation", investigation)
             investigation = npc_bb.get("sound_investigation")
             if investigation:
                 bb.set("sound_investigation", investigation)
@@ -2106,16 +2109,12 @@ class WorldClock:
             if (
                 isinstance(investigation, dict)
                 and investigation.get("source_room") == current_room_id
+                and investigation.get("phase") == "travel"
             ):
-                if investigation.get("phase") == "travel":
-                    search_room = self._select_search_room(current_room_id, investigation)
-                    if search_room:
-                        investigation["phase"] = "search"
-                        self._move_npc_between_rooms(npc_id, current_room_id, search_room)
-                        return Status.RUNNING
-                    self._finish_sound_search(bb, npc)
-                    return Status.SUCCESS
+                search_room = self._select_search_room(current_room_id, investigation)
                 self._finish_sound_search(bb, npc)
+                if search_room:
+                    self._move_npc_between_rooms(npc_id, current_room_id, search_room)
                 return Status.SUCCESS
             self._clear_npc_sound_memory(npc, bb)
             return Status.SUCCESS
@@ -2223,6 +2222,8 @@ class WorldClock:
                     broken.append(item)
             for item in broken:
                 session.player.inventory.remove(item)
+                from .equipment import invalidate_disguise_if_support_lost
+                invalidate_disguise_if_support_lost(session.player, item)
 
     async def _check_death_and_victory(self):
         from .locales import get as loc
