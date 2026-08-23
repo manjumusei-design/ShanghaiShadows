@@ -155,6 +155,7 @@ container.take: "你从{container}里取出了{item}。"
 perk_unlocked: "你在{faction}的声望提升了！解锁新特权：{perk_name}"
 perk_lost: "你在{faction}的声望下降了。你失去了特权：{perk_name}"
 
+# Wanted reduction paths
 cmd_bribe.not_wanted: "你没有被通缉。没人需要贿赂。"
 cmd_bribe.cooldown: "你今天已经试过了。宪兵正在密切监视你。"
 cmd_bribe.no_kempeitai: "这里没有宪兵可以贿赂。"
@@ -172,17 +173,20 @@ cmd_favor.success: "你在{faction}的关系网开始运作。\"我们已经处�
 
 wanted.disguise_decay: "宪兵对你的兴趣随着你的伪装掩盖了身份而消退。你的通缉等级降低了。"
 
+# Kempeitai attack-on-sight at wanted 3
 wanted.kempeitai_attack: "{name}发现了你，拔出了武器。\"你就是他们在找的人！\""
 wanted.kempeitai_damage: "{name}攻击你，造成{damage}点伤害。生命值：{health}。"
 wanted.kempeitai_miss: "你躲过了{name}的攻击。快跑！"
 wanted.kempeitai_kill: "宪兵终于抓住了你。你的抵抗到此为止。"
 
+# Green Gang wanted help offer
 wanted.green_gang_offer: "{name}凑近你。\"我听说宪兵在找你。只要{cost}法币，我可以帮你解决这个问题。成交还是不成交？\""
 wanted.green_gang_deal_no_money: "你没有足够的法币。{name}耸耸肩。\"有钱了再来。\""
 wanted.green_gang_deal_success: "{name}点点头。\"这事我会处理好。躲一阵子别露面。\"你的通缉等级降低了。"
 wanted.green_gang_deal_refused: "{name}后退一步。\"随你便。别说我没帮你。\""
 wanted.green_gang_not_wanted: "{name}一脸困惑。\"你看起来不像有麻烦。为什么需要我帮忙？\""
 
+# Combat
 combat.npc_falls: "{name}倒下了。{parts}"
 combat.npc_wounded: "{name}踉跄但未倒下。生命值：{hp}"
 combat.hardened: "暴力使你变得冷酷。你的勇气增长了。"
@@ -194,6 +198,7 @@ combat.wounded_flee: "{name}捂着伤口，踉跄着向{direction}逃去！"
 combat.wounded_present: "{name}在这里，受了伤，正在流血。"
 crime_scene.active: "⚠ 警戒线和粉笔痕迹表明这里刚发生过犯罪。"
 
+# Movement
 movement.auto_path.start: "正在前往{title}……（{steps}步）"
 movement.auto_path.halt_hostile: "敌对势力挡住了你的去路。"
 movement.auto_path.halt_injured: "伤势过重，无法继续。"
@@ -203,17 +208,20 @@ movement.auto_path.step: "→ {title}"
 movement.auto_path.district_change: "你进入了{district}。"
 movement.auto_path.arrive: "你已到达{title}。"
 
+# R1: 房间提示系统
 room_hints.no_hints: "你环顾{room}，没有发现新的线索。"
 room_hints.already_discovered: "你已经发现了{room}能揭示的所有秘密。"
 room_hints.discovered: "环顾{room}，你注意到：{hint}"
 room_hints.search_sense: "你隐约感觉到{detail}有些异样，但无法找到确切位置。"
 
+# R1: 搜索命令扩展
 cmd_search.usage: "搜索什么？"
 cmd_search.found_drop: "在{detail}中搜索，你找到了{name}！"
 cmd_search.found_exit: "你发现了一条通往{direction}的暗道。"
 cmd_search.found_item: "在{detail}中搜索，你发现了{name}！"
 cmd_search.nothing: "你搜索了{detail}，但没有发现任何有价值的东西。再试一次。"
 
+# Command outcome feedback (synced with en.yaml)
 cmd.unknown: "我不明白这个命令。"
 cmd_ask_about.no_target: "问谁什么？"
 cmd_ask_about.not_here: "他们不在这里。"
@@ -264,8 +272,10 @@ cmd_read.no_journal: "你没有可读的日记。"
 cmd_read.no_target: "读什么？"
 cmd_read.not_held: "你没有那个。"
 cmd_read.nothing_written: "上面没有写什么有用的东西。"
+cmd_equip.other_disguise: "你已伪装成另一身份，无法再穿其他伪装。"
 cmd_remove.not_worn: "你没有穿戴那个。"
 cmd_remove.nothing: "你没有装备任何可以卸下的东西。"
+cmd_remove.no_disguise: "你并没有伪装。"
 cmd_remove.success: "你卸下了{name}。"
 cmd_say.no_message: "说什么？"
 cmd_sell.no_value: "没人会买这个。"
