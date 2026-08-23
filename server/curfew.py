@@ -157,8 +157,14 @@ async def _default_escape_move(ctx: "CommandContext", direction: str) -> None:
     from .locales import get as loc
     from .parser import Command
     await post_display(ctx, loc("arrest.escape"), msg_type="event")
-    await cmd_go(ctx, Command(verb="go", direct_obj=direction, raw=f"go {direction}"))
-
+    session = getattr(ctx, "session", None)
+    try:
+        if session is not None:
+            session._movement_single_footstep = True
+        await cmd_go(ctx, Command(verb="go", direct_obj=direction, raw=f"go {direction}"))
+    finally:
+        if session is not None:
+            session._movement_single_footstep = False
 
 async def _post_arrest_feedback(ctx: "CommandContext", status: str, room_title: str = "") -> None:
     session = getattr(ctx, "session", None)
