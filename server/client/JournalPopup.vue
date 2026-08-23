@@ -1,5 +1,5 @@
 <template>
-  <div class="journal-popup">
+  <div class="journal-popup" @keydown="onJournalKeydown">
     <div ref="tabsEl" class="journal-tabs" tabindex="0" @keydown="onTabsKeydown">
       <button
         v-for="(tab, idx) in tabs"
@@ -39,6 +39,13 @@
         <div v-for="line in activeLines" :key="line.key" class="journal-line">{{ line.text }}</div>
         <div v-if="activeLines.length === 0" class="list-empty">Nothing here yet.</div>
       </template>
+    </div>
+    <div class="journal-footer">
+      <span><span class="journal-footer-key">Q</span> Previous</span>
+      <span class="journal-footer-sep">•</span>
+      <span><span class="journal-footer-key">E</span> Next</span>
+      <span class="journal-footer-sep">•</span>
+      <span><span class="journal-footer-key">Esc</span> {{ isTestimonyDetail ? 'Back' : 'Close' }}</span>
     </div>
   </div>
 </template>
@@ -120,6 +127,7 @@ export default defineComponent({
 
     const testimonyEntries = computed(() => props.payload.testimonies || [])
     const isTestimonyTab = computed(() => TABS[activeTab.value].key === 'testimonies')
+    const isTestimonyDetail = computed(() => isTestimonyTab.value && selectedTestimony.value !== null)
 
     const activeLines = computed(() => {
       switch (TABS[activeTab.value].key) {
@@ -133,13 +141,36 @@ export default defineComponent({
       }
     })
 
+    const stepTab = (delta: number) => {
+      activeTab.value = (activeTab.value + delta + TABS.length) % TABS.length
+    }
+
     const onTabsKeydown = (e: KeyboardEvent) => {
       if (e.key === 'ArrowRight') {
         e.preventDefault()
-        activeTab.value = (activeTab.value + 1) % TABS.length
+        stepTab(1)
       } else if (e.key === 'ArrowLeft') {
         e.preventDefault()
-        activeTab.value = (activeTab.value - 1 + TABS.length) % TABS.length
+        stepTab(-1)
+      }
+    }
+
+    const onJournalKeydown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement | null
+      if (
+        target
+        && (target.tagName === 'INPUT'
+          || target.tagName === 'TEXTAREA'
+          || target.tagName === 'SELECT'
+          || target.isContentEditable)
+      ) return
+      const key = typeof e.key === 'string' ? e.key.toLowerCase() : ''
+      if (key === 'q') {
+        e.preventDefault()
+        stepTab(-1)
+      } else if (key === 'e') {
+        e.preventDefault()
+        stepTab(1)
       }
     }
 
@@ -148,6 +179,7 @@ export default defineComponent({
       if (!el) return
       if (isTestimonyTab.value && e.key === 'Escape' && selectedTestimony.value) {
         e.preventDefault()
+        e.stopPropagation()
         selectedTestimony.value = null
         return
       }
@@ -170,11 +202,13 @@ export default defineComponent({
       activeLines,
       testimonyEntries,
       isTestimonyTab,
+      isTestimonyDetail,
       selectedTestimony,
       contentEl,
       tabsEl,
       onTabsKeydown,
       onContentKeydown,
+      onJournalKeydown,
     }
   },
 })
@@ -284,5 +318,23 @@ export default defineComponent({
   line-height: 1.7;
   padding: 14px 0;
   white-space: pre-wrap;
+}
+
+.journal-footer {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  color: #8f8f8f;
+  font-size: 11px;
+  letter-spacing: 0.4px;
+}
+
+.journal-footer-key {
+  color: #c9a84c;
+  font-weight: 600;
+}
+
+.journal-footer-sep {
+  color: #4a4a4a;
 }
 </style>
