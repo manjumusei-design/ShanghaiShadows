@@ -1130,7 +1130,7 @@ async def send_panel_queue(session) -> None:
     except Exception:
         pass
 
-    
+
 def push_panel_entry(session, entry_type: str, data: dict) -> None:
     entry = {
         "id": f"panel_{uuid.uuid4().hex[:8]}",

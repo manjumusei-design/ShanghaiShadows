@@ -1,12 +1,175 @@
 import logging
+import re
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
 
+from .combat import strip_article
 from .constants import MessageType
+from .equipment import equipped_weapon
 from .formatting import format_tutorial_text
+from .player_data import PlayerData
 from .world import Room
 
 logger = logging.getLogger(__name__)
+
+_ITEM_HINT_TOKEN = re.compile(r"\{item:([a-z0-9_]+)\}")
+
+
+def _resolve_item_hint_name(item_id: str, item_catalog: Any, player: Any = None) -> str:
+    for item in getattr(player, "inventory", None) or []:
+        if getattr(item, "id", "") == item_id and getattr(item, "name", ""):
+            return strip_article(item.name)
+    item = (item_catalog or {}).get(item_id)
+    if item is not None and getattr(item, "name", ""):
+        return strip_article(item.name)
+    raise ValueError(f"unresolved tutorial item token {{item:{item_id}}}")
+
+
+def render_cmd_hint(hint: str, *, item_catalog: Any = None, player: Any = None) -> str:
+    if not hint or "{item:" not in hint:
+        return hint
+    return _ITEM_HINT_TOKEN.sub(
+        lambda match: _resolve_item_hint_name(match.group(1), item_catalog, player).upper(),
+        hint,
+    )
+
+
+def render_stage_hint(action: dict, item_catalog: Any = None, player: Any = None) -> str:
+    try:
+        return render_cmd_hint(
+            action.get("teaching_hint") or action.get("cmd_hint"),
+            item_catalog=item_catalog,
+            player=player,
+        )
+    except ValueError as exc:
+        logger.error("tutorial command hint dropped: %s", exc)
+        return ""
+
+
+WAREHOUSE_ATTACK_STAGE_ID = "warehouse_attack"
+
+_WAREHOUSE_ATTACK_CUE_TEMPLATE = (
+    "The soldier turns toward you. Combat can kill you, and death is permanent. "
+    "If you die, your journal remains where you fell for the first finder to claim its knowledge once. "
+    "Your Courage is {courage}. Your {weapon} adds {bonus}, giving you {total} "
+    "against the soldier's Authority of {authority}. {comparison} "
+    "ATTACK resolves immediately, so be sure before you act."
+)
+
+_WAREHOUSE_ATTACK_CUE_FALLBACK = (
+    "Your Courage and equipment determine whether an attack succeeds against the "
+    "soldier's Authority. ATTACK resolves immediately, so check your situation before you act."
+)
+
+
+def warehouse_attack_cue_values(courage, weapon, hidden, morale, authority):
+    from .combat import compute_effective_courage, courage_multiplier_for, resolve_attack
+
+    multiplier = courage_multiplier_for(weapon)
+    total, _parts, _defence, _morale = compute_effective_courage(
+        courage,
+        weapon,
+        hidden,
+        None,
+        morale,
+        courage_multiplier=multiplier,
+    )
+    outcome = resolve_attack(
+        attacker_courage=courage,
+        attacker_weapon=weapon,
+        target_authority=authority,
+        target_armour=None,
+        attacker_hidden=hidden,
+        attacker_morale=morale,
+        courage_multiplier=multiplier,
+    )
+    comparison = ""
+    if outcome.won:
+        comparison = f"{total} meets or exceeds {authority}, so this attack will win the exchange."
+    return {
+        "courage": courage,
+        "weapon": strip_article(weapon.name) if weapon else "",
+        "bonus": getattr(weapon, "courage_bonus", 0) or 0,
+        "total": total,
+        "authority": authority,
+        "comparison": comparison,
+        "guaranteed": bool(outcome.won),
+    }
+
+
+def format_warehouse_attack_cue(template: str, values: dict) -> str:
+    if not values.get("guaranteed"):
+        logger.error(
+            "tutorial %s invariant violated: courage=%s weapon=%s bonus=%s total=%s authority=%s",
+            WAREHOUSE_ATTACK_STAGE_ID,
+            values.get("courage"),
+            values.get("weapon"),
+            values.get("bonus"),
+            values.get("total"),
+            values.get("authority"),
+        )
+        return _WAREHOUSE_ATTACK_CUE_FALLBACK
+    return template.format(
+        **{key: value for key, value in values.items() if key != "guaranteed"}
+    )
+
+
+def runtime_warehouse_attack_values(ctx, action: dict) -> dict:
+    player = ctx.session.player
+    world = ctx.shared.world
+    weapon = equipped_weapon(player)
+    room = world.rooms.get(getattr(player, "current_room", ""))
+    soldier_id = None
+    if room and action.get("target"):
+        from .commands import find_npc_by_name
+
+        soldier_id = find_npc_by_name(ctx, action["target"], room.npcs)
+    soldier = world.npcs.get(soldier_id) if soldier_id else None
+    authority = getattr(soldier, "authority", 0)
+    if weapon is None or soldier is None:
+        logger.error(
+            "tutorial %s state unresolved: weapon=%s soldier=%s room=%s",
+            WAREHOUSE_ATTACK_STAGE_ID,
+            getattr(weapon, "id", None),
+            soldier_id,
+            getattr(player, "current_room", ""),
+        )
+        return {
+            "courage": player.courage,
+            "weapon": "",
+            "bonus": 0,
+            "total": 0,
+            "authority": authority,
+            "comparison": "",
+            "guaranteed": False,
+        }
+    return warehouse_attack_cue_values(
+        player.courage, weapon, player.hidden, player.morale, authority
+    )
+
+
+def canonical_warehouse_attack_context():
+    import copy
+
+    from .world import World
+
+    world = World()
+    player = PlayerData()
+    weapon = copy.deepcopy(world.item_catalog.get("wooden_club"))
+    if weapon is not None:
+        weapon.instance_id = f"transcript_{getattr(weapon, 'id', 'wooden_club')}"
+        player.inventory.append(weapon)
+        player.equipped_weapon_id = weapon.instance_id
+    soldier = world.npcs.get("tutorial_kempeitai_soldier")
+    return player, weapon, getattr(soldier, "authority", 0)
+
+
+def warehouse_attack_transcript_cue() -> str:
+    player, weapon, authority = canonical_warehouse_attack_context()
+    values = warehouse_attack_cue_values(
+        player.courage, weapon, player.hidden, player.morale, authority
+    )
+    return format_warehouse_attack_cue(_WAREHOUSE_ATTACK_CUE_TEMPLATE, values)
 
 _ROOM_TEA_HOUSE = [
     {"room_id": "refugee_entry_tea_house"},
@@ -49,7 +212,7 @@ _ROOM_TEA_HOUSE = [
         "flag": "tutorial_purchased_baozi",
         "hint_level": "explicit",
         "cmd_hint": "BUY FROM MRS. LIN",
-        "teaching_hint": "BUY FROM <NPC NAME> opens a vendor's shop. Not every NPC is a vendor.",
+        "teaching_hint": "However, not every NPC is a vendor and has things for you to buy.",
         "cue": "BUY FROM opens a vendor's shop, where you can see what they sell and choose what to purchase.",
     },
     {
@@ -104,9 +267,10 @@ _ROOM_BACK_ALLEY = [
         "from_npc": "tutorial_comrade_chen",
         "hint_level": "explicit",
         "cmd_hint": "HIDE",
-        "cue": "HIDE is deterministic. Room details show the Stealth requirement before you act: real cover requires 25 Stealth, ordinary rooms require 50, and exposed or authority-controlled areas require 75. Meet the requirement and HIDE succeeds. Once successfully hidden, patrols and observers do not overturn that success. This private tutorial has no live patrol, but in the main game patrols move through rooms and can limit how long you can safely remain and interact with people. Read the room before you hide.",
+        "cue": "HIDE is deterministic. Room details show the Stealth requirement before you act: real cover requires 25 Stealth, ordinary rooms require 50, and exposed or authority-controlled areas require 75. Meet the requirement and HIDE succeeds, and patrols do not overturn that success. HIDE holds while you watch and assess: looking around or checking what you know does not expose you. Acting on the world does. Moving, searching, taking something, speaking to someone, or similar successful actions leave cover. UNHIDE lets you step out deliberately.",
         "cue_speech": "Get out of sight before anyone comes through here. Look at the ground around you before choosing where to disappear. Some places give you real cover. Others leave you far more exposed.",
         "narration": "The alley remains quiet in this private lesson. You settle into cover. A successful HIDE remains secure.",
+        "journal_entry": "HIDE holds while I watch and assess, and looking around or checking information keeps me concealed. Acting on the world ends it: moving, searching, taking, speaking, and similar successful actions leave cover. ATTACK uses my hidden advantage first and then consumes the hiding. UNHIDE steps out deliberately without going anywhere.",
     },
     {
         "verb": "search",
@@ -114,10 +278,10 @@ _ROOM_BACK_ALLEY = [
         "from_npc": "tutorial_comrade_chen",
         "hint_level": "explicit",
         "cmd_hint": "SEARCH LOOSE BRICK",
-        "cue": "Hidden objects and passages rarely reveal themselves on their own. SEARCH the right detail and your Perception determines what you notice.",
+        "cue": "Hidden objects and passages never reveal themselves on their own. Searching acts on the world, so it draws you out of hiding as it works. SEARCH the right detail and your Perception determines what you notice. NPCs can give hints to where certain caches may reside waiting for you to uncover them.",
         "cue_speech": "While you were pressed against that wall, did you notice the brick beside your shoulder? Look again. It sits differently from the others, and the mortar around it has been disturbed more than once. Search the LOOSE BRICK and tell me what you find.",
         "narration": "You ease the loose brick free. A shallow hollow has been cut into the wall behind it. Inside rests a tarnished brass key and a folded scrap of paper, both wrapped in cloth to keep the damp away.",
-        "journal_entry": "SEARCH can uncover hidden items, dead drops, and concealed passages. Behind a loose brick in the alley, I found a brass key and a folded note.",
+        "journal_entry": "SEARCH can uncover hidden items, dead drops, and concealed passages. Searching acts on the world, so it ended my hiding and pulled me out of cover before it revealed the brick.",
     },
     {
         "verb": "take",
@@ -161,12 +325,30 @@ _ROOM_BACK_ALLEY = [
         "narration": "Chen draws back the bolt. The east gate scrapes open.",
     },
     {
-        "verb": "go",
-        "target": "east",
+        "verb": "none",
+        "hint_level": "silent",
+        "narration": "A broad-shouldered porter shoulders a stack of ration crates by the east door. He rolls his neck, ready for the walk to the market rows.",
+        "stage_id": "back_alley_tail_intro",
+        "hint_family": "tail",
         "from_npc": "tutorial_comrade_chen",
+    },
+    {
+        "verb": "tail",
+        "target": "market porter",
+        "required_target": "tutorial_market_porter",
         "hint_level": "explicit",
-        "cmd_hint": "GO EAST",
-        "blocked_exits": {"refugee_entry_back_alley": {"east": {"stage": 15, "message": "A locked gate blocks the eastern passage."}}},
+        "cmd_hint": "TAIL MARKET PORTER",
+        "cue": "Fang Jie tips her chin toward the porter. TAIL keeps you beside someone when they move, without typing every step. Stay with him and see how following works.",
+        "cue_speech": "He runs that load to the market every morning. Walk with him once and the route will teach itself.",
+        "journal_entry": "TAIL keeps me moving with someone else until I choose to STOP TAIL.",
+    },
+    {
+        "verb": "stop",
+        "action_room": "refugee_entry_market_street",
+        "hint_level": "explicit",
+        "cmd_hint": "STOP TAIL",
+        "cue": "You break off as he angles toward his first delivery. STOP TAIL ends the follow cleanly, right where you stand.",
+        "journal_entry": "STOP TAIL breaks off an active follow without fuss.",
     },
 ]
 
@@ -194,26 +376,26 @@ _ROOM_MARKET_STREET = [
         "cue_speech": "Chen sent you? Then he should have told you the road east can be rough. Twelve for the club, eighteen for the jacket. Neither is much to look at, but both still do their job. If you mean to keep going, I would take both.",
     },
     {
-        "verb": "wear",
+        "verb": "equip",
         "target": "quilted_jacket",
         "alt_target": "wooden_club",
         "from_npc": "tutorial_old_gao",
         "hint_level": "explicit",
-        "cmd_hint": "WEAR QUILTED JACKET",
+        "cmd_hint": "EQUIP {item:quilted_jacket}",
         "cue_speech": "Do not just carry them around. Put the jacket on and keep the club ready. The jacket will not protect you folded under your arm, and the club will not help much buried with the rest of your things.",
         "narration": "Gao releases the brake on the nearest handcart and rolls it clear of the eastern lane.",
         "npc_msg": "The warehouse is east. One soldier inside, unless someone has joined him since Chen last checked. He usually watches the far door more closely than the market entrance. Do not take a turned back for an invitation. Look at what is in front of you before you decide what to do.",
         "sub_hints": {
             "market_wear_jacket": {
                 "stage_id": "market_wear_jacket",
-                "cmd_hint": "WEAR QUILTED JACKET",
-                "hint_family": "wear",
+                "cmd_hint": "EQUIP {item:quilted_jacket}",
+                "hint_family": "equip",
                 "required_item": "quilted_jacket",
                 "state_check": "worn",
             },
             "market_equip_club": {
                 "stage_id": "market_equip_club",
-                "cmd_hint": "EQUIP WOODEN CLUB",
+                "cmd_hint": "EQUIP {item:wooden_club}",
                 "hint_family": "equip",
                 "required_item": "wooden_club",
                 "state_check": "equipped",
@@ -226,7 +408,7 @@ _ROOM_MARKET_STREET = [
         "from_npc": "tutorial_old_gao",
         "hint_level": "explicit",
         "cmd_hint": "GO EAST",
-        "blocked_exits": {"refugee_entry_market_street": {"east": {"stage": 19, "message": "A loaded handcart stands crosswise in the eastern lane."}}},
+        "blocked_exits": {"refugee_entry_market_street": {"east": {"stage": 21, "message": "A loaded handcart stands crosswise in the eastern lane."}}},
     },
 ]
 
@@ -246,7 +428,7 @@ _ROOM_WAREHOUSE = [
         "from_npc": "tutorial_kempeitai_soldier",
         "hint_level": "explicit",
         "cmd_hint": "ATTACK KEMPEITAI SOLDIER",
-        "cue": "The soldier turns toward you. His eyes settle on the club in your hand, then on your face. He reaches for the rifle beside him and steps between you and the safe. You have been made. Combat can kill you, and death is permanent. If you die, your journal remains where you fell, and the first finder can claim its knowledge once. Combat resolves in a single exchange: your Courage plus your equipped weapon is measured against the soldier's Authority. Meet or exceed it and you win the fight.",
+        "cue": _WAREHOUSE_ATTACK_CUE_TEMPLATE,
         "cue_speech": "Stop there. Put the club down.",
         "journal_entry": "ATTACK measures COURAGE plus my equipped weapon against the target's AUTHORITY. A curfew patrol arrest spends my one stored escape charge to move me through a legal exit; without that charge, I remain in custody until release.",
     },
@@ -283,16 +465,17 @@ _ROOM_WAREHOUSE = [
         "hint_level": "explicit",
         "cmd_hint": "GO EAST",
         "narration": "The eastern door groans open. Beyond it, a narrow passage leads toward the outpost.",
-        "blocked_exits": {"refugee_entry_warehouse": {"east": {"stage": 26, "message": "The eastern door remains barred from this side."}}},
-    },
-    {
-        "verb": "none",
-        "hint_level": "silent",
+        "blocked_exits": {"refugee_entry_warehouse": {"east": {"stage": 28, "message": "The eastern door remains barred from this side."}}},
     },
 ]
 
 _ROOM_OUTPOST = [
     {"room_id": "refugee_entry_outpost"},
+    {
+        "verb": "none",
+        "hint_level": "silent",
+        "narration": "The outpost is an inspection post. A desk sits beside the eastern stairwell, and the sergeant keeps the route beyond it under his eye.",
+    },
     {
         "verb": "disguise as",
         "target": "japanese officer",
@@ -304,58 +487,78 @@ _ROOM_OUTPOST = [
         "cue_speech": "Before you go any farther, use what you took from the warehouse. A disguise only works if you own the exact disguise item. Watchers test their Perception against it, and every point of Wanted makes them more likely to see through you. If they pierce the disguise, the item is confiscated and they will fight you. Get changed now, while no one is paying enough attention to question it.",
     },
     {
-        "verb": "tail",
-        "target": "officer",
-        "required_target": "tutorial_kempeitai_officer",
+        "verb": "go",
+        "target": "west",
         "from_npc": "tutorial_fang_jie",
         "hint_level": "explicit",
-        "cmd_hint": "TAIL OFFICER",
-        "cue": "As the officer turns toward the stairwell, Fang Jie tilts her head after him. TAIL follows an NPC from room to room. The target checks your disguise when the tail begins and again every five minutes. Suspicion lets the tail continue, a challenge ends it but leaves your disguise intact, and exposure ends the tail and confiscates the disguise item.",
-        "cue_speech": "He is moving. Keep him in sight until you know where he is going. Do not cut across the route or guess where he will turn.",
+        "stage_id": "checkpoint_go_west",
+        "hint_family": "go",
+        "cmd_hint": "GO WEST",
+        "cue": "Not here. The sergeant holds this desk, and beyond it the stairwell to the roof.",
+        "cue_speech": "Step back into the warehouse. Put some room between you, and give him a reason to leave his post. Follow, but let his footsteps measure the distance.",
+    },
+]
+
+_ROOM_CHECKPOINT_CROSSING = [
+    {"room_id": "refugee_entry_warehouse"},
+    {
+        "verb": "yell",
+        "action_room": "refugee_entry_warehouse",
+        "hint_level": "explicit",
+        "stage_id": "checkpoint_yell",
+        "hint_family": "yell",
+        "cmd_hint": "YELL HEY",
+        "require_npc_room": {"npc": "tutorial_kempeitai_officer", "room": "refugee_entry_outpost"},
+        "cue": "The warehouse gives you room, and the sergeant still holds the checkpoint one room east. Sound carries between rooms: a yell reaches about three rooms, a gunshot four, and a silencer cancels the shot. Noise does not drive anyone away; it draws them toward its source. Shout something short from where you stand.",
+        "journal_entry": "Sound propagates between rooms. A yell carries about three rooms. Guards who hear it move toward the source of the sound, never toward the words that were shouted.",
     },
     {
         "verb": "go",
         "target": "east",
+        "action_room": "refugee_entry_warehouse",
         "hint_level": "explicit",
+        "stage_id": "checkpoint_cross_outpost",
+        "hint_family": "go",
         "cmd_hint": "GO EAST",
-        "narration": "His footsteps climb the stairs ahead of you.",
-        "blocked_exits": {"refugee_entry_outpost": {"east": {"stage": 30, "message": "The officer still occupies the route to the stairwell."}}},
+        "cue": "Boots hurry past on the market side, chasing the shout. The desk by the stairwell stands empty. Cross now, while his back is turned.",
+        "blocked_exits": {"refugee_entry_warehouse": {"east": {
+            "stage": 33,
+            "live_window": 2,
+            "message": "The sergeant still holds the checkpoint. Crossing now would put you straight through his hands.",
+            "require_npc_room": {"npc": "tutorial_kempeitai_officer", "room": "refugee_entry_market_street"},
+            "live_message": "The sergeant has not cleared the route yet. Wait until his search pulls him well away.",
+        }}},
+    },
+    {
+        "verb": "go",
+        "target": "east",
+        "action_room": "refugee_entry_outpost",
+        "hint_level": "explicit",
+        "stage_id": "checkpoint_cross_rooftop",
+        "hint_family": "go",
+        "cmd_hint": "GO EAST",
+        "narration": "You cross the empty inspection post and climb the eastern stairwell.",
     },
 ]
 
 _ROOM_ROOFTOP = [
     {"room_id": "refugee_entry_rooftop"},
     {
-        "verb": "none",
-        "hint_level": "silent",
-        "narration": "The stairs open onto the roof. The officer has stopped at the western parapet, watching the streets below.",
-    },
-    {
-        "verb": "yell",
-        "hint_level": "explicit",
-        "cmd_hint": "YELL TOWARD THE ALLEY",
-        "cue": "Laundry lifts between you and the parapet, and the western alley disappears beyond the roof edge. Sound travels between rooms: a yell carries about three rooms, while a gunshot carries four. A silencer cancels a gunshot's reach. Noise can draw nearby watchers, and this time that is exactly what you want. Yell toward the alley to draw the officer away from the eastern stairwell.",
-        "journal_entry": "Sound propagates between rooms. A yell carries about three rooms. A gunshot carries four, while a silencer cancels its reach.",
-    },
-    {
         "verb": "remove",
         "target": "disguise",
         "hint_level": "explicit",
         "cmd_hint": "REMOVE DISGUISE",
-        "cue": "The laundry settles around you. For the first time since the outpost, no uniformed eyes are watching.",
-    },
-    {
-        "verb": "none",
-        "hint_level": "silent",
-        "narration": "The eastern stairwell is clear.",
+        "cue": "The roof is quiet. The sergeant is well off his post, pulled toward the market rows by a shout that never gave him a name. Up here you are only another figure among the laundry lines. The uniform has done its work; shed it before someone reads it too closely.",
     },
     {
         "verb": "go",
         "target": "east",
         "hint_level": "explicit",
+        "stage_id": "rooftop_go_east",
+        "hint_family": "go",
         "cmd_hint": "GO EAST",
         "narration": "The eastern stairs descend through the smell of river water and damp timber.",
-        "blocked_exits": {"refugee_entry_rooftop": {"east": {"stage": 35, "message": "The officer still commands the open roof between you and the eastern stairwell."}}},
+        "blocked_exits": {"refugee_entry_rooftop": {"east": {"stage": 36, "message": "Move before the echo of your yell fades and he thinks to turn around."}}},
     },
 ]
 
@@ -382,9 +585,9 @@ _ROOM_DOCK = [
         "from_npc": "tutorial_doctor_li",
         "hint_level": "contextual",
         "cmd_hint": "MISSIONS",
-        "msg": "MISSIONS shows your current work. MISSIONS AVAILABLE shows authored opportunities that are offered through NPC encounters. When an encounter presents a mission, you can Accept, Decline, or choose Not now. Accept commits you to that mission and locks the rival offers in the same dilemma. Decline permanently removes only the offer in front of you. Not now defers that offer until the next day. Objectives can ask you to collect an item, deliver something to someone, talk to a person, or visit a place. You can carry up to five missions at once, and higher trust with a faction unlocks more of its work.",
+        "msg": "MISSIONS lists the work you have already accepted, so this panel is empty until you take something on. In the city, work arrives through people: an encounter will offer you a task, and you will choose Accept, Decline, or Not now in that moment. Accept commits you to the job and locks the rival offers in the same dilemma. Decline permanently removes only the offer in front of you. Not now defers it until the next day. MISSIONS AVAILABLE reflects work your standing has unlocked, but only an encounter can put an offer in front of you. You can carry up to five jobs at once, and higher trust with a faction opens more of its work.",
         "cue_speech": "Now that the kit is here, see what other work you have taken on. There is always more to do than there are people to do it.",
-        "journal_entry": "MISSIONS shows your progress. MISSIONS AVAILABLE finds work. During an encounter, Accept commits you to the mission, Decline permanently removes that one offer, and Not now defers it until the next day.",
+        "journal_entry": "MISSIONS lists accepted work and stays empty until an encounter offers me a job. MISSIONS AVAILABLE reflects unlocked standing, but only an encounter can put an offer in front of me.",
     },
     {
         "verb": "journal",
@@ -407,22 +610,22 @@ _ROOM_DOCK = [
         "cmd_hint": "GO EAST",
         "cue_speech": "The work here is done. The passage east runs beneath the Bund. Mind the steps. The brick stays wet even when the street above is dry.",
         "narration": "The eastern passage slopes beneath the Bund, its brickwork slick with river damp.",
-        "blocked_exits": {"refugee_entry_dock": {"east": {"stage": 41, "message": "The eastern passage is still secured from this side."}}},
+        "blocked_exits": {"refugee_entry_dock": {"east": {"stage": 42, "message": "The eastern passage is still secured from this side."}}},
     },
 ]
 
 _ROOM_EXIT_AND_ORIENTATION = [
     [{"room_id": "refugee_entry_cellar"}, {"verb": "none", "narration": "A tram bell sounds beyond the brickwork, followed by the low murmur of traffic along the river."}, {"verb": "go", "target": "east", "cmd_hint": "GO EAST"}],
-    [{"room_id": "refugee_entry_bund_exit"}, {"verb": "none", "narration": "At the western barrier, a guard closes one passbook and reaches for the next.", "blocked_exits": {"refugee_entry_bund_exit": {"south": {"stage": 64, "message": "The southern esplanade stays closed until the staged route is complete."}}}}, {"verb": "go", "target": "west", "cmd_hint": "GO WEST", "narration": "You follow the railings west until the checkpoint barrier blocks the road ahead."}],
+    [{"room_id": "refugee_entry_bund_exit"}, {"verb": "none", "narration": "At the western barrier, a guard closes one passbook and reaches for the next.", "blocked_exits": {"refugee_entry_bund_exit": {"south": {"stage": 65, "message": "The southern esplanade stays closed until the staged route is complete."}}}}, {"verb": "go", "target": "west", "cmd_hint": "GO WEST", "narration": "You follow the railings west until the checkpoint barrier blocks the road ahead."}],
     [{"room_id": "refugee_entry_checkpoint"}, {"verb": "none", "narration": "At the southern side of the barrier, an auxiliary lifts the rope and waves the next group through."}, {"verb": "go", "target": "south", "cmd_hint": "GO SOUTH", "from_npc": "tutorial_uncle_liu", "cue_speech": "Not yet. Stand beside me until that group clears the barrier. The auxiliary is checking bundles as closely as faces. If you are wanted, or carrying contraband, a checkpoint can turn dangerous quickly. Keep your hands where they can see them, answer only what you are asked, and move when I move.", "narration": "The rope drops behind you. The southern lane climbs between shuttered offices toward a roof crowded with instruments."}],
-    [{"room_id": "orientation_weather"}, {"verb": "talk to", "target": "meteorologist zhang", "from_npc": "orientation_meteorologist_zhang", "cmd_hint": "TALK TO METEOROLOGIST ZHANG", "cue": "Zhang finishes a line in the ledger, sets down the chalk, and looks toward you.", "cue_speech": "The pressure has been falling since dawn. Rain should reach this district before noon. Pay attention to the weather when you make your plans. Fog makes it easier to stay hidden, but harder to notice what is around you. Rain muffles sound, while a storm carries sound farther. Winter makes hunger drain faster. Look at the sky before you plan to spend a night outside.", "narration": "Zhang picks up the chalk again. Beyond the instrument tables, the eastern door stands clear.", "blocked_exits": {"orientation_weather": {"east": {"stage": 49, "message": "Zhang has set aside his chalk and is waiting for you to speak."}}}}, {"verb": "go", "target": "east", "cmd_hint": "GO EAST", "narration": "You pass between the instrument tables and through the eastern door."}],
-    [{"room_id": "orientation_trust"}, {"verb": "trust", "from_npc": "orientation_elder_qian", "cmd_hint": "TRUST", "cue": "TRUST shows how each faction currently regards you. Trust runs from 0 to 100. Helpful acts raise it, hostile acts lower it, and neglected relationships decay slowly. Higher trust can improve prices, dialogue, and access to faction work.", "cue_speech": "Mrs. Lin's word helped you with Chen. Somewhere else, being known to Chen might work against you. Do not assume every faction sees you the same way, or that an old relationship still stands where you left it. Check where you stand before you rely on it.", "narration": "Beyond the eastern door, a narrow corridor is lined with official notices and photographs.", "blocked_exits": {"orientation_trust": {"east": {"stage": 51, "message": "Check your faction trust levels before continuing."}}}}, {"verb": "go", "target": "east", "cmd_hint": "GO EAST", "narration": "You pass through the eastern door and enter the notice-lined corridor."}],
-    [{"room_id": "orientation_wanted"}, {"verb": "wanted", "from_npc": "orientation_inspector_park", "cmd_hint": "WANTED", "cue": "Before entering the market, check whether the police are looking for you. WANTED shows your Wanted level from 0 to 3. It rises when you are caught breaking the law and falls after days without further trouble. Each level makes arrest more likely and disguises easier to pierce, and at level 2 ordinary vendors refuse to serve you.", "cue_speech": "Before you walk into that market, know how much attention you are drawing. The police do not need your name to remember you. A coat, a voice, the direction you ran, the same description passed between two posts can be enough. If people in uniform are beginning to look twice when you pass, it may be time to keep a lower profile.", "narration": "Beyond the eastern door, the official notices thin out and the corridor narrows toward a shuttered alley.", "blocked_exits": {"orientation_wanted": {"east": {"stage": 53, "message": "Check your wanted status before entering the market."}}}}, {"verb": "go", "target": "east", "cmd_hint": "GO EAST", "narration": "You leave the notice-covered walls behind and pass into the shuttered alley."}],
-    [{"room_id": "orientation_blackmarket"}, {"verb": "talk to", "target": "old mother jin", "from_npc": "orientation_mother_jin", "cmd_hint": "TALK TO OLD MOTHER JIN", "cue": "Old Mother Jin pauses over a tray of wrapped parcels and looks up as you enter.", "npc_msg": "The scribe is beyond the next partition. Wen. He hears more than he says, which is why people keep finding reasons to visit him. The patrols call this lane the black market. Customers who earn enough trust can reach the Back Room, but anything bought there is contraband, and checkpoints take an interest in that sort of thing. When you see Wen, let him finish what he is doing before you start asking questions. He remembers who is impatient.", "narration": "Jin grips the handcart by its handles and draws it closer to the wall, clearing the eastern passage.", "npc_first": True, "blocked_exits": {"orientation_blackmarket": {"east": {"stage": 55, "message": "Jin's handcart still narrows the eastern passage."}}}}, {"verb": "go", "target": "east", "cmd_hint": "GO EAST", "narration": "You pass the stacked crates and follow the smell of ink through the eastern partition."}],
-    [{"room_id": "orientation_rumors"}, {"verb": "rumors", "from_npc": "orientation_scribe_wen", "cmd_hint": "RUMORS", "cue": "Copied notices lie in neat stacks across Wen's desk. A second pile of loose slips waits beside his brush. RUMORS opens your Rumours panel in two sections: Known Rumours you have gathered and Overheard Exchanges reaching you right now. Rumours can also surface through conversation, and asking people about what you hear may reveal more. As a rumour spreads, factions may alter the version that reaches you.", "cue_speech": "Those slips beside the brush are today's talk. Some describe the same event differently. Look at who passed each version along before you decide which one you believe.", "narration": "Wen turns a page and draws the folding screen closer to the wall. Beyond it, a corridor of closed doors leads toward the listening post.", "blocked_exits": {"orientation_rumors": {"east": {"stage": 57, "message": "The eastern corridor is still closed off by a folding screen."}}}}, {"verb": "go", "target": "east", "cmd_hint": "GO EAST", "narration": "You pass the row of closed doors and follow the corridor to the listening post."}],
-    [{"room_id": "orientation_eavesdrop"}, {"verb": "talk to", "target": "old crane", "from_npc": "orientation_old_crane", "cmd_hint": "TALK TO OLD CRANE", "cue": "Old Crane lowers one hand from the listening pipe and studies you across the narrow room.", "npc_msg": "Keep your voice down. That brass pipe carries talk from the rooms below better than the open window carries anything from the street. Sit here long enough and you will hear arguments, bargains, names people should know better than to say aloud, and every so often something worth remembering. Drunk men exaggerate. Frightened men leave things out. Compare what you hear before you decide what to repeat.", "narration": "The exchanges carried through this room reach your Rumours panel as they are heard.", "msg": "Old Crane reaches past the worn chair and lifts the wooden latch from the eastern door. The passage beyond leads toward the Resistance Contact Point.", "npc_first": True, "blocked_exits": {"orientation_eavesdrop": {"east": {"stage": 59, "message": "Old Crane has not yet lifted the latch on the eastern door."}}}}, {"verb": "go", "target": "east", "cmd_hint": "GO EAST", "narration": "You leave the listening pipe behind and pass through the eastern door."}],
-    [{"room_id": "orientation_contact"}, {"verb": "talk to", "target": "sister zhao", "from_npc": "orientation_sister_zhao", "cmd_hint": "TALK TO SISTER ZHAO", "cue": "Sister Zhao turns toward you as you enter and waits for you to speak.", "npc_msg": "The passage east is clear for now. It was not clear an hour ago, and it may not be clear later. Keep moving until you reach the river road. Once you are out there, look before you step into the open. No one here can tell you what is waiting around the next corner.", "narration": "Zhao sets down her cup, crosses to the eastern door and draws back the wooden bolt.", "npc_first": True, "blocked_exits": {"orientation_contact": {"east": {"stage": 62, "message": "Sister Zhao has not yet opened the eastern door."}}}}, {"verb": "bond", "target": "sister zhao", "from_npc": "orientation_sister_zhao", "hint_level": "explicit", "cmd_hint": "BOND SISTER ZHAO", "cue": "Zhao glances at the food you carry and waits. BOND shares a meal with an NPC to build friendship and indebtedness. Friendship can keep doors open after the work is done, and the person you share with will remember the kindness.", "cue_speech": "We share what we have in this house. Sit with me and eat before you go.", "journal_entry": "BOND shares food with an NPC to build friendship and indebtedness. Sister Zhao will remember the shared meal.", "narration": "You share the food with Sister Zhao. She nods once, and the eastern door stands ready."}, {"verb": "go", "target": "east", "cmd_hint": "GO EAST", "narration": "You pass through the eastern door and follow the narrow passage toward the river road."}],
-    [{"room_id": "orientation_alley"}, {"verb": "look", "cmd_hint": "LOOK", "msg": "Beyond the southern mouth, the river road is open.", "blocked_exits": {"orientation_alley": {"south": {"stage": 64, "message": "Take stock of the alley before you step into the open street."}}}}, {"verb": "go", "target": "south", "cmd_hint": "GO SOUTH", "narration": "You leave the damp passage and step onto the broad road above the river."}],
+    [{"room_id": "orientation_weather"}, {"verb": "talk to", "target": "meteorologist zhang", "from_npc": "orientation_meteorologist_zhang", "cmd_hint": "TALK TO METEOROLOGIST ZHANG", "cue": "Zhang finishes a line in the ledger, sets down the chalk, and looks toward you.", "cue_speech": "The pressure has been falling since dawn. Rain should reach this district before noon. Pay attention to the weather when you make your plans. Fog makes it easier to stay hidden, but harder to notice what is around you. Rain muffles sound, while a storm carries sound farther. Winter makes hunger drain faster. Look at the sky before you plan to spend a night outside.", "narration": "Zhang picks up the chalk again. Beyond the instrument tables, the eastern door stands clear.", "blocked_exits": {"orientation_weather": {"east": {"stage": 50, "message": "Zhang has set aside his chalk and is waiting for you to speak."}}}}, {"verb": "go", "target": "east", "cmd_hint": "GO EAST", "narration": "You pass between the instrument tables and through the eastern door."}],
+    [{"room_id": "orientation_trust"}, {"verb": "trust", "from_npc": "orientation_elder_qian", "cmd_hint": "TRUST", "cue": "TRUST shows how each faction currently regards you. Trust runs from 0 to 100. Helpful acts raise it, hostile acts lower it, and neglected relationships decay slowly. Higher trust can improve prices, dialogue, and access to faction work.", "cue_speech": "Mrs. Lin's word helped you with Chen. Somewhere else, being known to Chen might work against you. Do not assume every faction sees you the same way, or that an old relationship still stands where you left it. Check where you stand before you rely on it.", "narration": "Beyond the eastern door, a narrow corridor is lined with official notices and photographs.", "blocked_exits": {"orientation_trust": {"east": {"stage": 52, "message": "Check your faction trust levels before continuing."}}}}, {"verb": "go", "target": "east", "cmd_hint": "GO EAST", "narration": "You pass through the eastern door and enter the notice-lined corridor."}],
+    [{"room_id": "orientation_wanted"}, {"verb": "wanted", "from_npc": "orientation_inspector_park", "cmd_hint": "WANTED", "cue": "Before entering the market, check whether the police are looking for you. WANTED shows your Wanted level from 0 to 3. It rises when you are caught breaking the law and falls after days without further trouble. Each level makes arrest more likely and disguises easier to pierce, and at level 2 ordinary vendors refuse to serve you.", "cue_speech": "Before you walk into that market, know how much attention you are drawing. The police do not need your name to remember you. A coat, a voice, the direction you ran, the same description passed between two posts can be enough. If people in uniform are beginning to look twice when you pass, it may be time to keep a lower profile.", "narration": "Beyond the eastern door, the official notices thin out and the corridor narrows toward a shuttered alley.", "blocked_exits": {"orientation_wanted": {"east": {"stage": 54, "message": "Check your wanted status before entering the market."}}}}, {"verb": "go", "target": "east", "cmd_hint": "GO EAST", "narration": "You leave the notice-covered walls behind and pass into the shuttered alley."}],
+    [{"room_id": "orientation_blackmarket"}, {"verb": "talk to", "target": "old mother jin", "from_npc": "orientation_mother_jin", "cmd_hint": "TALK TO OLD MOTHER JIN", "cue": "Old Mother Jin pauses over a tray of wrapped parcels and looks up as you enter.", "npc_msg": "The scribe is beyond the next partition. Wen. He hears more than he says, which is why people keep finding reasons to visit him. The patrols call this lane the black market. Customers who earn enough trust can reach the Back Room, but anything bought there is contraband, and checkpoints take an interest in that sort of thing. When you see Wen, let him finish what he is doing before you start asking questions. He remembers who is impatient.", "narration": "Jin grips the handcart by its handles and draws it closer to the wall, clearing the eastern passage.", "npc_first": True, "blocked_exits": {"orientation_blackmarket": {"east": {"stage": 56, "message": "Jin's handcart still narrows the eastern passage."}}}}, {"verb": "go", "target": "east", "cmd_hint": "GO EAST", "narration": "You pass the stacked crates and follow the smell of ink through the eastern partition."}],
+    [{"room_id": "orientation_rumors"}, {"verb": "rumors", "from_npc": "orientation_scribe_wen", "cmd_hint": "RUMORS", "cue": "Copied notices lie in neat stacks across Wen's desk, and his apprentice waits beside them with a fresh run of handbills. Their talk reached you the moment you stepped in: conversations appear on their own under Overheard Exchanges, and no command gathers them; standing in the room does. Information you have actually learned from people you have met settles separately under Known Rumours. RUMORS opens the panel so you can read both.", "cue_speech": "You arrived in the middle of a conversation. Good. Most of what this city knows is overheard, not told. The boy argues about grain prices because the press cannot keep its story straight. Read what reached you before you decide which version you believe.", "narration": "The exchange you overheard waits under Overheard Exchanges, and what you have learned from people you have met waits under Known Rumours.", "journal_entry": "RUMORS separates lasting information from conversations I overhear. Known Rumours keeps information I have learned; Overheard Exchanges keeps conversations that reached me in passing.", "blocked_exits": {"orientation_rumors": {"east": {"stage": 58, "message": "The eastern corridor is still closed off by a folding screen."}}}}, {"verb": "go", "target": "east", "cmd_hint": "GO EAST", "narration": "You pass the row of closed doors and follow the corridor to the listening post."}],
+    [{"room_id": "orientation_eavesdrop"}, {"verb": "talk to", "target": "old crane", "from_npc": "orientation_old_crane", "cmd_hint": "TALK TO OLD CRANE", "cue": "Old Crane lowers one hand from the listening pipe. On the landing behind him, Widow Kang sets down her kettle, and the exchange you overheard between them as you climbed is already waiting under Overheard Exchanges in your Rumours panel. Presence alone brings the room's talk to you; no command gathers it.", "npc_msg": "You heard us on the stairs, so you already know how this works. What reaches you lands in the Rumours panel on its own. Drunk men exaggerate. Frightened men leave things out. Compare what you actually heard against what you are told before you decide what to repeat.", "narration": "The exchange you overheard between Old Crane and Widow Kang remains in your Rumours panel. Widow Kang collects the cups without hurry and takes her place by the eastern door.", "msg": "Old Crane nods once toward Widow Kang, who lifts the wooden latch from the eastern door. The passage beyond leads toward the Resistance Contact Point.", "journal_entry": "Room-local exchanges reach the Rumours panel automatically while I stand in the room. Old Crane taught me to compare overheard versions before repeating any of them.", "npc_first": True, "blocked_exits": {"orientation_eavesdrop": {"east": {"stage": 60, "message": "Old Crane has not yet lifted the latch on the eastern door."}}}}, {"verb": "go", "target": "east", "cmd_hint": "GO EAST", "narration": "You leave the listening pipe behind and pass through the eastern door."}],
+    [{"room_id": "orientation_contact"}, {"verb": "talk to", "target": "sister zhao", "from_npc": "orientation_sister_zhao", "cmd_hint": "TALK TO SISTER ZHAO", "cue": "Sister Zhao turns toward you as you enter and waits for you to speak.", "npc_msg": "The passage east is clear for now. It was not clear an hour ago, and it may not be clear later. Keep moving until you reach the river road. Once you are out there, look before you step into the open. No one here can tell you what is waiting around the next corner.", "narration": "Zhao sets down her cup, crosses to the eastern door and draws back the wooden bolt.", "npc_first": True, "blocked_exits": {"orientation_contact": {"east": {"stage": 63, "message": "Sister Zhao has not yet opened the eastern door."}}}}, {"verb": "bond", "target": "sister zhao", "from_npc": "orientation_sister_zhao", "hint_level": "explicit", "cmd_hint": "BOND SISTER ZHAO", "cue": "Zhao gestures toward the food on the table and waits. BOND shares a meal with an NPC to build friendship and indebtedness. Friendship can keep doors open after the work is done, and the person you share with will remember the kindness. If you carry no food, TAKE the baozi beside the kettle first.", "cue_speech": "We share what we have in this house. Sit with me and eat before you go.", "journal_entry": "BOND shares food with an NPC to build friendship and indebtedness. Sister Zhao will remember the shared meal.", "narration": "You share the food with Sister Zhao. She nods once, and the eastern door stands ready."}, {"verb": "go", "target": "east", "cmd_hint": "GO EAST", "narration": "You pass through the eastern door and follow the narrow passage toward the river road."}],
+    [{"room_id": "orientation_alley"}, {"verb": "look", "hint_level": "explicit", "cmd_hint": "LOOK", "teaching_hint": "LOOK reveals details in your current location before you move on.", "cue": "The last sheltered lesson happens here. LOOK takes in your surroundings: who shares the alley with you and which way out lies open.", "msg": "Beyond the southern mouth, the river road is open.", "blocked_exits": {"orientation_alley": {"south": {"stage": 65, "message": "Take stock of the alley before you step into the open street."}}}}, {"verb": "go", "target": "south", "cmd_hint": "GO SOUTH", "narration": "You leave the damp passage and step onto the broad road above the river."}],
 ]
 
 _ROOM_ORDER = [
@@ -431,6 +634,7 @@ _ROOM_ORDER = [
     _ROOM_MARKET_STREET,
     _ROOM_WAREHOUSE,
     _ROOM_OUTPOST,
+    _ROOM_CHECKPOINT_CROSSING,
     _ROOM_ROOFTOP,
     _ROOM_DOCK,
     *_ROOM_EXIT_AND_ORIENTATION,
@@ -460,47 +664,50 @@ _STAGE_META: Dict[int, Dict[str, str]] = {
     12: {"stage_id": "back_alley_take_note", "hint_family": "take_item"},
     13: {"stage_id": "back_alley_examine_note", "hint_family": "examine"},
     14: {"stage_id": "back_alley_ask_note", "hint_family": "ask_about"},
-    15: {"stage_id": "back_alley_go_east", "hint_family": "go"},
-    16: {"stage_id": "market_status", "hint_family": "status"},
-    17: {"stage_id": "market_buy", "hint_family": "buy_from"},
-    18: {"stage_id": "market_equip_gear"},
-    19: {"stage_id": "market_go_east", "hint_family": "go"},
-    20: {"stage_id": "warehouse_assess", "hint_family": "assess"},
-    21: {"stage_id": "warehouse_attack", "hint_family": "attack"},
-    23: {"stage_id": "warehouse_open_safe", "hint_family": "open"},
-    24: {"stage_id": "warehouse_take_from_safe", "hint_family": "take_from"},
-    26: {"stage_id": "warehouse_go_east", "hint_family": "go"},
-    28: {"stage_id": "outpost_disguise", "hint_family": "disguise_as"},
-    29: {"stage_id": "outpost_tail", "hint_family": "tail"},
-    30: {"stage_id": "outpost_go_east", "hint_family": "go"},
-    32: {"stage_id": "rooftop_yell", "hint_family": "yell"},
-    33: {"stage_id": "rooftop_remove_disguise", "hint_family": "remove_disguise"},
-    35: {"stage_id": "rooftop_go_east", "hint_family": "go"},
-    37: {"stage_id": "dock_give_kit", "hint_family": "give"},
-    38: {"stage_id": "dock_missions", "hint_family": "missions"},
-    39: {"stage_id": "dock_journal", "hint_family": "journal"},
-    40: {"stage_id": "dock_claim", "hint_family": "claim"},
-    41: {"stage_id": "dock_go_east", "hint_family": "go"},
-    43: {"stage_id": "cellar_go_east", "hint_family": "go"},
-    45: {"stage_id": "bund_exit_go_west", "hint_family": "go"},
-    47: {"stage_id": "checkpoint_go_south", "hint_family": "go"},
-    48: {"stage_id": "weather_talk", "hint_family": "talk_to"},
-    49: {"stage_id": "weather_go_east", "hint_family": "go"},
-    50: {"stage_id": "trust_check", "hint_family": "trust"},
-    51: {"stage_id": "trust_go_east", "hint_family": "go"},
-    52: {"stage_id": "wanted_check", "hint_family": "wanted"},
-    53: {"stage_id": "wanted_go_east", "hint_family": "go"},
-    54: {"stage_id": "blackmarket_talk", "hint_family": "talk_to"},
-    55: {"stage_id": "blackmarket_go_east", "hint_family": "go"},
-    56: {"stage_id": "rumors_check", "hint_family": "rumors"},
-    57: {"stage_id": "rumors_go_east", "hint_family": "go"},
-    58: {"stage_id": "eavesdrop_talk", "hint_family": "talk_to"},
-    59: {"stage_id": "eavesdrop_go_east", "hint_family": "go"},
-    60: {"stage_id": "contact_talk", "hint_family": "talk_to"},
-    61: {"stage_id": "contact_bond", "hint_family": "bond"},
-    62: {"stage_id": "contact_go_east", "hint_family": "go"},
-    63: {"stage_id": "alley_look", "hint_family": "look"},
-    64: {"stage_id": "alley_go_south", "hint_family": "go"},
+    15: {"stage_id": "back_alley_tail_intro", "hint_family": "tail"},
+    16: {"stage_id": "back_alley_tail_follow", "hint_family": "tail"},
+    17: {"stage_id": "back_alley_tail_break_off", "hint_family": "stop"},
+    18: {"stage_id": "market_status", "hint_family": "status"},
+    19: {"stage_id": "market_buy", "hint_family": "buy_from"},
+    20: {"stage_id": "market_equip_gear"},
+    21: {"stage_id": "market_go_east", "hint_family": "go"},
+    22: {"stage_id": "warehouse_assess", "hint_family": "assess"},
+    23: {"stage_id": "warehouse_attack", "hint_family": "attack"},
+    25: {"stage_id": "warehouse_open_safe", "hint_family": "open"},
+    26: {"stage_id": "warehouse_take_from_safe", "hint_family": "take_from"},
+    28: {"stage_id": "warehouse_go_east", "hint_family": "go"},
+    30: {"stage_id": "outpost_disguise", "hint_family": "disguise_as"},
+    31: {"stage_id": "checkpoint_go_west", "hint_family": "go"},
+    32: {"stage_id": "checkpoint_yell", "hint_family": "yell"},
+    33: {"stage_id": "checkpoint_cross_outpost", "hint_family": "go"},
+    34: {"stage_id": "checkpoint_cross_rooftop", "hint_family": "go"},
+    35: {"stage_id": "rooftop_remove_disguise", "hint_family": "remove_disguise"},
+    36: {"stage_id": "rooftop_go_east", "hint_family": "go"},
+    38: {"stage_id": "dock_give_kit", "hint_family": "give"},
+    39: {"stage_id": "dock_missions", "hint_family": "missions"},
+    40: {"stage_id": "dock_journal", "hint_family": "journal"},
+    41: {"stage_id": "dock_claim", "hint_family": "claim"},
+    42: {"stage_id": "dock_go_east", "hint_family": "go"},
+    44: {"stage_id": "cellar_go_east", "hint_family": "go"},
+    46: {"stage_id": "bund_exit_go_west", "hint_family": "go"},
+    48: {"stage_id": "checkpoint_go_south", "hint_family": "go"},
+    49: {"stage_id": "weather_talk", "hint_family": "talk_to"},
+    50: {"stage_id": "weather_go_east", "hint_family": "go"},
+    51: {"stage_id": "trust_check", "hint_family": "trust"},
+    52: {"stage_id": "trust_go_east", "hint_family": "go"},
+    53: {"stage_id": "wanted_check", "hint_family": "wanted"},
+    54: {"stage_id": "wanted_go_east", "hint_family": "go"},
+    55: {"stage_id": "blackmarket_talk", "hint_family": "talk_to"},
+    56: {"stage_id": "blackmarket_go_east", "hint_family": "go"},
+    57: {"stage_id": "rumors_check", "hint_family": "rumors"},
+    58: {"stage_id": "rumors_go_east", "hint_family": "go"},
+    59: {"stage_id": "eavesdrop_talk", "hint_family": "talk_to"},
+    60: {"stage_id": "eavesdrop_go_east", "hint_family": "go"},
+    61: {"stage_id": "contact_talk", "hint_family": "talk_to"},
+    62: {"stage_id": "contact_bond", "hint_family": "bond"},
+    63: {"stage_id": "contact_go_east", "hint_family": "go"},
+    64: {"stage_id": "alley_look", "hint_family": "look"},
+    65: {"stage_id": "alley_go_south", "hint_family": "go"},
 }
 
 _stage_idx = 0
@@ -525,7 +732,8 @@ for _d in _STAGE_DEFS:
                    "required_indirect", "requires_read_note", "note", "require_both", "flag", "narration",
                    "stage_id", "hint_family", "cue", "cue_speech", "topics",
                    "arrival_text", "required_targets", "sub_hints",
-                   "required_disguise", "required_target", "npc_first"):
+                   "required_disguise", "required_target", "npc_first",
+                   "require_npc_room"):
         if _d.get(_k):
             _action[_k] = _d[_k]
     if _d.get("msg"):
@@ -537,7 +745,9 @@ for _d in _STAGE_DEFS:
     if _d.get("narration"):
         _action["narration"] = _d["narration"]
     room_id = ROOM_FOR_STAGE.get(_stage_idx)
-    if room_id:
+    if _d.get("action_room"):
+        _action["room_id"] = _d["action_room"]
+    elif room_id:
         _action["room_id"] = room_id
 
     sid = _d.get("stage_id") or _STAGE_META.get(_stage_idx, {}).get("stage_id", "")
@@ -574,6 +784,113 @@ TUTORIAL_ROOM_IDS: List[str] = [
     "orientation_contact",
     "orientation_alley",
 ]
+
+
+CONTACT_BOND_FOOD_ITEM_ID = "baozi"
+_CONTACT_BOND_STAGE_IDS = ("contact_talk", "contact_bond")
+
+ROOFTOP_REMOVE_DISGUISE_STAGE_ID = "rooftop_remove_disguise"
+FANG_JIE_TUTORIAL_NPC_ID = "tutorial_fang_jie"
+FANG_JIE_ENCOUNTER_STAGE_IDS = frozenset({
+    "outpost_disguise",
+    "checkpoint_go_west",
+    "checkpoint_yell",
+    "checkpoint_cross_outpost",
+    "checkpoint_cross_rooftop",
+})
+
+_FANG_JIE_HELD_NARRATION = (
+    "Fang Jie's gaze lingers on the uniform a moment longer than is comfortable, then moves on."
+)
+_FANG_JIE_HELD_HINT = (
+    "Your disguise held this time. Observant characters may still see through a disguise."
+)
+_FANG_JIE_EXPOSED_NARRATION = "Fang Jie looks from the coat to your face."
+_FANG_JIE_EXPOSED_SPEECH = "Clothes can fool a sentry. They cannot fool everyone."
+_FANG_JIE_EXPOSED_HINT = (
+    "Fang Jie saw through your disguise. Exposure can end the identity you were presenting."
+)
+
+_EXPOSED_ROOFTOP_OVERRIDE = {
+    "verb": "status",
+    "target": "",
+    "cmd_hint": "STATUS",
+    "hint_family": "status",
+    "cue": (
+        "The roof is quiet. The uniform got you past the sentry, but not past Fang Jie's eyes. "
+        "The borrowed rank ended at her glance; see your situation plainly before you move on."
+    ),
+    "teaching_hint": (
+        "Exposure ends the identity you were presenting. "
+        "Use STATUS to confirm that you are no longer disguised."
+    ),
+}
+
+_EXPOSED_ROOFTOP_ACTION: Optional[dict] = None
+
+
+def exposed_rooftop_action() -> dict:
+    global _EXPOSED_ROOFTOP_ACTION
+    if _EXPOSED_ROOFTOP_ACTION is None:
+        for action in STAGE_ACTIONS.values():
+            if action.get("stage_id") == ROOFTOP_REMOVE_DISGUISE_STAGE_ID:
+                variant = dict(action)
+                variant.update(_EXPOSED_ROOFTOP_OVERRIDE)
+                _EXPOSED_ROOFTOP_ACTION = variant
+                break
+    return _EXPOSED_ROOFTOP_ACTION or {}
+
+
+def stage_action_for(player: Any, stage: int) -> dict:
+    action = STAGE_ACTIONS.get(stage) or {}
+    if action.get("stage_id") != ROOFTOP_REMOVE_DISGUISE_STAGE_ID:
+        return action
+    if getattr(player, "disguise", ""):
+        return action
+    return exposed_rooftop_action()
+
+
+async def note_tutorial_disguise_pierce(ctx, npc, pierce_stage: Any) -> None:
+    from .stealth import PierceStage
+
+    player = ctx.session.player
+    if not getattr(player, "in_tutorial", False):
+        return
+    npc_id = str(getattr(npc, "id", ""))
+    if not npc_id.endswith(FANG_JIE_TUTORIAL_NPC_ID):
+        return
+    action = STAGE_ACTIONS.get(getattr(player, "tutorial_stage", 0)) or {}
+    if action.get("stage_id") not in FANG_JIE_ENCOUNTER_STAGE_IDS:
+        return
+    exposed = pierce_stage == PierceStage.EXPOSED
+    marker = "fang_jie_disguise_exposed" if exposed else "fang_jie_disguise_held"
+    emitted = getattr(player, "tutorial_entries_emitted", None)
+    if emitted is None:
+        emitted = set()
+        player.tutorial_entries_emitted = emitted
+    if marker in emitted:
+        return
+    emitted.add(marker)
+    if exposed:
+        await ctx.session.send_display(
+            _FANG_JIE_EXPOSED_NARRATION, msg_type=MessageType.TUTORIAL
+        )
+        await ctx.session.send_npc_speech(
+            npc_id, getattr(npc, "name", "Fang Jie"), _FANG_JIE_EXPOSED_SPEECH
+        )
+        payload = _FANG_JIE_EXPOSED_HINT
+    else:
+        await ctx.session.send_display(
+            _FANG_JIE_HELD_NARRATION, msg_type=MessageType.TUTORIAL
+        )
+        payload = _FANG_JIE_HELD_HINT
+    await ctx.session.send_hint(
+        hint_id=marker,
+        stage_id=marker,
+        payload=payload,
+        immediate=True,
+        room_id=getattr(player, "current_room", ""),
+    )
 
 
 @dataclass(frozen=True)
@@ -676,7 +993,7 @@ async def advance_tutorial(
 ) -> None:
     player = ctx.session.player
     stage = getattr(player, "tutorial_stage", 0)
-    action = STAGE_ACTIONS.get(stage)
+    action = stage_action_for(player, stage)
     if not action:
         return
     if action.get("verb") == "none":
@@ -688,7 +1005,7 @@ async def advance_tutorial(
 
     confirmation = _normalise_tutorial_value(action.get("confirm_on", ""))
     if confirmation:
-        if _event_has_succeeded(player, action, TutorialEvent(verb, target, indirect, "")):
+        if _event_has_succeeded(player, action, TutorialEvent(verb, target, indirect, ""), ctx.shared):
             await _advance_stage(ctx, stage, action)
         else:
             await _emit_stage_entry(ctx)
@@ -701,7 +1018,6 @@ async def advance_tutorial(
     ):
         await _advance_stage(ctx, stage, action)
 
-
 def _slot_holds_catalog_item(player, slot_attr: str, item_id: str) -> bool:
     slot = getattr(player, slot_attr, "") or ""
     if not slot:
@@ -713,7 +1029,7 @@ def _slot_holds_catalog_item(player, slot_attr: str, item_id: str) -> bool:
     return item is not None and item.id == item_id
 
 
-def _event_has_succeeded(player, action: dict, event: TutorialEvent) -> bool:
+def _event_has_succeeded(player, action: dict, event: TutorialEvent, shared=None) -> bool:
     stage = getattr(player, "tutorial_stage", 0)
     if action.get("sub_hints"):
         return False
@@ -752,6 +1068,33 @@ def _event_has_succeeded(player, action: dict, event: TutorialEvent) -> bool:
             or _normalise_tutorial_value(getattr(item, "name", "")) in expected
             for item in getattr(player, "inventory", [])
         )
+    req = action.get("require_npc_room")
+    if req and shared is not None:
+        req_npc = req["npc"]
+        req_room = req["room"]
+        if getattr(player, "in_tutorial", False):
+            instance_id = getattr(player, "tutorial_instance_id", "")
+            req_npc = f"tut_{instance_id}_{req_npc}"
+            req_room = get_cloned_room_id(instance_id, req_room, shared)
+        if getattr(shared.world, "npc_locations", {}).get(req_npc) != req_room:
+            return False
+    if event.verb == "yell":
+        if shared is None:
+            return True
+        target_room = getattr(player, "current_room", "")
+        for npc in getattr(shared.world, "npcs", {}).values():
+            if getattr(npc, "faction", "") != "kempeitai":
+                continue
+            if int(getattr(npc, "hp", 100)) <= 0:
+                continue
+            blackboard = getattr(npc, "_blackboard", None)
+            heard = (blackboard.get("last_heard_sound") if blackboard else None) or {}
+            if (
+                heard.get("investigator_target_room_id") == target_room
+                or heard.get("room_id") == target_room
+            ):
+                return True
+        return False
     return True
 
 
@@ -799,11 +1142,52 @@ def normalize_to_actionable_stage(player) -> int:
     return stage
 
 
+DISGUISE_REMOVAL_BLOCKED_STAGE_IDS = frozenset({
+    "outpost_disguise",
+    "checkpoint_go_west",
+    "checkpoint_yell",
+    "checkpoint_cross_outpost",
+})
+
+
+def stage_blocks_disguise_removal(player) -> bool:
+    stage = getattr(player, "tutorial_stage", 0)
+    action = STAGE_ACTIONS.get(stage) or {}
+    return action.get("stage_id") in DISGUISE_REMOVAL_BLOCKED_STAGE_IDS
+
+
+def live_npc_exit_blocks(player, shared, room_id: str) -> dict:
+    stage = getattr(player, "tutorial_stage", 0)
+    instance_id = getattr(player, "tutorial_instance_id", "")
+    result: dict = {}
+    if not instance_id:
+        return result
+    for blocks in STAGE_BLOCKED_EXITS.values():
+        for direction, info in blocks.get(room_id, {}).items():
+            req = info.get("require_npc_room")
+            if not req:
+                continue
+            release_gate = info.get("stage", 0)
+            window = release_gate + info.get("live_window", 99)
+            if stage < release_gate or stage > window:
+                continue
+            npc_id = f"tut_{instance_id}_{req['npc']}"
+            required_room = get_cloned_room_id(instance_id, req["room"], shared)
+            if shared.world.npc_locations.get(npc_id) != required_room:
+                result[direction] = info.get(
+                    "live_message",
+                    info.get("message", "Complete the current objective first."),
+                )
+    return result
+
+
 def blocked_exits_for_room(room_id: str, stage: int) -> dict:
     result: dict = {}
     for blocks in STAGE_BLOCKED_EXITS.values():
         room_blocks = blocks.get(room_id, {})
         for direction, info in room_blocks.items():
+            if info.get("require_npc_room"):
+                continue
             release = info.get("stage", 0)
             if stage < release:
                 result[direction] = info.get(
@@ -823,10 +1207,14 @@ async def _send_tutorial_payload(ctx, text: str, *, msg_type: MessageType = Mess
 
 
 async def _send_tutorial_hint(ctx, stage: int, action: dict, force_immediate: bool = False) -> None:
-    payload = action.get("teaching_hint") or action.get("cmd_hint")
+    player = ctx.session.player
+    payload = render_stage_hint(
+        action,
+        getattr(ctx.shared.world, "item_catalog", None),
+        player=player,
+    )
     if not payload:
         return
-    player = ctx.session.player
     family = hint_family_for(action)
     hint_id = action.get("stage_id") or f"stage_{stage}"
     emitted = getattr(player, "tutorial_emitted_hints", None)
@@ -850,7 +1238,7 @@ async def _send_tutorial_hint(ctx, stage: int, action: dict, force_immediate: bo
 async def _emit_stage_entry(ctx, replay_only: bool = False, force_immediate: bool = False) -> None:
     player = ctx.session.player
     stage = normalize_to_actionable_stage(player)
-    action = STAGE_ACTIONS.get(stage)
+    action = stage_action_for(player, stage)
     if not action or getattr(player, "tutorial_stage", 0) >= len(STAGE_ACTIONS):
         return
 
@@ -863,6 +1251,10 @@ async def _emit_stage_entry(ctx, replay_only: bool = False, force_immediate: boo
 
     if not replay_only and first_emit:
         cue = action.get("cue", "")
+        if cue and action.get("stage_id") == WAREHOUSE_ATTACK_STAGE_ID:
+            cue = format_warehouse_attack_cue(
+                cue, runtime_warehouse_attack_values(ctx, action)
+            )
         if cue:
             await _send_tutorial_payload(ctx, cue, msg_type=MessageType.TUTORIAL)
         from_npc = action.get("from_npc", "")
@@ -873,6 +1265,8 @@ async def _emit_stage_entry(ctx, replay_only: bool = False, force_immediate: boo
                 if cue_speech:
                     await ctx.session.send_npc_speech(from_npc, npc.name, cue_speech)
         entries_emitted.add(hint_id)
+    if action.get("hint_level") == "explicit" or force_immediate:
+        await _send_tutorial_hint(ctx, stage, action, force_immediate=True)
 
     topics = action.get("topics") or []
     if topics:
@@ -883,96 +1277,6 @@ async def _emit_stage_entry(ctx, replay_only: bool = False, force_immediate: boo
             msg_type=MessageType.TUTORIAL,
         )
 
-    if stage == 18:
-        sub_hints = action.get("sub_hints") or {}
-        worn_ok = _slot_holds_catalog_item(player, "worn_armour_id", "quilted_jacket")
-        equip_ok = _slot_holds_catalog_item(player, "equipped_weapon_id", "wooden_club")
-        active_sub = None
-        if not worn_ok:
-            active_sub = sub_hints.get("market_wear_jacket")
-        elif not equip_ok:
-            active_sub = sub_hints.get("market_equip_club")
-        if active_sub:
-            await _send_tutorial_hint(ctx, stage, active_sub, force_immediate=force_immediate)
-        return
-
-    await _send_tutorial_hint(ctx, stage, action, force_immediate=force_immediate)
-
-
-async def record_tutorial_event(ctx, event: TutorialEvent) -> bool:
-    player = ctx.session.player
-    stage = getattr(player, "tutorial_stage", 0)
-    action = STAGE_ACTIONS.get(stage)
-    if action and action.get("confirm_on") == "purchase" and event.verb == "buy":
-        tutorial_set_confirmation(player, stage, verb="purchase")
-        if event.target:
-            progress = getattr(player, "tutorial_progress", None)
-            if progress is None:
-                progress = {}
-                player.tutorial_progress = progress
-            progress.setdefault(f"stage_{stage}", set()).add(event.target)
-    if not action or not stage_accepts_event(action, event, player):
-        return False
-
-    if stage == 18:
-        sub_hints = action.get("sub_hints") or {}
-        matched_sub = None
-        for sub_id, sub in sub_hints.items():
-            required = _normalise_tutorial_value(sub.get("required_item", ""))
-            target_norm = _normalise_tutorial_value(event.target or "")
-            if required == target_norm:
-                matched_sub = sub
-                break
-
-        if not matched_sub:
-            return False
-
-        state_check = matched_sub.get("state_check", "")
-        if state_check == "worn":
-            state_ok = _slot_holds_catalog_item(player, "worn_armour_id", matched_sub.get("required_item", ""))
-        elif state_check == "equipped":
-            state_ok = _slot_holds_catalog_item(player, "equipped_weapon_id", matched_sub.get("required_item", ""))
-        else:
-            state_ok = True
-
-        if not state_ok:
-            return False
-
-        progress = getattr(player, "tutorial_progress", None)
-        if progress is None:
-            progress = {}
-            player.tutorial_progress = progress
-        completed = progress.setdefault("stage_18", set())
-        completed.add(matched_sub.get("required_item", ""))
-
-        sub_family = matched_sub.get("hint_family", "")
-        if sub_family:
-            uses = getattr(player, "tutorial_command_uses", None)
-            if uses is None:
-                uses = {}
-                player.tutorial_command_uses = uses
-            family = sub_family
-            if matched_sub.get("required_item", "") not in completed or len(completed) == 1:
-                uses[family] = uses.get(family, 0)
-            families_done = progress.setdefault("stage_18_families", set())
-            if family not in families_done:
-                uses[family] = uses.get(family, 0) + 1
-                families_done.add(family)
-
-        worn_ok = _slot_holds_catalog_item(player, "worn_armour_id", "quilted_jacket")
-        equip_ok = _slot_holds_catalog_item(player, "equipped_weapon_id", "wooden_club")
-        if worn_ok and equip_ok:
-            await _advance_stage(ctx, stage, action)
-            return True
-
-        await _emit_stage_entry(ctx)
-        return True
-
-    if not _event_has_succeeded(player, action, event):
-        return False
-    await _advance_stage(ctx, stage, action)
-    return True
-
 
 async def _advance_stage(ctx, stage: int, action: dict) -> None:
     player = ctx.session.player
@@ -980,11 +1284,15 @@ async def _advance_stage(ctx, stage: int, action: dict) -> None:
     advance_tutorial_stage(player)
     while True:
         next_stage = getattr(player, "tutorial_stage", 0)
-        next_action = STAGE_ACTIONS.get(next_stage)
+        next_action = stage_action_for(player, next_stage)
         if not next_action or next_action.get("verb") != "none":
             break
         await _send_advance_message(ctx, next_stage, next_action)
         advance_tutorial_stage(player)
+    new_stage = getattr(player, "tutorial_stage", 0)
+    new_action = stage_action_for(player, new_stage)
+    if new_action.get("stage_id") == "back_alley_tail_break_off":
+        _run_porter_choreography(ctx)
     if getattr(player, "tutorial_stage", 0) >= len(STAGE_ACTIONS):
         await complete_tutorial(ctx)
         return
@@ -1029,6 +1337,7 @@ async def graduate_tutorial_player(ctx, message: str, *, send_handoff: bool = Tr
     player.tutorial_resume_room_id = ""
     player.tutorial_revealed_rooms = []
     player.tutorial_vendor_depletion = {}
+    player.tutorial_social_exchanges = {}
     player.current_room = "bund_dawn"
     player.map_revealed = ["bund_dawn"]
     bund_room = ctx.shared.world.get_room(player.current_room)
@@ -1057,6 +1366,148 @@ async def graduate_tutorial_player(ctx, message: str, *, send_handoff: bool = Tr
     await close_popup_if_kind(ctx, "stash", "invalid")
     if send_handoff:
         await _send_graduation_cue(ctx, message)
+
+async def record_tutorial_event(ctx, event: TutorialEvent, action: Optional[dict] = None) -> bool:
+    try:
+        return await _record_tutorial_event_inner(ctx, event, action)
+    finally:
+        _ensure_contact_bond_food(ctx.session.player, ctx.shared)
+
+
+async def _record_tutorial_event_inner(
+    ctx, event: TutorialEvent, action: Optional[dict] = None
+) -> bool:
+    player = ctx.session.player
+    stage = getattr(player, "tutorial_stage", 0)
+    if action is None:
+        action = stage_action_for(player, stage)
+    if action and action.get("confirm_on") == "purchase" and event.verb == "buy":
+        tutorial_set_confirmation(player, stage, verb="purchase")
+        if event.target:
+            progress = getattr(player, "tutorial_progress", None)
+            if progress is None:
+                progress = {}
+                player.tutorial_progress = progress
+            progress.setdefault(f"stage_{stage}", set()).add(event.target)
+    if not action or not stage_accepts_event(action, event, player):
+        return False
+
+    if action.get("sub_hints") and event.verb == "equip":
+        sub_hints = action.get("sub_hints") or {}
+        target_norm = _normalise_tutorial_value(event.target or "")
+        matched_sub = None
+        for sub_id, sub in sub_hints.items():
+            required = _normalise_tutorial_value(sub.get("required_item", ""))
+            if required == target_norm:
+                matched_sub = sub
+                break
+
+        if not matched_sub:
+            return False
+
+        state_check = matched_sub.get("state_check", "")
+        if state_check == "worn":
+            state_ok = _slot_holds_catalog_item(player, "worn_armour_id", matched_sub.get("required_item", ""))
+        elif state_check == "equipped":
+            state_ok = _slot_holds_catalog_item(player, "equipped_weapon_id", matched_sub.get("required_item", ""))
+        else:
+            state_ok = True
+
+        if not state_ok:
+            return False
+
+        progress = getattr(player, "tutorial_progress", None)
+        if progress is None:
+            progress = {}
+            player.tutorial_progress = progress
+        completed = progress.setdefault(f"stage_{stage}", set())
+        completed.add(matched_sub.get("required_item", ""))
+
+        sub_family = matched_sub.get("hint_family", "")
+        if sub_family:
+            uses = getattr(player, "tutorial_command_uses", None)
+            if uses is None:
+                uses = {}
+                player.tutorial_command_uses = uses
+            family = sub_family
+            if matched_sub.get("required_item", "") not in completed or len(completed) == 1:
+                uses[family] = uses.get(family, 0)
+            families_done = progress.setdefault(f"stage_{stage}_families", set())
+            if family not in families_done:
+                uses[family] = uses.get(family, 0) + 1
+                families_done.add(family)
+
+        required_items = {
+            sub.get("state_check"): sub.get("required_item")
+            for sub in sub_hints.values()
+        }
+        worn_ok = _slot_holds_catalog_item(
+            player, "worn_armour_id", required_items.get("worn")
+        ) if required_items.get("worn") else True
+        equip_ok = _slot_holds_catalog_item(
+            player, "equipped_weapon_id", required_items.get("equipped")
+        ) if required_items.get("equipped") else True
+        if worn_ok and equip_ok:
+            await _advance_stage(ctx, stage, action)
+            return True
+
+        await _emit_stage_entry(ctx)
+        return True
+
+    if not _event_has_succeeded(player, action, event, ctx.shared):
+        return False
+    await _advance_stage(ctx, stage, action)
+    return True
+
+
+def _run_porter_choreography(ctx) -> None:
+    from .curfew import game_clock_total_minutes
+    from .law import wanted_consequences
+
+    player = ctx.session.player
+    instance_id = getattr(player, "tutorial_instance_id", "")
+    clock = getattr(ctx.session_manager, "world_clock", None)
+    if not instance_id or clock is None:
+        return
+    porter_id = f"tut_{instance_id}_tutorial_market_porter"
+    alley_id = get_cloned_room_id(instance_id, "refugee_entry_back_alley", ctx.shared)
+    market_id = get_cloned_room_id(instance_id, "refugee_entry_market_street", ctx.shared)
+    if ctx.shared.world.npc_locations.get(porter_id) != alley_id:
+        return
+    if not ctx.shared.world.rooms.get(market_id):
+        return
+    clock._move_npc_between_rooms(porter_id, alley_id, market_id, "east")
+    tail = getattr(player, "tailing_state", None)
+    if not tail or tail.target_npc_id != porter_id:
+        return
+    from .equipment import advance_tail_clock, resolve_tail_step
+    from .constants import get_season
+    total = game_clock_total_minutes(ctx.shared.game_time)
+    advance_tail_clock(player, total)
+    target = ctx.shared.world.npcs.get(porter_id)
+    resolve_tail_step(
+        player,
+        target,
+        tail,
+        clock.stealth,
+        clock.disguises,
+        wanted_bonus=wanted_consequences(player.wanted_level).disguise_perception_bonus,
+        current_room=ctx.shared.world.get_room(player.current_room),
+        target_room=market_id,
+        season=get_season(ctx.shared.game_time.day),
+    )
+
+
+def _dispatch_choreography_sound(ctx, original_room_id: str) -> None:
+    player = ctx.session.player
+    instance_id = getattr(player, "tutorial_instance_id", "")
+    clock = getattr(ctx.session_manager, "world_clock", None)
+    if not instance_id or clock is None:
+        return
+    clone_room_id = get_cloned_room_id(instance_id, original_room_id, ctx.shared)
+    if clone_room_id == original_room_id or not ctx.shared.world.rooms.get(clone_room_id):
+        return
+    clock._dispatch_world_sound(clone_room_id, 2, "distant disturbance")
 
 
 async def _send_advance_message(ctx, stage: int, action: dict) -> None:
@@ -1130,7 +1581,7 @@ def _try_stage_match(stage: int, verb: str, target: str, indirect: str, action: 
 
 def check_tutorial_progress(player, verb: str, target: str = "", indirect: str = "") -> bool:
     stage = getattr(player, "tutorial_stage", 0)
-    action = STAGE_ACTIONS.get(stage)
+    action = stage_action_for(player, stage)
     if not action:
         return False
     room_id = getattr(player, "current_room", "")
@@ -1141,12 +1592,17 @@ def check_tutorial_progress(player, verb: str, target: str = "", indirect: str =
     )
 
 
-def get_tutorial_hint(player) -> str:
+def get_tutorial_hint(player, shared=None) -> str:
     stage = getattr(player, "tutorial_stage", 0)
-    action = STAGE_ACTIONS.get(stage)
+    action = stage_action_for(player, stage)
     if not action:
         return ""
-    return action.get("cmd_hint", "")
+    catalog = getattr(getattr(shared, "world", None), "item_catalog", None)
+    try:
+        return render_cmd_hint(action.get("cmd_hint", ""), item_catalog=catalog, player=player)
+    except ValueError as exc:
+        logger.error("tutorial command hint dropped: %s", exc)
+        return ""
 
 
 def restart_tutorial(player, shared) -> None:
@@ -1162,6 +1618,7 @@ def restart_tutorial(player, shared) -> None:
     player.tutorial_resume_room_id = ""
     player.tutorial_revealed_rooms = []
     player.tutorial_vendor_depletion = {}
+    player.tutorial_social_exchanges = {}
     player.tutorial_command_uses = {}
     player.tutorial_emitted_hints = set()
     player.tutorial_entries_emitted = set()
@@ -1279,6 +1736,62 @@ def ensure_tutorial_instance_for_player(player, shared) -> None:
     if player.current_room not in player.map_revealed:
         player.map_revealed.append(player.current_room)
     restore_tutorial_vendor_depletion(player, shared)
+    _apply_resume_semantics(player, shared)
+
+
+def _ensure_contact_bond_food(player, shared) -> None:
+    instance_id = getattr(player, "tutorial_instance_id", "")
+    if not instance_id:
+        return
+    stage = getattr(player, "tutorial_stage", 0)
+    stage_id = (STAGE_ACTIONS.get(stage) or {}).get("stage_id", "")
+    if stage_id not in _CONTACT_BOND_STAGE_IDS:
+        return
+    room_id = get_cloned_room_id(instance_id, "orientation_contact", shared)
+    room = shared.world.rooms.get(room_id)
+    if not room:
+        return
+    if any(getattr(item, "food_value", 0) > 0 for item in getattr(player, "inventory", [])):
+        return
+    if any(getattr(item, "id", "") == CONTACT_BOND_FOOD_ITEM_ID for item in room.items):
+        return
+    template = shared.world.item_catalog.get(CONTACT_BOND_FOOD_ITEM_ID)
+    if not template:
+        return
+    from copy import deepcopy
+    room.items.append(deepcopy(template))
+
+
+def _apply_resume_semantics(player, shared) -> None:
+    stage = getattr(player, "tutorial_stage", 0)
+    action = STAGE_ACTIONS.get(stage) or {}
+    stage_id = action.get("stage_id", "")
+    instance_id = getattr(player, "tutorial_instance_id", "")
+    if not instance_id:
+        return
+    porter_id = f"tut_{instance_id}_tutorial_market_porter"
+    officer_id = f"tut_{instance_id}_tutorial_kempeitai_officer"
+
+    def place(npc_suffix, original_room):
+        npc_id = f"tut_{instance_id}_{npc_suffix}"
+        room_id = get_cloned_room_id(instance_id, original_room, shared)
+        if npc_id in shared.world.npcs and shared.world.rooms.get(room_id):
+            shared.world.npc_locations[npc_id] = room_id
+
+    if stage_id == "back_alley_tail_break_off":
+        place("tutorial_market_porter", "refugee_entry_market_street")
+        market = get_cloned_room_id(instance_id, "refugee_entry_market_street", shared)
+        player.current_room = market
+    elif stage_id in ("checkpoint_yell",):
+        place("tutorial_kempeitai_officer", "refugee_entry_outpost")
+        place("tutorial_market_porter", "refugee_entry_warehouse")
+    elif stage_id in ("checkpoint_cross_outpost", "checkpoint_cross_rooftop",
+                      "rooftop_remove_disguise", "rooftop_go_east"):
+        place("tutorial_kempeitai_officer", "refugee_entry_market_street")
+        place("tutorial_market_porter", "refugee_entry_market_street")
+
+    if stage_id in _CONTACT_BOND_STAGE_IDS:
+        _ensure_contact_bond_food(player, shared)
 
 
 def clone_tutorial_rooms_for_player(world, player_id: int, shared_state) -> str:
@@ -1340,7 +1853,9 @@ def clone_tutorial_rooms_for_player(world, player_id: int, shared_state) -> str:
         "orientation_inspector_park": "orientation_wanted",
         "orientation_mother_jin": "orientation_blackmarket",
         "orientation_scribe_wen": "orientation_rumors",
+        "orientation_apprentice_shen": "orientation_rumors",
         "orientation_old_crane": "orientation_eavesdrop",
+        "orientation_widow_kang": "orientation_eavesdrop",
         "orientation_sister_zhao": "orientation_contact",
         "orientation_alley_drunk_merchant": "orientation_alley",
         "orientation_patrol_guard": "orientation_alley",
