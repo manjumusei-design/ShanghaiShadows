@@ -1,8 +1,11 @@
 import asyncio
 import json
-from typing import TYPE_CHECKING, Callable, Dict, List
+import logging
+from typing import TYPE_CHECKING, Callable, Dict, List, Optional
 
 from .action_result import CommandOutcome, failure
+
+logger = logging.getLogger(__name__)
 
 _TUTORIAL_FAMILY_TEMPLATES = {
     "talk_to": "To begin a conversation, use TALK TO (name).",
@@ -169,11 +172,21 @@ class SessionManager:
                 if (getattr(session.player, 'in_tutorial', False) and cmd.verb == "unknown"
                         and not session.player.active_storylets
                         and not text.strip().startswith("{")):
-                    from .tutorial import (STAGE_ACTIONS, hint_family_for,
-                                           normalize_to_actionable_stage)
+                    from .tutorial import (hint_family_for,
+                                           normalize_to_actionable_stage,
+                                           render_cmd_hint,
+                                           stage_action_for)
                     stage = normalize_to_actionable_stage(session.player)
-                    action = STAGE_ACTIONS.get(stage, {})
-                    hint = action.get("cmd_hint", "")
+                    action = stage_action_for(session.player, stage)
+                    try:
+                        hint = render_cmd_hint(
+                            action.get("cmd_hint", ""),
+                            item_catalog=self.shared.world.item_catalog,
+                            player=session.player,
+                        )
+                    except ValueError as exc:
+                        logger.error("tutorial command hint dropped: %s", exc)
+                        hint = ""
                     family = hint_family_for(action)
                     template = _TUTORIAL_FAMILY_TEMPLATES.get(family, "")
                     if template:
@@ -266,11 +279,19 @@ class SessionManager:
 
         handler = self.command_registry.get(cmd.verb, self.command_registry.get("unknown"))
         tutorial_room = session.player.current_room
+        tutorial_action = None
+        if getattr(session.player, "in_tutorial", False):
+            from .tutorial import stage_action_for
+            tutorial_action = stage_action_for(
+                session.player, getattr(session.player, "tutorial_stage", 0)
+            )
         result = await handler(ctx, cmd)
         if not isinstance(result, CommandOutcome):
             return failure("handler_no_outcome")
         result = await self._apply_hide_policy(session, cmd.verb, result)
-        result = await self._record_tutorial_outcome(session, text, result, ctx, cmd, tutorial_room)
+        result = await self._record_tutorial_outcome(
+            session, text, result, ctx, cmd, tutorial_room, tutorial_action
+        )
         from .commands import _record_terminal_recovery
         await _record_terminal_recovery(ctx, cmd, result)
         return result
@@ -283,6 +304,7 @@ class SessionManager:
         ctx,
         cmd=None,
         tutorial_room: str = "",
+        tutorial_action: Optional[dict] = None,
     ) -> CommandOutcome:
         if not result.succeeded or not getattr(session.player, "in_tutorial", False):
             return result
@@ -297,7 +319,7 @@ class SessionManager:
             getattr(session.player, "tutorial_instance_id", ""), source_room, self.shared
         )
         event = TutorialEvent(verb, target, indirect, event_room, succeeded=True)
-        await record_tutorial_event(ctx, event)
+        await record_tutorial_event(ctx, event, action=tutorial_action)
         if event_data.get("verb") == "go" and getattr(session.player, "in_tutorial", False):
             await self._send_map_data(session)
         return result
