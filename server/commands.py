@@ -15,7 +15,7 @@ from .action_result import failure, success
 ROOM_NOTIFY_TIMEOUT = 0.5
 from .economy import can_afford_fabi, earn_fabi_value, spend_fabi_value, wallet_fabi_value
 from .curfew import CurfewTrigger, game_clock_total_minutes, resolve_curfew_encounter
-from .equipment import confiscate_equipped_disguise, equipped_disguise, equipped_weapon
+from .equipment import confiscate_equipped_disguise, equipped_disguise, equipped_weapon, invalidate_disguise_if_support_lost
 from .journal import format_life_retrospective, absorb_death_journal
 from .law import (
     adjust_wanted,
@@ -204,7 +204,7 @@ def _generate_witness_reaction(witness: Npc, player) -> Optional[str]:
 
     return random.choice(reactions)
 from .game_world import SharedWorldState, is_named_npc_dead, named_npc_death_record_to_dict, record_named_npc_death
-from .combat import resolve_attack, degrade_weapon, degrade_armour
+from .combat import resolve_attack, degrade_weapon, degrade_armour, courage_multiplier_for
 from .constants import (
     EVENTS_PATH, TRUST_RULES_PATH, DISGUISES_PATH, STORYLETS_PATH,
     OBITUARY_PATH, CHARACTER_NAMES_PATH, CURFEW_MINUTE, STATE_BROADCAST_INTERVAL,
@@ -214,6 +214,7 @@ from .constants import (
     STAT_GAIN_COURAGE_COMBAT, STAT_GAIN_STEALTH_HIDE, STAT_GAIN_PERCEPTION_OBSERVE,
     COMBAT_GROWTH_FACTIONS, WANTED_LEVEL_MAX, SUSPICION_FAILED_STEALTH,
     SEASONAL_PRICE_MULTIPLIER, MessageType,
+    ACTIONABLE_SOUND_KINDS,
 )
 
 if TYPE_CHECKING:
@@ -477,7 +478,7 @@ def _current_objective(ctx: CommandContext) -> str:
     p = ctx.session.player
     if getattr(p, 'in_tutorial', False):
         from .tutorial import get_tutorial_hint
-        hint = get_tutorial_hint(p)
+        hint = get_tutorial_hint(p, shared=ctx.shared)
         if hint:
             return hint
         stage = getattr(p, 'tutorial_stage', 0)
@@ -744,8 +745,43 @@ def _update_npc_sound_memory(npc, source_room_id: str, intensity: int, sound_typ
         "intensity": intensity,
         "type": sound_type,
         "minute": game_minute,
+        "actionable": sound_type in ACTIONABLE_SOUND_KINDS,
     })
     bb.set("heard_hostile_sound", npc.faction == "kempeitai" and intensity >= 2)
+
+
+def _elect_sound_investigator(shared, heard_rooms_detailed):
+    best = None
+    for room_id, _perceived, hops in heard_rooms_detailed:
+        room = shared.world.rooms.get(room_id)
+        if not room:
+            continue
+        for npc_id in room.npcs:
+            npc = shared.world.npcs.get(npc_id)
+            if not (npc and _is_authority_npc(npc)):
+                continue
+            key = (hops, npc_id)
+            if best is None or key < best[0]:
+                best = (key, room_id)
+    if best is None:
+        return None
+    (hops, npc_id), hearing_room = best
+    return npc_id, hearing_room, hops
+
+
+def _grant_sound_investigation(npc, source_room_id: str, game_time, kind: str) -> None:
+    bb = getattr(npc, "_blackboard", None)
+    if bb is None:
+        from .behavior_tree import Blackboard
+        bb = Blackboard()
+        npc._blackboard = bb
+    game_minute = game_time.minute + game_time.day * 1440 if game_time else 0
+    bb.set("sound_investigation", {
+        "event_id": f"{source_room_id}:{game_minute}:{kind}",
+        "source_room": source_room_id,
+        "phase": "travel",
+        "approach_direction": "",
+    })
 
 
 async def play_sound(ctx: CommandContext, name: str, volume: float = 0.7) -> None:
@@ -759,11 +795,26 @@ MESSAGE_TYPE_SOUNDS = {
 }
 
 
-async def post_display(ctx: CommandContext, text: str, msg_type: str = None) -> None:
-    await ctx.session.send_display(text if text.endswith("\n") else text + "\n", msg_type=msg_type)
-    sound = MESSAGE_TYPE_SOUNDS.get(msg_type) if isinstance(msg_type, MessageType) else None
-    if sound and getattr(ctx.session, "audio_enabled", False):
-        await ctx.session.send_audio(sound[0], volume=sound[1])
+def _normalize_message_type_for_audio(msg_type):
+    if isinstance(msg_type, MessageType):
+        return msg_type
+    if isinstance(msg_type, str):
+        try:
+            return MessageType(msg_type)
+        except ValueError:
+            return None
+    return None
+
+
+async def post_display(ctx: CommandContext, text: str, msg_type: str = None, instant_reveal: bool = False, chime: bool = True) -> None:
+    await ctx.session.send_display(
+        text if text.endswith("\n") else text + "\n",
+        msg_type=msg_type,
+        instant_reveal=instant_reveal,
+    )
+    sound_pair = MESSAGE_TYPE_SOUNDS.get(_normalize_message_type_for_audio(msg_type))
+    if chime and sound_pair and getattr(ctx.session, "audio_enabled", False):
+        await ctx.session.send_audio(sound_pair[0], volume=sound_pair[1])
 
 
 def log_event(ctx: CommandContext, text: str, *, player_side: bool = True) -> None:
@@ -887,6 +938,17 @@ def record_conversation(ctx: CommandContext, npc_id: str, player_input: str, npc
     })
 
 
+def mark_npc_met(ctx: CommandContext, npc_id: str) -> None:
+    if not npc_id:
+        return
+    from .tutorial import get_canonical_tutorial_npc_id
+
+    stable_npc_id = get_canonical_tutorial_npc_id(
+        getattr(ctx.session.player, "tutorial_instance_id", ""), npc_id
+    )
+    ctx.session.player.met_npc_ids.add(stable_npc_id)
+
+
 def summary_trust_lines(ctx: CommandContext) -> List[str]:
     summary = summarize_faction_trust(ctx.session.player.trust)
     return [f"- {faction}: {value}" for faction, value in sorted(summary.items())]
@@ -940,6 +1002,7 @@ async def _resolve_command_curfew(ctx: CommandContext, room=None):
 async def _check_disguise_on_entry(ctx: CommandContext, room) -> None:
     from .constants import get_season
     from .stealth import PierceStage
+    from .tutorial import note_tutorial_disguise_pierce
 
     season = get_season(ctx.shared.game_time.day)
     resolved = equipped_disguise(ctx.session.player, ctx.disguises)
@@ -954,6 +1017,7 @@ async def _check_disguise_on_entry(ctx: CommandContext, room) -> None:
         if not npc:
             continue
         stage = ctx.stealth.disguise_pierce_check(npc, bonus, wanted, season)
+        await note_tutorial_disguise_pierce(ctx, npc, stage)
         if stage == PierceStage.EXPOSED:
             await play_sound(ctx, "alert", 0.6)
             was_kempeitai = active_disguise.apparent_faction == "kempeitai"
@@ -985,6 +1049,7 @@ async def _check_disguise_on_entry(ctx: CommandContext, room) -> None:
 async def _check_disguise_on_talk(ctx: CommandContext, npc: Npc) -> bool:
     from .constants import get_season
     from .stealth import PierceStage
+    from .tutorial import note_tutorial_disguise_pierce
 
     season = get_season(ctx.shared.game_time.day)
     resolved = equipped_disguise(ctx.session.player, ctx.disguises)
@@ -995,6 +1060,7 @@ async def _check_disguise_on_talk(ctx: CommandContext, npc: Npc) -> bool:
     wanted = ctx.session.player.wanted_level
 
     stage = ctx.stealth.disguise_pierce_check(npc, bonus, wanted, season)
+    await note_tutorial_disguise_pierce(ctx, npc, stage)
     if stage == PierceStage.EXPOSED:
         await play_sound(ctx, "alert", 0.6)
         was_kempeitai = active_disguise.apparent_faction == "kempeitai"
@@ -1199,8 +1265,7 @@ async def broadcast_state(ctx: CommandContext):
     })
 
 
-    from .tutorial import tutorial_blocks_world_events
-    if not tutorial_blocks_world_events(ctx.session.player) and getattr(ctx.session, 'audio_enabled', False):
+    if getattr(ctx.session, 'audio_enabled', False):
         weather = getattr(state, 'weather', 'clear')
         current_room = ctx.shared.world.rooms.get(ctx.session.player.current_room)
         is_indoors = getattr(current_room, 'indoors', False) if current_room else False
@@ -1713,6 +1778,7 @@ def _apply_effect_items(player: PlayerData, world: World, effects: Dict[str, obj
             item = find_item_by_name(str(item_id), player.inventory)
             if item:
                 player.inventory.remove(item)
+                invalidate_disguise_if_support_lost(player, item)
 
 
 def _apply_effect_money(player: PlayerData, effects: Dict[str, object]) -> bool:
@@ -1868,6 +1934,7 @@ async def apply_storylet_effects(ctx: CommandContext, effects: Dict[str, object]
                 currency=purchase.get("currency", "fabi"),
             ),
             msg_type=MessageType.SUCCESS,
+            chime=False,
         )
         await play_sound(ctx, "coin_clink", 0.7)
         if resolution_aborted(active):
@@ -2019,7 +2086,7 @@ async def _handle_tutorial_choice(ctx: CommandContext, option):
         if hasattr(ctx, 'session_manager') and ctx.session_manager and hasattr(ctx.session_manager, '_send_map_data'):
             await ctx.session_manager._send_map_data(ctx.session)
 
-        await cmd_look(ctx, Command(verb="look", raw="look"))
+        await cmd_look(ctx, Command(verb="look", raw="look", instant_reveal=True))
         from .tutorial import _emit_stage_entry
         await _emit_stage_entry(ctx)
     else:
@@ -2338,7 +2405,7 @@ async def cmd_look(ctx: CommandContext, cmd: Command):
         pending = _pending_room_event(ctx, room)
         if pending:
             room_text += "\n\n" + pending
-    await post_display(ctx, room_text, msg_type=MessageType.ROOM_DESCRIPTION)
+    await post_display(ctx, room_text, msg_type=MessageType.ROOM_DESCRIPTION, instant_reveal=getattr(cmd, "instant_reveal", False))
 
     await _send_room_details(ctx, room)
     await _emit_terminal_guidance(ctx, room)
@@ -2369,9 +2436,9 @@ async def cmd_look(ctx: CommandContext, cmd: Command):
 
     if hidden_players_detected:
         for name in hidden_players_detected:
-            await ctx.session.send_display(loc("perception.hidden_player").format(name=name) + "\n", msg_type=MessageType.DISCOVERY)
+            await post_display(ctx, loc("perception.hidden_player").format(name=name), msg_type=MessageType.DISCOVERY)
     elif someone_watching:
-        await ctx.session.send_display(loc("perception.someone_watching") + "\n", msg_type=MessageType.DISCOVERY)
+        await post_display(ctx, loc("perception.someone_watching"), msg_type=MessageType.DISCOVERY)
 
     perks = get_faction_perks(ctx.session.player.trust)
     for faction, perk_data in perks.items():
@@ -2457,8 +2524,9 @@ async def cmd_go(ctx: CommandContext, cmd: Command):
             room_id = get_original_tutorial_room_id(
                 ctx.session.player.tutorial_instance_id, room.id, ctx.shared
             )
-        from .tutorial import blocked_exits_for_room
+        from .tutorial import blocked_exits_for_room, live_npc_exit_blocks
         room_blocked = blocked_exits_for_room(room_id, stage)
+        room_blocked.update(live_npc_exit_blocks(ctx.session.player, ctx.shared, room_id))
         if direction.lower() in room_blocked:
             reason = room_blocked[direction.lower()]
             await post_display(ctx, f"You cannot go that way yet. {reason}", msg_type="tutorial")
@@ -2515,25 +2583,6 @@ async def cmd_go(ctx: CommandContext, cmd: Command):
                 return success("go_already_there")
             path = _bfs_find_path(ctx.shared.world, room.id, target_room.id)
             if path:
-                if getattr(ctx.session.player, "in_tutorial", False):
-                    from .tutorial import blocked_exits_for_room, get_original_tutorial_room_id, normalize_to_actionable_stage
-                    preflight_room = room
-                    stage = normalize_to_actionable_stage(ctx.session.player)
-                    for step in path:
-                        original_room_id = get_original_tutorial_room_id(
-                            getattr(ctx.session.player, "tutorial_instance_id", ""), preflight_room.id, ctx.shared,
-                        )
-                        blocked = blocked_exits_for_room(original_room_id, stage)
-                        if step.lower() in blocked:
-                            await post_display(ctx, f"You cannot go that way yet. {blocked[step.lower()]}", msg_type="tutorial")
-                            return failure("go_auto_path_blocked")
-                        destination_id = preflight_room.exits.get(step)
-                        if not destination_id:
-                            await post_display(ctx, loc("cmd_go.no_exit"), msg_type="tutorial")
-                            return failure("go_auto_path_blocked")
-                        preflight_room = ctx.shared.world.rooms.get(destination_id)
-                        if preflight_room is None:
-                            return failure("go_auto_path_blocked")
                 await post_display(ctx, loc("movement.auto_path.start").format(title=target_room.title, steps=len(path)), msg_type="ambient")
                 prev_district = room.district
                 for i, step in enumerate(path):
@@ -2552,11 +2601,35 @@ async def cmd_go(ctx: CommandContext, cmd: Command):
                                 await post_display(ctx, loc("movement.auto_path.halt_hostile"), msg_type="ambient")
                                 return failure("go_auto_path_hostile")
 
+                    pre_hop_room_id = None
+                    if getattr(ctx.session.player, "in_tutorial", False) and hasattr(ctx.session.player, "tutorial_instance_id"):
+                        from .tutorial import get_original_tutorial_room_id
+                        pre_hop = _room(ctx)
+                        if pre_hop:
+                            pre_hop_room_id = get_original_tutorial_room_id(
+                                ctx.session.player.tutorial_instance_id, pre_hop.id, ctx.shared
+                            )
+
                     step_cmd = Command(verb="go", direct_obj=step, raw=f"go {step}", suppress_render=True)
                     step_result = await cmd_go(ctx, step_cmd)
                     if not step_result.succeeded:
                         await post_display(ctx, loc("movement.auto_path.halt_blocked"), msg_type="ambient")
                         return failure("go_auto_path_blocked")
+
+                    if pre_hop_room_id is not None and step_result.data.get("tutorial_event"):
+                        from .tutorial import TutorialEvent, record_tutorial_event
+                        event_data = step_result.data["tutorial_event"]
+                        event = TutorialEvent(
+                            event_data.get("verb") or "go",
+                            event_data.get("target", step),
+                            event_data.get("indirect", ""),
+                            pre_hop_room_id,
+                            succeeded=True,
+                        )
+                        await record_tutorial_event(ctx, event)
+                        manager = getattr(ctx, "session_manager", None)
+                        if manager is not None and hasattr(manager, "_send_map_data"):
+                            await manager._send_map_data(ctx.session)
 
                     new_room = _room(ctx)
                     if new_room:
@@ -2596,7 +2669,6 @@ async def cmd_go(ctx: CommandContext, cmd: Command):
                 return success(
                     "go_auto_path",
                     facts={"movement"},
-                    tutorial_event={"verb": "go", "target": path[-1]} if path else None,
                 )
 
         await post_display(ctx, loc("cmd_go.no_exit"), msg_type=MessageType.PLAYER_ACTION)
@@ -2643,10 +2715,16 @@ async def cmd_go(ctx: CommandContext, cmd: Command):
     if getattr(ctx.session.player, "in_tutorial", False):
         from .tutorial import update_tutorial_resume_state
         update_tutorial_resume_state(ctx.session.player, ctx.shared)
+        clock = getattr(ctx.session_manager, "world_clock", None)
+        if clock is not None:
+            clock.trigger_sanctioned_tutorial_meetings()
     ctx.session.player.hidden = False
     log_event(ctx, f"You moved {direction} into {dest}.")
     if getattr(ctx.session, 'audio_enabled', False):
-        await ctx.session.send_audio('footsteps', volume=0.4)
+        if getattr(ctx.session, '_movement_single_footstep', False):
+            await ctx.session.send_audio('footsteps_once', volume=0.4)
+        else:
+            await ctx.session.send_audio('footsteps', volume=0.4)
     if not getattr(ctx.session.player, "in_tutorial", False) and not ctx.session.player.escape_charge_available:
         from .auth import resolve_spawn_room
         claimed_safehouse = resolve_spawn_room(ctx.session.username)
@@ -2714,6 +2792,7 @@ async def _inspect_contraband_at_checkpoint(ctx: CommandContext, room) -> None:
         return
     confiscated = contraband[0]
     ctx.session.player.inventory.remove(confiscated)
+    invalidate_disguise_if_support_lost(ctx.session.player, confiscated)
     _record_crime(ctx)
     log_event(ctx, f"Kempeitai confiscated {confiscated.name} at a checkpoint.")
     await post_display(
@@ -2907,6 +2986,7 @@ async def cmd_drop(ctx: CommandContext, cmd: Command):
     if item.is_weapon:
         ctx.session._weapon_attack_count = 0
     ctx.session.player.inventory.remove(item)
+    invalidate_disguise_if_support_lost(ctx.session.player, item)
     await _refresh_inventory_if_open(ctx)
     room = _room(ctx)
     if room:
@@ -3100,6 +3180,7 @@ async def cmd_talk_to(ctx: CommandContext, cmd: Command):
             ctx.session.player,
         )
         if advancing:
+            mark_npc_met(ctx, npc_id)
             return success(
                 "talk_to",
                 facts={"npc_talked"},
@@ -3110,6 +3191,7 @@ async def cmd_talk_to(ctx: CommandContext, cmd: Command):
             line = random.choice(td_lines)
             await ctx.session.send_npc_speech(npc_id, npc.name, line)
             record_conversation(ctx, npc_id, f"Hello, {npc.name}.", line)
+            mark_npc_met(ctx, npc_id)
             return success(
                 "talk_to",
                 facts={"npc_talked"},
@@ -3125,7 +3207,7 @@ async def cmd_talk_to(ctx: CommandContext, cmd: Command):
     if direction:
         await post_display(ctx, direction, msg_type="npc")
     record_conversation(ctx, npc_id, f"Hello, {npc.name}.", line)
-    ctx.session.player.met_npc_ids.add(npc_id)
+    mark_npc_met(ctx, npc_id)
     await apply_action_trust(ctx, f"talk_to_{npc.faction}.{npc.role}", room_npcs(ctx))
     log_event(ctx, f"You spoke with {npc.name}.")
 
@@ -3227,6 +3309,7 @@ async def cmd_ask_about(ctx: CommandContext, cmd: Command):
                 ctx.session.player,
             )
             if advancing:
+                mark_npc_met(ctx, npc_id)
                 return success(
                     "ask",
                     facts={"asked"},
@@ -3241,6 +3324,7 @@ async def cmd_ask_about(ctx: CommandContext, cmd: Command):
                 line = random.choice(td_lines)
                 await ctx.session.send_npc_speech(npc_id, npc.name, line)
                 record_conversation(ctx, npc_id, f"Tell me about {display_topic_label(npc, cmd.indirect_obj or '...')}.", line)
+                mark_npc_met(ctx, npc_id)
                 return success(
                     "ask",
                     facts={"asked"},
@@ -3289,7 +3373,7 @@ async def cmd_ask_about(ctx: CommandContext, cmd: Command):
         line = consequence_lead.get("ask_response")
         await post_display(ctx, f'{semantic_span(npc.name, "npc")} says, "{line}"', msg_type="npc_dialogue")
         record_conversation(ctx, npc_id, f"Tell me about {display_topic_label(npc, consequence_lead['ask_topic'])}.", line)
-        ctx.session.player.met_npc_ids.add(npc_id)
+        mark_npc_met(ctx, npc_id)
         player = ctx.session.player
         player.journal_intel.setdefault(npc_id, {})[f"consequence: {consequence_lead['category']}"] = {
             "day": ctx.shared.game_time.day,
@@ -3333,7 +3417,7 @@ async def cmd_ask_about(ctx: CommandContext, cmd: Command):
                 parts.append(f"  Attributed to {record['current_faction']}.")
             await post_display(ctx, "\n".join(parts), msg_type="npc_dialogue")
             record_conversation(ctx, npc_id, "Where did you hear that?", record["text"])
-            ctx.session.player.met_npc_ids.add(npc_id)
+            mark_npc_met(ctx, npc_id)
             await apply_action_trust(ctx, f"ask_about_{npc.faction}.{npc.role}", room_npcs(ctx))
             log_event(ctx, f"You asked {npc.name} about rumors.")
             await maybe_trigger_storylet(ctx)
@@ -3345,7 +3429,7 @@ async def cmd_ask_about(ctx: CommandContext, cmd: Command):
         line = get_topic_dialogue(npc, topic_key)
         await post_display(ctx, f'{semantic_span(npc.name, "npc")} says, "{line}"', msg_type="npc_dialogue")
         record_conversation(ctx, npc_id, f"Tell me about {display_topic_label(npc, topic_key)}.", line)
-        ctx.session.player.met_npc_ids.add(npc_id)
+        mark_npc_met(ctx, npc_id)
         await apply_action_trust(ctx, f"ask_about_{npc.faction}.{npc.role}", room_npcs(ctx))
         log_event(ctx, f"You asked {npc.name} about {display_topic_label(npc, topic_key)}.")
         if npc_id not in ctx.session.player.asked_topics:
@@ -3519,10 +3603,13 @@ async def cmd_disguise_as(ctx: CommandContext, cmd: Command):
         return failure("disguise_item_not_held")
     from .equipment import ensure_inventory_identity
     ensure_inventory_identity(ctx.session.player)
+    disguise_changed = ctx.session.player.disguise != disguise.id
     ctx.session.player.equipped_disguise_item_id = item.instance_id
     ctx.session.player.disguise = disguise.id
     log_event(ctx, f"You adopted the disguise of {disguise.name}.")
     await post_display(ctx, loc("cmd_disguise_as.success").format(name=disguise.name, description=disguise.description), msg_type=MessageType.PLAYER_ACTION)
+    if disguise_changed:
+        await play_sound(ctx, "disguise_equip", 0.6)
 
     room = _room(ctx)
     if room and room.npcs:
@@ -3737,6 +3824,7 @@ async def cmd_plant(ctx: CommandContext, cmd: Command):
         return
 
     ctx.session.player.inventory.remove(item)
+    invalidate_disguise_if_support_lost(ctx.session.player, item)
     ctx.session.player.planted_evidence.append(
         {
             "room_id": room.id if room else ctx.session.player.current_room,
@@ -4170,15 +4258,21 @@ async def cmd_whisper(ctx: CommandContext, cmd: Command):
 
 
 async def cmd_give(ctx: CommandContext, cmd: Command):
-    parts = cmd.raw.split()
-    if len(parts) < 4 or "to" not in parts:
-        await post_display(ctx, loc("cmd_give.usage"), msg_type=MessageType.PLAYER_ACTION)
-        return failure("give_usage")
-    to_index = parts.index("to")
-    item_name = parts[1]
-    target_name = parts[to_index + 1] if to_index + 1 < len(parts) else ""
+    item_name = cmd.direct_obj if isinstance(cmd.direct_obj, str) else None
+    target_name = cmd.indirect_obj if isinstance(cmd.indirect_obj, str) else None
+    if not item_name or not target_name:
+        parts = cmd.raw.split()
+        if len(parts) < 4 or "to" not in parts:
+            await post_display(ctx, loc("cmd_give.usage"), msg_type=MessageType.PLAYER_ACTION)
+            return failure("give_usage")
+        to_index = parts.index("to")
+        item_name = item_name or parts[1]
+        target_name = target_name or (parts[to_index + 1] if to_index + 1 < len(parts) else "")
 
     item = find_item_by_name(item_name, ctx.session.player.inventory)
+    if not item and isinstance(cmd.direct_obj, str):
+        legacy_item_name = cmd.direct_obj.split()[0]
+        item = find_item_by_name(legacy_item_name, ctx.session.player.inventory)
     if not item:
         await post_display(ctx, f"You don't have {item_name}.", msg_type=MessageType.PLAYER_ACTION)
         return failure("give_not_held")
@@ -4186,6 +4280,7 @@ async def cmd_give(ctx: CommandContext, cmd: Command):
     target_session = _find_player_in_room(ctx, target_name)
     if target_session:
         ctx.session.player.inventory.remove(item)
+        invalidate_disguise_if_support_lost(ctx.session.player, item)
         target_session.player.inventory.append(item)
         log_event(ctx, f"You gave {item.name} to {target_session.player.name}.")
         await post_display(ctx, loc("cmd_give.success").format(item=semantic_span(item.name, "item"), target=semantic_span(target_session.player.name, "npc")), msg_type=MessageType.PLAYER_ACTION)
@@ -4198,6 +4293,7 @@ async def cmd_give(ctx: CommandContext, cmd: Command):
         npc = ctx.shared.world.npcs.get(npc_id)
         if npc:
             ctx.session.player.inventory.remove(item)
+            invalidate_disguise_if_support_lost(ctx.session.player, item)
             await _refresh_inventory_if_open(ctx)
             if not hasattr(npc, 'inventory'):
                 npc.inventory = []
@@ -4250,7 +4346,7 @@ async def cmd_attack(ctx: CommandContext, cmd: Command):
         return
 
     weapon = _get_equipped_weapon(ctx.session.player)
-    courage_mult = 2.0 if (weapon and "extended_magazine" in weapon.mods) else 1.0
+    courage_mult = courage_multiplier_for(weapon)
 
     target_name = cmd.direct_obj
 
@@ -4382,16 +4478,16 @@ async def _attack_npc(ctx: CommandContext, npc_id: str, courage_mult: float = 1.
     )
 
     if (getattr(player, "in_tutorial", False)
-            and getattr(player, "tutorial_stage", 0) == 20):
+            and getattr(player, "tutorial_stage", 0) == 22):
         await post_display(ctx, "You need a clearer read on the soldier before you commit.", msg_type=MessageType.TUTORIAL)
         from .tutorial import _send_tutorial_hint, STAGE_ACTIONS as _AS_STAGES
-        _as_action = _AS_STAGES.get(20, {})
+        _as_action = _AS_STAGES.get(22, {})
         if _as_action:
-            await _send_tutorial_hint(ctx, 20, _as_action, force_immediate=True)
+            await _send_tutorial_hint(ctx, 22, _as_action, force_immediate=True)
         return
 
     if (getattr(player, "in_tutorial", False)
-            and getattr(player, "tutorial_stage", 0) in (28, 29, 30, 31, 32, 33, 34, 35)
+            and getattr(player, "tutorial_stage", 0) in (30, 31, 32, 33, 34)
             and getattr(npc, "id", "").endswith("tutorial_kempeitai_officer")):
         await post_display(ctx, "The officer is not your target. Stay focused on the mission.", msg_type=MessageType.TUTORIAL)
         from .tutorial import _send_tutorial_hint, STAGE_ACTIONS as _OS_STAGES
@@ -4553,7 +4649,7 @@ async def _attack_npc(ctx: CommandContext, npc_id: str, courage_mult: float = 1.
             if mm:
                 from .milestones import apply_milestone_effects
                 for m in mm.check_action("action_kill_npc"):
-                    if apply_milestone_effects(player, m, ctx.shared):
+                    if apply_milestone_effects(player, m, ctx.shared) and m.narrative:
                         await post_display(ctx, f"\n{m.narrative}\n", msg_type="combat_narration")
             outcome = success(
                 "attack",
@@ -4674,10 +4770,17 @@ async def _check_kempeitai_attack_on_sight(ctx: CommandContext) -> None:
 
 
 async def _propagate_combat_sound(ctx: CommandContext, room, sound_event) -> None:
-    from .pathfinding import propagate_sound
-    heard_rooms = propagate_sound(
+    from .pathfinding import propagate_sound_detailed
+    heard_rooms_detailed = propagate_sound_detailed(
         ctx.shared.world.rooms, sound_event,
     )
+    heard_rooms = [(room_id, perceived) for room_id, perceived, _hops in heard_rooms_detailed]
+    if getattr(sound_event, "kind", "") in ACTIONABLE_SOUND_KINDS:
+        election = _elect_sound_investigator(ctx.shared, heard_rooms_detailed)
+        if election:
+            _grant_sound_investigation(
+                ctx.shared.world.npcs[election[0]], room.id, ctx.shared.game_time, sound_event.kind
+            )
     for heard_room_id, perceived_intensity in heard_rooms:
         heard_room = ctx.shared.world.rooms.get(heard_room_id)
         if not heard_room:
@@ -5139,6 +5242,10 @@ async def cmd_equip(ctx: CommandContext, cmd: Command):
 
     item_identity = item.instance_id
     if item.disguise_id and item.disguise_id in ctx.disguises:
+        active_identity = ctx.session.player.disguise
+        if active_identity and item.disguise_id != active_identity:
+            await post_display(ctx, loc("cmd_equip.other_disguise"), msg_type=MessageType.PLAYER_ACTION)
+            return failure("equip_other_disguise")
         ctx.session.player.equipped_disguise_item_id = item_identity
         await post_display(ctx, loc("cmd_equip.weapon_ready").format(name=semantic_span(item.name, "item")), msg_type=MessageType.PLAYER_ACTION)
     elif item.is_armour:
@@ -5541,7 +5648,7 @@ async def cmd_open(ctx: CommandContext, cmd: Command):
 
     if (getattr(ctx.session.player, "in_tutorial", False)
             and getattr(item, "id", "").startswith("refugee_iron_safe")
-            and getattr(ctx.session.player, "tutorial_stage", 0) < 23):
+            and getattr(ctx.session.player, "tutorial_stage", 0) < 25):
         await post_display(ctx, "The soldier stands between you and the safe.", msg_type=MessageType.PLAYER_ACTION)
         from .tutorial import _send_tutorial_hint, STAGE_ACTIONS as _OS_STAGES
         stage = ctx.session.player.tutorial_stage
@@ -5615,6 +5722,7 @@ async def cmd_take_from(ctx: CommandContext, cmd: Command):
     await _refresh_inventory_if_open(ctx)
     await _refresh_container_if_open(ctx, container)
     await post_display(ctx, loc("container.take").format(item=semantic_span(item.name, "item"), container=semantic_span(container.name, "item")), msg_type=MessageType.PLAYER_ACTION)
+    await play_sound(ctx, "item_pickup", 0.6)
     return success(
         "take_from",
         facts={"item_taken"},
@@ -5649,7 +5757,8 @@ async def cmd_remove(ctx: CommandContext, cmd: Command):
                 await post_display(ctx, f"You unequip {semantic_span(item.name, 'item')}.", msg_type=MessageType.PLAYER_ACTION)
                 return
         if "disguise" in target or ctx.session.player.disguise:
-            if getattr(ctx.session.player, "in_tutorial", False) and getattr(ctx.session.player, "tutorial_stage", 0) in (28, 29, 30, 31, 32):
+            from .tutorial import stage_blocks_disguise_removal
+            if getattr(ctx.session.player, "in_tutorial", False) and stage_blocks_disguise_removal(ctx.session.player):
                 await post_display(ctx, "This is not the place to discard the uniform.", msg_type=MessageType.PLAYER_ACTION)
                 from .tutorial import _send_tutorial_hint, STAGE_ACTIONS as _RM_STAGES
                 stage = ctx.session.player.tutorial_stage
@@ -5657,11 +5766,16 @@ async def cmd_remove(ctx: CommandContext, cmd: Command):
                 if _rm_action:
                     await _send_tutorial_hint(ctx, stage, _rm_action, force_immediate=True)
                 return
+            had_disguise = bool(ctx.session.player.disguise)
+            if not had_disguise:
+                await post_display(ctx, loc("cmd_remove.no_disguise"), msg_type=MessageType.PLAYER_ACTION)
+                return failure("remove_no_disguise")
             ctx.session.player.disguise = ""
             ctx.session.player.equipped_disguise_item_id = ""
             await _refresh_inventory_if_open(ctx)
             await _refresh_equipment_if_open(ctx)
             await post_display(ctx, "You remove your disguise.", msg_type=MessageType.PLAYER_ACTION)
+            await play_sound(ctx, "disguise_remove", 0.6)
             return success(
                 "remove",
                 facts={"disguise_removed"},
@@ -5720,7 +5834,7 @@ async def cmd_yell(ctx: CommandContext, cmd: Command):
         await post_display(ctx, loc("cmd_yell.no_message"), msg_type=MessageType.PLAYER_ACTION)
         return
 
-    from .pathfinding import emit_sound, propagate_sound, SOUND_YELL
+    from .pathfinding import emit_sound, propagate_sound_detailed, SOUND_YELL
     from .constants import YELL_THREAT_KEYWORDS, YELL_RESISTANCE_KEYWORDS, YELL_WARNING_KEYWORDS
 
     message = cmd.direct_obj
@@ -5742,7 +5856,13 @@ async def cmd_yell(ctx: CommandContext, cmd: Command):
         game_time=ctx.shared.game_time,
         source_actor_id=ctx.session.username,
     )
-    heard_rooms = propagate_sound(ctx.shared.world.rooms, sound_event)
+    heard_rooms_detailed = propagate_sound_detailed(ctx.shared.world.rooms, sound_event)
+    heard_rooms = [(room_id, perceived) for room_id, perceived, _hops in heard_rooms_detailed]
+    election = _elect_sound_investigator(ctx.shared, heard_rooms_detailed)
+    if election:
+        _grant_sound_investigation(
+            ctx.shared.world.npcs[election[0]], room.id, ctx.shared.game_time, "yell"
+        )
 
     await broadcast_to_room(ctx, loc("social.yell").format(name=player_name, message=message), msg_type="social")
 
@@ -5960,7 +6080,7 @@ async def cmd_search(ctx: CommandContext, cmd: Command):
 
 
 async def cmd_rumors(ctx: CommandContext, cmd: Command):
-    from .rumors import rumors_panel_payload
+    from .rumors import rumors_panel_payload, send_panel_queue
     ctx.session.rumors_panel_generation += 1
     payload = rumors_panel_payload(
         ctx.shared,
@@ -5968,6 +6088,7 @@ async def cmd_rumors(ctx: CommandContext, cmd: Command):
         generation=ctx.session.rumors_panel_generation,
     )
     await ctx.session.send_rumor_web(payload)
+    await send_panel_queue(ctx.session)
     await play_sound(ctx, "page_turn", 0.5)
     return success("rumors", facts={"rumors_read"}, tutorial_event={"verb": "rumors"})
 
