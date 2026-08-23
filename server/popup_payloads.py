@@ -162,9 +162,16 @@ def container_payload(container: Any, room_key: str, generation: int, key_item: 
     }
     if container.key_id:
         payload["key_id"] = container.key_id
-        payload["key_name"] = key_item.name if key_item else container.key_id
+        payload["key_name"] = key_item.name if key_item else readable_key_name(container.key_id)
         payload["has_key"] = has_key
     return payload
+
+
+def readable_key_name(key_id: str) -> str:
+    name = key_id.replace("_", " ").strip()
+    if not name:
+        return key_id
+    return name[0].upper() + name[1:]
 
 
 def action_item_row(item_or_journal: Any, disabled: bool = False, disabled_reason: str = "") -> Dict[str, Any]:
@@ -265,13 +272,14 @@ def _item_actions(item: Any, player: Any) -> List[str]:
     if item.is_weapon or item.disguise_id:
         return ["equip", "examine"]
     if item.is_armour:
-        return ["wear", "examine"]
+        return ["equip", "examine"]
     if item.is_note or getattr(item, "readable_text", "") or getattr(item, "note_text", ""):
         return ["read", "examine"]
     return ["drop", "examine"]
 
 
 def inventory_payload(player: Any, generation: int) -> Dict[str, Any]:
+    from .economy import wallet_fabi_value
     from .equipment import ensure_inventory_identity
     ensure_inventory_identity(player)
     equipped = {
@@ -298,5 +306,9 @@ def inventory_payload(player: Any, generation: int) -> Dict[str, Any]:
         "slots_used": len(player.inventory),
         "slots_max": getattr(player, "max_inventory", 12),
         "equipped": equipped,
+        "wallet_fabi_value": wallet_fabi_value(player),
+        "money_fabi": player.money_fabi,
+        "money_silver": player.money_silver,
+        "money_military_yen": player.money_military_yen,
         "items": items,
     }

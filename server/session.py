@@ -41,13 +41,15 @@ class Session:
     async def send_popup_close(self, reason: str) -> None:
         await self.websocket.send(json.dumps({"type": "popup_close", "payload": {"reason": reason}}))
         
-    async def send_display(self, text: str, msg_type=None):
+    async def send_display(self, text: str, msg_type=None, instant_reveal: bool = False):
         payload = {"type": "display", "payload": text}
         if msg_type is not None:
             if isinstance(msg_type, Enum):
                 payload["msg_type"] = msg_type.value
             else:
                 payload["msg_type"] = str(msg_type)
+        if instant_reveal:
+            payload["instant_reveal"] = True
         await self.websocket.send(json.dumps(payload))
 
     async def send_prompt(self, text: str = "> "):
