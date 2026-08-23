@@ -51,7 +51,7 @@ def ensure_inventory_identity(player: Any) -> None:
             setattr(player, attr, holder.instance_id)
 
 
-def equipped_item(player: Any) -> None:
+def equipped_item(player: Any, item_id: str):
     ensure_inventory_identity(player)
     if not item_id:
         return None
@@ -65,14 +65,24 @@ def equipped_weapon(player: Any):
 
 
 def equipped_disguise(player: Any, disguises: Optional[Mapping[str, Disguise]] = None) -> Optional[Tuple[Any, Disguise]]:
-    item = equipped_item(player, getattr(player, "equipped_disguise_item_id", ""))
-    if not item or not item.disguise_id or disguises is None:
+    identity = getattr(player, "disguise", "")
+    if not identity or disguises is None:
         return None
-    disguise = disguises.get(item.disguise_id)
-    return(item, disguise) if disguise else None
+    item = equipped_item(player, getattr(player, "equipped_disguise_item_id", ""))
+    if not item or item.disguise_id != identity or identity not in disguises:
+        return None
+    return (item, disguises[identity])
 
 
-def cosfiscate_equipped_disguise(player: Any):
+def invalidate_disguise_if_support_lost(player: Any, item: Any) -> bool:
+    if not item or getattr(item, "instance_id", "") != getattr(player, "equipped_disguise_item_id", ""):
+        return False
+    player.equipped_disguise_item_id = ""
+    player.disguise = ""
+    return True
+
+
+def confiscate_equipped_disguise(player: Any):
     item_id = getattr(player, "equipped_disguise_item_id", "")
     item = equipped_item(player, item_id)
     if item is not None:
@@ -80,6 +90,12 @@ def cosfiscate_equipped_disguise(player: Any):
     player.equipped_disguise_item_id = ""
     player.disguise = ""
     return item
+
+
+def end_tailing(player: Any) -> bool:
+    had_tail = getattr(player, "tailing_state", None) is not None
+    player.tailing_state = None
+    return had_tail
 
 
 def resolve_disguised_tail_pierce(
@@ -93,6 +109,7 @@ def resolve_disguised_tail_pierce(
 ) -> PierceStage:
     system = stealth or StealthSystem({})
     target_bonus = 15 if getattr(target, "is_historical_figure", False) or getattr(target, "faction_leader", False) else 0
+    defense_bonus = int(getattr(target, "disguise_detection_modifier", 0) or 0)
     wanted_level = max(0, int(wanted_bonus) // 10)
     return system.disguise_pierce_check(
         target,
@@ -100,6 +117,7 @@ def resolve_disguised_tail_pierce(
         wanted_level,
         season,
         perception_bonus=target_bonus,
+        defense_bonus=defense_bonus,
     )
 
 
@@ -116,7 +134,7 @@ def resolve_tail_step(
     season: str = "spring",
 ) -> TailResolution:
     if target is None:
-        player.tailing_state = None
+        end_tailing(player)
         return TailResolution("vanished", PierceStage.NONE)
     resolved = equipped_disguise(player, disguises)
     if resolved:
@@ -129,10 +147,10 @@ def resolve_tail_step(
             season=season,
         )
         if stage == PierceStage.CHALLENGE:
-            player.tailing_state = None
-            return TailResolution("challenged", stage)
+            end_tailing(player)
+            return TailResolution("challenge", stage)
         if stage == PierceStage.EXPOSED:
-            player.tailing_state = None
+            end_tailing(player)
             confiscate_equipped_disguise(player)
             return TailResolution("exposed", stage)
     else:
@@ -147,13 +165,13 @@ def resolve_tail_step(
         hunger=player.hunger,
     )
     if not success and tail.distance <= 0:
-        player.tailing_state = None
+        end_tailing(player)
         player.world_events.append(f"{target.name} spotted you while you were tailing them.")
         player.world_events = player.world_events[-50:]
         return TailResolution("spotted", stage)
     if success and target_room and player.current_room != target_room:
         if not current_room or target_room not in current_room.exits.values():
-            player.tailing_state = None
+            end_tailing(player)
             return TailResolution("lost", stage)
         player.current_room = target_room
         player.hidden = False

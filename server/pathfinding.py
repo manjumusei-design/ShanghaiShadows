@@ -20,7 +20,7 @@ class SoundEvent:
     base_range: int
     emit_audio: bool
     locally_visible: bool
-    surpress_witnesses: bool
+    suppress_witnesses: bool
     effective_range: int
     intensity: int
     source_actor_id: str = ""
@@ -164,14 +164,14 @@ def make_cost_fn(rooms: dict, player=None, game_time=None, weather: str = "clear
     return lambda a, b: default_edge_cost(a, b, rooms, player, game_time, weather)
 
 
-def propagate_sound(rooms: dict, event: SoundEvent) -> List[Tuple[str, int]]:
+def propagate_sound_detailed(rooms: dict, event: SoundEvent) -> List[Tuple[str, int, int]]:
     if event.effective_range <= 0:
         return []
     origin_room_id = event.source_room_id
     intensity = event.intensity
     effective_max = event.effective_range
 
-    result: List[Tuple[str, int]] = []
+    result: List[Tuple[str, int, int]] = []
     visited = {origin_room_id}
     queue: deque = deque([(origin_room_id, 0)])
 
@@ -180,7 +180,7 @@ def propagate_sound(rooms: dict, event: SoundEvent) -> List[Tuple[str, int]]:
 
         if distance > 0:
             perceived = max(1, intensity // (2 ** (distance - 1)))
-            result.append((room_id, perceived))
+            result.append((room_id, perceived, distance))
 
         if distance >= effective_max:
             continue
@@ -199,3 +199,7 @@ def propagate_sound(rooms: dict, event: SoundEvent) -> List[Tuple[str, int]]:
             queue.append((dest_id, distance + 1))
 
     return result
+
+
+def propagate_sound(rooms: dict, event: SoundEvent) -> List[Tuple[str, int]]:
+    return [(room_id, perceived) for room_id, perceived, _hops in propagate_sound_detailed(rooms, event)]

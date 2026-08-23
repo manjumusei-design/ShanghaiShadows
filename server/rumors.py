@@ -1120,6 +1120,17 @@ PRIORITY_MAP = {
     "argument": 3, "shuttering": 3, "gossip": 4, "ambient": 5
 }
 
+async def send_panel_queue(session) -> None:
+    queue = list(getattr(session, "_panel_queue", []))
+    if not queue:
+        return
+    try:
+        payload = json.dumps({"type": "rumors", "payload": queue})
+        await session.websocket.send(payload)
+    except Exception:
+        pass
+
+    
 def push_panel_entry(session, entry_type: str, data: dict) -> None:
     entry = {
         "id": f"panel_{uuid.uuid4().hex[:8]}",
@@ -1136,10 +1147,10 @@ def push_panel_entry(session, entry_type: str, data: dict) -> None:
     session._panel_queue.sort(key=lambda e: (e["priority"], e["timestamp"]))
     session._panel_queue = session._panel_queue[-8:]
     try:
-        payload = json.dumps({"type": "rumors", "payload": session._panel_queue})
-        asyncio.create_task(session.websocket.send(payload))
-    except Exception:
-        pass
+        asyncio.get_running_loop()
+    except RuntimeError:
+        return
+    asyncio.create_task(send_panel_queue(session))
 
 
 def push_gossip_to_rumour_panel(session, speaker_name: str, listener_name: str, lines: List[str]) -> None:
