@@ -178,6 +178,8 @@ CORPSE_DECAY_DAYS = 1
 
 TENSION_HIGH_THRESHOLD = 120
 
+ACTIONABLE_SOUND_KINDS = frozenset({"yell", "gunshot"})
+
 YELL_THREAT_KEYWORDS = frozenset({"kill", "die", "destroy", "curse", "murder", "death"})
 YELL_RESISTANCE_KEYWORDS = frozenset({"resistance", "freedom", "liberation", "revolution", "rebel", " ccp", "communist"})
 YELL_WARNING_KEYWORDS = frozenset({"watch out", "danger", "run", "hide", "police", "patrol", "soldier", "kempeitai"})
