@@ -1,12 +1,12 @@
 # Shanghai Shadows
 
-> A multiplayer text-based storytelling game set in Japanese-occupied Shanghai that I am building as a passion project to help teenagers in Shanghai learn about what happened during the Japanese occupation.
+> A multiplayer text story based MUD set in Japanese-occupied Shanghai, built as a passion project to help teenagers in Shanghai learn what ordinary people lived through during the occupation.
 
 ![Landing page](image.png)
 
-**Play Shanghai Shadows** [<demo URL -->](https://shanghai.dino.icu/login)
+**Play Shanghai Shadows:** <https://shanghai.dino.icu/login>
 
-Shanghai Shadows is a MUD you play in a browser that runs on Hack Club's DNS provider and a NEST VPS. In this MUD, you are not a soldier, a spy, or a chosen one. You are one ordinary resident of an occupied city, trying to keep your stomach full, staying alive, and your name out of patrol reports between November 1937 and the liberation the world is counting down toward. The city runs on a shared clock other players live in the same Shanghai, hear the same rumours, and explore the lives of ordinary people living under the Japanese occupation of the time.
+Shanghai Shadows runs in a browser on Hack Club DNS and a Nest VPS. You do not play a soldier, spy, or chosen hero. You play one resident of an occupied city, trying to eat, stay alive, and keep your name out of patrol reports between November 1937 and the Day 180 liberation endpoint. Other players share the same clock, weather, rumours, faction fortunes, and consequences. 
 
 ## Quick Start
 
@@ -17,319 +17,250 @@ python -m pip install -r requirements.txt
 python main.py
 ```
 
-Open `http://127.0.0.1:8080` in a browser and create an account. Python 3.11+ required. On Windows, `start.bat` does the same thing and is the way I would recommend you to run it.
-OR
-https://shanghai.dino.icu/login
+Open `http://127.0.0.1:8080` and create an account. Python 3.11+ is required. On Windows, `start.bat` does the same thing and is the easiest way to run it.
 
-## What is Shanghai Shadows?
+The live version is at <https://shanghai.dino.icu/login>.
 
-In late 1937, Japanese forces took Shanghai after the northeast expedition where they invaded Manchuria earlier in 1931 by staging the Marco Polo bridge incident which led to an invasion from the northeastern China all the way down south and taking Beijing in the process. For eight years of the occupation of Shanghai from 1937 to 1945, most people who lived through the occupation were neither collaborators nor heroes. They were ordinary 老百姓 or the general populace who worked, queued for rice, traded on the black market, spread gossip, kept their heads down after curfew, and occasionally made small, dangerous choices about whom to help. That is the part of history this game is about. The Chinese term laobaixing (老百姓), "ordinary hundred surnames", is what I built the whole game around which I chose, since it was really easy to make a spy thriller game or a game where you play as the main character and shoot the bad guys dead but for a learning experience it would be much better to take a look at Shanghai through the lens of an ordinary person and the lives of ordinary or controversial figures that you may come across and how one would judge them.
+## What It Is
 
-Mechanically, the MUD fundamentally works like this.
+The game is built around the idea of laobaixing, ordinary people, rather than heroes or villains. Most people who lived through occupied Shanghai were not collaborators, resistance legends, or rambo style protagonists. They queued for rice, listened for patrols, traded through dangerous channels, kept family secrets, and made small choices that could cost them.
 
-- The world is shared and persistent. Every player lives under one clock, one weather system, one rumour mill, one set of faction fortunes, so it would support maybe 30 people with the current VPS.
-- Death is permanent. When your character dies, the character stays dead, and the account's next character starts from a safehouse with whatever stash the predecessor left behind and must collect the journal which serves as a form of progression of how many stories or encounters you have come across.
-- The campaign has an endpoint. On Day 180, the occupation ends one way or another, decided by which factions players helped. The world resets, but some things carry over. At the moment I can only have 180 days due to the complex length to somehow put 1937 to 1945 in a server playthrough which would take too long (at least for now).
-- Violence exists, and it is usually a mistake due to how embedded the Kempeitai (japanese secret police) and informants were in Shanghai during that period. More on that below.
+The MUD follows that view mechanically.
 
-## Why I made it
+- With a single city clock, weather system, rumor network, and set of faction outcomes, the world is shared and enduring.
+- Death is irreversible. The next character in the account inherits only what was left behind and is able to retrieve the previous character's journal, but a dead character remains dead.
+- Day 180 marks the end of the campaign. The impact that players created throughout the city determines which liberation ending takes place.
+- Violence does occur, but it is typically an error. Bloodshed is costly due to the Kempeitai, informants, witnesses, rumors, and wanted system.
 
-Around March or April 2026, during Hack Club's Flavortown hackathon, I came across [ForlornMUD](https://github.com/Snxhit/ForlornMUD) which is a fairly traditional RPG MUD where you kill mobs and follow along a storyline and was a pretty highly rated project. What stuck with me was the realisation that a text world could be a complete game, no engine, with almost no assets, just prose and rules. Their project was written in godot and I decided to challenge myself by coding it in python and I am pretty happy with the output so far. I did a tiny bit of analysis on it and concluded that the gameplay loop was just explore rooms -> find enemies/items -> fight -> loot -> gain XP -> improve stats/equipment -> interact with merchants/players -> continue exploring which is pretty straightforward.
+## What You Can Do ATM
 
-My first idea was simple and fundamentally just to build a historical simulator as a MUD. Pick a period where survival itself was dramatic, so naturally there would be lots of things to learn about that period and since I was a sucker for history lessons, especially the Asian Theatre of WW2 where my grandparents and their parents grew up in occupied areas or were conscripted in the army. My grandparents and their parents would often tell me of the hunger, curfews, informers, ration cards, and faction politics that existed during their youth/adulthood and listening to those stories growing up seemed like a dream away as in the 21st century we live in a relatively peaceful timeline.
+- Manage hunger, morale, health, inventory space, seasonal food pressure, and three currencies: fabi, silver yuan, and Japanese military yen with each having its own 
+- Build trust across seven factions, where helping one side can damage another relationship.
+- Hear rumours pass through NPC conversations, then read the city's daily version in a newspaper.
+- Move through curfew hours, patrol routes, checkpoints, restricted districts, disguises, wanted levels, and tailing checks.
+- Search, buy, wear, follow, yell, hide, plant evidence, pick pockets, ask NPCs about leads, and share food to bond with people.
+- Learn the core systems through a staged tutorial with Mrs. Lin, using the same sound, tailing, disguise, rumour, and room mechanics as the live world.
 
-Enough about sentimentals! Let's get into the nitty gritty. Traditional MUDs answer the question "what does the player do?" with "kill mobs and take their stuff, then use stuff to kill bigger mobs". I did not want that answer. I wanted the player's relationship with the world to look like a civilian's relationship with an occupying army, mostly avoidance, sometimes negotiation, rarely violence, and violence always being costly. Answering that question properly took the whole project. The rest of this README is, in large part, a record of how the answer changed over time.
+## Why I Made ShanghaiShadows
 
-## What you can do in the MUD
+I discovered [ForlornMUD](https://github.com/Snxhit/ForlornMUD) during Hack Club's Flavortown hackathon, which was the first spark. It demonstrated to me that a text world could function as a complete game without a big art pipeline; rooms, rules, writing, and perseverance were sufficient. The more conventional RPG loop used in ForlornMUD was explore, fight, loot, acquire XP, upgrade, and repeat.
 
-- Live under a working occupation economy where three currencies will also play a factor in how you manage your money (japanese military yuan, silver and fabi), inflation that gets worse every week of the campaign, seasonal food shortages, and a black market that will still serve you when legitimate vendors shut their stalls or run away or disappear for whatever reason.
-- Build trust across seven factions, from the Kempeitai to the Green Gang, where every conversation helps one standing and costs another.
-- Hear and spread rumours that distort as they travel, and read them each morning in a purchasable newspaper with an AI endpoint that summarizes all of the rumours fed from the game into Hack Club's API and returns a newspaper.
-- Get around a city that enforces its own rules, where a 20:00 to 06:00 historic curfew, patrols with proximity warnings, checkpoints, and restricted districts.
-- Disappear with hide, disguises, tailing NPCs, pickpocketing, planted evidence, and a wanted level from 0 to 3.
-- Learn all of it through a staged tutorial taught by characters, using the same mechanics the rest of the game uses because I know the reviewer reading this has enough time to only play through the tutorial and the tutorial is what houses the demonstration of the game mechanics so to speak.
+I was hoping for a different response to the question, "What does the player do?" My grandparents' tales of hunger, curfews, ration cards, informers, and faction politics from Zhejiang, a short distance from Shanghai, made survival seem more genuine than battle, which at the time would have been extremely difficult and hence historically inaccurate. After then, Shanghai Shadows turned into a MUD about civilian pressure, emphasizing trade-offs, evasion, bargaining, and the risk of being recognized.
 
 
-### April 2026, hello world
 
-The first commit I have ever done added a `main.py` containing the text `hello world`. Within four days there was a walkable two-room world: The Bund at dawn and Nanjing Road, linked east-west by a simple YAML file, plus a command parser with verb synonyms and an HTTP server speaking WebSocket to a bare HTML terminal page. Just a heads up I also have a journal on macondo but I would prefer if I spoke about it here.
+## How The Game Works
 
-The first items set the tone better than I realised at the time which was a ration card, a brass key, a photograph, and a newspaper. Not a sword. A few days later came the first NPC, Liu Wei, with dialogue and a daily schedule, trust rules as data, a curfew warning event, a disguises file, and a stealth system that was thin on edge cases at the time.
+### Survival And Economy
 
-I carried a lot of assumptions over from conventional MUD structure such as rooms, exits, verbs, NPCs with schedules. Those turned out to be the easy part. Nothing in that first week told me what the player would spend their time doing.
+You have health, hunger, and morale. Hunger drains over time and hits harder in winter. Famished characters perform worse at stealth because starvation should affect how a person moves and looks. Low morale weakens fighting, hiding, and vendor prices.
 
-### May 2026, discovering the real problem
+Money comes in fabi, silver yuan, and military yen. Fabi inflates over the campaign, silver holds value, and military yen inflate fastest. Prices combine district, faction attitude, market state, inflation, season, trust, and morale, so the same food can cost different amounts in different neighbourhoods. Winter raises food prices and slows restocking. When ordinary vendors shut you out, the black market still sells at a markup, with contraband risk at checkpoints.
 
-May was the month the game grew a reason to play it.
+Food has social significance as well. Food has cultural connotations, and eating together can foster camaraderie. The wrong food given to the wrong person can cost trust instead such as giving Japanese food to a Chinese person or vice versa.
 
-Hunger, health, and morale arrived together in late-ish May. Items gained food values. Chinese localization arrived first, then English, because mandarin is my mother tongue but for the sake of review, english would be the way to go.
+### People, Trust, And Rumours
 
-- The parser knew the word `listen`, because MUDs know that word. Later I removed it entirely, replaced by something more honest for this setting, you do not actively eavesdrop, you overhear things when you stand near people talking. More on that in the mechanics section.
+Every NPC belongs to a faction, and the player holds separate trust by faction and role. Trust starts neutral at 50. Helping the resistance, for example, may help CCP standing while hurting Kempeitai standing. At 70+, factions grant concrete perks such as safehouse rooms, weapon repair, checkpoint passage, or faster criminal-record clearing.
 
-Mid-month also brought the first attempt at emergent narrative where I took my hand to write storylets, which short conditional vignettes that trigger based on where you are and what npcs are around. This system would be torn out and rebuilt before it stabilised. And on May 17, an AI client appeared, pointed at Hack Club's AI proxy, used to vary generated prose. It powers the newspaper today, with a deterministic fallback when the API key is absent. IT DOES NOT WRITE CONTENT.
+The conversation of NPCs varies with memory. Someone who likes you will welcome you differently than someone who witnessed your murder or heard a negative rumor. Topics, room knowledge, leads, local repercussions, and sources of rumors are all revealed by ASK. BOND fosters friendship, usually over food.
 
-### June 2026, consequences and company
+Rumors are unchangeable recordings that change as NPCs recite them. After a certain number of hops, the story becomes jumbled as names change, numbers increase, and meaning can reverse. The same event is recounted by factions using their own language and common terms. A unpleasant afternoon can turn into tomorrow's newspaper since player crimes enter the same web.
 
-June built the machinery that turns a single-player toy into a world, with bcrypt-backed accounts, a session manager for multiple simultaneous players, world state serialization, a tick loop driving NPC movement, saves, journals, endings and more.
+### Testimonies/documents
 
-Then came the burst. In roughly 2 weeks or so, the game gained combat resolution, missions, pickpocketing, equipment, milestones, suspicion with decay and investigation behaviour, a market tracker with food restocking, fabi inflation, behaviour trees with blackboards for every NPC, A* pathfinding, sound propagation through the room graph, wanted levels, last words on death, and NPC respawn logic.
+Readable witness materials have mechanical weight and are based on research notes. Unit 731, comfort women, Nanjing survivors, POW records, and propaganda are examples of happenings that might lower morale, change faction trust, open tasks, or unlock contacts. 
 
-The first tutorial also appeared in June, implemented as storylets. It was thin and extremely verbose. It told you commands existed rather than teaching them. It survived until August as I didnt want it to be like a multiple choice question, I wanted it to feel real as if you did not have any choices yourself but could see what choices npcs made. So a huge problem that I also faced was "how could I quantify npc to npc interactions to the player", and another HUGE problem which bit me back was storing player information in .json which slowed loading and testing times a LOT.
+### NPC-To-NPC Interaction
 
-### July 2026, a real client and deleting the memorial
+The city should talk even when the player is not the subject. NPC interactions use three categories.
 
-In July I landed a Vue prototype and then a complete frontend with a theme, canvas map, audio hooks, and state management. Until then the client had been one HTML page with a scrolling terminal div. The frontend work consumed much of late July, including a long fix batch for map panning, login validation, layout, and compass directions (rip compass direction).
+- **Ambient** exchanges are autonomous conversations that nearby players overhear.
+- **Persistent** exchanges leave bounded aftermath, such as a shuttered stall, cautious dialogue, or price pressure.
+- **Actionable** exchanges can later become an ASK lead or storylet if actors, timing, trust, and location still line up.
 
+### Stealth, Disguise, And Crime
 
-One day in late July, I dismantled the following piece by piece, the memorial command, the state field, the death write, the NPC-kill write, the login intro, and the archive functions. The same series cut the campaign length from 2,835 days to 180 as it was too hard to keep track of any problems that happened with such a long running game, not to mention the testing as well. 
+Fear, suspicion, wanted level, and memory all stack. Witnessing an attack, seeing a kill, or hearing a damaging rumour can make an NPC afraid of you, scaled by personality. Brave characters are less rattled, while cowardly ones are affected more.
 
-Late July also produced a new NPC function where NPCs who individually accumulate fear and social risk toward you, remember what they saw, and change how they behave around you. Anyone who has played Middle-earth: Shadow of Mordor knows the feeling of a world whose enemies remember you personally; I wanted that same sensation pointed in the opposite direction, civilians accumulating fear rather than orcs accumulating vengeance, so a shopkeeper you robbed in June still flinches in August.
+Disguises work like eroding cover rather than magic costumes. NPCs run perception checks against disguise quality, with suspicion, challenge, and exposure thresholds. Wanted level cuts into the disguise bonus, so the same uniform that works on a clean character may fail after two days of crime.
 
-### August 2026, teaching the city
+Tailing is contested roll by roll, and STOP TAIL breaks it off before you are noticed and grants you points to your stealth. Pickpocketing can reward you, but getting caught raises suspicion, wanted level, and the victim's memory of your face which may lead to nasty encounters in the future. Planting evidence can frame someone if they are caught carrying it at checkpoints.
 
-In August I was being a bit lazy and was only committing an hour a day for the streak until the 15th where I sped things up to finish the MVP of the game. The tutorial rewrite deserves its own paragraph because it changed what kind of game this is. The June version listed commands. The current version puts you in a cloned copy of eighteen rooms with a woman named Mrs. Lin, who teaches you to search loose bricks, buy breakfast, wear a disguise, follow someone without being caught, and yell to draw a guard off his post. Nothing here is faked. The tutorial runs the same sound propagation, the same tail choreography, the same rumour panel as the live world, just in an isolated private instance. When a stage claimed to demonstrate something the production code could not actually do, the fix was to repair the production mechanic, not to fake the demo which is something I stand by since I am also directly solving 2 birds with one stone.
+### Combat And Sound
 
-Mid-August brought the curfew arrest system, deliberately non-lethal. Get caught outside once and you are chased out of the street; get caught again and you spend a day in custody while everything on you is confiscated. Arrest never kills, because the design brief says authority in this city grinds people down rather than executing them on the spot. Then came a forty-commit stretch adding NPC memory and relationships, testimony documents, strict YAML validation, tab completion driven by the server, and a hint scheduler that waits ten seconds before offering help, on the theory that a player who figures it out themselves learns it permanently.
+Combat is one shot your effective courage against the target's authority. Win, and the target dies in one hit. Lose, and you take a counter strike, risk disarmament, and take damage. Weapons can degrade. Firearms jam more often when worn and misfire badly when ruined.
 
+Sound also exarcabates violence. Melee attacks are silent and only alerts those in the same room. Gunshots travel four rooms, shouts travel three, night extends both, and storms double reach. Silenced shots from hiding suppress witnesses, making the safest murder also the most morally ugly option. Witnesses flee, scream, fight, remember, or spread what they saw.
 
+Killing costs trust, raises wanted level, seeds rumours, removes NPCs from interacting in the future with other NPCs , and closes off whatever stories they carried. Loot exists, but I havent gotten around to fine tuning it yet
 
-## How the game works
+### Server
 
-This section describes the game as it exists today
+The world autosaves every five minutes and saves again on clean shutdown. Newspapers are generated once per day on first purchase, then shared by every buyer of that edition. If nobody buys one, no AI call happens to save cost for HCAI (youre welcome Mahad)
 
-### Living in the city
+Missions expire if ignored, some choices close other paths, and storylets appear based on location, condition, and history. On Day 180, the occupation ends through uprising, restoration, joint effort, or the war moving on. The world resets to November 1937, but death journals can persist across cycles for future players to find. Althistory is not something I would like to explore since it does go pretty deep.
 
-You have health, hunger, and morale. Hunger drains hour by hour, faster in winter, through tiers from FULL down to STARVING and FAMISHED. Being famished goes beyond feeling hungry, every stealth check you make suffers for it, because a starving person moves and looks like a starving person. Morale sits under everything, low morale makes you worse in a fight, worse at hiding, and raises the prices vendors charge you.
+## Design Notes
 
-Money comes in three flavours. Fabi is the paper currency, and it inflates as the campaign progresses, reaching roughly two and a half times its starting purchasing power by Day 180. Silver yuan hold value at a fixed exchange. Military yen come from the occupier, usually off a corpse and inflate the quickest. Prices stack regional differences, faction attitude, daily market conditions, inflation, season, your personal trust tier, and even your morale, so the same bowl of noodles costs different things on different days in different neighbourhoods. Winter multiplies food prices and slows restocking. When ordinary shops will not sell to you, the black market always will, at a markup, if you can carry contraband that you bought past the random checkpoints. What type of contraband? Banned items during the occupation such as but not limited to letters of families torn apart from the invasion in the north talking about Unit 731, statements and letters from men to their families about conscription, admissions of guilt from collaborating with the Japanese to survive, that sort of stuff.
+This unconventional MUD's style poses the question, "If killing isn't the core loop, what is?" Information is the solution. What you know about them and what others know about you. In order to survive to the very end and discover as much as possible about Shanghai in a single game, the user must employ a variety of information systems, including trust, rumors, memory, testimony, disguise, and stealth.
 
-Food carries politics too. Eight dishes are modelled on historically available street food(to be expanded) depending on the region you are in, congee, mantou, tea eggs, pork buns, rice balls, miso soup, tinned meat, and ship biscuits, and each carries a culture tag. Sharing food is how you BOND with someone, and a culture match adds bonus friendship. Handing Japanese food to a CCP loyalist or a civilian costs you trust.
+That description of violence as an information disaster makes sense. A brawl may result in witnesses, who may then spread rumors, which may lead to suspicion, which may result in patrols, closed doors, increased costs, or even fatalities. Fighting is not prohibited by the systems, but it has a cascading effect that makes it extremely difficult to be a human when you are discovered murdering someone.
 
-### Talking to people
 
-Every NPC belongs to a faction, and you hold separate trust with each faction-role pair, starting neutral at 50. Helping the resistance earns CCP goodwill and loses Kempeitai goodwill, and the ledger is asymmetric enough that you cannot please everyone and must pick a side. At connected status (70+), factions grant concrete perks such as extra safehouse rooms for CCP, free weapon repairs for the KMT , checkpoint passage for the Kempeitai , faster clearing of your criminal record for the Green Gang.
+## How It Works Under The Hood
 
-Conversations are bucketed by mood and remapped by memory. An NPC who remembers you fondly greets you from their friendly line bucket yaml, an NPC who watched you kill someone speaks to you from their afraid or hostile ones, and may simply avoid the room from then on. ASK reveals topics, room knowledge, consequences unfolding nearby, and lets you trace where a rumour came from. BOND builds friendship, most reliably by sharing food, though sharing Japanese food with the wrong person costs you.
+A few decisions are worth explaining properly, because each one was borrowed from somewhere games already solved it, then bent to fit a city where combat isnt really the main thing.
 
-Rumours are the game's circulatory system. Overheard exchanges arrive in a panel as you stand near conversing NPCs. Behind the panel, every rumour is an immutable record that mutates a little with each hop between tellers such as name swapping, details exaggeration, inverted meanings, until after five hops the text is garbled. Different factions retell the same event with their own spin. Your crimes enter this web automatically, and a high wanted level publishes its own rumours.
+### Behaviour Trees With Blackboards, From Halo
 
-### Documents that hurt to read
+This is my single biggest debt in this project. From Halo 2 onward, the game built enemy AI out of behaviour trees instead of giant state machines, and Gears of War later made the technique famous. The idea is actually pretty primitive where a selector node tries child options in priority order until one succeeds, a sequence commits to a run of steps, and a blackboard holds what this particular character currently knows about the world.
 
-Scattered through the city are readable testimonies grounded in real history, sourced through private research catalogs that record where every claim comes from. Reading them changes you mechanically. The Unit 731 testimony costs thirty morale and twenty Kempeitai trust while unlocking a contact who can help you. Comfort women cables, Nanjing survivor accounts, POW records, and propaganda drafts each carry their own weight and their own consequence, from mission unlocks to faction standing. I wanted learning history in this game to cost the player something, because it cost the people who lived it far more.
+Every one of the 101 NPCs in Shanghai Shadows runs a tree like this. There are five authored archetypes, `kempeitai_patrol`, `civilian_vendor`, `underground_operative`, `green_gang_thug`, and `faction_leader`, built from sequence, selector, parallel, inverter, succeeder, cooldown, and repeatuntilfail nodes. Each NPC also gets its own blackboard holding things like the last sound it heard, whether danger is nearby, and whether it has noticed the player acting suspiciously.
 
-### The hard part of quantifying NPC-to-NPC interaction
+Why go to all this trouble in a text game? Because finite state machines fall apart exactly where this game lives. A patrolling guard must walk his route, hear a shout, grow suspicious, leave his post to investigate, then eventually give up and return. Any of those steps can be interrupted by something louder. Trees let a higher-priority branch take over without the character forgetting what it was doing, and a cooldown node stops him re-investigating the same empty alley forever and getting stuck in a loop. The tutorial teaches this pipeline too, when you YELL, a real sound event propagates, the officer's tree perceives it, and he walks off his anchor toward the noise.
 
-I posed this problem to myself back in June and it took until August to answer properly. If the city is supposed to feel alive, NPCs cannot just wait around for the player, they need to talk to each other. But the moment two NPCs have a conversation, three ugly questions appear, what did it actually change, who is allowed to know about it, and how do you show any of that without turning every street into a theatre performance for the player and overloading them with information?
+### Sound As A Physical Object, Modelled After Thief
 
-The answer settled into three layers with strict rules about which is which.
+Thief treated noise as something with weight and travel, and I found it interesting to my use case.  Sound in the game propagates through the room graph breadth first a gunshot reaches four rooms, a shout reaches three, footsteps reach one, and intensity roughly halves per room crossed. Night extends every range by a room. Storms double the reach. Fog and rain muffle it.
 
-- **Ambient** interactions are fully autonomous two-turn exchanges between NPCs in a room. Players standing nearby overhear them through the panel where nobody can interrupt, prompt, or steer them. They exist so the world talks when you are not the subject. 
-- **Persistent** interactions leave bounded aftermath, a shuttered stall after a witnessed shakedown, cautious dialogue in that room, price pressure. They expire and are deduplicated, capped per district, and never directly move global endings.
-- **Actionable** interactions are a small high-stakes subset that can surface later as an ASK lead or storylet, and only if every precondition still holds, actors alive and present, trust valid, timing windows open, cooldowns elapsed.
+Melee is silent apart from local feedback. A silenced shot fired from hiding suppresses witnesses entirely, which makes the quietest murder also the safest one and exactly as morally compromised as it sounds.
 
-The second hard lesson was that overhearing should be passive. The original parser knew the word LISTEN because MUDs know that word, and I removed/reshaped it deliberately. In a real life setting you do not decide to eavesdrop standing in a room while people talk and thats what I aimed to achieve with shoving NPC chatter and interaction to be quantifiable to the player. That single removal made the whole system honest, because information now has geography and requires the player to be present, hear things, or to leave/not be in the area and miss them.
+### Disguises That Erode Under Attention, Inspired By Hitman
 
-The third lesson was numbers. Fear of the player is not from being a direct victim most of the time since the combat system was one shot one kill, it accumulates from specific events such as witnessing an attack adds 15, witnessing a kill adds 30, a damaging rumour within gossip range adds 5, and personality scales it, brave characters discount fear by half while cowardly ones amplify it past their own judgment. Every interaction category carries cooldowns, caps, and expiry so two NPCs cannot loop the same quarrel forever and one dramatic afternoon cannot permanently define a district.
+Hitman's costume system showed that a disguise should not be a binary cloak. Mine works in a similar fashion: NPCs run perception checks against your disguise bonus, and the results escalate through authored stages, with suspicion at threshold 25, an active challenge at 50, and full exposure at 75.
 
-The tutorial stress tests all of this in some areas. The rumours lesson needs a guaranteed exchange between Wen and his apprentice, but tutorial instances block normal world simulation, so the demonstration runs the exact production social pipeline once, pinned to that specific pair, with a durable fired-record making reruns impossible. When the demo claimed something the production code could not do, I fixed the production code rather than faking the demo because yeah.
+Your wanted level subtracts directly from your protection. The same paper uniform that lets you stroll through a checkpoint on a clean record can get you stared at once the city has reason to doubt your face.
 
-### Building a city that connects
+### Wanted Levels, From GTA And Elder Scrolls
 
-The map did not come from hand-placing ninety rooms. A generator distributes them across eight historically grounded zones, grows each zone from a spanning tree so every room is reachable, adds extra loop edges so streets form choices instead of corridors, then relaxes the layout with spring embedding until it reads like an organic neighbourhood rather than a chessboard. Dead ends stay in on purpose, because a warren with corners is exactly what makes hiding from patrols interesting. I verified connectivity across five different seeds before trusting it.
+A wanted level that only clears when you pay someone belongs to games where you play a professional criminal. Shanghai Shadows treats wanted level, more like heat in GTA or a bounty in The Elder Scrolls. It decays only through consecutive days without further trouble and decays faster if you stay in close proximity to a safe room.
 
-### Moving through occupied Shanghai
+At level 2, ordinary vendors refuse to serve you and patrols double. 
 
-The map spans eight historical zones and about ninety rooms, from the Bund to Hongkou, connected by streets you walk room by room. Weather changes what sound carries and how well you hide, seasons change prices, hunger, and patrol density. While this is not historically accurate, I assigned exactly one political owner to every plotted piece of land, so power on the map always has a theme or an address. Hongkou belongs to the Japanese garrison and its Kempeitai. The Bund and Nanjing Road sit inside the International Settlement under the British led Shanghai Municipal Council. The French Concession answers to France, and Xujiahui serves as its quiet Catholic mission outskirts. The Old City and bombed out Zhabei are left to the collaborationist Chinese puppet authorities from 1937 onward, while Yangpu stays contested dockworker ground where the CCP underground runs closest to the surface. You can feel those borders without reading them with pricing changes such as a tin of meat at Yangpu docks costing eight tenths of baseline while contraband quoted across town in Hongkou runs one and a half times going rate, because risk gets priced into whichever flag flies over the street.
+### NetHack
 
-From 20:00 to 06:00 the streets belong to patrols. Staying out is possible and sometimes necessary, and the game warns you honestly, a proximity indicator counts the patrol down from three route steps away, with a real countdown on the final step. Contact does not mean instant arrest. You get exactly one arrest resolution per night, and the game remembers whether it already spent your roll even across midnight, because a curfew night is tracked by its starting date rather than by the clock. If that one roll goes badly you burn any escape charge you hold to slip away down a legal exit, otherwise you spend a full in-game day in custody while everything on you is confiscated, including what you were wearing. Carrying contraband raises the odds, the right disguise halves them, and a hundred fabi bribe can buy half an hour of immunity from an officer who is standing right there.
+Roguelikes have shipped permadeath with inheritance for decades. NetHack's bones files drop a dead player's belongings and ghost into the dungeon where future players can find them, and Dwarf Fortress succession games hand one collapsing fortress between players as shared history.
 
-Your wanted level, which spans from 0 to 3, follows you everywhere. At 2 and above, legitimate vendors refuse to serve you and patrols double. Each level adds to how closely people examine your disguise and to your odds of a bad night under curfew. Levels decay only through days without crime, faster if you stay near a safe room.
+Shanghai Shadows combines the two. When your character dies, a death journal appears where you fell, carrying your knowledge, journal entries, and testimonies. Another player must physically find and read it, and it can be claimed once across the whole server. Your successor wakes in a safehouse and retrieves whatever you stashed. Even the Day 180 world reset preserves death journals, so a character months from now can read what somebody learned in a timeline that no longer exists. Your worst moments become content, somewhat like the bloodstains and messages other players find in Dark Souls.
 
+### The Classic Telephone Game As A Data Structure
 
+Rumour propagation is Chinese Whisphers (an elementary game) turned into a game mechanic. Every rumour is an immutable record, and each hop between tellers deterministically mutates the telling so names can swap, numbers might exaggerate, and meanings can invert. Personality changes the rate of corruption, so honest carriers preserve the story while gossipy or negative characters bend it to a larger degree.
 
-### Staying unnoticed
+After five hops, the text is garbled beyond recovery. Different factions retell the same event with their own institutional spin: the resistance says fascist forces, while the Kempeitai says terrorist elements. Your crimes enter this web automatically as witnessed events. Red Dead Redemption 2 showed how much life comes from NPCs reacting to what they actually saw rather than to a script, and that is what I wanted to emulate here.
 
-Hiding is a skill roll against the room where indoor spots and authored hiding places help, alert observers, hunger and low morale will make it easier to get alerted. While hidden, observers can still passively spot you. Disguises change what people think you are in terms of perception and they are good but not perfect, NPCs run perception checks against your disguise bonus, escalating through suspicion, challenge, and exposure stages, and a high wanted level subtracts directly from your protection.
+## Running Locally
 
-A full example makes the difference concrete. Picture two characters wearing the exact same Kempeitai uniform. The first has a clean record. A checkpoint guard with perception forty five runs his check against her disguise quality of fifty, the pierce fails, and he waves her through into Hongkou without looking up. The second character did two days of crime last week and sits at wanted level two. The identical uniform now hands that same guard twenty bonus perception, seventy against forty five, so the pierce succeeds on sight. Her disguise is confiscated on the spot, she is left standing at the checkpoint exposed with a fresh wanted point, and the patrol nearby suddenly becomes her most urgent problem. Same paper face, completely different history, and that history was earned one crime at a time.
- 
-Tailing is contested roll by roll as you close distance, and STOP TAIL breaks it off before you are noticed. Picking pockets gets you the benefit depending the victim, and getting caught costs suspicion, wanted level, and the victim's permanent memory of your face. Planting evidence on someone frames them, if they get caught with your planted item.
+Requirements:
 
-### The terminal itself
-
-The terminal is a mechanic, not a decoration. Every message arrives with a server-assigned category that decides its colour, green for people speaking, gold for warnings that need action, cyan for perception reveals and readable documents, red for mistakes, plain white for the room around you. The client never guesses meaning from wording, so whatever glows is mechanically true. Prose gets a typewriter reveal, but the reveal never delays input, combat, danger, or popups, and one click with the space or enter bar finishes it instantly. Tab completion is owned by the server as well, so TAKE only suggests things actually in the room, and a container slot can only ever offer containers. I apologize for rainbow unicorn vomit in advance if you are sensitive to such vibrant colours.
-
-### When things go wrong
-
-Combat exists, and here the design departs hardest from MUD tradition and ForlornMUD.
-
-An attack is a one stage movement where you compare your effective courage stat against the target's authority. Win it, and you kill in one shot. Lose it, and you take a counter-blow of up to 25 damage, quite possibly disarmed, with the full math and feedback shown to you afterward via the terminal. Weapons have durability, firearms jam more often as they degrade and misfire catastrophically when worn out. 
-
-Sound makes violence loud. Melee is silent. A gunshot carries four rooms, a shout carries the three nearest rooms, night extends both, and storms double the reach. Silenced shots are truly silent when you have a silencer mod equipped on your weapon, and fired from hiding they suppress witnesses entirely, which is the one reliable way to kill quietly and exactly as morally compromised as it sounds. Witnesses react by their personalities via the BT (behavioural tree) to flee or scream or fight, the scene stays marked for two days, and word reaches the wider web within hours. Speaking of BT, I actually got this idea from HALO where you can make NPCs react a certain way depending on which branches it goes down to simulate decision making.
-
-Killing costs trust along faction lines, raises your wanted level, seeds rumours, and permanently removes named characters from the world, which also removes the chance to ever talk with them and learn about their experiences. Their corpses decay within a day in the open with loot around on the floor to take. The rewards are pretty modest with a little loot. This matched my vision where fighting is made available and usually never efficient, which matches the historical reality the game is built around.
-
-
-
-### A city that remembers
-
-The world autosaves every five minutes, and clean shutdowns save again. Newspapers print daily and cost 3 fabi and contain 3 sections, teahouse talk, notable incidents that includes named deaths, lane whispers. Every buyer of a given day reads the same edition. The paper is generated lazily on the first purchase and then shared with everyone until tomorrow, so the whole city literally reads the same news, and on days when nobody buys one, nothing is generated and no AI call happens at all. An earlier version gave every buyer a personalised edition, which I later replaced with this single shared one. Missions, sixty of them across the factions, expire if ignored and some lock you into dilemmas where taking one side closes another. Storylets, over a hundred of them, surface matched to your location, condition, and history. Ambient events fill the corners with about seventy-six of them.
-
-On Day 180 the occupation ends. Which liberation you see depends on the influence players collectively built which is an uprising, a restoration, a joint effort, or simply the war moving on. Everyone sees the ending, the world resets, a new timeline begins in November 1937. Death journals persist across cycles, so a future character can find a journal left by someone playing months earlier.
-
-The world is also built to survive me. A clean shutdown archives the finished cycle and the next start opens a fresh Day 1 Shanghai, while an unclean crash restores the most recent saved world instead, so nobody loses the city to a power cut. Accounts keep every character slot forever as read-only history, and an account can hold exactly one living character at a time, which makes permadeath an accounting fact rather than a suggestion.
-
-
-## Designing a MUD where combat isn't the point
-
-Most of the systems above exist to answer one question which is that if killing things is not the core gameplay loop, what is? The answer the game settled on is *managing information*. What people know about you, what you know about them, and what the city believes are the true resources. Trust, rumours, memory, testimony, disguise, and stealth are all information systems.
-
-Violence fits into that framework as an information catastrophe. Every fight creates witnesses, witnesses create rumours, rumours create suspicion, suspicion creates patrols and closed doors. The systems do not forbid fighting but they sure do make it costly.
-
-Does it fully work? Not yet, and it is worth being specific. The deterrent against killing is currently entirely external, trust loss, wanted levels, witness chains. The original intent included internal cost as well, guilt expressed through the morale system, and I never built that piece yet. Killing a stranger in an alley where nobody sees feels really cheap and unrealistic, and only the probabilistic risk of unseen witnesses carries the weight. Whether the game needs that internal cost, or whether external consequence plus roleplay pressure is enough, is the weakest link in the design in my opinion.
-
-## How it works under the hood
-
-A few decisions are worth explaining properly, because each one was borrowed from somewhere games already solved it, then bent to fit a city where nobody is shooting at anyone most of the time.
-
-### Behaviour trees with blackboards - from Halo
-
-This is my single biggest debt in this project. From Halo 2 onward they built enemy AI out of behaviour trees instead of giant state machines, and Gears of War later made the technique famous. The idea is actually pretty primitive, a selector node tries child options in priority order until one succeeds, a sequence commits to a run of steps, and a blackboard holds what this particular character currently knows about the world.
-
-Every one of the 101 NPCs in Shanghai Shadows runs a tree like this. There are five authored archetypes, kempeitai_patrol, civilian_vendor, underground_operative, green_gang_thug, and faction_leader, built from Sequence, Selector, Parallel, Inverter, Succeeder, Cooldown, and RepeatUntilFail nodes, and each NPC gets its own blackboard holding things like the last sound it heard, whether danger is nearby, and whether it has noticed the player acting suspiciously.
-
-Why go to all this trouble in a text game? Because finite state machines fall apart exactly where this game lives, and I did not want that fragility anywhere near it. A patrolling guard must simultaneously walk his route, hear a shout, grow suspicious, leave his post to investigate, and eventually give up and return, and any of those can be interrupted mid-step by something louder. Trees let a higher-priority branch take over without the character forgetting what it was doing, and a cooldown node stops him re-investigating the same empty alley forever. The tutorial even teaches this pipeline, where for example if you YELL, a real sound event propagates, the officer's tree really perceives it, and he really walks off his anchor toward the noise.
-
-### Sound as a physical object, modelled after Thief
-
-Thief treated noise as something with weight and travel, and I leaned on the same idea. Sound in Shanghai Shadows propagates through the room graph breadth first where a gunshot reaches four rooms, a shout three, footsteps one, and intensity roughly halves per room it crosses. Night extends every range by a room, storms double the reach, fog and rain muffle it. Melee is completely silent (albeit with local feedback noise), and a silenced shot fired from hiding suppresses witnesses entirely, which makes the quietest murder also the safest one and exactly as morally compromised as it sounds.
-
-
-### Disguises that erode under attention, inspired by Hitman
-
-Hitman's costume system showcased that a disguise should not be a binary cloak. Mine works in a similar fashion where NPCs run perception checks against your disguise bonus, and the results escalate through authored stages, suspicion at threshold 25, an active challenge at 50, full exposure at 75. Your wanted level subtracts directly from your protection, so the same paper uniform that strolls past a checkpoint on day one of a clean record gets you stared at once the city has reason to doubt your face.
-
-### Wanted levels as fading heat, from GTA and Elder Scrolls
-
-A wanted level that only clears when you pay someone belongs to games where you play a professional criminal. The Shanghai Shadows wanted level, 0 to 3, behaves more like heat in GTA or a bounty in the Elder Scrolls series where it decays only through consecutive days without further trouble, faster if you stay close to a safe room. At level 2 ordinary vendors simply refuse to serve you and patrols double, which matters enormously when staying fed with limited inventory slots is a daily problem.
-
-### Your death belongs to someone else, thanks to NetHack
-
-Roguelikes have shipped permadeath with inheritance for decades. NetHack's bones files drop a dead player's belongings and ghost into the dungeon where future players can find them, and Dwarf Fortress succession games hand one collapsing fortress between players as shared history. Shanghai Shadows combines the two. When your character dies, a death journal materialises where you fell, carrying your knowledge, journal entries, and testimonies, and another player must physically find and read it, claimable once across the whole server. Your successor wakes in a safehouse and retrieves whatever you stashed. Even the Day 180 world reset preserves death journals, so a character months from now can read what somebody learned in a timeline that no longer exists. Your worst moments literally become content, somewhat like the bloodstains and messages other players find in Dark Souls.
-
-
-### The classic telephone game as a data structure
-
-Rumour propagation is the schoolyard telephone game turned into a game mechanic similar to "chinese whisphers". Every rumour is an immutable, hash+chained record, and each hop between tellers deterministically mutates the telling where names can swap, numbers might exaggerate, meanings can invert, scaled by personality so honest carriers preserve the story and gossips/negative characters corrupt it faster. After five hops the text is garbled beyond recovery. Different factions retell the same event with their own institutional spin, the resistance says fascist forces, the Kempeitai says terrorist elements. Your crimes enter this web automatically as witnessed events, and Red Dead Redemption 2 showed just how much life comes from NPCs reacting to what they actually saw rather than to a script which is what I wanted to emulate.
-
-## Running it locally
-
-Requirements are Python 3.11 or newer, and Node 20 only if you want to modify or rebuild the frontend (the repository ships a built client).
+- Python 3.11+
+- Node 20 only if you want to rebuild or modify the Vue frontend. The repository already ships a built client.
 
 ```bash
 python -m pip install -r requirements.txt
 python main.py
 ```
 
-Then open `http://127.0.0.1:8080`. The same server hosts the browser client, the HTTP API, and the WebSocket connection (by default proxied through the same port; raw socket settings live in `.env`).
+Open `http://127.0.0.1:8080`. The same server hosts the browser client, HTTP API, and WebSocket connection. Raw socket settings live in `.env`.
 
-Configuration is optional. Copy `.env.example` to `.env` for these settings.
+Optional configuration:
 
 | Variable | Default | Purpose |
 |---|---|---|
 | `HTTP_HOST` / `HTTP_PORT` | `127.0.0.1` / `8080` | Web server bind address |
 | `WS_HOST` / `WS_PORT` | `127.0.0.1` / `8765` | WebSocket settings |
 | `LOCALE` | `en` | `en` or `zh` |
-| `HACKCLUB_API_KEY` | unset | Optional; lets Hack Club's AI proxy vary the generated newspaper prose |
+| `HACKCLUB_API_KEY` | unset | Optional Hack Club AI proxy key for newspaper prose variation |
 | `HACKCLUB_MODEL` | `gemma4b` | Model used when the key is present |
 
-Without an API key everything still works; generated prose falls back to deterministic templates. On the live deployment the Hack Club API key should work, and if it does not then I have either run out of credits or Hack Club AI is down.
+Without an API key, the game still runs. Newspaper prose falls back to deterministic templates.
 
-Other ways to run.
+Other run options:
 
 ```bash
 start.bat
 
-# Docker (two-stage build: Node compiles the Vue client, Python serves it)
 docker build -t shanghai-shadows .
 docker run -p 8080:8080 shanghai-shadows
 ```
 
-## Where it is now
+## Current State
 
-As of late August 2026 there are 8 zones, ~90 rooms, 101 NPCs with individual behaviour trees and voice sheets, ~115 storylets, 76 ambient events, 60 missions, 84 catalogued mechanics, and a test suite collected at around 1,100 cases. Both normative documents are current with the implementation.
+Known limitations:
 
-Honest limitations.
+- Two client sound slots, `yell` and `struggle`, still have no assets, it would be weird to get those sounds from the internet...
+- Some audio banks are missing because finding usable period-appropriate sounds is difficult.
+- A few rough code edges remain, including the tutorial hide check always succeeding and missing feedback when a player cannot afford a newspaper.
+- Balance beyond solo and small-group play is untested.
+- The live deployment is sized for roughly 30 concurrent players on one Nest VPS.
+- The tutorial shares real mechanics, but some stages still need script-like handling so they can teach reliably. 
 
-- Two client sound slots (`yell`, `struggle`) still have no assets, so those effects stay silent - Like where do I even find these sounds, seems like a TOS infringement. 
-- A few rough edges survive in code. The tutorial's hide check always succeeds regardless of skill, and buying a newspaper gives no feedback when you cannot afford it.
-- Balance beyond solo and small-group play is untested. The simulation tooling exists but predates many systems.
-- The live deployment runs on a single Nest VPS sized for roughly thirty concurrent players, so scale is still untested.
-- Some of the sound features are missing since sound banks are very hard and really unaccessable     for me. 
-- Tutorials for review: The tutorials were really annoying because some had to be scripted to teach mechanics which I do not like and some I had to code differently where even though it technically draws mechanics from the main game, it interacts differently within the tutorial.
+## Next
 
-## Where I want to take it next
+Planned work:
 
-Everything described in "How the game works" is implemented and working now, including the full tutorial, permadeath lineage, rumour web, curfew custody, and Day 180 endings.
+- Finish audio coverage and credits.
+- Add more content to thinner districts outside the Bund and teahouse core.
+- Harden the live deployment around capacity, restarts, and monitoring.
+- Refresh balance simulation tooling so tuning relies less on feel.
 
-Planned next, in rough priority order.
+Open design questions:
 
-- **Finish audio coverage.** Most weather, UI, and event sounds ship today; the remaining unmapped slots need assets, and the sound credits need finalising before any public release.
-- **Content depth in the weaker districts.** The Bund and the teahouse core are dense; some outer zones are structurally complete but thinly populated. The expansion plan exists district by district.
-- **Hardening the live deployment.** The game already runs on Hack Club DNS and a Nest VPS, but capacity, restarts, and monitoring all need work before strangers share the city at scale.
-- **Balance simulation refresh**, bringing the playthrough analysis tooling up to date with post-June systems so numbers stop being tuned by feel.
+- Whether killing should add morale cost, or whether external consequence plus roleplay pressure is enough.
+- Whether City Memory should grow from individual NPC fear into district-level reputation.
 
-Being explored, but not committed to the idea is.
+## Credits And Inspiration
 
-- An internal cost for violence (morale consequences for killing) to complement the external ones, or a deliberate decision that the absence is correct.
-- Extending City Memory further, with district-level reputation rather than only individual NPCs' fear, so neighbourhoods themselves develop attitudes toward you.
-
-## Credits & Inspiration
-
-- **[ForlornMUD](https://github.com/ForlornMUD/ForlornMUD)**, encountered during Hack Club's Flavortown hackathon, is the reason this project exists. It demonstrated that a text world could carry a whole RPG, and everything here descends from wanting to try that myself in a different historical register.
-- **Design lineage I consciously borrowed from** includes behaviour-tree AI with blackboards from Bungie's Halo 2/3 era (popularised by Gears of War); Thief's spatial sound propagation; Hitman's staged disguise suspicion; GTA and Elder Scrolls wanted-heat decay; Fallout New Vegas's asymmetric faction reputation; NetHack's bones files and Dwarf Fortress succession for permadeath inheritance; Red Dead Redemption 2's witness reactions; Middle-earth's Shadow of Mordor memory-driven NPCs.
-- **Hack Club**, for the hackathon, and for running the AI proxy used for in-game newspaper prose.
-- Built on Python (asyncio, websockets, aiohttp, PyYAML, bcrypt) and Vue 3 (Vite, Vuex, Vitest).
-
-
+- [ForlornMUD](https://github.com/Snxhit/ForlornMUD), which proved to me that a text world could carry a full RPG.
+- Halo 2 and Halo 3 behaviour trees, Thief's sound propagation, Hitman's disguise suspicion, GTA and Elder Scrolls wanted heat, Fallout: New Vegas faction reputation, NetHack bones files, Dwarf Fortress succession games, Red Dead Redemption 2 witness reactions, and Middle-earth: Shadow of Mordor NPC memory.
+- Hack Club, for the hackathon and AI proxy used by the optional in-game newspaper system.
+- Built with Python (`asyncio`, `websockets`, `aiohttp`, `PyYAML`, `bcrypt`) and Vue 3 (`Vite`, `Vuex`, `Vitest`).
 
 ## AI Disclosure
 
-During development I used AI tools for supporting tasks such as skeleton code scaffolding, lint-style cleanup, translating stories from mandarin to english where there are barriers to translation and understanding, and review passes. The game's systems, mechanics, and narrative content were designed and written by me and along with the code unless stated so in the commit or in the code with a comment. Edge cases were also tested with AI to checkmate me. This readme was formatted with AI as to make it not look so dishelved with ideas. 
+I used AI tools during development for scaffolding, cleanup, translation help, review passes, and edge-case testing. The game's systems, mechanics, and narrative content were designed and written by me unless a commit or code comment says otherwise.
 
-One AI integration ships inside the product itself. The newspaper system optionally calls Hack Club's AI proxy (`ai.hackclub.com`) to vary generated article prose, gated behind an API key, with a deterministic fallback when the key is absent. The game runs fully without it, although it gets a little less polished and more repetitive for that feature.
-
+One AI integration ships inside the game. The newspaper system can call Hack Club's AI proxy (`ai.hackclub.com`) to vary article prose when an API key is present. Without the key, the game uses deterministic templates and still works.
 
 ## Evolution
 
 ![First prototype](image-2.png)
-This was my first prototype
+
+The first prototype.
 
 ![Inventory](image-3.png)
-As you can see its just lots and lots of green with a really bad styling 
+
+An early green-heavy inventory screen.
 
 ![Store prototype](image-4.png)
-As time went on, I realized a popup would save a lot of hassle for inventory, stores etc and implemented it 
+
+The store popup, added because inventory and shop commands were becoming awkward.
 
 ![Display choice](image-5.png)
-Possible choices for items currently held
+
+Item choices for the current inventory.
 
 ![Auto tab](image-6.png)
-Very very primitive auto tabular function
+
+The first rough tab-completion UI.
 
 ![Smart colouring for exits](image-7.png)
 
-As for the second prototype it was moreso in terms of colour because I got sick and tired of the black and green font, in some ways I am still quite fond of the second prototypes colour scheme im ngl. 
+An early pass at colour-coded exits.
 
 ![alt text](image-8.png)
 
+The second prototype's colour direction, which I still like in places.
+
 ![Tutorial Prototype](image-9.png)
-This was when I wanted to make a tutorial but was too lazy, the tutorial was the hardest part to implement because of semi scripting and npc limitations where an npc can only have so many buckets but must teach the player different mechanics. 
+
+The early tutorial prototype, before the current Mrs. Lin version replaced it.
 
 ![Second tabular prototype](image-10.png)
-I kinda liked the design for the second tabular function 
 
-
+A later tabular UI pass.
 
 ![Landing](image-11.png)
-Now for the final iteration I did a FULL redo of the frontend that solved many many problems (and introduced) problems that FORLORNMUD had, the first being an interactive map, afaik FORLORNMUD required you to open up the github to take a look at the map and learn how to navigate the map. My map can be dragged around and zoomed in and out which is really a step above. Not to mention interactive sounds and such all done in python and not in Godot was what made me really proud of what I have made so far. In the side panels there is also a smart bar that tells you what is currently take-able in the room right now. 
+
+The current frontend rebuilt the map, panels, sounds, room item hints, and navigation around a browser-first MUD client instead of a plain terminal page.
