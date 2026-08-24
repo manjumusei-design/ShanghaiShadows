@@ -8,6 +8,8 @@
 
 Shanghai Shadows runs in a browser on Hack Club DNS and a Nest VPS. 
 
+Reviewer note: Just enter in any username and any password youd like that is more than 4 characters for each and youre good to go.
+
 ## Quick Start
 
 ```bash
