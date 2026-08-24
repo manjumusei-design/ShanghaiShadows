@@ -1,12 +1,12 @@
 # Shanghai Shadows
 
-> A multiplayer text story based MUD set in Japanese-occupied Shanghai, built as a passion project to help teenagers in Shanghai learn what ordinary people lived through during the occupation.
+> A multiplayer text story/exploration based MUD set in Japanese-occupied Shanghai that is my passion project to help teenagers in Shanghai learn what ordinary people lived through during the occupation
 
 ![Landing page](image.png)
 
 **Play Shanghai Shadows:** <https://shanghai.dino.icu/login>
 
-Shanghai Shadows runs in a browser on Hack Club DNS and a Nest VPS. You do not play a soldier, spy, or chosen hero. You play one resident of an occupied city, trying to eat, stay alive, and keep your name out of patrol reports between November 1937 and the Day 180 liberation endpoint. Other players share the same clock, weather, rumours, faction fortunes, and consequences. 
+Shanghai Shadows runs in a browser on Hack Club DNS and a Nest VPS. 
 
 ## Quick Start
 
@@ -23,14 +23,14 @@ The live version is at <https://shanghai.dino.icu/login>.
 
 ## What It Is
 
-The game is built around the idea of laobaixing, ordinary people, rather than heroes or villains. Most people who lived through occupied Shanghai were not collaborators, resistance legends, or rambo style protagonists. They queued for rice, listened for patrols, traded through dangerous channels, kept family secrets, and made small choices that could cost them.
+The game is built around the idea of being one of the laobaixing, which translates from mandarin to english as ordinary people rather than as a protagonist with thick plot armour. Reason being that most people who lived through this occupational period were not collaborators, resistance guerilla legends, or james bond styled protagonists. They queued for rice, listened for patrols and traded through dangerous channels and kept secrets and maybe some small choices here and there. 
 
-The MUD follows that view mechanically.
+The MUD follows that principle/design language pretty thoroughly
 
-- With a single city clock, weather system, rumor network, and set of faction outcomes, the world is shared and enduring.
-- Death is irreversible. The next character in the account inherits only what was left behind and is able to retrieve the previous character's journal, but a dead character remains dead.
-- Day 180 marks the end of the campaign. The impact that players created throughout the city determines which liberation ending takes place.
-- Violence does occur, but it is typically an error. Bloodshed is costly due to the Kempeitai, informants, witnesses, rumors, and wanted system.
+- In the MUD, there is a single city clock that every entity, human and NPC all adhere to, a shared weather system, and a rumor network that is intertwined. 
+- Death is irreversible and is similar to a roguelike where the next character in the account inherits what was left behind and is able to retrieve the previous playthroughs journal but a dead character remains dead. 
+- Day 180 marks the end of the campaign, the shared overall choices that human players make throughout the 180 days determines which liberation ending takes place. Initially I wanted it to reflect 1937 to 1945 but it would be too much to convert it into game time. 
+- Violence is allowed to happen but it should be avoided since there is a domino effect where the intertwined social fabric will eventually catch up and make your life difficult and won't allow you to explore the game to the fullest.
 
 ## What You Can Do ATM
 
@@ -43,7 +43,7 @@ The MUD follows that view mechanically.
 
 ## Why I Made ShanghaiShadows
 
-I discovered [ForlornMUD](https://github.com/Snxhit/ForlornMUD) during Hack Club's Flavortown hackathon, which was the first spark. It demonstrated to me that a text world could function as a complete game without a big art pipeline; rooms, rules, writing, and perseverance were sufficient. The more conventional RPG loop used in ForlornMUD was explore, fight, loot, acquire XP, upgrade, and repeat.
+I discovered [ForlornMUD](https://github.com/Snxhit/ForlornMUD) during Hack Club's Flavortown hackathon, which was the first spark. It demonstrated to me that a text world could function as a complete game without a big art pipeline; rooms, rules, writing, and perseverance were sufficient. The more conventional RPG loop used in ForlornMUD was explore, fight, loot, acquire XP, upgrade, and repeat which I wanted to make my own spin on.
 
 I was hoping for a different response to the question, "What does the player do?" My grandparents' tales of hunger, curfews, ration cards, informers, and faction politics from Zhejiang, a short distance from Shanghai, made survival seem more genuine than battle, which at the time would have been extremely difficult and hence historically inaccurate. After then, Shanghai Shadows turned into a MUD about civilian pressure, emphasizing trade-offs, evasion, bargaining, and the risk of being recognized.
 
@@ -61,9 +61,9 @@ Food has social significance as well. Food has cultural connotations, and eating
 
 ### People, Trust, And Rumours
 
-Every NPC belongs to a faction, and the player holds separate trust by faction and role. Trust starts neutral at 50. Helping the resistance, for example, may help CCP standing while hurting Kempeitai standing. At 70+, factions grant concrete perks such as safehouse rooms, weapon repair, checkpoint passage, or faster criminal-record clearing.
+Every NPC belongs to a faction, and the player holds separate trust with each faction and role. Trust starts neutral at 50 and helping the resistance for example may help your standing with the CCP while hurting Kempeitai standing. At 70+ factions grant concrete perks such as safehouse rooms, weapon repair, checkpoint passage, or faster criminal-record clearing.
 
-The conversation of NPCs varies with memory. Someone who likes you will welcome you differently than someone who witnessed your murder or heard a negative rumor. Topics, room knowledge, leads, local repercussions, and sources of rumors are all revealed by ASK. BOND fosters friendship, usually over food.
+The conversation of NPCs varies with memory. Someone who likes you will welcome you differently than someone who witnessed your murder or heard a negative rumor. Topics, room knowledge, leads etc are all revealed by ASK. BOND fosters friendship, usually over food.
 
 Rumors are unchangeable recordings that change as NPCs recite them. After a certain number of hops, the story becomes jumbled as names change, numbers increase, and meaning can reverse. The same event is recounted by factions using their own language and common terms. A unpleasant afternoon can turn into tomorrow's newspaper since player crimes enter the same web.
 
@@ -81,7 +81,7 @@ The city should talk even when the player is not the subject. NPC interactions u
 
 ### Stealth, Disguise, And Crime
 
-Fear, suspicion, wanted level, and memory all stack. Witnessing an attack, seeing a kill, or hearing a damaging rumour can make an NPC afraid of you, scaled by personality. Brave characters are less rattled, while cowardly ones are affected more.
+Fear, suspicion, wanted level, and memory all stack very quickly. Witnessing an attack, seeing a kill, or hearing a damaging rumour can make an NPC afraid of you. Brave characters are less rattled, while cowardly ones are affected more and tend to be more volatile.
 
 Disguises work like eroding cover rather than magic costumes. NPCs run perception checks against disguise quality, with suspicion, challenge, and exposure thresholds. Wanted level cuts into the disguise bonus, so the same uniform that works on a clean character may fail after two days of crime.
 
@@ -89,7 +89,7 @@ Tailing is contested roll by roll, and STOP TAIL breaks it off before you are no
 
 ### Combat And Sound
 
-Combat is one shot your effective courage against the target's authority. Win, and the target dies in one hit. Lose, and you take a counter strike, risk disarmament, and take damage. Weapons can degrade. Firearms jam more often when worn and misfire badly when ruined.
+Combat is one shot your effective courage against the target's authority. Win, and the target dies in one hit. Lose, and you take a counter strike, risk disarmament, and take damage. Weapons can degrade. Firearms jam more often when worn and misfire badly when ruined. Assess is used to see if you have enough stats to overcome this one shot gate. 
 
 Sound also exarcabates violence. Melee attacks are silent and only alerts those in the same room. Gunshots travel four rooms, shouts travel three, night extends both, and storms double reach. Silenced shots from hiding suppress witnesses, making the safest murder also the most morally ugly option. Witnesses flee, scream, fight, remember, or spread what they saw.
 
@@ -118,7 +118,6 @@ This is my single biggest debt in this project. From Halo 2 onward, the game bui
 
 Every one of the 101 NPCs in Shanghai Shadows runs a tree like this. There are five authored archetypes, `kempeitai_patrol`, `civilian_vendor`, `underground_operative`, `green_gang_thug`, and `faction_leader`, built from sequence, selector, parallel, inverter, succeeder, cooldown, and repeatuntilfail nodes. Each NPC also gets its own blackboard holding things like the last sound it heard, whether danger is nearby, and whether it has noticed the player acting suspiciously.
 
-Why go to all this trouble in a text game? Because finite state machines fall apart exactly where this game can thrive. A patrolling guard must walk his route, hear a shout, grow suspicious, leave his post to investigate, then eventually give up and return. Any of those steps can be interrupted by something louder. Trees let a higher priority branch take over without the character forgetting what it was doing, and a cooldown node stops him re-investigating the same empty alley forever and getting stuck in a loop. The tutorial teaches this pipeline too, when you YELL, a real sound event propagates, the officer's tree perceives it, and he walks off his anchor toward the noise.
 
 ### Sound As A Physical Object, Modelled After Thief
 
