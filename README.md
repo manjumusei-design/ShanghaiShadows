@@ -128,7 +128,7 @@ Melee is silent apart from local feedback. A silenced shot fired from hiding sup
 
 ### Disguises That Erode Under Attention, Inspired By Hitman
 
-Hitman's costume system showed that a disguise should not be a binary cloak. Mine works in a similar fashion: NPCs run perception checks against your disguise bonus, and the results escalate through authored stages, with suspicion at threshold 25, an active challenge at 50, and full exposure at 75.
+Hitman's costume system showed that a disguise should not be a binary cloak. Mine works in a similar fashion where NPCs run perception checks against your disguise bonus, and the results escalate through authored stages, with suspicion at threshold 25, an active challenge at 50, and full exposure at 75.
 
 Your wanted level subtracts directly from your protection. The same paper uniform that lets you stroll through a checkpoint on a clean record can get you stared at once the city has reason to doubt your face.
 
@@ -219,7 +219,7 @@ Open design questions:
 
 ## AI Disclosure
 
-I used AI tools during development for scaffolding, cleanup, translation help, review passes, and edge-case testing. The game's systems, mechanics, and narrative content were designed and written by me unless a commit or code comment says otherwise.
+I used AI tools during development for scaffolding, cleanup, translation help, review passes, and edge-case testing. The game's systems and mechanics were designed and written by me unless a commit or code comment says otherwise.
 
 One AI integration ships inside the game. The newspaper system can call Hack Club's AI proxy (`ai.hackclub.com`) to vary article prose when an API key is present. Without the key, the game uses deterministic templates and still works.
 
