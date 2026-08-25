@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from collections import deque
 from typing import Callable, Dict, List, Mapping
 
+from .curfew import curfew_night_key
 from .time_system import GameTime
 from .world import Room
 
@@ -93,3 +94,34 @@ def patrol_reachable_rooms(
 def is_transient_patrol_id(npc_id: str) -> bool:
     prefix = "transient_patrol_"
     return isinstance(npc_id, str) and npc_id.startswith(prefix) and len(npc_id) > len(prefix)
+
+
+def resolve_patrol_warning(
+    rooms: Mapping[str, Room],
+    *,
+    patrol_room_id: str,
+    patrol_last_room_id: str,
+    zone: str,
+    zone_of: Callable[[Room], str],
+    player_room_id: str,
+    game_time: GameTime,
+    now: float,
+    expires_at: float,
+):
+    if curfew_night_key(game_time) is None:
+        return None
+    eligible = lambda room: not room.indoors and zone_of(room) == zone
+    reachable = patrol_reachable_rooms(
+        rooms,
+        patrol_room_id,
+        patrol_last_room_id,
+        eligible=eligible,
+    )
+    distance = reachable.get(player_room_id)
+    if distance not in {1, 2, 3}:
+        return None
+    return {
+        "stage": 4 - distance,
+        "seconds_remaining": max(0, int(expires_at - now)),
+        "expires_at": expires_at,
+    }
