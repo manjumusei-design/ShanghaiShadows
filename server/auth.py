@@ -234,9 +234,11 @@ def load_authenticated_slot(username: str, slot_number: int, storylet_manager=No
 
 
 def resolve_spawn_room(username: str) -> str:
+    from .world_aliases import resolve_safehouse
+
     account = get_account(username)
     if account and account.primary_safehouse:
-        return account.primary_safehouse
+        return resolve_safehouse(account.primary_safehouse, None)
     return ""
 
 
