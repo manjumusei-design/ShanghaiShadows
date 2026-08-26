@@ -35,3 +35,91 @@ def item(item_id, *, instance_id="", is_weapon=False, is_armour=False, disguise_
         is_weapon=is_weapon,
         disguise_id=disguise_id,
     )
+
+
+def test_curfew_state_round_trips_with_night_key_zero():
+    original = PlayerData(
+        username="curfew-state",
+        curfew_immunity_expires_at=1441,
+        last_curfew_night_key=0,
+    )
+
+
+    restored = deserialize_player(serialize_player(original))
+
+    assert restored.curfew_immunity_expires_at = 1441
+    assert restored.last_curfew_name_key == 0
+
+
+def test_old_save_defaults_curfew_state_and_drops_legacy_fields_on_next_save():
+    restored = deserialize_player(
+        {
+            "username": "old-curfew",
+            "last_curfew_penalty_day": 12,
+            "curfew_hidden_until_minute": 1500,
+            "curfew_hidden_day": 12,
+            "curfew_immunity_until": 1900,
+        }
+    )
+
+    assert restored.curfew_immunity_expires_at == -1
+    assert restored.last_curfew_night_key is None
+    assert not hasattr(restored, "curfew_hidden_until_minute")
+    assert not hasattr(restored, "curfew_hidden_day")
+    payload = serialize_player(restored)
+    for field_name in (
+        "last_curfew_penalty_day",
+        "curfew_hidden_until_minute",
+        "curfew_hidden_day",
+        "curfew_immunity_until",
+    ):
+        assert field_name not in payload
+
+
+@pytest.mark.parametrize("trust", [24, 25, 49])
+@pytest.mark.asyncio
+async def test_escape_consumes_charge_once_and_moves_through_legal_exit_only(trust):
+    player = PlayerData(
+        username="escape",
+        inventory=[item("kept", instance_id="kept")],
+        escape_charge_available=True,
+    )
+    set_kempeitai_trust(player, trust)
+    lane = Room(id="lane", title="Lane", description="", indoors=False)
+    tutorial_room = Room(
+        id="tut_x_lane", title="Private", description="", indoors=False, tags=["tutorial"]
+    )
+    private_room = Room(id="p_private", title="Private", description="", indoors=False)
+    street = Room(
+        id="street",
+        title="Street",
+        description="",
+        indoors=False,
+        exits={"east": "lane", "west": "tut_x_lane", "north": "p_private"},
+    )
+    world = SimpleNamespace(
+        get_room=lambda room_id: {
+            "lane": lane,
+            "tut_x_lane": tutorial_room,
+            "p_private": private_room,
+            "street": street,
+        }.get(room_id)
+    )
+    ctx = make_context(player, room=street, world=world)
+    calls = []
+
+    async def move(received_ctx, direction):
+        calls.append((received_ctx, direction))
+
+    resolution = await resolve_curfew_encounter(
+        ctx,
+        CurfewTrigger.PATROL_CONTACT,
+        randint=lambda low, high: 1,
+        escape_move=move,
+    )
+
+    assert resolution.status == "escape"
+    assert player.last_curfew_night_key == 2
+    assert player.escape_charge_available is False
+    assert calls == [(ctx, "east")]
+    assert player.custody_until == -1
