@@ -1120,9 +1120,9 @@ PRIORITY_MAP = {
     "argument": 3, "shuttering": 3, "gossip": 4, "ambient": 5
 }
 
-async def send_panel_queue(session) -> None:
+async def send_panel_queue(session, *, force_empty: bool = False) -> None:
     queue = list(getattr(session, "_panel_queue", []))
-    if not queue:
+    if not queue and not force_empty:
         return
     try:
         payload = json.dumps({"type": "rumors", "payload": queue})
@@ -1131,10 +1131,41 @@ async def send_panel_queue(session) -> None:
         pass
 
 
-def push_panel_entry(session, entry_type: str, data: dict) -> None:
+def _panel_room_id(session) -> str:
+    return str(getattr(getattr(session, "player", None), "current_room", "") or "")
+
+
+def _client_panel_room_id(session, room_id: str, data: dict) -> str:
+    explicit = data.get("client_room_id")
+    if explicit:
+        return str(explicit)
+    shared = getattr(session, "shared", None)
+    player = getattr(session, "player", None)
+    instance_id = getattr(player, "tutorial_instance_id", "")
+    if shared is not None and getattr(player, "in_tutorial", False) and instance_id:
+        from .tutorial import get_original_tutorial_room_id
+        return get_original_tutorial_room_id(instance_id, room_id, shared)
+    return room_id
+
+
+def clear_panel_queue(session, room_id: str = "") -> None:
+    session._panel_queue = []
+    session._panel_room_id = room_id or _panel_room_id(session)
+
+
+def push_panel_entry(session, entry_type: str, data: dict) -> bool:
+    current_room = _panel_room_id(session)
+    source_room = str(data.get("room_id") or current_room)
+    if current_room and source_room and source_room != current_room:
+        return False
+    queued_room = getattr(session, "_panel_room_id", "")
+    if queued_room != current_room:
+        clear_panel_queue(session, current_room)
+    client_room = _client_panel_room_id(session, source_room, data)
     entry = {
         "id": f"panel_{uuid.uuid4().hex[:8]}",
         "type": entry_type,
+        "room_id": client_room,
         "speaker": data.get("speaker", ""),
         "listener": data.get("listener", ""),
         "turns": data.get("turns", []),
@@ -1149,8 +1180,9 @@ def push_panel_entry(session, entry_type: str, data: dict) -> None:
     try:
         asyncio.get_running_loop()
     except RuntimeError:
-        return
+        return True
     asyncio.create_task(send_panel_queue(session))
+    return True
 
 
 def push_gossip_to_rumour_panel(session, speaker_name: str, listener_name: str, lines: List[str]) -> None:
@@ -1162,17 +1194,4 @@ def push_gossip_to_rumour_panel(session, speaker_name: str, listener_name: str, 
 
 
 def replay_durable_exchanges(session, player) -> int:
-    if not getattr(player, "in_tutorial", False):
-        return 0
-    records = getattr(player, "tutorial_social_exchanges", None) or {}
-    entries = [record for record in records.values() if record.get("fired")]
-    if not entries or getattr(session, "_tutorial_exchanges_replayed", False):
-        return 0
-    session._tutorial_exchanges_replayed = True
-    for record in entries:
-        push_panel_entry(session, record.get("action", "exchange_rumors"), {
-            "speaker": record.get("speaker", ""),
-            "listener": record.get("listener", ""),
-            "turns": record.get("turns", []),
-        })
-    return len(entries)
+    return 0
