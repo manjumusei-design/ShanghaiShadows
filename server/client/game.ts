@@ -1,5 +1,6 @@
 import { Module } from 'vuex'
 import type { Room, Player, Message, Character, MapData } from '@/core/interfaces'
+import type { MapMode } from '@/core/map'
 import { getMessageType, getMessageLabel } from '@/core/messageTypes'
 import { createWebSocket, getWebSocket } from '@/services/websocket'
 
@@ -80,6 +81,7 @@ export interface StoryletOption {
 
 export interface Rumor {
   id: string
+  room_id?: string
   text: string
   factions: string[]
   districts: string[]
@@ -114,11 +116,6 @@ export interface KnownRumor {
   hop_count: number
   holders: KnownRumorHolder[]
   source_chain: string[]
-}
-
-export interface KnownRumorsState {
-  generation: number
-  records: Record<string, KnownRumor>
 }
 
 export interface RoomNpc {
@@ -156,6 +153,7 @@ export interface GameState {
 
 
   map: MapData
+  map_mode: MapMode
   room: Room | null
   room_key: string | null
   room_chars: Character[]
@@ -169,6 +167,7 @@ export interface GameState {
   messages: Message[]
   last_message: Record<string, Message>
   prompt_text: string
+  prompt_sequence: number
   ending_data: string | null
   server_reset_notification: string | null
   wanted_level: number
@@ -190,7 +189,6 @@ export interface GameState {
 
   active_storylets: ActiveStorylet[]
   active_rumors: Rumor[]
-  known_rumors: KnownRumorsState
   active_missions: ActiveMission[]
 
 
@@ -236,6 +234,7 @@ const set_initial_state = (): GameState => ({
   player_disguise: '',
 
   map: {},
+  map_mode: 'world',
   room: null,
   room_key: null,
   room_chars: [],
@@ -248,6 +247,7 @@ const set_initial_state = (): GameState => ({
   messages: [],
   last_message: {},
   prompt_text: '> ',
+  prompt_sequence: 0,
   ending_data: null,
   server_reset_notification: null,
   wanted_level: 0,
@@ -275,7 +275,6 @@ const set_initial_state = (): GameState => ({
 
   active_storylets: [],
   active_rumors: [],
-  known_rumors: { generation: 0, records: {} },
   active_missions: [],
 
 	  completions: [],
@@ -310,6 +309,10 @@ const game: Module<GameState, any> = {
       state.messages = []
     },
 
+    CLEAR_ACTIVE_RUMORS(state) {
+      state.active_rumors = []
+    },
+
     SET_CONNECTED(state, connected: boolean) {
       state.is_connected = connected
     },
@@ -326,11 +329,17 @@ const game: Module<GameState, any> = {
       state.map = map
     },
 
+    SET_MAP_MODE(state, mode: MapMode) {
+      state.map_mode = mode
+    },
+
     SET_ROOM(state, room: Room | null) {
+      const previousKey = state.room_key
       state.room = room
       const newKey = room?.key || null
-      if (state.room_key !== newKey) {
-        if (DEBUG) console.log('[MAP-DEBUG] SET_ROOM: room_key changing from', state.room_key, 'to', newKey)
+      if (previousKey !== newKey) {
+        if (DEBUG) console.log('[MAP-DEBUG] SET_ROOM: room_key changing from', previousKey, 'to', newKey)
+        state.active_rumors = []
       }
       state.room_key = newKey
     },
@@ -338,6 +347,7 @@ const game: Module<GameState, any> = {
     SET_ROOM_KEY(state, key: string | null) {
       if (state.room_key !== key) {
         if (DEBUG) console.log('[MAP-DEBUG] SET_ROOM_KEY: changing from', state.room_key, 'to', key)
+        state.active_rumors = []
       }
       state.room_key = key
     },
@@ -435,13 +445,9 @@ const game: Module<GameState, any> = {
     },
 
     SET_ACTIVE_RUMORS(state, rumors: Rumor[]) {
-      state.active_rumors = rumors
-    },
-
-    SET_KNOWN_RUMORS(state, payload: KnownRumorsState) {
-      const generation = Number(payload?.generation ?? 0)
-      const records = payload?.records && typeof payload.records === 'object' ? payload.records : {}
-      state.known_rumors = { generation, records }
+      state.active_rumors = (rumors || []).filter((rumor) => {
+        return !rumor.room_id || !state.room_key || rumor.room_id === state.room_key
+      })
     },
 
     SET_ACTIVE_MISSIONS(state, missions: ActiveMission[]) {
@@ -501,6 +507,7 @@ const game: Module<GameState, any> = {
 
     SET_PROMPT(state, prompt: string) {
       state.prompt_text = prompt
+      state.prompt_sequence += 1
     },
 
     SET_ENDING_DATA(state, data: string | null) {
@@ -557,9 +564,10 @@ const game: Module<GameState, any> = {
   },
 
   actions: {
-    async connect({ commit, dispatch }, uri: string) {
+    async connect({ commit, dispatch, rootState }, uri: string) {
       commit('SET_CONNECTION_ERROR', null)
       commit('SET_URI', uri)
+      commit('CLEAR_ACTIVE_RUMORS')
 
       const ws = createWebSocket({
         uri,
@@ -570,9 +578,13 @@ const game: Module<GameState, any> = {
           if (DEBUG) console.log('[WS-RECV] raw message:', JSON.stringify(data))
           dispatch('receiveMessage', data)
         },
-        onClose: () => {
+        onClose: (_event, intentional) => {
           commit('SET_CONNECTED', false)
+          commit('CLEAR_ACTIVE_RUMORS')
           dispatch('popup/closePopup', null, { root: true })
+          if (!intentional && rootState.auth?.loginStage !== 'connected') {
+            dispatch('auth/connectionLost', 'Connection lost during login.', { root: true })
+          }
         },
         onError: () => {
           commit('SET_CONNECTION_ERROR', 'Failed to connect to server.')
@@ -585,12 +597,20 @@ const game: Module<GameState, any> = {
       })
     },
 
+    async preventReconnect() {
+      const ws = getWebSocket()
+      if (ws) {
+        ws.preventReconnect()
+      }
+    },
+
     async disconnect({ commit, dispatch }) {
       const ws = getWebSocket()
       if (ws) {
         ws.disconnect()
         commit('SET_CONNECTED', false)
       }
+      commit('CLEAR_ACTIVE_RUMORS')
       dispatch('popup/closePopup', null, { root: true })
     },
 
@@ -633,13 +653,7 @@ const game: Module<GameState, any> = {
         case 'display':
           dispatch('handleDisplay', data)
           if (data.payload) {
-            const payload = data.payload.toLowerCase()
-            if (payload.includes('password') || payload.includes('new account') ||
-                payload.includes('character slot') || payload.includes('connected as') ||
-                payload.includes('invalid password')) {
-	              if (DEBUG) console.log('[AUTH] dispatching handleLoginPrompt from display:', payload.substring(0, 80))
-              dispatch('auth/handleLoginPrompt', data.payload, { root: true })
-            }
+            dispatch('auth/handleLoginMessage', data.payload, { root: true })
           }
           break
 
@@ -674,13 +688,7 @@ const game: Module<GameState, any> = {
         case 'prompt':
           commit('SET_PROMPT', data.payload || '> ')
           if (data.payload) {
-            const prompt = data.payload.toLowerCase()
-            if (prompt.includes('password') || prompt.includes('character') ||
-                prompt.includes('new account') || prompt.includes('connected as') ||
-                prompt.includes('invalid password')) {
-	              if (DEBUG) console.log('[AUTH] dispatching handleLoginPrompt from prompt:', prompt.substring(0, 80))
-              dispatch('auth/handleLoginPrompt', data.payload, { root: true })
-            }
+            dispatch('auth/handleLoginMessage', data.payload, { root: true })
           }
           break
 
@@ -713,6 +721,7 @@ const game: Module<GameState, any> = {
 	            current_room: data.current_room
 	          })
 	          commit('SET_MAP', data.rooms || {})
+	          commit('SET_MAP_MODE', data.map_mode === 'tutorial' ? 'tutorial' : 'world')
 	          if (data.current_room) {
 	            if (DEBUG) console.log('[MAP-DEBUG] Setting room_key to:', data.current_room)
 	            commit('SET_ROOM_KEY', data.current_room)
@@ -736,10 +745,6 @@ const game: Module<GameState, any> = {
 
         case 'rumors':
           commit('SET_ACTIVE_RUMORS', data.payload || [])
-          break
-
-        case 'rumor_web':
-          commit('SET_KNOWN_RUMORS', data.payload || { generation: 0, records: {} })
           break
 
         case 'storylet':
