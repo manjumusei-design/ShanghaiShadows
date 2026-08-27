@@ -49,6 +49,7 @@ export interface StorePayload {
   currency: string
   wallet_fabi_value: number
   items: StoreItem[]
+  cancel_label?: string
   black_market_available: boolean
 }
 
@@ -107,7 +108,11 @@ export interface StashPayload {
 export interface JournalPayload {
   generation: number
   events: any[]
-  rumours: any[]
+  known_rumours: Record<string, {
+    id: string
+    text?: string
+    [key: string]: unknown
+  }>
   conversations: any[]
   intel: { npc_id: string; npc_name: string; label: string }[]
   testimonies: {
@@ -242,11 +247,12 @@ const popup: Module<PopupState, any> = {
     },
 
     async sendPopupAction({ state }, fields: PopupActionFields) {
-      if (!state.active) return
+      const active = state.active
+      if (!active) return
       const { getWebSocket } = await import('../../services/websocket')
       const ws = getWebSocket()
       if (!ws) return
-      ws.send(buildPopupAction(state.active, fields))
+      ws.send(buildPopupAction(active, fields))
     },
   },
 }
