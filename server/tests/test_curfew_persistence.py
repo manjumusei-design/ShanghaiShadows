@@ -162,3 +162,48 @@ async def test_custody_confiscates_inventory_and_records_shared_release_minute(t
     assert player.custody_until == game_clock_total_minutes(GameTime(day=2, minute=1200)) + 1440
     assert player.custody_detention_room == "street"
     assert (player.money_fabi, player.money_silver, player.money_military_yen) == (9, 8, 7)
+
+
+@pytest.mark.asyncio
+async def test_arrest_without_legal_exit_enters_custody_without_consuming_charge():
+    player = PlayerData(username="no-exit", escape_charge_available=True)
+    set_kempeitai_trust(player, 30)
+    ctx = make_context(player)
+
+    resolution = await resolve_curfew_encounter(
+        ctx,
+        CurfewTrigger.PATROL_CONTACT,
+        randint=lambda low, high: 1,
+    )
+
+    assert resolution.status =="custody"
+    assert player.escape_charge_available is True
+    assert player.custody_until == game_clock_total_minutes(GameTime(day=2, minute=1200)) + 1440
+
+
+@pytest.mark.asyncio
+async def test_high_trust_successful_arrest_uses_custody_and_preserves_wallet():
+    player = PlayerData(
+        username="warning",
+        inventory=[item("kept", instance_id="kept")],
+        escape_charge_available=False
+        money_fabi=9,
+        money_silver=8
+        money_military_yen=7,
+        equipped_weapon_id="kept",
+    )
+    set_kempeitai_trust(player, 50)
+    ctx = make_context(player)
+
+    resolution = await resolve_curfew_encounter(
+        ctx,
+        CurfewTrigger.PATROL_CONTACT,
+        randint=lambda low, high: 1,
+    )
+
+    assert resolution.status == "custody"
+    assert player.last_curfew_night_key == 2
+    assert player.inventory == []
+    assert player.equipped_weapon_id == ""
+    assert player.custody_until == game_clock_total_minutes(GameTime(day=2, minute=1200)) + 1440
+    assert (player.money_fabi, player.money_silver, player.money_military_yen) == (9, 8, 7)
