@@ -75,6 +75,7 @@ from .auth import (
 from .commands import (
     CommandContext,
     apply_storylet_effects,
+    broadcast_state,
     build_command_registry,
     build_completions,
     _display_storylet,
@@ -112,13 +113,12 @@ class SessionManager:
             return
 
         self.sessions[session.username] = session
+        session.shared = self.shared
         await session.clear_patrol_warning(force=True)
 
         if getattr(session.player, "in_tutorial", False):
             from .tutorial import ensure_tutorial_instance_for_player
             ensure_tutorial_instance_for_player(session.player, self.shared)
-            from .rumors import replay_durable_exchanges
-            replay_durable_exchanges(session, session.player)
 
         room = self.shared.world.get_room(session.player.current_room)
         if room and session.username not in room.npcs:
@@ -136,13 +136,14 @@ class SessionManager:
                 ctx = self._make_context(session)
                 await _emit_stage_entry(ctx, replay_only=True, force_immediate=True)
             await session.send_prompt()
+            await broadcast_state(self._make_context(session))
         elif not tutorial_card_shown:
             await session.send_prompt()
         try:
             async for message in websocket:
                 text = message.strip()
                 if not text:
-                    await session.send_prompt()
+                    await self._flush_notices_and_prompt(session)
                     continue
 
                 cmd = parse(text)
@@ -159,25 +160,29 @@ class SessionManager:
                         f"{room_storylet['owner_username']} is deciding how to respond.",
                         msg_type="event",
                     )
-                    await session.send_prompt()
+                    await self._flush_notices_and_prompt(session)
                     continue
                 if not session.player.active_storylets and cmd.verb == "unknown" and text.strip().isdigit():
                     await session.send_display("\nThere is no active choice to select.\n", msg_type=MessageType.WARNING)
-                    await session.send_prompt()
+                    await self._flush_notices_and_prompt(session)
                     continue
                 if cmd.verb == "pass":
-                    await session.send_prompt()
+                    await self._flush_notices_and_prompt(session)
                     continue
 
                 if (getattr(session.player, 'in_tutorial', False) and cmd.verb == "unknown"
                         and not session.player.active_storylets
                         and not text.strip().startswith("{")):
-                    from .tutorial import (hint_family_for,
+                    from .tutorial import (effective_hint_action,
+                                           hint_family_for,
                                            normalize_to_actionable_stage,
                                            render_cmd_hint,
                                            stage_action_for)
                     stage = normalize_to_actionable_stage(session.player)
-                    action = stage_action_for(session.player, stage)
+                    action = effective_hint_action(
+                        session.player,
+                        stage_action_for(session.player, stage),
+                    )
                     try:
                         hint = render_cmd_hint(
                             action.get("cmd_hint", ""),
@@ -196,15 +201,16 @@ class SessionManager:
                         from .tutorial import _send_tutorial_hint
                         ctx = self._make_context(session)
                         await _send_tutorial_hint(ctx, stage, action, force_immediate=True)
-                    await session.send_prompt()
+                    await self._flush_notices_and_prompt(session)
                     continue
 
-                await self.dispatch_command(session, text)
+                session.delivery.begin_command_response()
+                try:
+                    await self.dispatch_command(session, text)
+                finally:
+                    session.delivery.end_command_response()
 
-                if session.running:
-                    ctx = self._make_context(session)
-                    await session.send_completions(build_completions(ctx))
-                    await session.send_prompt()
+                await self._flush_notices_and_prompt(session)
 
         except Exception as exc:
             print(f"Client {session.username} disconnected: {exc}")
@@ -243,12 +249,50 @@ class SessionManager:
         return result
 
     async def dispatch_command(self, session: Session, raw_input: str) -> CommandOutcome:
-        from .commands import is_storylet_choice_input, resolve_storylet_choice
-        from .popup_actions import handle_popup_action, parse_popup_action
+        from .commands import broadcast_state, build_completions
 
         text = (raw_input or "").strip()
         if not text:
             return failure("empty_command")
+
+        dispatch_depth = getattr(session, "_dispatch_depth", 0)
+        outermost_call = dispatch_depth == 0
+        previous_room = getattr(session.player, "current_room", "")
+        session._dispatch_depth = dispatch_depth + 1
+        try:
+            return await self._dispatch_command_inner(session, text)
+        finally:
+            session._dispatch_depth = max(0, getattr(session, "_dispatch_depth", 1) - 1)
+            if outermost_call:
+                self._on_room_changed(
+                    session,
+                    previous_room,
+                    getattr(session.player, "current_room", ""),
+                )
+            if outermost_call and session.running:
+                ctx = self._make_context(session)
+                await broadcast_state(ctx, sync_audio=False)
+                await session.send_completions(build_completions(ctx))
+
+    def _on_room_changed(self, session: Session, previous_room: str, current_room: str) -> None:
+        if previous_room == current_room:
+            return
+        transition = (previous_room, current_room)
+        if getattr(session, "_overheard_room_transition", None) == transition:
+            return
+        session._overheard_room_transition = transition
+        from .rumors import clear_panel_queue, send_panel_queue
+
+        clear_panel_queue(session, current_room)
+        try:
+            asyncio.get_running_loop()
+        except RuntimeError:
+            return
+        asyncio.create_task(send_panel_queue(session, force_empty=True))
+
+    async def _dispatch_command_inner(self, session: Session, text: str) -> CommandOutcome:
+        from .commands import is_storylet_choice_input, resolve_storylet_choice
+        from .popup_actions import handle_popup_action, parse_popup_action
 
         cmd = parse(text)
         if getattr(session.player, "custody_until", -1) >= 0 and cmd.verb not in ("status", "journal", "quit"):
@@ -310,7 +354,9 @@ class SessionManager:
             return result
         from .tutorial import TutorialEvent, get_original_tutorial_room_id, record_tutorial_event
 
-        event_data = result.data.get("tutorial_event") or {}
+        event_data = result.data.get("tutorial_event")
+        if not event_data:
+            return result
         verb = event_data.get("verb") or getattr(cmd, "verb", "choose")
         target = event_data.get("target", getattr(cmd, "direct_obj", "") or raw_input)
         indirect = event_data.get("indirect", getattr(cmd, "indirect_obj", "") or "")
@@ -318,7 +364,14 @@ class SessionManager:
         event_room = get_original_tutorial_room_id(
             getattr(session.player, "tutorial_instance_id", ""), source_room, self.shared
         )
-        event = TutorialEvent(verb, target, indirect, event_room, succeeded=True)
+        event = TutorialEvent(
+            verb,
+            target,
+            indirect,
+            event_room,
+            succeeded=True,
+            precondition_npc_rooms=event_data.get("precondition_npc_rooms", {}),
+        )
         await record_tutorial_event(ctx, event, action=tutorial_action)
         if event_data.get("verb") == "go" and getattr(session.player, "in_tutorial", False):
             await self._send_map_data(session)
@@ -388,41 +441,50 @@ class SessionManager:
             return None
         slots = list_character_slots(username, self.storylet_manager)
         living = get_living_character_slot(username, self.storylet_manager)
-        listing = "\n".join(f"{slot.slot_number}. {slot.display_name} [{slot.status.upper()}]" for slot in slots)
-        await websocket.send(json.dumps({"type": "display", "payload": listing or "No character slots."}))
-        await websocket.send(json.dumps({"type": "prompt", "payload": "Character slot number, or enter a new character name (leave blank for a generated name): "}))
-        while True:
-            try:
-                selection = (await websocket.recv()).strip()
-            except Exception:
-                return None
-            if selection.isdecimal() and selection:
-                slot = get_character_slot(username, int(selection), self.storylet_manager)
-                if slot is None:
-                    await websocket.send('{"type":"display","payload":"That character number is not available."}')
+        auto_loaded = None
+        if living is not None:
+            candidate = load_authenticated_slot(username, living.slot_number, self.storylet_manager)
+            if candidate is not None and candidate[0] is not None:
+                auto_loaded = candidate
+        if auto_loaded is not None:
+            player, slot = auto_loaded
+        else:
+            listing = "\n".join(f"{slot.slot_number}. {slot.display_name} [{slot.status.upper()}]" for slot in slots)
+            await websocket.send(json.dumps({"type": "display", "payload": listing or "No character slots."}))
+            await websocket.send(json.dumps({"type": "prompt", "payload": "Character slot number, or enter a new character name (leave blank for a generated name): "}))
+            while True:
+                try:
+                    selection = (await websocket.recv()).strip()
+                except Exception:
+                    return None
+                if selection.isdecimal() and selection:
+                    slot = get_character_slot(username, int(selection), self.storylet_manager)
+                    if slot is None:
+                        await websocket.send('{"type":"display","payload":"That character number is not available."}')
+                        continue
+                    if slot.status != "living":
+                        await websocket.send('{"type":"display","payload":"That character slot cannot enter gameplay."}')
+                        continue
+                    loaded = load_authenticated_slot(username, slot.slot_number, self.storylet_manager)
+                    if loaded is None or loaded[0] is None:
+                        await websocket.send('{"type":"display","payload":"That character save is unavailable."}')
+                        continue
+                    player, slot = loaded
+                    break
+                if living is not None:
+                    await websocket.send('{"type":"display","payload":"A new character is unavailable while a living character exists."}')
                     continue
-                if slot.status != "living":
-                    await websocket.send('{"type":"display","payload":"That character slot cannot enter gameplay."}')
-                    continue
-                player, slot = load_authenticated_slot(username, slot.slot_number, self.storylet_manager)
-                if player is None:
-                    await websocket.send('{"type":"display","payload":"That character save is unavailable."}')
-                    continue
-                from .rumors import materialize_player_rumor_records
-                materialize_player_rumor_records(self.shared, player)
+                player = self._create_new_player(username, save=False)
+                if selection:
+                    player.name = selection
+                try:
+                    slot = create_living_slot(username, player, player.name)
+                except Exception as exc:
+                    await websocket.send(json.dumps({"type": "display", "payload": f"Unable to create character: {exc}"}))
+                    return None
                 break
-            if living is not None:
-                await websocket.send('{"type":"display","payload":"A new character is unavailable while a living character exists."}')
-                continue
-            player = self._create_new_player(username, save=False)
-            if selection:
-                player.name = selection
-            try:
-                slot = create_living_slot(username, player, player.name)
-            except Exception as exc:
-                await websocket.send(json.dumps({"type": "display", "payload": f"Unable to create character: {exc}"}))
-                return None
-            break
+        from .rumors import materialize_player_rumor_records
+        materialize_player_rumor_records(self.shared, player)
         session = Session(
             websocket=websocket,
             username=username,
@@ -463,6 +525,11 @@ class SessionManager:
             save_player(player, save_key=getattr(player, "save_key", "") or None)
         return player
 
+    async def _flush_notices_and_prompt(self, session: Session) -> None:
+        if session.running:
+            await session.delivery.flush_actionable(session)
+        await session.send_prompt()
+
     def _make_context(self, session: Session) -> CommandContext:
         from .commands import CommandContext
         room = self.shared.world.get_room(session.player.current_room)
@@ -485,54 +552,21 @@ class SessionManager:
         await session.send_room_players(players)
 
     async def _send_map_data(self, session: Session):
-        import logging
-        from .world import is_public_map_room
-        logger = logging.getLogger(__name__)
-
         if getattr(session.player, "in_tutorial", False):
             from .tutorial import ensure_tutorial_instance_for_player
             ensure_tutorial_instance_for_player(session.player, self.shared)
+            return await self._send_tutorial_map_data(session)
+
+        from .world import is_public_map_room
 
         visited = set(session.player.map_revealed)
         layout_coords = self.shared.room_layout_coords
-
-        in_tutorial = session.player.in_tutorial
-        tutorial_complete = "tutorial_complete" in session.player.flags
-
         current_room = session.player.current_room
-        original_current_room = current_room
-
-        if in_tutorial and getattr(session.player, "tutorial_instance_id", ""):
-            from .tutorial import get_original_tutorial_room_id
-            instance_id = session.player.tutorial_instance_id
-            original_current_room = get_original_tutorial_room_id(instance_id, current_room, self.shared)
-            visited = {
-                get_original_tutorial_room_id(instance_id, room_id, self.shared)
-                for room_id in visited
-            }
 
         rooms_data = {}
-        filtered_out = 0
         for room_id, (x, y) in layout_coords.items():
-            if room_id.startswith("p_") and len(room_id.split("_", 2)) >= 3:
-                continue
-
-            if in_tutorial:
-                if not (room_id.startswith("refugee_entry_") or room_id.startswith("orientation_")):
-                    filtered_out += 1
-                    continue
-            elif tutorial_complete:
-                if room_id.startswith("refugee_entry_") or room_id.startswith("orientation_"):
-                    filtered_out += 1
-                    continue
-            else:
-                if room_id.startswith("refugee_entry_") or room_id.startswith("orientation_"):
-                    filtered_out += 1
-                    continue
-
             room = self.shared.world.get_room(room_id)
             if not room:
-                logger.warning(f"Room not found while building map data: {room_id}")
                 continue
 
             is_visited = room_id in visited
@@ -543,8 +577,7 @@ class SessionManager:
             zone = room.district
             for tag in room.tags:
                 if tag in ("bund", "old_city", "hongkou", "french", "nanjing_rd",
-                           "zhabei", "yangpu", "xujiahui",
-                           "refugee_entry", "orientation"):
+                           "zhabei", "yangpu", "xujiahui"):
                     zone = tag
                     break
 
@@ -568,6 +601,7 @@ class SessionManager:
                 "type": "indoor" if room.indoors else "road",
                 "district": room.district,
                 "zone": zone,
+                "presentation_slot": self.shared.room_presentation_slots.get(room_id),
                 "tags": list(room.tags),
                 "visited": is_visited,
                 "npc_count": len(room.npcs) if hasattr(room, 'npcs') else 0,
@@ -577,9 +611,92 @@ class SessionManager:
 
         payload = {
             "rooms": rooms_data,
-            "current_room": original_current_room
+            "current_room": current_room,
+            "map_mode": "world",
         }
         await session.send_map_data(payload)
+
+    async def _send_tutorial_map_data(self, session: Session):
+        from .room_codes import TUTORIAL_SPECIAL_TRANSITIONS
+        from .tutorial import (
+            blocked_exits_for_room,
+            get_original_tutorial_room_id,
+            live_npc_exit_blocks,
+        )
+
+        player = session.player
+        instance_id = getattr(player, "tutorial_instance_id", "")
+        current_room = get_original_tutorial_room_id(
+            instance_id, player.current_room, self.shared,
+        )
+        visited = {
+            get_original_tutorial_room_id(instance_id, room_id, self.shared)
+            for room_id in getattr(player, "map_revealed", [])
+        }
+        stage = getattr(player, "tutorial_stage", 0)
+        route_stub_direction = None
+        from .tutorial import STAGE_ACTIONS
+        for stage_index in range(stage, len(STAGE_ACTIONS)):
+            action = STAGE_ACTIONS.get(stage_index)
+            if not action or action.get("verb") == "none":
+                continue
+            if action.get("verb") != "go" or action.get("room_id") != current_room:
+                continue
+            direction = action.get("target", "")
+            if TUTORIAL_SPECIAL_TRANSITIONS.get((current_room, direction)):
+                route_stub_direction = direction
+            break
+        rooms_data = {}
+
+        tutorial_coords = self.shared.tutorial_room_layout_coords
+        for room_id, (x, y) in tutorial_coords.items():
+            room = self.shared.world.get_room(room_id)
+            if not room:
+                continue
+            exits = {}
+            for direction, dest_id in room.exits.items():
+                original_dest = get_original_tutorial_room_id(instance_id, dest_id, self.shared)
+                if original_dest in tutorial_coords:
+                    dest_room = self.shared.world.get_room(dest_id)
+                    exits[direction] = {
+                        "key": original_dest,
+                        "name": dest_room.title if dest_room else original_dest,
+                    }
+                elif (
+                    room_id == current_room
+                    and direction == route_stub_direction
+                    and TUTORIAL_SPECIAL_TRANSITIONS.get((room_id, direction)) == original_dest
+                ):
+                    exits[direction] = {"tutorial_route_stub": True}
+
+            blocked = blocked_exits_for_room(room_id, stage)
+            blocked.update(live_npc_exit_blocks(player, self.shared, room_id))
+            data = {
+                "key": room_id,
+                "name": room.title,
+                "x": x,
+                "y": y,
+                "z": 0,
+                "exits": exits,
+                "type": "indoor" if room.indoors else "road",
+                "district": room.district,
+                "zone": "orientation" if room_id.startswith("orientation_") else "refugee_entry",
+                "tags": list(room.tags),
+                "visited": room_id in visited,
+                "npc_count": len(room.npcs) if hasattr(room, "npcs") else 0,
+                "item_count": len(room.items) if hasattr(room, "items") else 0,
+                "safe": room.safe_room if hasattr(room, "safe_room") else False,
+            }
+            for direction in blocked:
+                if direction in exits:
+                    data[f"{direction}_door_state"] = "closed"
+            rooms_data[room_id] = data
+
+        await session.send_map_data({
+            "rooms": rooms_data,
+            "current_room": current_room,
+            "map_mode": "tutorial",
+        })
 
     async def _begin_tutorial_if_new(self, session: Session) -> bool:
         player = session.player

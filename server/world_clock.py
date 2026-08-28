@@ -83,6 +83,15 @@ NPC_ACTION_SOUNDS = {
 }
 
 
+WEATHER_TRANSITION_TEXT = {
+    "clear": "The weather clears over the city.",
+    "rain": "Rain begins to fall across the city.",
+    "fog": "Fog gathers over the streets.",
+    "storm": "A storm rolls over the city, and thunder follows.",
+    "snow": "Snow begins to settle over the city.",
+}
+
+
 def record_social_consequence(interaction, actor, target, shared, room, witnesses: list[str] | None = None) -> dict | None:
     consequence_class = getattr(interaction, "consequence_class", "ambient")
     if consequence_class not in {"persistent", "actionable"}:
@@ -237,6 +246,8 @@ class WorldClock:
         import logging
         logger = logging.getLogger(__name__)
 
+        if not hasattr(self, "_pending_tasks"):
+            self._pending_tasks = set()
         task = asyncio.create_task(coro)
         self._pending_tasks.add(task)
         task.add_done_callback(lambda t: self._pending_tasks.discard(t))
@@ -248,6 +259,75 @@ class WorldClock:
             from .ambient_events import load_ambient_events
             self._ambient_events = load_ambient_events(AMBIENT_EVENTS_PATH)
         return self._ambient_events
+
+    def _delivery_time(self) -> float:
+        game_time = self.shared.game_time
+        day = int(getattr(game_time, "day", 1))
+        minute = int(getattr(game_time, "minute", 0))
+        return float((day - 1) * 1440 + minute)
+
+    def _schedule_notice(
+        self,
+        session,
+        *,
+        tier,
+        locality,
+        source: str,
+        semantic_key: str,
+        msg_type,
+        text: str | None,
+        state_token: str | None = None,
+        source_room_id: str | None = None,
+        source_district: str | None = None,
+        sound: str | None = None,
+        sound_volume: float = 0.6,
+    ):
+        from .delivery import DeliveryPolicy, Notice
+        delivery = getattr(session, "delivery", None)
+        if delivery is None:
+            delivery = DeliveryPolicy()
+            session.delivery = delivery
+        return self._track_task(delivery.deliver(
+            session,
+            Notice(
+                tier=tier,
+                locality=locality,
+                source=source,
+                semantic_key=semantic_key,
+                msg_type=msg_type,
+                text=text,
+                state_token=state_token,
+                source_room_id=source_room_id,
+                source_district=source_district,
+                sound=sound,
+                sound_volume=sound_volume,
+            ),
+            current_time=self._delivery_time(),
+        ))
+
+    async def _broadcast_display(self, text: str, msg_type=None):
+        from .delivery import DeliveryPolicy, Locality, Notice, Tier
+
+        raw_type = getattr(msg_type, "value", msg_type)
+        tier = Tier.AMBIENT if raw_type == MessageType.AMBIENT or raw_type == "ambient" else Tier.ACTIONABLE
+        semantic_key = f"legacy_broadcast.{raw_type or 'default'}"
+        notice = Notice(
+            tier=tier,
+            locality=Locality.CITYWIDE,
+            source="legacy_broadcast",
+            semantic_key=semantic_key,
+            msg_type=msg_type,
+            text=text,
+        )
+        current_time = self._delivery_time()
+        for session in list(self.session_manager.sessions.values()):
+            if tutorial_blocks_world_events(session.player):
+                continue
+            delivery = getattr(session, "delivery", None)
+            if delivery is None:
+                delivery = DeliveryPolicy()
+                session.delivery = delivery
+            await delivery.deliver(session, notice, current_time=current_time)
 
     async def tick(self):
         if not self.session_manager.sessions:
@@ -298,15 +378,25 @@ class WorldClock:
             self.shared.game_time,
             lambda msg: self._track_task(self._deliver_scheduled_event(msg)),
             lambda msg, event: self._track_task(
-                self._deliver_scheduled_event(msg, str(event.payload.get("scope", "district")))
+                self._deliver_scheduled_event(
+                    msg,
+                    str(event.payload.get("scope", "district")),
+                    event_id=event.event_id,
+                    source_district=event.payload.get("district"),
+                )
             ),
         )
         if any(effect.get("curfew_start") for effect in effects):
             asyncio.create_task(self._broadcast_audio("gong", volume=0.6))
-        if self.shared.weather == "storm" and self.shared.game_time.minute % 60 == 0:
-            asyncio.create_task(self._broadcast_audio("thunder", volume=0.5))
 
-    async def _deliver_scheduled_event(self, text: str, scope: str = "district") -> None:
+    async def _deliver_scheduled_event(
+        self,
+        text: str,
+        scope: str = "district",
+        *,
+        event_id: str = "scheduled",
+        source_district: str | None = None,
+    ) -> None:
         from .delivery import Locality, Notice, Tier
         tier = Tier.ACTIONABLE if scope == "citywide" else Tier.AMBIENT
         locality = Locality.CITYWIDE if scope == "citywide" else Locality.DISTRICT
@@ -314,15 +404,15 @@ class WorldClock:
             tier=tier,
             locality=locality,
             source="scheduler",
-            semantic_key=f"scheduled_event.{scope}",
+            semantic_key=f"scheduled_event.{event_id}",
             msg_type=MessageType.AMBIENT,
             text=text + "\n",
+            source_district=source_district,
         )
-        current_tick = game_clock_total_minutes(self.shared.game_time)
         for session in list(self.session_manager.sessions.values()):
             if tutorial_blocks_world_events(session.player):
                 continue
-            await session.delivery.deliver(session, notice, current_tick=current_tick)
+            await session.delivery.deliver(session, notice, current_time=self._delivery_time())
 
     async def _broadcast_audio(self, sound: str, volume: float = 0.7) -> None:
         for session in list(self.session_manager.sessions.values()):
@@ -336,6 +426,7 @@ class WorldClock:
                 pass
 
     def _release_custody_sessions(self) -> None:
+        from .delivery import Locality, Tier
         from .locales import get as loc
         now = game_clock_total_minutes(self.shared.game_time)
         for session in list(self.session_manager.sessions.values()):
@@ -353,7 +444,11 @@ class WorldClock:
                     room_change(session, previous_room, detention_room)
             player.custody_until = -1
             player.custody_detention_room = ""
-            asyncio.create_task(session.send_display(loc("arrest.custody_release"), msg_type=MessageType.EVENT))
+            self._schedule_notice(
+                session, tier=Tier.ACTIONABLE, locality=Locality.ROOM, source="custody",
+                semantic_key=f"custody.release.{session.username}", msg_type=MessageType.EVENT,
+                text=loc("arrest.custody_release"), source_room_id=player.current_room,
+            )
 
     def _valid_custody_release_room(self, room_id: str) -> bool:
         if not room_id or room_id.startswith(("tut_", "p_")):
@@ -664,6 +759,7 @@ class WorldClock:
                 self.shared.world.npc_locations.pop(npc_id, None)
 
     async def _resolve_patrol_entry(self, patrol: PatrolState) -> None:
+        from .delivery import Locality, Tier
         from .stealth import PierceStage
         room_id = patrol.room_id
         patrol_npc = self.shared.world.npcs.get(patrol.npc_id)
@@ -681,7 +777,11 @@ class WorldClock:
                 continue
             await session.clear_patrol_warning()
             if not player.hidden:
-                await session.send_display("Boots pass close by, then fade into the street.", msg_type="ambient")
+                self._schedule_notice(
+                    session, tier=Tier.AMBIENT, locality=Locality.ROOM, source="patrol",
+                    semantic_key=f"patrol.pass.{room_id}", msg_type=MessageType.AMBIENT,
+                    text="Boots pass close by, then fade into the street.", source_room_id=room_id,
+                )
                 if active_curfew:
                     ctx = self.session_manager._make_context(session)
                     await resolve_curfew_encounter(ctx, CurfewTrigger.PATROL_CONTACT)
@@ -696,12 +796,20 @@ class WorldClock:
             )
             if stage == PierceStage.EXPOSED:
                 player.hidden = False
-                await session.send_display("Boots pass close by, then fade into the street.", msg_type="ambient")
+                self._schedule_notice(
+                    session, tier=Tier.ACTIONABLE, locality=Locality.ROOM, source="patrol",
+                    semantic_key=f"patrol.exposed.{room_id}", msg_type=MessageType.EVENT,
+                    text="Boots pass close by, then fade into the street.", source_room_id=room_id,
+                )
                 if active_curfew:
                     ctx = self.session_manager._make_context(session)
                     await resolve_curfew_encounter(ctx, CurfewTrigger.PATROL_CONTACT)
                 continue
-            await session.send_display("Boots pass close by, then fade into the street.", msg_type="ambient")
+            self._schedule_notice(
+                session, tier=Tier.AMBIENT, locality=Locality.ROOM, source="patrol",
+                semantic_key=f"patrol.pass.{room_id}", msg_type=MessageType.AMBIENT,
+                text="Boots pass close by, then fade into the street.", source_room_id=room_id,
+            )
 
     def _expire_crime_scenes(self) -> None:
         current_day = self.shared.game_time.day
@@ -717,6 +825,7 @@ class WorldClock:
             ]
 
     def _apply_trust_decay_all_sessions(self) -> None:
+        from .delivery import Locality, Tier
         from .trust import apply_trust_decay
         current_day = self.shared.game_time.day
         for session in list(self.session_manager.sessions.values()):
@@ -731,23 +840,28 @@ class WorldClock:
                 summary = ", ".join(
                     f"{faction.upper()} ({total_delta})" for faction, total_delta in decayed
                 )
-                asyncio.create_task(
-                    session.send_display(
-                        f"Your standing has faded from neglect: {summary}.",
-                        msg_type=MessageType.PLAYER_STATUS,
-                    )
+                self._schedule_notice(
+                    session, tier=Tier.ACTIONABLE, locality=Locality.ROOM, source="trust_decay",
+                    semantic_key=f"trust_decay.{current_day}", msg_type=MessageType.PLAYER_STATUS,
+                    text=f"Your standing has faded from neglect: {summary}.",
+                    source_room_id=session.player.current_room,
                 )
 
             self._apply_wanted_decay(session, current_day)
 
     def _apply_wanted_decay(self, session: Session, current_day: int) -> None:
+        from .delivery import Locality, Tier
         from .trust import has_faction_perk
         from .locales import get as loc
 
         room = self.shared.world.get_room(session.player.current_room)
         safe_room = bool(room and room.safe_room)
         if apply_crime_free_decay(session.player, day=current_day, safe_room=safe_room):
-            asyncio.create_task(session.send_display(loc("wanted.decay"), msg_type=MessageType.PLAYER_STATUS))
+            self._schedule_notice(
+                session, tier=Tier.ACTIONABLE, locality=Locality.ROOM, source="wanted_decay",
+                semantic_key=f"wanted_decay.{current_day}", msg_type=MessageType.PLAYER_STATUS,
+                text=loc("wanted.decay"), source_room_id=session.player.current_room,
+            )
 
     def _move_npcs_if_hour_changed(self):
         if self.shared.game_time.minute % 60 != 0:
@@ -795,7 +909,7 @@ class WorldClock:
         from .delivery import Locality, Notice, Tier
         batches = getattr(self, "_movement_batches", None) or {}
         self._movement_batches = {}
-        current_tick = game_clock_total_minutes(self.shared.game_time)
+        current_time = self._delivery_time()
         for room_id, clauses in batches.items():
             if not clauses:
                 continue
@@ -809,9 +923,10 @@ class WorldClock:
                 semantic_key=f"npc_movement.{room_id}",
                 msg_type=MessageType.NPC_AMBIENT,
                 text=text + "\n",
+                source_room_id=room_id,
             )
             for session in self._visible_sessions(room_id):
-                await session.delivery.deliver(session, notice, current_tick=current_tick)
+                await session.delivery.deliver(session, notice, current_time=current_time)
 
     def _get_direction(self, from_room: str, to_room: str) -> str:
         from_room_obj = self.shared.world.rooms.get(from_room)
@@ -1038,7 +1153,12 @@ class WorldClock:
                             faction_context=npc.faction,
                             created_day=self.shared.game_time.day,
                         )
-                        asyncio.create_task(session.send_display(event_text, msg_type=MessageType.WARNING))
+                        from .delivery import Locality, Tier
+                        self._schedule_notice(
+                            session, tier=Tier.ACTIONABLE, locality=Locality.ROOM,
+                            source="planted_evidence", semantic_key=f"planted_evidence.{room.id}",
+                            msg_type=MessageType.WARNING, text=event_text, source_room_id=room.id,
+                        )
                         if getattr(session, "audio_enabled", False):
                             asyncio.create_task(session.send_audio("alert", volume=0.6))
                         triggered = True
@@ -1076,23 +1196,72 @@ class WorldClock:
 
     async def _present_tail_follow_result(self, session: Session, target, result):
         from .locales import get as loc
+        from .delivery import Locality, Notice, Tier
+
+        async def deliver_tail_notice(text: str, semantic_key: str, msg_type) -> None:
+            await session.delivery.deliver(
+                session,
+                Notice(
+                    tier=Tier.ACTIONABLE,
+                    locality=Locality.ROOM,
+                    source="tailing",
+                    semantic_key=semantic_key,
+                    msg_type=msg_type,
+                    text=text,
+                    source_room_id=session.player.current_room,
+                ),
+                current_time=self._delivery_time(),
+            )
+
         if result.outcome == "vanished":
-            await session.send_display(loc("cmd_tail.target_vanished"), msg_type=MessageType.EVENT)
+            await deliver_tail_notice(
+                loc("cmd_tail.target_vanished"),
+                f"tailing.{target.id}.vanished",
+                MessageType.EVENT,
+            )
         elif result.outcome == "challenge":
-            await session.send_display(f"{target.name} challenges you and the tail ends.", msg_type=MessageType.WARNING)
+            await deliver_tail_notice(
+                f"{target.name} challenges you and the tail ends.",
+                f"tailing.{target.id}.challenge",
+                MessageType.WARNING,
+            )
         elif result.outcome == "exposed":
-            await session.send_display(f"{target.name} sees through your disguise. The disguise is confiscated.", msg_type=MessageType.WARNING)
+            await deliver_tail_notice(
+                f"{target.name} sees through your disguise. The disguise is confiscated.",
+                f"tailing.{target.id}.exposed",
+                MessageType.WARNING,
+            )
         elif result.outcome == "spotted":
-            await session.send_display(f"{target.name} glances over a shoulder, slows, and knows exactly what you are doing.", msg_type=MessageType.WARNING)
+            await deliver_tail_notice(
+                f"{target.name} glances over a shoulder, slows, and knows exactly what you are doing.",
+                f"tailing.{target.id}.spotted",
+                MessageType.WARNING,
+            )
         elif result.outcome == "lost":
-            await session.send_display(f"You lose {target.name} in the streets.", msg_type=MessageType.EVENT)
+            await deliver_tail_notice(
+                f"You lose {target.name} in the streets.",
+                f"tailing.{target.id}.lost",
+                MessageType.EVENT,
+            )
         elif result.outcome == "moved":
-            await session.send_display(f"You shadow {target.name} and keep them in sight.", msg_type=MessageType.PLAYER_ACTION)
+            await deliver_tail_notice(
+                f"You shadow {target.name} and keep them in sight.",
+                f"tailing.{target.id}.moved",
+                MessageType.PLAYER_ACTION,
+            )
             if result.gained_stealth:
-                await session.send_display("You learn from their movements. (+1 stealth)", msg_type=MessageType.PLAYER_STATUS)
+                await deliver_tail_notice(
+                    "You learn from their movements. (+1 stealth)",
+                    f"tailing.{target.id}.stealth",
+                    MessageType.PLAYER_STATUS,
+                )
             await self._present_tail_room_entry(session)
         if result.stage.name == "SUSPICION" and result.outcome in ("continued", "moved"):
-            await session.send_display(f"{target.name} studies you but continues on.", msg_type=MessageType.WARNING)
+            await deliver_tail_notice(
+                f"{target.name} studies you but continues on.",
+                f"tailing.{target.id}.suspicion",
+                MessageType.WARNING,
+            )
 
     async def _present_tail_room_entry(self, session: Session):
         from .commands import Command, cmd_look
@@ -1263,6 +1432,8 @@ class WorldClock:
 
     async def _check_mission_expiry(self):
         from .delivery import Locality, Notice, Tier
+        from .locales import get as loc
+        from .missions import get_mission_title
         mm = self.shared.mission_manager
         if not mm:
             return
@@ -1277,7 +1448,7 @@ class WorldClock:
                     source="missions",
                     semantic_key=f"mission.{mid}.expiry",
                     msg_type=MessageType.WARNING,
-                    text=f"Mission {mid} has expired.",
+                    text=loc("mission.expired").format(title=get_mission_title(mm, mid)),
                     state_token="fired",
                 ))
             failed = mm.check_staleness(session.player, self.shared)
@@ -1288,12 +1459,16 @@ class WorldClock:
                     source="missions",
                     semantic_key=f"mission.{mid}.stale",
                     msg_type=MessageType.WARNING,
-                    text=f"Mission {mid} has failed because its required target is no longer available.",
+                    text=(
+                        f"Mission {get_mission_title(mm, mid)} has failed because its "
+                        "required target is no longer available."
+                    ),
                     state_token="fired",
                 ))
 
     def _process_survival_all_sessions(self):
         from .survival import apply_survival_tick, init_hunger_notify_state
+        from .delivery import Locality, Tier
         season = _season_from_day(self.shared.game_time.day)
         minute = self.shared.game_time.minute
         for session in list(self.session_manager.sessions.values()):
@@ -1308,7 +1483,16 @@ class WorldClock:
                 session.player,
                 minute,
                 self.shared.game_time.day,
-                send_display=lambda msg, msg_type=None, s=session: asyncio.create_task(s.send_display(msg, msg_type=msg_type)),
+                send_display=lambda msg, msg_type=None, s=session: self._schedule_notice(
+                    s,
+                    tier=Tier.ACTIONABLE,
+                    locality=Locality.ROOM,
+                    source="survival",
+                    semantic_key="hunger.threshold",
+                    msg_type=msg_type,
+                    text=msg,
+                    source_room_id=s.player.current_room,
+                ),
                 notify_state=session._hunger_notify_state,
             )
 
@@ -1323,9 +1507,14 @@ class WorldClock:
                     if not has_warm:
                         session.player.health = max(0, session.player.health - 1)
                         if session.player.health % 10 == 0:
-                            asyncio.create_task(session.send_display(
-                                "The winter cold seeps into your bones.\n", msg_type=MessageType.PLAYER_STATUS
-                            ))
+                            from .delivery import Locality, Tier
+                            self._schedule_notice(
+                                session, tier=Tier.ACTIONABLE, locality=Locality.ROOM,
+                                source="winter", semantic_key=f"winter.cold.{session.username}",
+                                msg_type=MessageType.PLAYER_STATUS,
+                                text="The winter cold seeps into your bones.\n",
+                                source_room_id=session.player.current_room,
+                            )
 
     async def _check_ambient_events_all_sessions(self) -> None:
         from .ambient_events import check_ambient_trigger
@@ -1335,6 +1524,7 @@ class WorldClock:
             return
 
         current_tick = game_clock_total_minutes(self.shared.game_time)
+        current_time = float(current_tick)
         current_minute = self.shared.game_time.minute
 
         for session in list(self.session_manager.sessions.values()):
@@ -1374,23 +1564,25 @@ class WorldClock:
                     if triggered.is_danger:
                         notice = Notice(
                             tier=Tier.ACTIONABLE,
-                            locality=Locality.DISTRICT,
+                            locality=Locality.ROOM,
                             source="ambient_events",
-                            semantic_key="danger_ambient.window",
+                            semantic_key=f"danger_ambient.{getattr(triggered, 'id', 'unknown')}",
                             msg_type=MessageType.AMBIENT,
                             text=text + "\n",
-                            state_token=str(current_tick // 5),
+                            state_token=str(current_tick // 30),
+                            source_room_id=room.id,
                         )
                     else:
                         notice = Notice(
                             tier=Tier.AMBIENT,
-                            locality=Locality.DISTRICT,
+                            locality=Locality.ROOM,
                             source="ambient_events",
                             semantic_key=f"ambient_event.{getattr(triggered, 'id', 'unknown')}",
                             msg_type=MessageType.AMBIENT,
                             text=text + "\n",
+                            source_room_id=room.id,
                         )
-                    await session.delivery.deliver(session, notice, current_tick=current_tick)
+                    await session.delivery.deliver(session, notice, current_time=current_time)
 
     def _process_npc_autonomy(self):
         if self.shared.game_time.minute % 30 == 0:
@@ -1532,15 +1724,17 @@ class WorldClock:
                 f"Word travels through the district: {npc.name} has abandoned the "
                 f"{old_faction.upper()} for the {new_faction.upper()}.\n"
             ),
+            source_room_id=room.id,
+            source_district=zone,
         )
-        current_tick = game_clock_total_minutes(self.shared.game_time)
+        current_time = self._delivery_time()
         for session in list(self.session_manager.sessions.values()):
             if tutorial_blocks_world_events(session.player):
                 continue
             player_room = self.shared.world.get_room(session.player.current_room)
             if not player_room or self._room_zone(player_room) != zone:
                 continue
-            await session.delivery.deliver(session, notice, current_tick=current_tick)
+            await session.delivery.deliver(session, notice, current_time=current_time)
 
     def _get_nearby_npcs(self, npc_id: str, current_room) -> list:
         return [self.shared.world.npcs.get(nid) for nid in current_room.npcs if nid != npc_id and self.shared.world.npcs.get(nid)]
@@ -1606,6 +1800,7 @@ class WorldClock:
 
     def _npc_move_action(self, npc, current_room_id: str, current_room, rooms_with_players: set):
         import random
+        from .delivery import Locality, Tier
         if not current_room.exits:
             return
 
@@ -1676,12 +1871,14 @@ class WorldClock:
                         self.shared.game_time,
                         sound_event=sound_event,
                     )
+            from .delivery import player_sound_label
+            sound_description = player_sound_label(sound_type)
             if perceived_intensity >= 3:
-                message = f"You hear a loud {sound_type} nearby!"
+                message = f"You hear loud {sound_description} nearby!"
             elif perceived_intensity >= 2:
-                message = f"You hear a distant {sound_type}."
+                message = f"You hear {sound_description} in the distance."
             else:
-                message = f"You hear a muffled {sound_type} from somewhere nearby."
+                message = f"You hear a muffled {sound_description} from somewhere nearby."
             from .delivery import Locality, Notice, Tier
             notice = Notice(
                 tier=Tier.ACTIONABLE if perceived_intensity >= 3 else Tier.AMBIENT,
@@ -1692,6 +1889,7 @@ class WorldClock:
                 text=message + "\n",
                 sound=audio_name,
                 sound_volume=min(1.0, perceived_intensity / max(1, sound_event.intensity)),
+                source_room_id=source_room_id,
             )
             for session in self.session_manager.get_players_in_room(room_id):
                 if tutorial_blocks_world_events(session.player):
@@ -1699,7 +1897,7 @@ class WorldClock:
                 await session.delivery.deliver(
                     session,
                     notice,
-                    current_tick=game_clock_total_minutes(self.shared.game_time),
+                    current_time=self._delivery_time(),
                 )
 
     def _dispatch_authority_sound(self, source_room_id: str, intensity: int, sound_type: str) -> None:
@@ -1707,6 +1905,7 @@ class WorldClock:
 
     def _npc_flee_action(self, npc, current_room_id: str, current_room, rooms_with_players: set, reason: str = ""):
         import random
+        from .delivery import Locality, Tier
 
         is_wounded = getattr(npc, 'wounded', False)
 
@@ -1779,9 +1978,12 @@ class WorldClock:
                 else:
                     flee_msg = f"{npc.name} staggers away {direction}, clutching a wound!" if is_wounded else f"{npc.name} flees {direction}!"
                 for session in self.session_manager.get_players_in_room(current_room_id):
-                    asyncio.create_task(session.send_display(
-                        flee_msg, msg_type=MessageType.NPC_AMBIENT,
-                    ))
+                    self._schedule_notice(
+                        session, tier=Tier.AMBIENT, locality=Locality.ROOM, source="npc_flee",
+                        semantic_key=f"npc_flee.{npc.id}.{current_room_id}",
+                        msg_type=MessageType.NPC_AMBIENT, text=flee_msg,
+                        source_room_id=current_room_id,
+                    )
 
     OPPOSITE_FACTION_PAIRS = {
         frozenset(("kempeitai", "ccp")),
@@ -1808,6 +2010,7 @@ class WorldClock:
 
     def _build_bt_actions(self):
         from .behavior_tree import Status
+        from .delivery import Locality, Tier
 
         def _npc_ctx(bb, require_room=True, require_exits=False):
             npc_id = bb.get("npc_id")
@@ -1902,10 +2105,12 @@ class WorldClock:
             if not npc or not room or not room.hiding_spots:
                 return Status.FAILURE
             for session in self.session_manager.get_players_in_room(room_id):
-                asyncio.create_task(session.send_display(
-                    f"{npc.name} slips into the shadows and vanishes from sight.",
-                    msg_type=MessageType.NPC_AMBIENT,
-                ))
+                self._schedule_notice(
+                    session, tier=Tier.AMBIENT, locality=Locality.ROOM, source="npc_hide",
+                    semantic_key=f"npc_hide.{npc.id}.{room_id}", msg_type=MessageType.NPC_AMBIENT,
+                    text=f"{npc.name} slips into the shadows and vanishes from sight.",
+                    source_room_id=room_id,
+                )
             return Status.SUCCESS
 
         def _action_extort_civilian(bb):
@@ -1956,9 +2161,12 @@ class WorldClock:
                         other.suspicion = 0
                 return Status.FAILURE
             target.player.hidden = False
-            asyncio.create_task(target.send_display(
-                f"{npc.name} scans the shadows and spots you. 'What are you doing?'", msg_type=MessageType.WARNING
-            ))
+            self._schedule_notice(
+                target, tier=Tier.CRITICAL, locality=Locality.ROOM, source="npc_investigation",
+                semantic_key=f"npc_investigation.{npc.id}.{room_id}", msg_type=MessageType.WARNING,
+                text=f"{npc.name} scans the shadows and spots you. 'What are you doing?'",
+                source_room_id=room_id,
+            )
             for nid in room.npcs:
                 other = self.shared.world.npcs.get(nid)
                 if other:
@@ -1984,9 +2192,12 @@ class WorldClock:
             if schedule_rooms:
                 self._move_npc_between_rooms(npc.id, room_id, schedule_rooms[0])
             for session in self.session_manager.get_players_in_room(room_id):
-                asyncio.create_task(session.send_display(
-                    f"{npc.name} boards up the shop and slips away into the crowd.", msg_type=MessageType.EVENT
-                ))
+                self._schedule_notice(
+                    session, tier=Tier.ACTIONABLE, locality=Locality.ROOM, source="vendor_shutter",
+                    semantic_key=f"vendor_shutter.{room_id}", msg_type=MessageType.EVENT,
+                    text=f"{npc.name} boards up the shop and slips away into the crowd.",
+                    source_room_id=room_id,
+                )
             return Status.SUCCESS
 
         def _action_defect(bb):
@@ -2040,10 +2251,12 @@ class WorldClock:
             if needs is not None:
                 needs["hunger"] = max(0, needs.get("hunger", 0) - random.randint(15, 30))
             for session in self.session_manager.get_players_in_room(room_id):
-                asyncio.create_task(session.send_display(
-                    f"{npc.name} rummages around, looking for something to eat.",
-                    msg_type=MessageType.NPC_AMBIENT,
-                ))
+                self._schedule_notice(
+                    session, tier=Tier.AMBIENT, locality=Locality.ROOM, source="npc_needs",
+                    semantic_key=f"npc_seek_food.{npc.id}.{room_id}", msg_type=MessageType.NPC_AMBIENT,
+                    text=f"{npc.name} rummages around, looking for something to eat.",
+                    source_room_id=room_id,
+                )
             self._npc_move_action(npc, room_id, room, self._rooms_with_players())
             return Status.SUCCESS
 
@@ -2091,10 +2304,12 @@ class WorldClock:
             if needs is not None:
                 needs["fear"] = max(0, needs.get("fear", 0) - random.randint(10, 25))
             for session in self.session_manager.get_players_in_room(room_id):
-                asyncio.create_task(session.send_display(
-                    f"{npc.name} looks around nervously and hurries away.",
-                    msg_type=MessageType.NPC_AMBIENT,
-                ))
+                self._schedule_notice(
+                    session, tier=Tier.AMBIENT, locality=Locality.ROOM, source="npc_needs",
+                    semantic_key=f"npc_seek_safety.{npc.id}.{room_id}", msg_type=MessageType.NPC_AMBIENT,
+                    text=f"{npc.name} looks around nervously and hurries away.",
+                    source_room_id=room_id,
+                )
             self._npc_flee_action(npc, room_id, room, self._rooms_with_players())
             return Status.SUCCESS
 
@@ -2319,6 +2534,9 @@ class WorldClock:
             investigation = npc_bb.get("sound_investigation")
             if investigation:
                 bb.set("sound_investigation", investigation)
+        direct_move_minute = npc_bb.get("tutorial_direct_move_minute") if npc_bb else None
+        if direct_move_minute is not None:
+            bb.set("tutorial_direct_move_minute", direct_move_minute)
 
     OPPOSITE_DIRECTION = {
         "north": "south", "south": "north",
@@ -2326,9 +2544,55 @@ class WorldClock:
         "up": "down", "down": "up",
     }
 
+    def _move_sound_investigator_toward_target(self, npc, bb):
+        from .pathfinding import a_star_find_path
+
+        sound = bb.get("last_heard_sound")
+        target_room_id = sound.get("room_id") if isinstance(sound, dict) else None
+        npc_id = getattr(npc, "id", "") or bb.get("npc_id")
+        current_room_id = self.shared.world.npc_locations.get(npc_id)
+        current_room = self.shared.world.rooms.get(current_room_id) if current_room_id else None
+        if not target_room_id or current_room_id == target_room_id or not current_room or not current_room.exits:
+            return None
+        path = a_star_find_path(
+            self.shared.world.rooms, current_room_id, target_room_id,
+            cost_fn=lambda a, b: 1.0,
+        )
+        if not path:
+            return None
+        direction = path[0]
+        dest_id = current_room.exits.get(direction)
+        if not dest_id or not self._move_npc_between_rooms(npc_id, current_room_id, dest_id, direction):
+            return None
+        investigation = bb.get("sound_investigation")
+        if isinstance(investigation, dict) and investigation.get("phase") == "travel":
+            investigation["approach_direction"] = direction
+        return current_room_id, dest_id, direction, f"{npc.name} moves purposefully {direction}."
+
+    def move_tutorial_sound_investigator(self, npc_id: str, target_room_id: str):
+        if not npc_id.endswith("tutorial_kempeitai_officer"):
+            return None
+        npc = self.shared.world.npcs.get(npc_id)
+        bb = getattr(npc, "_blackboard", None) if npc else None
+        if not npc or not bb:
+            return None
+        sound = bb.get("last_heard_sound")
+        investigation = bb.get("sound_investigation")
+        if not isinstance(sound, dict) or sound.get("room_id") != target_room_id:
+            return None
+        if not isinstance(investigation, dict) or investigation.get("phase") != "travel":
+            return None
+        step = self._move_sound_investigator_toward_target(npc, bb)
+        if step:
+            bb.set("tutorial_direct_move_minute", game_clock_total_minutes(self.shared.game_time))
+            npc_bb = getattr(npc, "_blackboard", None)
+            if npc_bb:
+                npc_bb.set("tutorial_direct_move_minute", game_clock_total_minutes(self.shared.game_time))
+        return step[3] if step else None
+
     def _npc_investigate_action(self, npc, bb):
         from .behavior_tree import Status
-        from .pathfinding import a_star_find_path
+        from .delivery import Locality, Tier
         sound = bb.get("last_heard_sound")
         if not sound:
             return Status.FAILURE
@@ -2338,6 +2602,12 @@ class WorldClock:
         npc_id = bb.get("npc_id")
         if isinstance(sound, dict) and sound.get("actionable") and not bb.get("sound_investigation"):
             return Status.FAILURE
+        if bb.get("tutorial_direct_move_minute") == game_clock_total_minutes(self.shared.game_time):
+            bb.clear("tutorial_direct_move_minute")
+            npc_bb = getattr(npc, "_blackboard", None)
+            if npc_bb:
+                npc_bb.clear("tutorial_direct_move_minute")
+            return Status.RUNNING
         current_room_id = self.shared.world.npc_locations.get(npc_id)
         if current_room_id == target_room_id:
             investigation = bb.get("sound_investigation")
@@ -2353,36 +2623,30 @@ class WorldClock:
                 return Status.SUCCESS
             self._clear_npc_sound_memory(npc, bb)
             return Status.SUCCESS
-        current_room = self.shared.world.rooms.get(current_room_id) if current_room_id else None
-        if not current_room or not current_room.exits:
-            self._clear_npc_sound_memory(npc, bb)
-            return Status.FAILURE
-        path = a_star_find_path(
-            self.shared.world.rooms, current_room_id, target_room_id,
-            cost_fn=lambda a, b: 1.0,
-        )
-        if not path:
-            self._clear_npc_sound_memory(npc, bb)
-            return Status.FAILURE
-        direction = path[0]
-        dest_id = current_room.exits.get(direction)
-        if dest_id:
+        step = self._move_sound_investigator_toward_target(npc, bb)
+        if step:
+            current_room_id, dest_id, direction, movement_message = step
             rooms_with_players = self._rooms_with_players()
-            self._move_npc_between_rooms(npc_id, current_room_id, dest_id, direction)
-            investigation = bb.get("sound_investigation")
-            if isinstance(investigation, dict) and investigation.get("phase") == "travel":
-                investigation["approach_direction"] = direction
-            movement_message = f"{npc.name} moves purposefully {direction}."
             if current_room_id in rooms_with_players or dest_id in rooms_with_players:
                 for session in self.session_manager.get_players_in_room(current_room_id):
                     if tutorial_blocks_world_events(session.player):
                         continue
-                    asyncio.create_task(session.send_display(movement_message, msg_type=MessageType.NPC_AMBIENT))
+                    self._schedule_notice(
+                        session, tier=Tier.AMBIENT, locality=Locality.ROOM, source="npc_sound_search",
+                        semantic_key=f"npc_search.{npc_id}.{current_room_id}",
+                        msg_type=MessageType.NPC_AMBIENT, text=movement_message,
+                        source_room_id=current_room_id,
+                    )
                 for session in self.session_manager.get_players_in_room(dest_id):
                     if tutorial_blocks_world_events(session.player):
                         if not tutorial_sound_investigator_allowed(npc_id, self._tutorial_clone_npc_ids(), npc):
                             continue
-                    asyncio.create_task(session.send_display(movement_message, msg_type=MessageType.NPC_AMBIENT))
+                    self._schedule_notice(
+                        session, tier=Tier.AMBIENT, locality=Locality.ROOM, source="npc_sound_search",
+                        semantic_key=f"npc_search.{npc_id}.{dest_id}",
+                        msg_type=MessageType.NPC_AMBIENT, text=movement_message,
+                        source_room_id=dest_id,
+                    )
             return Status.RUNNING
         self._clear_npc_sound_memory(npc, bb)
         return Status.FAILURE
@@ -2437,6 +2701,29 @@ class WorldClock:
             self._apply_weather_degradation(multiplier=2)
             if previous != "storm":
                 asyncio.create_task(self._broadcast_audio("thunder", volume=0.6))
+        if self.shared.weather != previous:
+            self._announce_weather_transition(previous, self.shared.weather)
+
+    def _announce_weather_transition(self, previous: str, current: str) -> None:
+        from .delivery import Locality, Tier
+
+        text = WEATHER_TRANSITION_TEXT.get(current)
+        if not text:
+            return
+        msg_type = getattr(MessageType, f"WEATHER_{current.upper()}", MessageType.EVENT)
+        for session in list(self.session_manager.sessions.values()):
+            if tutorial_blocks_world_events(session.player):
+                continue
+            self._schedule_notice(
+                session,
+                tier=Tier.AMBIENT,
+                locality=Locality.CITYWIDE,
+                source="weather",
+                semantic_key="weather.state",
+                msg_type=msg_type,
+                text=text,
+                state_token=current,
+            )
 
     def _apply_weather_degradation(self, multiplier: int = 1):
         from .constants import DEGRADE_RAIN_RATE
@@ -2451,7 +2738,12 @@ class WorldClock:
                 item.durability = max(0, item.durability - DEGRADE_RAIN_RATE * multiplier)
                 if item.durability <= 0:
                     verb = "rusts apart" if item.is_weapon else "is ruined by the rain"
-                    asyncio.create_task(session.send_display(f"Your {item.name} {verb}.", msg_type=MessageType.WARNING))
+                    from .delivery import Locality, Tier
+                    self._schedule_notice(
+                        session, tier=Tier.ACTIONABLE, locality=Locality.ROOM, source="weather_damage",
+                        semantic_key=f"weather_damage.{item.instance_id}", msg_type=MessageType.WARNING,
+                        text=f"Your {item.name} {verb}.", source_room_id=session.player.current_room,
+                    )
                     if getattr(session, "audio_enabled", False):
                         asyncio.create_task(session.send_audio("item_break", volume=0.6))
                     broken.append(item)
@@ -2501,7 +2793,14 @@ class WorldClock:
                 if tutorial_blocks_world_events(session.player):
                     continue
                 if m.narrative and apply_milestone_effects(session.player, m, self.shared):
-                    asyncio.create_task(session.send_display(f"\n[MILESTONE] {m.narrative}\n", msg_type=MessageType.ROOM_DESCRIPTION))
+                    from .delivery import Locality, Tier
+                    self._schedule_notice(
+                        session, tier=Tier.ACTIONABLE, locality=Locality.ROOM,
+                        source="milestone", semantic_key=f"milestone.{m.id}",
+                        msg_type=MessageType.ROOM_DESCRIPTION,
+                        text=f"\n[MILESTONE] {m.narrative}\n",
+                        source_room_id=session.player.current_room,
+                    )
 
     async def _check_storylet_timers_all_sessions(self):
         from .storylets import is_storylet_expired
@@ -2520,12 +2819,3 @@ class WorldClock:
                 except Exception as e:
                     import logging
                     logging.getLogger(__name__).warning(f"Error resolving neglect for {active.storylet_id}: {e}")
-
-    async def _broadcast_display(self, text: str, msg_type=None):
-        for session in list(self.session_manager.sessions.values()):
-            if tutorial_blocks_world_events(session.player):
-                continue
-            try:
-                await session.send_display(text, msg_type=msg_type)
-            except Exception:
-                pass
