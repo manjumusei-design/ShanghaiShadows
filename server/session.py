@@ -1,4 +1,5 @@
 import json
+import inspect
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import Dict, List, Any
@@ -53,7 +54,9 @@ class Session:
         await self.websocket.send(json.dumps(payload))
 
     async def send_prompt(self, text: str = "> "):
-        await self.websocket.send(json.dumps({"type": "prompt", "payload": text}))
+        result = self.websocket.send(json.dumps(payload))
+        if inspect.isawaitable(result):
+            await result
 
     async def send_hint(self, hint_id: str, stage_id: str, payload: str, immediate: bool, room_id: str = ""):
         await self.websocket.send(json.dumps({
