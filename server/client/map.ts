@@ -1,4 +1,5 @@
 
+
 const COLORS = {
   white: "#EBEBEB",
   gray: "#A2A2A2",
@@ -62,6 +63,15 @@ const INVERSE_DIRECTIONS: Record<string, string> = {
   down: "up"
 }
 
+
+const EPS = 1e-6
+
+function doorSuppressed(room: RoomData | undefined, dir: string): boolean {
+  if (!room) return false
+  const state = room[`${dir}_door_state` as keyof RoomData] as string | undefined
+  return state === "closed" || state === "locked"
+}
+
 export const get_room_index_key = (x: number, y: number, z: number): string => {
   return `${x}:${y}:${z}`
 }
@@ -88,7 +98,10 @@ export interface MapRendererOptions {
   width?: number
   unit?: number
   in_game?: boolean
+  map_mode?: MapMode
 }
+
+export type MapMode = 'tutorial' | 'world'
 
 export interface RoomData {
   key: string
@@ -100,6 +113,7 @@ export interface RoomData {
   flags?: string[]
   district?: string
   zone?: string
+  presentation_slot?: number
   visited?: boolean
   silhouette?: boolean
   name?: string
@@ -130,6 +144,7 @@ export interface RawMapRoom {
   flags?: string[]
   district?: string
   zone?: string
+  presentation_slot?: number
   visited?: boolean
   silhouette?: boolean
   name?: string
@@ -184,6 +199,7 @@ export function normalizeMapRooms(
       flags: r.flags,
       district: r.district,
       zone: r.zone || r.district,
+      presentation_slot: r.presentation_slot,
       visited: r.visited,
       name: r.name,
       silhouette: r.silhouette === true,
@@ -221,6 +237,7 @@ export default class MapRenderer {
   renderRooms: Record<string, RoomData>
   ctx: CanvasRenderingContext2D
   in_game: boolean
+  map_mode: MapMode
   panX: number = 0
   panY: number = 0
   zoom: number = 1
@@ -236,6 +253,7 @@ export default class MapRenderer {
     this.last_center_key = ""
     this.renderRooms = {}
     this.in_game = this.options.in_game || false
+    this.map_mode = this.options.map_mode || 'world'
   }
   getRoomColor(room: RoomData): string {
     let baseColor = DISTRICT_COLORS[room.district || ''] || ZONE_COLORS[room.zone || ''] || DEFAULT_ZONE_COLOR
@@ -273,6 +291,17 @@ export default class MapRenderer {
     this.panX = 0
     this.panY = 0
     this.zoom = 1
+    this.refresh()
+  }
+
+  updateRooms(rooms: Record<string, RoomData>): void {
+    this.rooms = rooms
+    this.refresh()
+  }
+
+  recenter(): void {
+    this.panX = 0
+    this.panY = 0
     this.refresh()
   }
 
@@ -466,51 +495,27 @@ export default class MapRenderer {
   }
 
   drawConnection(room: RoomData, dir: string) {
-    const revDir = INVERSE_DIRECTIONS[dir]
     const exitRoomAttrs = room[dir as keyof RoomData] as { key: string } | undefined
     if (!exitRoomAttrs) return
+    const sourceBlocked = doorSuppressed(room, dir)
 
-    const fromCoords = this.getExitCoord(room, dir)
-    const doorState = room[`${dir}_door_state` as keyof RoomData] as string | undefined
-    if (doorState === "closed" || doorState === "locked") {
+    const exitRoom = this.renderRooms[exitRoomAttrs.key]
+    const destinationBlocked = doorSuppressed(exitRoom, INVERSE_DIRECTIONS[dir])
+    if (!exitRoom || exitRoom.z !== room.z || (this.map_mode !== 'tutorial' && (sourceBlocked || destinationBlocked))) {
       return
     }
 
-    let toCoords: [number, number]
-    let exitRoom = this.renderRooms[exitRoomAttrs.key]
-
-    if (exitRoom && exitRoom.z === room.z) {
-      toCoords = this.getExitCoord(exitRoom, revDir)
-    } else {
-      toCoords = [fromCoords[0], fromCoords[1]]
-      if (dir === "south") {
-        toCoords[1] += this.unit
-      } else if (dir === "north") {
-        toCoords[1] -= this.unit
-      } else if (dir === "east") {
-        toCoords[0] += this.unit
-      } else if (dir === "west") {
-        toCoords[0] -= this.unit
-      }
+    const [fx, fy] = this.getExitCoord(room, dir)
+    const [tx, ty] = this.getExitCoord(exitRoom, INVERSE_DIRECTIONS[dir])
+    if (Math.abs(fx - tx) > EPS && Math.abs(fy - ty) > EPS) {
       return
     }
-    const targetRoom = this.rooms[exitRoomAttrs.key]
-    if (targetRoom && targetRoom.z !== room.z) {
-      if (dir === "south") {
-        toCoords[1] -= this.unit / 2
-      } else if (dir === "north") {
-        toCoords[1] += this.unit / 2
-      } else if (dir === "east") {
-        toCoords[0] -= this.unit / 2
-      } else if (dir === "west") {
-        toCoords[0] += this.unit / 2
-      }
-    }
-    this.ctx.strokeStyle = COLORS.white
+    const blocked = sourceBlocked || destinationBlocked
+    this.ctx.strokeStyle = blocked ? COLORS.secondary : COLORS.white
+    this.ctx.lineWidth = blocked ? 1 : 2
     this.ctx.beginPath()
-    this.ctx.moveTo(fromCoords[0], fromCoords[1])
-    this.ctx.lineTo(toCoords[0], toCoords[1])
-    this.ctx.lineWidth = 2
+    this.ctx.moveTo(fx, fy)
+    this.ctx.lineTo(tx, ty)
     this.ctx.stroke()
   }
 
