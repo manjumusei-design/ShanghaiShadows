@@ -25,6 +25,16 @@ export interface ServerPlayerState {
   active_missions: ActiveMission[]
   journal_data: Record<string, any> | null
   wanted_policy?: WantedPolicy
+  inventory?: RoomItem[]
+  equipment?: PlayerEquipment
+  skills?: Record<string, number>
+}
+
+export interface PlayerEquipment {
+  weapon_id: string | null
+  armour_id: string | null
+  disguise: string | null
+  disguise_item_id: string | null
 }
 
 export interface WantedPolicy {
@@ -131,6 +141,11 @@ export interface RoomItem {
   name: string
   description?: string
   takeable?: boolean
+  instance_id?: string
+  equipped?: string | null
+  food_value?: number
+  is_weapon?: boolean
+  is_armour?: boolean
 }
 
 export interface GameState {
@@ -149,6 +164,7 @@ export interface GameState {
   player_money: { fabi: number; silver: number; military_yen: number }
   player_wallet_fabi_value: number
   player_inventory: RoomItem[]
+  player_equipment: PlayerEquipment
   player_disguise: string
 
 
@@ -231,6 +247,7 @@ const set_initial_state = (): GameState => ({
   player_money: { fabi: 0, silver: 0, military_yen: 0 },
   player_wallet_fabi_value: 0,
   player_inventory: [],
+  player_equipment: { weapon_id: null, armour_id: null, disguise: null, disguise_item_id: null },
   player_disguise: '',
 
   map: {},
@@ -360,6 +377,23 @@ const game: Module<GameState, any> = {
       state.room_items = items
     },
 
+    SET_PLAYER_INVENTORY(state, items: RoomItem[]) {
+      state.player_inventory = Array.isArray(items) ? [...items] : []
+    },
+
+    SET_PLAYER_EQUIPMENT(state, equipment: PlayerEquipment) {
+      state.player_equipment = {
+        weapon_id: equipment?.weapon_id ?? null,
+        armour_id: equipment?.armour_id ?? null,
+        disguise: equipment?.disguise ?? null,
+        disguise_item_id: equipment?.disguise_item_id ?? null,
+      }
+    },
+
+    SET_PLAYER_SKILLS(state, skills: Record<string, number>) {
+      state.player_skills = { ...(skills || {}) }
+    },
+    
     SET_ROOM_TAGS(state, tags: string[]) {
       state.room_tags = tags
     },
