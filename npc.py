@@ -12,6 +12,7 @@ from .rumors import RumorObservation
 from .content_validation import load_strict_yaml, validate_npc_dialogue_strings
 
 
+
 @dataclass
 class Npc:
     id: str
@@ -54,6 +55,13 @@ class Npc:
     tutorial_dialogue: Dict[str, Any] = field(default_factory=dict)
     bolted: bool = False
     ask: Dict[str, Any] = field(default_factory=dict)
+
+
+
+def normalize_npc_name(value: str) -> str:
+    text = re.sub(r"\b(the|a|an)\b", " ", (value or "").lower())
+    text = re.sub(r"[^a-z0-9 ]", " ", text)
+    return " ".join(text.split())
 
 
 def load_npcs(path: str) -> Dict[str, Npc]:
