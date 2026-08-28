@@ -26,6 +26,15 @@ export interface CommandSlot {
   }
 }
 
+function normalizeNpcName(value: string): string {
+  return value
+    .toLowerCase()
+    .replace(/\b(the|a|an)\b/g, ' ')
+    .replace(/[^a-z0-9 ]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
 function commonPrefix(candidates: string[], typed: string): string {
   const lower = typed.toLowerCase()
   let prefix = candidates[0].toLowerCase()
@@ -188,10 +197,16 @@ export class CompletionsEngine {
 
   private matchPool(pool: string[], category: CompletionCategory, prefix: string): string[] {
     if (!prefix) return pool.slice()
-    const lower = prefix.toLowerCase()
-    const starts = pool.filter(item => item.toLowerCase().startsWith(lower))
+    const lower = category === 'npcs' ? normalizeNpcName(prefix) : prefix.toLowerCase()
+    const starts = pool.filter(item => {
+      const candidate = category === 'npcs' ? normalizeNpcName(item) : item.toLowerCase()
+      return candidate.startsWith(lower)
+    })
     if (starts.length > 0 || this.policyFor(category) !== 'prefix_then_substring') return starts
-    return pool.filter(item => item.toLowerCase().includes(lower))
+    return pool.filter(item => {
+      const candidate = category === 'npcs' ? normalizeNpcName(item) : item.toLowerCase()
+      return candidate.includes(lower)
+    })
   }
 
   getMatches(category: CompletionCategory, prefix: string, context?: CommandSlot['context'], parts: string[] = [], grammar: CommandSlot[] = []): string[] {
@@ -200,7 +215,9 @@ export class CompletionsEngine {
       const collection = this.data[context.collection]
       const sourceValue = this.getContextValue(parts, grammar, context.source_slot)
       pool = collection && !Array.isArray(collection) && typeof collection === 'object'
-        ? collection[sourceValue] || []
+        ? collection[sourceValue]
+          || Object.entries(collection).find(([key]) => normalizeNpcName(key) === normalizeNpcName(sourceValue))?.[1]
+          || []
         : []
     }
     return this.matchPool(pool, category, prefix)
