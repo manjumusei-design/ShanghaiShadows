@@ -393,7 +393,7 @@ const game: Module<GameState, any> = {
     SET_PLAYER_SKILLS(state, skills: Record<string, number>) {
       state.player_skills = { ...(skills || {}) }
     },
-    
+
     SET_ROOM_TAGS(state, tags: string[]) {
       state.room_tags = tags
     },
@@ -781,6 +781,9 @@ const game: Module<GameState, any> = {
           commit('SET_ACTIVE_RUMORS', data.payload || [])
           break
 
+        case 'rumor_web':
+          break
+
         case 'storylet':
           commit('ADD_ACTIVE_STORYLET', {
             storylet_id: data.storylet_id,
@@ -901,6 +904,16 @@ const game: Module<GameState, any> = {
       }
       if (data.wallet_fabi_value !== undefined) {
         commit('SET_WALLET_FABI_VALUE', data.wallet_fabi_value)
+      }
+
+      if (Array.isArray(data.inventory)) {
+        commit('SET_PLAYER_INVENTORY', data.inventory)
+      }
+      if (data.equipment) {
+        commit('SET_PLAYER_EQUIPMENT', data.equipment)
+      }
+      if (data.skills) {
+        commit('SET_PLAYER_SKILLS', data.skills)
       }
 
       if (data.game_time) {
