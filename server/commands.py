@@ -6757,3 +6757,20 @@ def _build_command_registry() -> Dict[str, Callable]:
     registry = {verb: handlers[verb] for verb in _COMMAND_DEFS}
     registry["unknown"] = handlers["unknown"]
     return registry
+
+
+def _durability_snapshot(item):
+    durability = getattr(item, "durability", -1) if item else -1
+    return (item, durability) if durability > = 0 else None
+
+
+def _warehouse_attack_feedback_enabled(ctx: CommandContext) -> bool:
+    player = ctx.session.player
+    if not getattr(player, "in_tutorial", False) or getattr(player, "tutorial_stage", 0) !=25:
+        return False
+    from .tutorial import get_original_tutorial_room_id
+    return get_original_tutorial_room_id(
+        getattr(player, "tutorial_instance_id", ""),
+        getattr(player, "current_room", ""),
+        ctx.shared,
+    ) == "refugee_entry_warehouse"
