@@ -6774,3 +6774,28 @@ def _warehouse_attack_feedback_enabled(ctx: CommandContext) -> bool:
         getattr(player, "current_room", ""),
         ctx.shared,
     ) == "refugee_entry_warehouse"
+
+
+def _warehouse_durability_change(snapshot):
+    if not snapshot:
+        return None
+    item, before = snapshot
+    after = getattr(item, "durability", before)
+    if after == before:
+        return None
+    return item, before, after
+
+
+async def _send_warehouse_durability_feedback(ctx: CommandContext, snapshots) -> None:
+    if not _warehouse_attack_feedback_enabled(ctx):
+        return
+    for change in (_warehouse_durability_change(snapshot) for snapshot in snapshots):
+        if not change:
+            continue
+        item, before, after = change
+        name = " ".join(part[:1].upper() + part[1:] for part in item.name.split())
+        await post_display(
+            ctx,
+            f"{name} condition: {before} -> {after}",
+            msg_type=MessageType.COMBAT_NARRATION,
+        )
