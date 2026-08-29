@@ -204,3 +204,14 @@ async def test_success_message_emits_success_sting():
     await post_display(ctx, "It worked.", msg_type=MessageType.SUCCESS)
 
     assert ctx.session.send_audio.await_args.args[0] == "success"
+
+
+@pytest.mark.asyncio
+async def test_discovery_message_emits_discovery_ping():
+    ctx, _ = build_context()
+    ctx.session.send_display = AsyncMock()
+    ctx.session.send_audio = AsyncMock()
+
+    await post_display(ctx, "You find something.", msg_type=MessageType.DISCOVERY)
+
+    assert ctx.session.send_audio.await_args.args[0] == "discovery"
