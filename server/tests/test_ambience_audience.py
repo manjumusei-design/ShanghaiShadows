@@ -145,3 +145,62 @@ async def test_failed_drop_emits_no_item_feedback():
 
     assert not result.succeeded
     assert not ctx.session.send_audio.await_count
+
+
+@pytest.mark.asyncio
+async def test_go_emits_footsteps_when_audio_enabled():
+    ctx, _ = build_context()
+    ctx.session.audio_enabled = True
+    ctx.session.send_display = AsyncMock()
+    ctx.session.send_audio = AsyncMock()
+    start = Room(id="walk_start", title="Walk Start", description="", exits={"north": "walk_end"})
+    end = Room(id="walk_end", title="Walk End", description="")
+    ctx.shared.world.rooms[start.id] = start
+    ctx.shared.world.rooms[end.id] = end
+    ctx.session.player.current_room = start.id
+
+    result = await cmd_go(ctx, Command(verb="go", direct_obj="north", raw="go north"))
+
+    assert result.succeeded is True
+    sounds = [call.args[0] for call in ctx.session.send_audio.await_args_list]
+    assert "footsteps" in sounds
+
+
+@pytest.mark.asyncio
+async def test_go_skips_footsteps_when_audio_disabled():
+    ctx, _ = build_context()
+    ctx.session.audio_enabled = False
+    ctx.session.send_display = AsyncMock()
+    ctx.session.send_audio = AsyncMock()
+    start = Room(id="walk_muted_start", title="Walk Start", description="", exits={"north": "walk_muted_end"})
+    end = Room(id="walk_muted_end", title="Walk End", description="")
+    ctx.shared.world.rooms[start.id] = start
+    ctx.shared.world.rooms[end.id] = end
+    ctx.session.player.current_room = start.id
+
+    result = await cmd_go(ctx, Command(verb="go", direct_obj="north", raw="go north"))
+
+    assert result.succeeded is True
+    assert not ctx.session.send_audio.await_count
+
+
+@pytest.mark.asyncio
+async def test_play_sound_respects_audio_enabled():
+    ctx, _ = build_context()
+    ctx.session.audio_enabled = False
+    ctx.session.send_audio = AsyncMock()
+
+    await play_sound(ctx, "success")
+
+    assert not ctx.session.send_audio.await_count
+
+
+@pytest.mark.asyncio
+async def test_success_message_emits_success_sting():
+    ctx, _ = build_context()
+    ctx.session.send_display = AsyncMock()
+    ctx.session.send_audio = AsyncMock()
+
+    await post_display(ctx, "It worked.", msg_type=MessageType.SUCCESS)
+
+    assert ctx.session.send_audio.await_args.args[0] == "success"
