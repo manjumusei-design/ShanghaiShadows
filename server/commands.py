@@ -6799,3 +6799,20 @@ async def _send_warehouse_durability_feedback(ctx: CommandContext, snapshots) ->
             f"{name} condition: {before} -> {after}",
             msg_type=MessageType.COMBAT_NARRATION,
         )
+
+
+GLOBAL_AMBIENCE_SOUND = "ambient_city"
+GLOBAL_AMBIENCE_VOLUME = 0.18
+
+async def _sync_global_ambience(ctx: CommandContext) -> None:
+    current = getattr(ctx.session, "_audio_global_ambience_name", None)
+    if current == GLOBAL_AMBIENCE_SOUND:
+        return
+    if current:
+        await ctx.session.send_audio(f"{current}_stop")
+    await ctx.session.send_audio(
+        f"{GLOBAL_AMBIENCE_SOUND}_start",
+        volume=GLOBAL_AMBIENCE_VOLUME,
+        loop=True,
+    )
+    ctx.session._audio_global_ambience_name = GLOBAL_AMBIENCE_SOUND
