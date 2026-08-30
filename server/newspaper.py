@@ -17,8 +17,9 @@ logger = logging.getLogger(__name__)
 
 
 NEWSPAPER_COST_FABI = 3
+NEWSPAPER_GENERATION_TIMEOUT_SECONDS = 8.0
 NEWSPAPER_MASTHEAD = "弄堂消息"
-NEWSPAPER_SUBTITLE = "LONGTANG XIAOSHUO"
+NEWSPAPER_SUBTITLE = "LONGTANG NEWS"
 NEWSPAPER_DATE_FORMAT = "Day {day}"
 
 
@@ -66,7 +67,6 @@ def _format_world_decision(decision: Dict[str, Any]) -> Optional[str]:
     elif decision_type == "extortion":
         return f"Protection money collected on {_get_district_display(effects.get('district', 'unknown'))}."
     return None
-
 
 
 async def _ai_enhance_incident(
@@ -139,7 +139,7 @@ def _log_enhancement_result(
     source: str,
     reason: str,
     response_chars: int = 0,
-    generated_id: str = "direct",
+    generation_id: str = "direct",
 ) -> None:
     logger.info(
         "Newspaper enhancement generation_id=%s content_type=%s source=%s reason=%s response_chars=%s",
@@ -268,7 +268,7 @@ async def _generate_newspaper(
                 generation_id=generation_id,
             )
             lane_whispers.append(enhanced)
-
+    
     newspaper = {
         "day": game_day,
         "masthead": NEWSPAPER_MASTHEAD,
@@ -283,6 +283,33 @@ async def _generate_newspaper(
     return newspaper
 
 
+async def generate_newspaper(
+    game_day: int,
+    player_district: str,
+    all_rumors: List[Dict[str, Any]],
+    active_rumor_ids: List[str],
+    world_decisions: List[Dict[str, Any]],
+    rumour_mill: Dict[str, List[str]],
+    ai_client: Optional["AIClient"] = None,
+    named_npc_deaths: Optional[Dict[str, Dict[str, Any]]] = None,
+) -> Dict[str, Any]:
+    return await _generate_newspaper(
+        game_day=game_day,
+        player_district=player_district,
+        all_rumors=all_rumors,
+        active_rumor_ids=active_rumor_ids,
+        world_decisions=world_decisions,
+        rumour_mill=rumour_mill,
+        ai_client=ai_client,
+        named_npc_deaths=named_npc_deaths,
+    )
+
+
+async def generate_deterministic_newspaper(**kwargs) -> Dict[str, Any]:
+    kwargs["ai_client"] = None
+    return await _generate_newspaper(**kwargs)
+
+
 async def _resolve_shared_edition(
     shared: Any,
     game_day: int,
@@ -293,9 +320,11 @@ async def _resolve_shared_edition(
     rumour_mill: Dict[str, List[str]],
     ai_client: Optional["AIClient"],
     named_npc_deaths: Optional[Dict[str, Dict[str, Any]]],
+    deterministic: bool = False,
 ) -> Optional[Dict[str, Any]]:
+    generator = generate_deterministic_newspaper if deterministic else generate_newspaper
     if shared is None:
-        return await generate_newspaper(
+        return await generator(
             game_day=game_day,
             player_district=player_district,
             all_rumors=all_rumors,
@@ -313,8 +342,9 @@ async def _resolve_shared_edition(
     async with edition_lock:
         cached = getattr(shared, "newspaper_edition", None)
         if getattr(shared, "newspaper_edition_day", 0) == game_day and isinstance(cached, dict):
+            logger.info("Newspaper edition cache hit day=%s", game_day)
             return cached
-        generated = await generate_newspaper(
+        generated = await generator(
             game_day=game_day,
             player_district=player_district,
             all_rumors=all_rumors,
@@ -330,7 +360,55 @@ async def _resolve_shared_edition(
         shared.newspaper_edition = generated
         return shared.newspaper_edition
 
-    
+
+async def _resolve_edition_with_fallback(
+    shared: Any,
+    game_day: int,
+    player_district: str,
+    all_rumors: List[Dict[str, Any]],
+    active_rumor_ids: List[str],
+    world_decisions: List[Dict[str, Any]],
+    rumour_mill: Dict[str, List[str]],
+    ai_client: Optional["AIClient"],
+    named_npc_deaths: Optional[Dict[str, Dict[str, Any]]],
+) -> Optional[Dict[str, Any]]:
+    try:
+        edition = await asyncio.wait_for(
+            _resolve_shared_edition(
+                shared=shared,
+                game_day=game_day,
+                player_district=player_district,
+                all_rumors=all_rumors,
+                active_rumor_ids=active_rumor_ids,
+                world_decisions=world_decisions,
+                rumour_mill=rumour_mill,
+                ai_client=ai_client,
+                named_npc_deaths=named_npc_deaths,
+            ),
+            timeout=NEWSPAPER_GENERATION_TIMEOUT_SECONDS,
+        )
+        if edition:
+            return edition
+    except Exception as error:
+        logger.warning(
+            "Newspaper generation source=fallback reason=%s",
+            type(error).__name__,
+        )
+    logger.info("Newspaper generation source=fallback reason=deterministic_retry")
+    return await _resolve_shared_edition(
+        shared=shared,
+        game_day=game_day,
+        player_district=player_district,
+        all_rumors=all_rumors,
+        active_rumor_ids=active_rumor_ids,
+        world_decisions=world_decisions,
+        rumour_mill=rumour_mill,
+        ai_client=None,
+        named_npc_deaths=named_npc_deaths,
+        deterministic=True,
+    )
+
+
 async def purchase_newspaper(
     player: Any,
     game_day: int,
@@ -357,7 +435,7 @@ async def purchase_newspaper(
             from .commands import storylet_resolution_owned
             if not storylet_resolution_owned(active):
                 return None
-        edition = await _resolve_shared_edition(
+        edition = await _resolve_edition_with_fallback(
             shared=shared,
             game_day=game_day,
             player_district=player_district,
