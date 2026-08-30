@@ -5,12 +5,19 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 import yaml
 
+from .constants import DISTRESS_WANTED_INCREASE_CHANCE
 from .trust import TrustMap, get_role_trust
 from .dataclass_utils import filter_to_dataclass
 from .law import wanted_consequences
 from .rumors import RumorObservation
 from .content_validation import load_strict_yaml, validate_npc_dialogue_strings
 
+
+TUTORIAL_SOURCE_NPC_PREFIXES = ("orientation_", "tutorial_")
+
+
+def is_tutorial_source_npc_id(npc_id: str) -> bool:
+    return isinstance(npc_id, str) and npc_id.startswith(TUTORIAL_SOURCE_NPC_PREFIXES)
 
 
 @dataclass
@@ -53,9 +60,9 @@ class Npc:
     social_visibility: str = "visible"
     goals: List[Dict[str, Any]] = field(default_factory=list)
     tutorial_dialogue: Dict[str, Any] = field(default_factory=dict)
+    tutorial_crime_exempt: bool = False
     bolted: bool = False
     ask: Dict[str, Any] = field(default_factory=dict)
-
 
 
 def normalize_npc_name(value: str) -> str:
@@ -526,6 +533,8 @@ async def _apply_npc_reaction(npc, player, reaction: dict, ctx) -> None:
         return
 
     if rtype == "flee":
+        if is_tutorial_source_npc_id(npc.id):
+            return
         room_id = ctx.shared.world.npc_locations.get(npc.id)
         room = ctx.shared.world.get_room(room_id) if room_id else None
         if room and room.exits:
@@ -576,6 +585,8 @@ _SPAWN_COUNTER = 0
 def spawn_patrol_instance(template_id: str, room_id: str, world) -> str:
 
     global _SPAWN_COUNTER
+    if is_tutorial_source_npc_id(template_id):
+        return ""
     template = world.npcs.get(template_id)
     if not template:
         return ""
