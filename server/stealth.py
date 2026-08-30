@@ -26,7 +26,7 @@ class PierceStage(Enum):
 
 PIERCE_THRESHOLD_SUSPICION = 25
 PIERCE_THRESHOLD_CHALLENGE = 50
-PIERCE_THRESHOLD_EXPOSE = 75
+PIERCE_THRESHOLD_EXPOSED = 75
 
 
 @dataclass
@@ -190,7 +190,7 @@ class StealthSystem:
 
     def stealth_check(
         self,
-        player_steath: int,
+        player_stealth: int,
         target_perception: int,
         difficulty_modifier: int,
         room_indoors: bool,

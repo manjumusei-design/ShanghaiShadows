@@ -4,6 +4,8 @@ import random
 import yaml
 from pathlib import Path
 
+from .content_validation import load_strict_yaml
+
 
 def _optional_nonnegative_int(value: Any) -> Optional[int]:
     if value is None:
@@ -75,23 +77,21 @@ class NpcInteractionManager:
         yaml_path = Path(path)
         if not yaml_path.exists():
             return
-        
-
 
         data = load_strict_yaml(yaml_path)
 
         for interaction_data in data.get("interactions", []):
             interaction = self._parse_interaction(interaction_data)
             if interaction:
-                self._interactions[interaction.id] interaction
+                self._interactions[interaction.id] = interaction
                 self._index_interaction(interaction)
 
     def _parse_interaction(self, data: Dict) -> Optional[NpcInteraction]:
         interaction_id = data.get("id")
         if not interaction_id:
             return None
-        
-        action = data.get("action", {})
+
+        action = data.get("action", [])
         if isinstance(action, str):
             action = [action]
 
@@ -121,14 +121,14 @@ class NpcInteractionManager:
                 min_relationship=precond_data.get("min_relationship"),
                 max_relationship=precond_data.get("max_relationship"),
                 requires_item=precond_data.get("requires_item"),
-                requires_goal=precond_data.get("requires_goal"), 
+                requires_goal=precond_data.get("requires_goal"),
             )
 
         consequence_class = str(data.get("consequence_class", "ambient")).lower()
         if consequence_class not in {"ambient", "persistent", "actionable"}:
             consequence_class = "ambient"
         consequence_visibility = str(data.get("consequence_visibility", "local")).lower()
-        if consequence_visibility not in {"local", "rumour", "hidden":
+        if consequence_visibility not in {"local", "rumour", "hidden"}:
             consequence_visibility = "local"
 
         return NpcInteraction(
@@ -156,7 +156,7 @@ class NpcInteractionManager:
             consequence_visibility=consequence_visibility,
             follow_up_trust_ranges={key: list(bounds) for key, bounds in data.get("follow_up_trust_ranges", {}).items()},
         )
-    
+
     def _index_interaction(self, interaction: NpcInteraction) -> None:
         for action in interaction.action:
             if action not in self._action_index:
@@ -172,11 +172,11 @@ class NpcInteractionManager:
     def get_interactions_for_action(self, action: str) -> List[NpcInteraction]:
         ids = self._action_index.get(action, [])
         return [self._interactions[i] for i in ids if i in self._interactions]
-    
+
     def get_interactions_for_faction(self, faction: str) -> List[NpcInteraction]:
         ids = self._faction_index.get(faction, [])
         return [self._interactions[i] for i in ids if i in self._interactions]
-    
+
     def check_preconditions(self, interaction: NpcInteraction, actor, target,
                            world_state) -> bool:
         if interaction.districts and getattr(world_state, "district", "") not in interaction.districts:
@@ -184,17 +184,17 @@ class NpcInteractionManager:
         precond = interaction.preconditions
         if not precond:
             return True
-        
+
         if precond.min_world_tension is not None:
             tension = getattr(world_state, 'world_tension', 0)
             if tension < precond.min_world_tension:
                 return False
-            
+
         if precond.max_world_tension is not None:
             tension = getattr(world_state, 'world_tension', 0)
             if tension > precond.max_world_tension:
                 return False
-            
+
         if precond.opposite_factions:
             if actor.faction == target.faction:
                 return False
@@ -222,23 +222,23 @@ class NpcInteractionManager:
                 return False
 
         return True
-    
+
     def check_faction_filter(self, interaction: NpcInteraction, actor, target) -> bool:
         if interaction.actor_faction:
             if actor.faction not in interaction.actor_faction:
                 return False
-            
-            if interaction.target_faction:
-                if target.gaction not in interaction.target_faction:
-                    return False
-                
+
+        if interaction.target_faction:
+            if target.faction not in interaction.target_faction:
+                return False
+
         return True
-    
-    def select__interaction(self, action: str, actor, target) -> Optional[NpcInteraction]:
+
+    def select_interaction(self, action: str, actor, target, world_state) -> Optional[NpcInteraction]:
         candidates = self.get_interactions_for_action(action)
         if not candidates:
             return None
-        
+
         valid = []
         for interaction in candidates:
             if not self.check_faction_filter(interaction, actor, target):
@@ -247,46 +247,46 @@ class NpcInteractionManager:
                 continue
             valid.append(interaction)
 
-            if not valid:
-                return None
-            
-            if len(valid) == 1:
-                return valid[0]
-            
-            total_weight = sum(i.weight for i in valid)
-            roll = random.random() * total_weight
-            cumulative = 0.0
-            for interaction in valid:
-                cumulative += interaction.weight
-                if roll <= cumulative:
-                    return interaction
-            
-            return valid[-1]
-        
-    def render_narrative(self, interaction: NpcInteraction,  actor, target, extra_context: Optional[Dict] = None) -> str:
+        if not valid:
+            return None
+
+        if len(valid) == 1:
+            return valid[0]
+
+        total_weight = sum(i.weight for i in valid)
+        roll = random.random() * total_weight
+        cumulative = 0.0
+        for interaction in valid:
+            cumulative += interaction.weight
+            if roll <= cumulative:
+                return interaction
+
+        return valid[-1]
+
+    def render_narrative(self, interaction: NpcInteraction, actor, target, extra_context: Optional[Dict] = None) -> str:
         template = random.choice(interaction.narrative_templates)
 
         direction = ""
         if extra_context:
             direction = extra_context.get("direction", "")
 
-            rendered = template.format(
-                actor=actor.name,
-                target=target.name,
-                actor_faction=actor.faction,
-                target_faction=target.faction,
-                direction=direction,
-            )
+        rendered = template.format(
+            actor=actor.name,
+            target=target.name,
+            actor_faction=actor.faction,
+            target_faction=target.faction,
+            direction=direction,
+        )
 
-            return rendered
-        
-    def get_interasction(self, interaction_id: str) -> Optional[NpcInteraction]:
+        return rendered
+
+    def get_interaction(self, interaction_id: str) -> Optional[NpcInteraction]:
         return self._interactions.get(interaction_id)
-    
+
     def get_all_interactions(self) -> List[NpcInteraction]:
         return list(self._interactions.values())
-    
-    
+
+
 npc_interaction_manager = NpcInteractionManager()
 
 

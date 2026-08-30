@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import Any, Dict, list, Optional
+from typing import Any, Dict, List, Optional
 import random
 
 
@@ -8,20 +8,20 @@ class PlayerMemory:
     player_name: str
     interactions: List[Dict[str, Any]] = field(default_factory=list)
     trust_mod: int = 0
-    relationship_type: str = "neutral"
+    relationship_type: str = "neutral"  
     last_interaction_day: int = 0
     remembered_events: List[str] = field(default_factory=list)
     origin_storylet: str = "" 
     origin_choice: int = 0  
-    met_locations: List[str] = field(default_factory=list) 
+    met_locations: List[str] = field(default_factory=list)  
 
 
 @dataclass
 class NpcRelationship:
     npc_id_1: str
     npc_id_2: str
-    relationship_type: str
-    strength: int
+    relationship_type: str  
+    strength: int 
     shared_secrets: List[str] = field(default_factory=list)
 
 
@@ -77,8 +77,8 @@ class NpcMemorySystem:
                 met_locations=[]
             )
 
-            memory = npc.player_memories[player_name]
-            memory.interactions.append({
+        memory = npc.player_memories[player_name]
+        memory.interactions.append({
             'type': interaction_type,
             'day': current_day,
             'details': details
@@ -92,7 +92,7 @@ class NpcMemorySystem:
     def _update_relationship(self, memory: PlayerMemory, interaction_type: str) -> None:
         if interaction_type not in self.RELATIONSHIP_CHANGES:
             return
-        
+
         new_type, mod = self.RELATIONSHIP_CHANGES[interaction_type]
         memory.trust_mod += mod
 
@@ -111,7 +111,7 @@ class NpcMemorySystem:
 
         if not memory:
             return npc.dialogue.get(bucket, [])
-        
+
         recent = [i for i in memory.interactions if current_day - i['day'] < 7]
 
         contextual_lines = []
