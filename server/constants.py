@@ -27,10 +27,10 @@ class MessageType(Enum):
     WEATHER_FOG = "weather_fog"
     WEATHER_SNOW = "weather_snow"
     WEATHER_CLEAR = "weather_clear"
-    SUCESS = "success"
+    SUCCESS = "success"
     WARNING = "warning"
     ERROR = "error"
-    
+
 CURFEW_MINUTE = 1200
 EVENT_LOG_MAXLEN = 500
 WORLD_EVENTS_MAXLEN = 50
@@ -179,6 +179,9 @@ CORPSE_DECAY_DAYS = 1
 TENSION_HIGH_THRESHOLD = 120
 
 ACTIONABLE_SOUND_KINDS = frozenset({"yell", "gunshot"})
+
+AUDIO_EFFECT_VOLUME = 0.05
+AUDIO_ACTION_VOLUME = 0.07
 
 YELL_THREAT_KEYWORDS = frozenset({"kill", "die", "destroy", "curse", "murder", "death"})
 YELL_RESISTANCE_KEYWORDS = frozenset({"resistance", "freedom", "liberation", "revolution", "rebel", " ccp", "communist"})
