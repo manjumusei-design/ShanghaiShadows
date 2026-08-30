@@ -244,7 +244,7 @@ class SocialInteractionResolver:
             remaining = max(0, DAILY_DISTRICT_INFLUENCE_CAP - already_applied)
             applied = min(max(0, int(amount)), remaining)
             if not applied:
-                continue
+            continue
             district_values = shared.district_influence.setdefault(district, {})
             district_values[faction] = max(0, min(100, district_values.get(faction, 0) + applied))
             _update_district_control(district, shared)
