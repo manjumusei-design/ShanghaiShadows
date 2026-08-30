@@ -328,3 +328,47 @@ def apply_kempeitai_perk_penalty(trust: TrustMap) -> Dict[str, int]:
             applied[faction] = delta
 
     return applied
+
+
+def record_trust_interaction(
+    trust: TrustMap,
+    last_trust_interaction: Dict[str, int],
+    key: str,
+    current_day: int,
+) -> None:
+    faction = key.split(".", 1)[0] if "." in key else key
+    if faction in trust:
+        last_trust_interaction[faction] = current_day
+
+
+def apply_trust_decay(
+    trust: TrustMap,
+    last_trust_interaction: Dict[str, int],
+    current_day: int,
+) -> List[Tuple[str, int]]:
+    decayed: List[Tuple[str, int]] = []
+
+    for faction in list(trust.keys()):
+        last_day = last_trust_interaction.get(faction, 0)
+        days_since = current_day - last_day
+
+        if days_since <= DECAY_GRACE_DAYS:
+            continue
+
+        if days_since > NEGLECT_THRESHOLD:
+            per_role_delta = DECAY_SEVERE
+        else:
+            per_role_delta = DECAY_NORMAL
+
+        faction_total_delta = 0
+        for role in list(trust[faction].keys()):
+            prev = trust[faction][role]
+            new_val = max(0, prev + per_role_delta)
+            actual_delta = new_val - prev
+            trust[faction][role] = new_val
+            faction_total_delta += actual_delta
+
+        if faction_total_delta != 0:
+            decayed.append((faction, faction_total_delta))
+
+    return decayed
