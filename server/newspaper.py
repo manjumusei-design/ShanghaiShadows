@@ -1,6 +1,9 @@
 import asyncio
 import copy
+import logging
 import random
+import uuid
+import uuid
 from typing import Dict, List, Optional, Any, TYPE_CHECKING
 from datetime import datetime
 
@@ -8,6 +11,9 @@ from .economy import can_afford_fabi, spend_fabi_value
 
 if TYPE_CHECKING:
     from .ai_client import AIClient
+
+
+logger = logging.getLogger(__name__)
 
 
 NEWSPAPER_COST_FABI = 3
@@ -62,8 +68,16 @@ def _format_world_decision(decision: Dict[str, Any]) -> Optional[str]:
     return None
 
 
-async def _ai_enhance_incident(ai_client: Optional["AIClient"], incident: str, game_day: int) -> str:
+
+async def _ai_enhance_incident(
+    ai_client: Optional["AIClient"],
+    incident: str,
+    game_day: int,
+    *,
+    generation_id: str = "direct",
+) -> str:
     if not ai_client:
+        _log_enhancement_result("incident", "fallback", "ai_client_unavailable", generation_id=generation_id)
         return incident
     
     prompt = f"""You are a newspaper editor in 1930s Shanghai. Enhance this brief incident report with atmospheric period detail. Keep it concise (1-2 sentences max). Maintain the original meaning but add flavor.
@@ -75,30 +89,66 @@ Enhanced version:"""
     try:
         enhanced = await ai_client.chat_text([{"role": "user", "content": prompt}], timeout_seconds=3.0)
         if enhanced and len(enhanced) < 300:
+            _log_enhancement_result("incident", "endpoint", "accepted", len(enhanced), generation_id)
             return enhanced.strip()
     except Exception:
-        pass
+        _log_enhancement_result("incident", "fallback", "exception", generation_id=generation_id)
+        return incident
+    _log_enhancement_result("incident", "fallback", "response_rejected", len(enhanced or ""), generation_id)
     return incident
 
 
-async def _ai_enhance_rumor(ai_client: Optional["AIClient"], rumor: str, distortion_level: float = 0.3) -> str:
+async def _ai_enhance_rumor(
+    ai_client: Optional["AIClient"],
+    rumor: str,
+    distortion_level: float = 0.3,
+    *,
+    generation_id: str = "direct",
+) -> str:
     if not ai_client:
-        return _distort_rumor(rumor, distortion_level)
+        fallback = _distort_rumor(rumor, distortion_level)
+        _log_enhancement_result("rumor", "fallback", "ai_client_unavailable", len(fallback), generation_id)
+        return fallback
     
-    prompt = f"""You are a gossip columnist for a Shanghai tabloid in the 1930s. Rewrite this rumor with an air of mystery and hearsay. Add phrases like "word is", "they say", "reportedly", or "some claim". Keep the core meaning but make it sound like whispered gossip. Stay under 40 words.
+    prompt = f"""You are editing a short rumor for a serious newspaper or street-rumor column in 1930s Shanghai. Rewrite the supplied rumor as restrained, natural hearsay.
+
+Preserve the source's factual meaning and uncertainty. Do not invent people, motives, danger, conspiracies, secrets, supernatural elements, or events unsupported by the source. Avoid playful, whimsical, sensational, or melodramatic language. Do not use stock openings such as "Word is", "They say", "Some claim", "Heard that", or "Rumor has it", and do not force a fixed rhetorical pattern.
+
+Return only concise, grammatically complete rumor prose. Keep capitalization and punctuation natural. No heading, bullet, explanation, or label. Stay under 40 words.
 
 Original: {rumor}
 
-Gossip version:"""
+Rewritten rumor:"""
 
     try:
         enhanced = await ai_client.chat_text([{"role": "user", "content": prompt}], timeout_seconds=3.0)
         if enhanced and len(enhanced) < 250:
+            _log_enhancement_result("rumor", "endpoint", "accepted", len(enhanced), generation_id)
             return enhanced.strip()
     except Exception:
-        pass
-    return _distort_rumor(rumor, distortion_level)
+        fallback = _distort_rumor(rumor, distortion_level)
+        _log_enhancement_result("rumor", "fallback", "exception", len(fallback), generation_id)
+        return fallback
+    fallback = _distort_rumor(rumor, distortion_level)
+    _log_enhancement_result("rumor", "fallback", "response_rejected", len(enhanced or ""), generation_id)
+    return fallback
 
+
+def _log_enhancement_result(
+    content_type: str,
+    source: str,
+    reason: str,
+    response_chars: int = 0,
+    generated_id: str = "direct",
+) -> None:
+    logger.info(
+        "Newspaper enhancement generation_id=%s content_type=%s source=%s reason=%s response_chars=%s",
+        generation_id,
+        content_type,
+        source,
+        reason,
+        response_chars,
+    )
 
 def _distort_rumor(rumor_text: str, distortion_level: float = 0.3) -> str:
     words = rumor_text.split()
