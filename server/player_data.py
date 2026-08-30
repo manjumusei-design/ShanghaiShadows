@@ -86,6 +86,7 @@ class PlayerData:
     asked_topics: Dict[str, List[str]] = field(default_factory=dict)
     journal_intel: Dict[str, Dict[str, Any]] = field(default_factory=dict)
     tutorial_stage: int = 0
+    tutorial_progress: Dict[str, Any] = field(default_factory=dict)
     in_tutorial: bool = False
     tutorial_choice_pending: bool = False
     revealed_exits: Dict[str, List[str]] = field(default_factory=dict)
@@ -105,8 +106,10 @@ class PlayerData:
     tutorial_vendor_depletion: Dict[str, List[str]] = field(default_factory=dict)
     tutorial_confirmation: Dict[str, Any] = field(default_factory=dict)
     tutorial_read_note: bool = False
+    tutorial_dropped_note: Dict[str, Any] = field(default_factory=dict)
+    tutorial_dropped_testimony: Dict[str, Any] = field(default_factory=dict)
     tutorial_journal_lessons: Dict[str, str] = field(default_factory=dict)
-    tutorial_social_exchanges:  Dict[str, Dict[str, Any]] = field(default_factory=dict)
+    tutorial_social_exchanges: Dict[str, Dict[str, Any]] = field(default_factory=dict)
     escape_charge_available: bool = True
     custody_until: int = -1
     custody_detention_room: str = ""
@@ -275,6 +278,10 @@ def serialize_player(player: PlayerData) -> Dict[str, object]:
         "asked_topics": {nid: sorted(ts) for nid, ts in player.asked_topics.items()},
         "journal_intel": player.journal_intel,
         "tutorial_stage": player.tutorial_stage,
+        "tutorial_progress": {
+            str(stage_key): sorted(value) if isinstance(value, (set, list, tuple)) else []
+            for stage_key, value in player.tutorial_progress.items()
+        },
         "tutorial_last_room": player.tutorial_last_room,
         "tutorial_resume_room_id": player.tutorial_resume_room_id,
         "tutorial_revealed_rooms": list(player.tutorial_revealed_rooms),
@@ -284,8 +291,10 @@ def serialize_player(player: PlayerData) -> Dict[str, object]:
         },
         "tutorial_confirmation": player.tutorial_confirmation,
         "tutorial_read_note": player.tutorial_read_note,
+        "tutorial_dropped_note": dict(player.tutorial_dropped_note),
+        "tutorial_dropped_testimony": dict(player.tutorial_dropped_testimony),
         "tutorial_journal_lessons": dict(player.tutorial_journal_lessons),
-        "tutorial_social_exchanges":  {
+        "tutorial_social_exchanges": {
             identity: dict(record)
             for identity, record in sorted(player.tutorial_social_exchanges.items())
         },
@@ -367,7 +376,15 @@ def deserialize_player(data: Dict[str, object], storylet_manager=None) -> Player
     player.character_slot_id = _safe_str(data.get("character_slot_id"), "")
     player.save_key = _safe_str(data.get("save_key"), "")
     player.name = _safe_str(data.get("name"), "Stranger")
-    player.current_room = _safe_str(data.get("current_room"), "bund_dawn")
+    from .world_aliases import (
+        resolve_current_room,
+        resolve_discovery_list,
+        translate_strict,
+    )
+
+    player.current_room = (
+        resolve_current_room(_safe_str(data.get("current_room"), "")) or "bund_dawn"
+    )
     
     inv_data = _safe_list(data.get("inventory"), [])
     player.inventory = []
@@ -404,7 +421,7 @@ def deserialize_player(data: Dict[str, object], storylet_manager=None) -> Player
     player.money_fabi = _safe_int(data.get("money_fabi"), 0)
     player.money_silver = _safe_int(data.get("money_silver"), 0)
     player.money_military_yen = _safe_int(data.get("money_military_yen"), 0)
-    player.map_revealed = _safe_list(data.get("map_revealed"), [])
+    player.map_revealed = resolve_discovery_list(_safe_list(data.get("map_revealed"), []))
     player.worn_armour_id = _safe_str(data.get("worn_armour_id"), "")
     player.equipped_weapon_id = _safe_str(data.get("equipped_weapon_id"), "")
     player.active_missions = _safe_list(data.get("active_missions"), [])
@@ -430,6 +447,10 @@ def deserialize_player(data: Dict[str, object], storylet_manager=None) -> Player
     player.journal_intel = _safe_dict(data.get("journal_intel"), {})
     
     player.tutorial_stage = _safe_int(data.get("tutorial_stage"), 0)
+    player.tutorial_progress = {
+        str(stage_key): set(str(entry) for entry in _safe_list(entries, []))
+        for stage_key, entries in _safe_dict(data.get("tutorial_progress"), {}).items()
+    }
     player.tutorial_last_room = _safe_str(data.get("tutorial_last_room"), "")
     player.tutorial_resume_room_id = _safe_str(data.get("tutorial_resume_room_id"), "")
     player.tutorial_revealed_rooms = [
@@ -443,6 +464,8 @@ def deserialize_player(data: Dict[str, object], storylet_manager=None) -> Player
     }
     player.tutorial_confirmation = _safe_dict(data.get("tutorial_confirmation"), {})
     player.tutorial_read_note = _safe_bool(data.get("tutorial_read_note"), False)
+    player.tutorial_dropped_note = _safe_dict(data.get("tutorial_dropped_note"), {})
+    player.tutorial_dropped_testimony = _safe_dict(data.get("tutorial_dropped_testimony"), {})
     player.tutorial_journal_lessons = {
         str(stage_key): str(text)
         for stage_key, text in _safe_dict(data.get("tutorial_journal_lessons"), {}).items()
@@ -463,8 +486,14 @@ def deserialize_player(data: Dict[str, object], storylet_manager=None) -> Player
         legacy_max = 3 + (1 if has_faction_perk(player.trust, "ccp") else 0)
         player.escape_charge_available = legacy_used < legacy_max
     player.custody_until = _safe_int(data.get("custody_until"), -1)
-    player.custody_detention_room = _safe_str(data.get("custody_detention_room"), "")
-    player.discovered_room_hints = _safe_dict(data.get("discovered_room_hints"), {})
+    player.custody_detention_room = (
+        resolve_current_room(_safe_str(data.get("custody_detention_room"), "")) or ""
+    )
+    player.discovered_room_hints = {
+        resolved: entries
+        for key, entries in _safe_dict(data.get("discovered_room_hints"), {}).items()
+        if (resolved := translate_strict(key)) is not None
+    }
     player.rooms_looked = _safe_dict(data.get("rooms_looked"), {})
     player.terminal_guidance_first_seen = [
         str(family) for family in _safe_list(data.get("terminal_guidance_first_seen"), [])
