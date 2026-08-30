@@ -65,6 +65,7 @@ const INVERSE_DIRECTIONS: Record<string, string> = {
 
 
 const EPS = 1e-6
+const TUTORIAL_GRID_STEP_FACTOR = 3.5
 
 function doorSuppressed(room: RoomData | undefined, dir: string): boolean {
   if (!room) return false
@@ -103,6 +104,12 @@ export interface MapRendererOptions {
 
 export type MapMode = 'tutorial' | 'world'
 
+export interface MapPresentationPath {
+  key: string
+  direction: string
+  waypoints: [number, number][]
+}
+
 export interface RoomData {
   key: string
   x: number
@@ -132,6 +139,7 @@ export interface RoomData {
   npc_count?: number
   item_count?: number
   safe?: boolean
+  presentation_paths?: MapPresentationPath[]
 }
 
 export interface RawMapRoom {
@@ -162,6 +170,7 @@ export interface RawMapRoom {
   npc_count?: number
   item_count?: number
   safe?: boolean
+  presentation_paths?: MapPresentationPath[]
 }
 
 function convertRawExits(exits: Record<string, string | { key: string; name?: string; hidden?: boolean; tutorial_route_stub?: boolean }> | undefined): Record<string, { key: string; name?: string; hidden?: boolean; tutorial_route_stub?: boolean }> {
@@ -216,6 +225,7 @@ export function normalizeMapRooms(
       npc_count: r.npc_count,
       item_count: r.item_count,
       safe: r.safe,
+      presentation_paths: r.presentation_paths,
     }
   }
   for (const room of modified_rooms) {
@@ -241,6 +251,7 @@ export default class MapRenderer {
   panX: number = 0
   panY: number = 0
   zoom: number = 1
+  gridStep: number
 
   constructor(rooms: Record<string, RoomData>, canvas: HTMLCanvasElement, options?: MapRendererOptions) {
     this.rooms = rooms
@@ -254,6 +265,7 @@ export default class MapRenderer {
     this.renderRooms = {}
     this.in_game = this.options.in_game || false
     this.map_mode = this.options.map_mode || 'world'
+    this.gridStep = 3 * this.unit
   }
   getRoomColor(room: RoomData): string {
     let baseColor = DISTRICT_COLORS[room.district || ''] || ZONE_COLORS[room.zone || ''] || DEFAULT_ZONE_COLOR
@@ -309,6 +321,24 @@ export default class MapRenderer {
     this.showView(this.last_center_key)
   }
 
+  private getViewCenter(currentRoom: RoomData): { x: number; y: number } {
+    if (this.map_mode !== 'tutorial') {
+      return { x: currentRoom.x, y: currentRoom.y }
+    }
+
+    const rooms = Object.values(this.rooms)
+    if (!rooms.length) {
+      return { x: currentRoom.x, y: currentRoom.y }
+    }
+
+    const xValues = rooms.map((room) => room.x)
+    const yValues = rooms.map((room) => room.y)
+    return {
+      x: (Math.min(...xValues) + Math.max(...xValues)) / 2,
+      y: (Math.min(...yValues) + Math.max(...yValues)) / 2,
+    }
+  }
+
   findByCoords(coords: { x: number; y: number }): RoomData | null {
     const worldX = (coords.x - this.panX) / this.zoom
     const worldY = (coords.y - this.panY) / this.zoom
@@ -336,10 +366,12 @@ export default class MapRenderer {
     }
     const canvasW = this.width
     const canvasH = this.width
+    const viewCenter = this.getViewCenter(cRoom)
+    this.gridStep = this.map_mode === 'tutorial' ? TUTORIAL_GRID_STEP_FACTOR * this.unit : 3 * this.unit
     for (const rkey in this.rooms) {
       const room = { ...this.rooms[rkey] }
-      const offsetX = 3 * this.unit * (room.x - cRoom.x)
-      const offsetY = 3 * this.unit * (room.y - cRoom.y)
+      const offsetX = this.gridStep * (room.x - viewCenter.x)
+      const offsetY = this.gridStep * (room.y - viewCenter.y)
       room.cx = canvasW / 2 - this.unit + offsetX
       room.cy = canvasH / 2 - this.unit + offsetY
 
@@ -361,6 +393,18 @@ export default class MapRenderer {
   }
 
   drawRoomConnections(room: RoomData) {
+    if (this.map_mode === 'tutorial' && room.presentation_paths) {
+      for (const path of room.presentation_paths) {
+        this.drawPresentationPath(room, path)
+      }
+      for (const direction of ["north", "east", "south", "west"] as const) {
+        const toRoom = room[direction]
+        if (toRoom && toRoom.tutorial_route_stub) {
+          this.drawTutorialStub(room, direction)
+        }
+      }
+      return
+    }
     for (const direction of ["north", "east", "south", "west"] as const) {
       const toRoom = room[direction]
       if (toRoom && toRoom.key) {
@@ -369,6 +413,39 @@ export default class MapRenderer {
         this.drawTutorialStub(room, direction)
       }
     }
+  }
+
+  drawPresentationPath(room: RoomData, path: MapPresentationPath) {
+    const destination = this.renderRooms[path.key]
+    if (!destination || destination.z !== room.z) return
+
+    const sourceX = (room.cx || 0) + this.unit
+    const sourceY = (room.cy || 0) + this.unit
+    const destinationX = (destination.cx || 0) + this.unit
+    const destinationY = (destination.cy || 0) + this.unit
+    const points: [number, number][] = [
+      [sourceX, sourceY],
+      ...path.waypoints.map(([x, y]) => [
+        sourceX + this.gridStep * (x - room.x),
+        sourceY + this.gridStep * (y - room.y),
+      ] as [number, number]),
+      [destinationX, destinationY],
+    ]
+
+    for (let index = 0; index < points.length - 1; index += 1) {
+      const [x1, y1] = points[index]
+      const [x2, y2] = points[index + 1]
+      if (Math.abs(x1 - x2) > EPS && Math.abs(y1 - y2) > EPS) return
+    }
+
+    this.ctx.strokeStyle = COLORS.white
+    this.ctx.lineWidth = 2
+    this.ctx.beginPath()
+    this.ctx.moveTo(...points[0])
+    for (const point of points.slice(1)) {
+      this.ctx.lineTo(...point)
+    }
+    this.ctx.stroke()
   }
 
   drawTutorialStub(room: RoomData, dir: string) {
