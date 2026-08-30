@@ -150,6 +150,7 @@ def _log_enhancement_result(
         response_chars,
     )
 
+
 def _distort_rumor(rumor_text: str, distortion_level: float = 0.3) -> str:
     words = rumor_text.split()
     if len(words) < 5:
@@ -201,7 +202,7 @@ def _select_rumors_for_newspaper(
     return [r for _, r in scored_rumors[:max_rumors]]
 
 
-async def generate_newspaper(
+async def _generate_newspaper(
     game_day: int,
     player_district: str,
     all_rumors: List[Dict[str, Any]],
@@ -211,6 +212,13 @@ async def generate_newspaper(
     ai_client: Optional["AIClient"] = None,
     named_npc_deaths: Optional[Dict[str, Dict[str, Any]]] = None,
 ) -> Dict[str, Any]:
+    generation_id = uuid.uuid4().hex[:12]
+    logger.info(
+        "Newspaper generation started generation_id=%s day=%s ai_enabled=%s",
+        generation_id,
+        game_day,
+        bool(ai_client),
+    )
     selected_rumors = _select_rumors_for_newspaper(
         all_rumors, active_rumor_ids, player_district, max_rumors=5
     )
@@ -218,7 +226,12 @@ async def generate_newspaper(
     teahouse_talk = []
     for rumor in selected_rumors[:2]:
         original = rumor.get("text", "")
-        enhanced = await _ai_enhance_rumor(ai_client, original, distortion_level=0.4)
+        enhanced = await _ai_enhance_rumor(
+            ai_client,
+            original,
+            distortion_level=0.4,
+            generation_id=generation_id,
+        )
         teahouse_talk.append(enhanced)
 
     notable_incidents = []
@@ -227,7 +240,7 @@ async def generate_newspaper(
             continue
         incident = _format_npc_death_record(record)
         if incident and incident not in notable_incidents:
-            enhanced = await _ai_enhance_incident(ai_client, incident, game_day)
+            enhanced = await _ai_enhance_incident(ai_client, incident, game_day, generation_id=generation_id)
             if enhanced and enhanced not in notable_incidents:
                 notable_incidents.append(enhanced)
     for decision in world_decisions[-5:]:
@@ -235,7 +248,7 @@ async def generate_newspaper(
             continue
         incident = _format_world_decision(decision)
         if incident and incident not in notable_incidents:
-            enhanced = await _ai_enhance_incident(ai_client, incident, game_day)
+            enhanced = await _ai_enhance_incident(ai_client, incident, game_day, generation_id=generation_id)
             if enhanced and enhanced not in notable_incidents:
                 notable_incidents.append(enhanced)
     notable_incidents = notable_incidents[:3]
@@ -248,9 +261,14 @@ async def generate_newspaper(
     if all_street_rumors:
         sampled = random.sample(all_street_rumors, min(3, len(all_street_rumors)))
         for rumor in sampled:
-            enhanced = await _ai_enhance_rumor(ai_client, rumor, distortion_level=0.5)
-            lane_whispers.append(f"Heard that {enhanced.lower()}")
-    
+            enhanced = await _ai_enhance_rumor(
+                ai_client,
+                rumor,
+                distortion_level=0.5,
+                generation_id=generation_id,
+            )
+            lane_whispers.append(enhanced)
+
     newspaper = {
         "day": game_day,
         "masthead": NEWSPAPER_MASTHEAD,
@@ -261,6 +279,7 @@ async def generate_newspaper(
         "lane_whispers": lane_whispers,
         "purchased_at": datetime.now().isoformat(),
     }
+    logger.info("Newspaper generation completed generation_id=%s", generation_id)
     return newspaper
 
 
