@@ -1731,22 +1731,37 @@ items:
   base_cost: 4
   rarity: uncommon
 - id: testimony_medical_reprint
-  name: a reprinted medical testimony
-  description: A plainly labelled merchant reprint concerning wartime medical experiments, printed without naming a real victim.
+  name: a smuggled ward ledger
+  description: A ledger page folded small enough for a coat lining and smuggled out of a military hospital. It lists patients by number rather than name, and none of it was meant to be read outside the compound.
   takeable: true
-  readable_text: The physician was ordered to record temperatures, not names. He kept both columns in a private notebook, then burned the official forms when the wards were emptied.
+  readable_text: "The page keeps two columns: a number for the subject and a line for the procedure.
+
+Subject 41. Fever induced. Blood drawn at dawn. Subject 41 expires at 16:00. Cause recorded as dysentery.
+
+Below the entry, in a different hand,
+
+> “We did a live dissection on a person who was infected with typhus. The blood was still warm when we opened the chest cavity. We did it for scientific research, believing it was for the country and to save our own soldiers' lives. Looking back, it was a complete atrocity.”
+
+The clerk's hand is steady.
+
+There are no names. Only numbers...
+
+This is evidence of a crime any sane person would be arrested for."
+
   testimony_id: medical-ward-reprint
-  testimony_title: Two Columns in the Ward Book
+  testimony_title: The Ward Ledger, Smuggled Pages
   testimony_date: 1942-07-16
-  testimony_place: Occupied North China, recalled in Shanghai
+  testimony_place: A military hospital compound, occupied territory
   testimony_writer: A military hospital clerk, fictional composite
-  testimony_source: Merchant reprint
-  testimony_source_type: merchant
-  testimony_source_badge: Merchant reprint
-  testimony_reprint: true
+  testimony_source: Smuggled from the compound
+  testimony_source_type: contraband
+  testimony_source_badge: Contraband document
   shop_inventory: true
   base_cost: 5
   rarity: uncommon
+  on_read_effects:
+    morale_penalty: 5
+    once: true
 - id: testimony_ration_queue_reprint
   name: a reprinted ration queue testimony
   description: A merchant reprint of a market woman's account, marked as historical reading and sold beside pamphlets no clerk would admit to stocking.
