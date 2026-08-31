@@ -1794,8 +1794,15 @@ class WorldClock:
                     {"speaker": candidate.name, "text": "The exchange ends without drawing further attention.", "delay_ms": 900},
                 ]
             from .rumors import push_panel_entry
+            client_room_id = room.id
+            for instance_id, clone_map in getattr(self.shared, "tutorial_room_clones", {}).items():
+                if room.id in clone_map.values():
+                    from .tutorial import get_original_tutorial_room_id
+                    client_room_id = get_original_tutorial_room_id(instance_id, room.id, self.shared)
+                    break
             entry_data = {
                 "room_id": room.id,
+                "client_room_id": client_room_id,
                 "speaker": actor.name,
                 "listener": candidate.name,
                 "turns": turns,
