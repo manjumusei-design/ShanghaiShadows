@@ -113,12 +113,18 @@ Tldr: You type when you want to change the world. You LOOK when you want to unde
 
 ### Running It Locally
 
-Requirements: Python 3.11+. On Windows, `start.bat` does all of this for you.
+Requirements: Python 3.11+ and Node.js 18+ (the browser client is built with Vite). On Windows, `start.bat` does all of this for you.
 
 ```bash
 git clone <repository-url>
 cd SSL
 python -m pip install -r requirements.txt
+
+cd client-vue
+npm ci
+npm run build
+cd ..
+
 python main.py
 ```
 
