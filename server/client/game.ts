@@ -403,7 +403,12 @@ const game: Module<GameState, any> = {
     },
 
     ADD_MESSAGE(state, message: Message) {
-      state.messages.push(message)
+      const existing = state.messages.findIndex((m) => m.id === message.id)
+      if (existing >= 0) {
+        state.messages.splice(existing, 1, message)
+      } else {
+        state.messages.push(message)
+      }
       if (state.messages.length > 200) {
         state.messages = state.messages.slice(-200)
       }
