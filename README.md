@@ -3,7 +3,7 @@
 > Shanghai Shadows is a historic storytelling educative MUD that aims to be a simulator/mini shared world focused on exploration, actions and consequence. 
 
 
-![Final UI](image.png)
+![Final UI](images/ui-final.png)
 
 **Play it here:** <https://shanghai.dino.icu/login>
 
@@ -60,37 +60,37 @@ The interface went through a lot of iterations, and each one came from a specifi
 
 **1. The very first client was one HTML file, thrown together as a placeholder for testing. But I made one decision early that never changed which was to make the game render as a dark, monospace CRT terminal, because a MUD typically is played by communicating with the terminal + black background for eyestrain. 
 
-![The first client: one HTML file, styled as a CRT terminal from day one](docs/images/ui-v1-placeholder-terminal.png)
+![The first client: one HTML file, styled as a CRT terminal from day one](images/ui-v1-placeholder-terminal.png)
 
 **2. I set out to tackle a bunch of problems,  A MUD is scary for newcomers if the answer to everything is "read the docs". So the help output was initially designed around seven starter verbs (look, go, inventory, status, talk to, eat, help), and every room ends with a contextual "You can:" line that only lists actions that actually make sense right now. But I felt as though it added too much clutter and was kinda babysitting the player and thus I decided to scrap it.
 
-![Seven verbs, contextual hints, colored exits](docs/images/ui-basic-commands.png)
+![Seven verbs, contextual hints, colored exits](images/ui-basic-commands.png)
 
 **3. The wall of text problem.  Once conversations and journal entries started stacking up, the terminal became a solid wall of identical green text. Nothing was scannable and players couldn't tell dialogue from system messages from exits. This is when I realized that I could use colours to segregate and containerize certian categories of text so they wont be part of the wall of text chunk.
 
-![Everything the same colour: a wall of text](docs/images/ui-nonverbose-journal.png)
+![Everything the same colour: a wall of text](images/ui-nonverbose-journal.png)
 
 4. Colour as navigation, not decoration. I colour-coded every text category: room tags, exits in cyan, items in yellow, NPC names in green, tutorial hints in their own bar. The catch I had to fight with was CSS overriding my colour codes, and once it worked I had to restrain myself from turning the screen into a rainbow vomit and had to consolidate categories.
 
-![Colour-coded categories: exits, items, NPCs, tutorial hints](docs/images/ui-colour-categories.png)
+![Colour-coded categories: exits, items, NPCs, tutorial hints](images/ui-colour-categories.png)
 
 **5. Making room entries breathe.** Room entry text got proper formatting: the room name is underlined as a heading, the atmospheric description sits in its own block, and tags like [safe] [indoors] sit on their own quiet line. The goal was that a room entry reads like a paragraph in a book, not a log dump. In the latest  rendition I moved the tags up to the right side of the UI.
 
-![Tea House entry: underlined room name, prose block, quiet tags line](docs/images/ui-room-formatting.png)
+![Tea House entry: underlined room name, prose block, quiet tags line](images/ui-room-formatting.png)
 
 6. Tab completion, borrowed from Mandarin input. Typing full commands like "talk to mrs. lin" gets old fast. I built cycling tab completion styled after how Mandarin input methods work: type a fragment, get a ranked suggestion panel. It went through several iterations before I settled on a top-down dropdown approach, and it gives the game a linux-esque feel.
 
-![Typing "tak" suggests take, take from, take trishaw](docs/images/ui-tab-completion.png)
+![Typing "tak" suggests take, take from, take trishaw](images/ui-tab-completion.png)
 
-![The full suggestion panel, iterating toward a top-down dropdown](docs/images/ui-tabular-panel.png)
+![The full suggestion panel, iterating toward a top-down dropdown](images/ui-tabular-panel.png)
 
 7. Examine that answers the "so what can I do with it" question. Examining an item used to just describe it. Now examine also tells you your actual options per item type, you can EAT a bowl of rice, but a brass key only offers DROP or SELL. 
 
-![Examine shows per-item actions](docs/images/ui-examine-actions.png)
+![Examine shows per-item actions](images/ui-examine-actions.png)
 
 8. The final layout. Everything above got folded into a three-column HUD with a canvas area map and vitals/inventory/stats on the left, the terminal in the middle, and a live sidebar on the right showing room info, who's present, items here, active missions and known rumours. The design rule behind it is to make the world live in the terminal, the state lives in the sidebar, and you should never have to type a command just to check something the server already knows.
 
-![The final UI: map, vitals, terminal, and live state sidebar](image.png)
+![The final UI: map, vitals, terminal, and live state sidebar](images/ui-final.png)
 
 **Why the final build is better.**
 
@@ -109,7 +109,7 @@ I wanted to keep the part of that experience that made MUDs interesting to me in
 
 Tldr: You type when you want to change the world. You LOOK when you want to understand your current state. The terminal remains the place where the game happens, but it no longer has to be the place where every piece of information is stored and refreshed.
 
-![alt text](image.png)
+![alt text](images/ui-final.png)
 
 ### Running It Locally
 
