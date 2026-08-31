@@ -213,3 +213,47 @@ def derive_adjacency(table=None):
         adjacency[b][INVERSE[port_a]] = a
     return pos, adjacency
 
+
+def build_topology(table_path=None):
+    import json as _json
+
+    table = (
+        _load_table() if table_path is None
+        else _json.load(open(table_path, encoding="utf-8"))
+    )
+    pos, exits_by_direction = derive_adjacency(table)
+
+    nodes = frozenset(pos)
+    if sum(len(e) for e in exits_by_direction.values()) != 2 * (
+        ONE_STEP_EDGES + BRIDGE_COUNT
+    ):
+        raise TopologyValidationError("mismatch")
+    seen = {"bund_dawn"}
+    queue = deque(["bund_dawn"])
+    while queue:
+        n = queue.popleft()
+        for d in exits_by_direction[n].values():
+            if d not in seen:
+                seen.add(d)
+                queue.append(d)
+    if seen != set(exits_by_direction):
+        raise TopologyValidationError("grid graph not connected")
+
+    district_of = {rid: d for rid, d in DISTRICT_OF.items() if rid in nodes}
+    zone_tags = {rid: ZONE_TAG_OF_DISTRICT[d] for rid, d in district_of.items()}
+
+    return Topology(
+        nodes=nodes,
+        district_of=dict(district_of),
+        zone_tags=zone_tags,
+        exits={node: dict(e) for node, e in exits_by_direction.items()},
+        coordinates=pos,
+    )
+
+
+if __name__ == "__main__":
+    topo = build_topology()
+    und = {frozenset((s, d)) for s in topo.nodes for d in topo.exits[s].values()}
+    print("public rooms:", len(topo.nodes))
+    print("undirected:", len(und))
+    print("directed:", sum(len(e) for e in topo.exits.values()))
