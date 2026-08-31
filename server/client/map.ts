@@ -387,11 +387,22 @@ export default class MapRenderer {
     for (const room_key in this.renderRooms) {
       this.drawRoom(this.renderRooms[room_key], center_key)
     }
+    this.drawPlayerMarker(centerkey)
 
     this.ctx.restore()
     this.last_center_key = center_key
   }
 
+  drawPlayerMaker(center_key: string) {
+    const room = this.renderRooms[center_key]
+    if (!room) return
+    const x = (room.cx || 0) + this.unit
+    const y = (room.cy || 0) + this.unit
+    this.ctx.fillStyle = COLORS.red
+    this.ctx.beginPath()
+    this.ctx.arc(x, y, this.unit * 0.32, 0, 2 * Math.PI)
+    this.ctx.fill()
+  }
   drawRoomConnections(room: RoomData) {
     if (this.map_mode === 'tutorial' && room.presentation_paths) {
       for (const path of room.presentation_paths) {
