@@ -261,6 +261,7 @@ def _load_generated_rooms(data: Dict[str, object], items: Dict[str, Item]) -> Di
                 description_templates[idx % len(description_templates)] if description_templates else "The city waits here."
             ).format(index=room_index, title=title)
             detailed_desc = special_detailed_descriptions.get(str(room_index), "")
+            special_tags = district.get("special_tags", {})
             exits: Dict[str, str] = {}
             if idx > 0:
                 prev_id = special_ids.get(str(room_index - 1), f"{room_prefix}_{room_index - 1:02d}")
@@ -282,7 +283,7 @@ def _load_generated_rooms(data: Dict[str, object], items: Dict[str, Item]) -> Di
                     room_items.append(replace(items[item_id]))
 
             is_indoors = bool(indoors_pattern and room_index % int(indoors_pattern) == 0)
-            room_tags = tags + [prefix]
+            room_tags = tags + [prefix] + special_tags.get(str(room_index), [])
             if not is_indoors and prefix in outdoor_street_districts:
                 room_tags.append("street")
             rooms[room_id] = Room(
