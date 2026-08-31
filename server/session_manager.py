@@ -352,7 +352,13 @@ class SessionManager:
     ) -> CommandOutcome:
         if not result.succeeded or not getattr(session.player, "in_tutorial", False):
             return result
-        from .tutorial import TutorialEvent, get_original_tutorial_room_id, record_tutorial_event
+        from .tutorial import (
+            TutorialEvent,
+            emit_checkpoint_consequence,
+            emit_tutorial_stage_entry,
+            get_original_tutorial_room_id,
+            record_tutorial_event,
+        )
 
         event_data = result.data.get("tutorial_event")
         if not event_data:
@@ -372,7 +378,17 @@ class SessionManager:
             succeeded=True,
             precondition_npc_rooms=event_data.get("precondition_npc_rooms", {}),
         )
-        await record_tutorial_event(ctx, event, action=tutorial_action)
+        checkpoint_outcome = result.data.get("checkpoint_inspection")
+        recorded = await record_tutorial_event(
+            ctx,
+            event,
+            action=tutorial_action,
+            defer_stage_entry=bool(checkpoint_outcome),
+        )
+        if checkpoint_outcome:
+            await emit_checkpoint_consequence(ctx, checkpoint_outcome)
+            if recorded and getattr(session.player, "in_tutorial", False):
+                await emit_tutorial_stage_entry(ctx)
         if event_data.get("verb") == "go" and getattr(session.player, "in_tutorial", False):
             await self._send_map_data(session)
         return result
@@ -617,11 +633,18 @@ class SessionManager:
         await session.send_map_data(payload)
 
     async def _send_tutorial_map_data(self, session: Session):
-        from .room_codes import TUTORIAL_SPECIAL_TRANSITIONS
+        from .room_codes import (
+            TUTORIAL_MAP_PATHS,
+            TUTORIAL_ROOM_COORDS,
+            TUTORIAL_ROOM_EXITS,
+            TUTORIAL_SPECIAL_TRANSITIONS,
+        )
         from .tutorial import (
             blocked_exits_for_room,
+            get_cloned_room_id,
             get_original_tutorial_room_id,
             live_npc_exit_blocks,
+            stage_actions_for,
         )
 
         player = session.player
@@ -635,9 +658,9 @@ class SessionManager:
         }
         stage = getattr(player, "tutorial_stage", 0)
         route_stub_direction = None
-        from .tutorial import STAGE_ACTIONS
-        for stage_index in range(stage, len(STAGE_ACTIONS)):
-            action = STAGE_ACTIONS.get(stage_index)
+        actions = stage_actions_for(player)
+        for stage_index in range(stage, len(actions)):
+            action = actions.get(stage_index)
             if not action or action.get("verb") == "none":
                 continue
             if action.get("verb") != "go" or action.get("room_id") != current_room:
@@ -648,9 +671,18 @@ class SessionManager:
             break
         rooms_data = {}
 
-        tutorial_coords = self.shared.tutorial_room_layout_coords
+        tutorial_coords = TUTORIAL_ROOM_COORDS
+        presentation_paths = {}
+        for (source, direction), waypoints in TUTORIAL_MAP_PATHS.items():
+            destination = TUTORIAL_ROOM_EXITS[source][direction]
+            presentation_paths.setdefault(source, []).append({
+                "key": destination,
+                "direction": direction,
+                "waypoints": [list(point) for point in waypoints],
+            })
         for room_id, (x, y) in tutorial_coords.items():
-            room = self.shared.world.get_room(room_id)
+            clone_room_id = get_cloned_room_id(instance_id, room_id, self.shared)
+            room = self.shared.world.get_room(clone_room_id) or self.shared.world.get_room(room_id)
             if not room:
                 continue
             exits = {}
@@ -686,6 +718,7 @@ class SessionManager:
                 "npc_count": len(room.npcs) if hasattr(room, "npcs") else 0,
                 "item_count": len(room.items) if hasattr(room, "items") else 0,
                 "safe": room.safe_room if hasattr(room, "safe_room") else False,
+                "presentation_paths": presentation_paths.get(room_id, []),
             }
             for direction in blocked:
                 if direction in exits:
@@ -768,7 +801,11 @@ class SessionManager:
             cancel_active_storylet_on_disconnect,
             handoff_claimed_cancellation,
         )
-        from .tutorial import tutorial_blocks_world_events
+        from .tutorial import (
+            destroy_tutorial_clones_for_player,
+            tutorial_blocks_world_events,
+            update_tutorial_resume_state,
+        )
         try:
             cleanup_storylet_speakers(self._make_context(session))
         except Exception:
@@ -810,6 +847,12 @@ class SessionManager:
                 if not getattr(active, "resolved", False)
                 and not (active.storylet_id == "tutorial_choice" or tutorial_blocks_world_events(player))
             ]
+            if getattr(player, "in_tutorial", False):
+                update_tutorial_resume_state(player, self.shared)
+                instance_id = getattr(player, "tutorial_instance_id", "")
+                if instance_id:
+                    destroy_tutorial_clones_for_player(instance_id, self.shared)
+                    player.tutorial_instance_id = ""
         if session.username in self.sessions:
             del self.sessions[session.username]
 
