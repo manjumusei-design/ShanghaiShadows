@@ -2,6 +2,7 @@ import asyncio
 import json
 import logging
 import random
+import re
 import time
 from collections import deque
 from dataclasses import dataclass
@@ -821,9 +822,12 @@ async def post_display(ctx: CommandContext, text: str, msg_type: str = None, ins
     if chime and sound_pair and getattr(ctx.session, "audio_enabled", False):
         await ctx.session.send_audio(sound_pair[0], volume=sound_pair[1])
 
+_EVENT_TAG_PATTERN = re.compile(r"</?[biu]>")
 
 def log_event(ctx: CommandContext, text: str, *, player_side: bool = True) -> None:
     from collections import deque
+
+    text = _EVENT_TAG_PATTERN.sub("", text)
 
     if player_side:
         if not isinstance(ctx.session.player.world_events, deque) or ctx.session.player.world_events.maxlen != WORLD_EVENTS_MAXLEN:

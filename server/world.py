@@ -273,7 +273,7 @@ def _load_generated_rooms(data: Dict[str, object], items: Dict[str, Item]) -> Di
                 if int(connector["at"]) == room_index:
                     exits[str(connector["direction"])] = str(connector["to"])
 
-            room_items: List[Item] = []
+        room_items: List[Item] = []
             if item_cycle and idx % max(1, len(item_cycle)) == 0:
                 item_id = item_cycle[idx % len(item_cycle)]
                 if item_id in items:
