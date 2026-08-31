@@ -69,7 +69,11 @@ from .social_interactions import (
     due_npc_ids,
 )
 from .social_consequences import publish_consequence_rumour
-from .tutorial import get_cloned_room_id, tutorial_blocks_world_events
+from .tutorial import(
+    TUTORIAL_BUND_CHEN_RESPONDER_KEY,
+    get_cloned_room_id,
+    tutorial_blocks_world_events,
+)
 
 SOCIAL_CONSEQUENCE_PAIR_CATEGORY_COOLDOWN = 180
 SOCIAL_CONSEQUENCE_ROOM_CAP = 3
@@ -208,6 +212,11 @@ def tutorial_sound_investigator_allowed(npc_id: str, clone_ids: set, npc) -> boo
         return False
     blackboard = getattr(npc, "_blackboard", None)
     if not blackboard:
+        return False
+    if not (
+        npc_id.endswith("tutorial_kempeitai_officer")
+        or blackboard.get(TUTORIAL_BUND_CHEN_RESPONDER_KEY)
+    ):
         return False
     return bool(
         blackboard.get("last_heard_sound") or blackboard.get("sound_investigation")
