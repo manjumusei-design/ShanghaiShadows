@@ -1000,7 +1000,7 @@ class WorldClock:
                     continue
                 self._run_social_interaction(actor, room, "exchange_rumors", target)
 
-    _SANCTIONED_MEETING_BLOCKERS = ("last_heard_sound", "heard_hostile_sound", "danger_nearby", "player_suspicion_nearby")
+    _SANCTIONED_MEETING_BLOCKERS = ("heard_hostile_sound", "danger_nearby", "player_suspicion_nearby")
 
     def _run_sanctioned_tutorial_meeting(self, pool_key: str, pool: dict, meeting: dict) -> None:
         from .npc import get_npc_archetype
@@ -1052,6 +1052,14 @@ class WorldClock:
                     blocked = True
                     break
             if blocked or "crime_scene" in getattr(room, "tags", []):
+                reason = ", ".join(
+                    key for key in self._SANCTIONED_MEETING_BLOCKERS
+                    if any((getattr(n, "_blackboard", None) or {}).get(key) for n in (actor, target))
+                ) or ("wounded/hp/suspicion" if blocked else "")
+                logger.info(
+                    "sanctioned meeting %s: blocked=%s crime_scene=%s reason=%s",
+                    identity, blocked, "crime_scene" in getattr(room, "tags", []), reason,
+                )
                 continue
             delivered: dict = {}
 
