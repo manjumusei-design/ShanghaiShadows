@@ -361,6 +361,27 @@ async def _resolve_shared_edition(
         return shared.newspaper_edition
 
 
+def _scripted_tutorial_edition(game_day: int) -> Dict[str, Any]:
+    return {
+        "day": game_day,
+        "masthead": NEWSPAPER_MASTHEAD,
+        "subtitle": NEWSPAPER_SUBTITLE,
+        "date": NEWSPAPER_DATE_FORMAT.format(day=game_day),
+        "teahouse_talk": [
+            "The rice queue at the Nanking Road ration post formed before first light, and the ledger ran short before the ninth name was called.",
+            "A messenger from the tea houses says the new checkpoint count takes longer each day, and the lane keepers have learned the patrols' hours by heart.",
+        ],
+        "notable_incidents": [
+            "Municipal notice: the Nanking Road checkpoint will search every handcart crossing into the district, and vendors are advised to keep their papers on their persons.",
+        ],
+        "lane_whispers": [
+            "Someone in the lanes is paying good money for old passbooks, and no one will say who.",
+            "The market sellers claim the price of printed papers has doubled since the hospital wards stopped answering letters.",
+        ],
+        "purchased_at": datetime.now().isoformat(),
+    }
+
+
 async def _resolve_edition_with_fallback(
     shared: Any,
     game_day: int,
@@ -435,17 +456,20 @@ async def purchase_newspaper(
             from .commands import storylet_resolution_owned
             if not storylet_resolution_owned(active):
                 return None
-        edition = await _resolve_edition_with_fallback(
-            shared=shared,
-            game_day=game_day,
-            player_district=player_district,
-            all_rumors=all_rumors,
-            active_rumor_ids=active_rumor_ids,
-            world_decisions=world_decisions,
-            rumour_mill=rumour_mill,
-            ai_client=ai_client,
-            named_npc_deaths=named_npc_deaths,
-        )
+        if getattr(player, "in_tutorial", False):
+            edition = _scripted_tutorial_edition(game_day)
+        else:
+            edition = await _resolve_edition_with_fallback(
+                shared=shared,
+                game_day=game_day,
+                player_district=player_district,
+                all_rumors=all_rumors,
+                active_rumor_ids=active_rumor_ids,
+                world_decisions=world_decisions,
+                rumour_mill=rumour_mill,
+                ai_client=ai_client,
+                named_npc_deaths=named_npc_deaths,
+            )
         if not edition:
             return None
         if active is not None:
