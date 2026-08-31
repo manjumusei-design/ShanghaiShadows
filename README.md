@@ -133,7 +133,7 @@ Optional config (via `.env`):
 | `LOCALE` | `en` | `en` or `zh` |
 | `HACKCLUB_API_KEY` | unset | Optional AI proxy key for newspaper prose variation |
 
-Without an API key the game still runs since there is fallback to deterministic hardcoded templates.
+Without an API key the game still runs since there is fallback to deterministic hardcoded template for the newspaper only and newspaper alone. 
 
 ## What I Struggled With (And What I Learned)
 
@@ -151,10 +151,32 @@ Building this project taught me quite a lot:
 - Properly using a VCS!
 
 **Personal**
-- Working on something for months until I'm somewhat satisfied with with the level of polish on it.
+- Working on something for months and finding new things to add to the game since the review times were getting kinda long lol
 - Building consistent and efficient work habits by working on something for 115++ days with spread out effort.
 
 ## AI Disclosure
 
 I used AI tools while building this project. I asked questions when stuck on a concept, use it to speed up boilerplate and repetitive scaffolding and to consider possible edge cases that I may have missed out upon, get a second pair of eyes on bugs I was chasing in regards to edge cases, and draft text I then rewrote. The game's design, its systems, the historical research, the world and narrative direction, and every architectural decision are mine, and everything in this repo was reviewed, tested, debugged, and play-tested by me before shipping.
 
+
+## Time spent on the project
+I spent approximately 400 hours developing the project across several major iterations.
+
+The project went through 2.5 prototype iterations followed by the final UI/presentation pass. The first prototype took approximately 150 hours, as I had to establish the core architecture and build the underlying systems that later iterations depended on. This included the initial MUD framework, room and world systems, NPC behaviour, combat and interaction systems, persistence, command handling, and other foundational systems.
+
+I then spent approximately 100 additional hours expanding the prototype into a more complete game. This involved adding and refining mechanics such as the rumour/information system, expanding NPC behavioural trees, improving interactions between systems, making the game more user friendly, and connecting these mechanics so that they behaved consistently rather than as isolated features. A significant amount of this time was spent debugging interactions between systems and repeatedly testing edge cases as new mechanics were introduced. Not to mention the time needed to solve the map problem and the rumours panel.
+
+The final approximately 150 hours were focused primarily on the user interface and presentation layer which included the tutorial. This included the final UI, colour-coded text and feedback, map presentation, the rumour panel, player-facing feedback, visual polish, and integrating these elements with the underlying game state rather than presenting them as static UI components.
+
+The tutorial was by far the most difficult part of the project. Unlike the main game, where NPCs and world events are designed to behave naturally and autonomously, the tutorial required me to deliberately stage situations to teach specific mechanics in a controlled order. For example, I had to create tutorial specific NPC behaviour where characters would remain in particular rooms instead of freely moving as they do in the main game, while still preserving the underlying production systems. I also had to coordinate tutorial progression, room states, NPC state, player inventory, dialogue, commands, events, persistence, and failure cases so that the tutorial could demonstrate mechanics reliably without breaking the normal game simulation.
+
+This meant that many features that were relatively simple in isolation became significantly more complex when incorporated into the tutorial. I had to repeatedly test and debug cases involving NPC movement, sound propagation, combat, stealth, rumours, checkpoints, item persistence, branching states within the tutorial, and progression ordering, while ensuring that tutorial specific behaviour did not leak into the normal game world and cause regression (which it did but we dont talk about that since I managed to solve it after debugging for a long time).
+
+Integration took the most pain as I had to debug over and over again and after fixing something, another would break and cause regression. In the future I think its worth setting up a github with regression checks in place + utilizing branches and merging PRs to ensure that changes coming from a branch would not contaminate the main game. 
+
+## Project state
+The project development still requires around another 150 ish hours with the main focus being the player acceptance + game engine verbosity + audio system fine tuning with the ambience and looping weather sound effects with more audio types for actions being integrated, and possibly upgrade the npc descision tree to include a wider range of activities and also figure out some issues with the patrol and further consequences as to what happens to a player when they get caught by a patrol unit - Bribe, Fight, Flee.
+
+
+## Level disclosure. 
+Shanghai Shadows was built to become a game engine for modern MUDS, not just a game since as you can replicate the same design + systems with other themes that are not just limited to Shanghai. It's a live multiplayer simulation where every player mechanic is centralized where all players share one city clock, one weather system, and a rumor network that flows from NPC conversations into the daily newspaper. Seven factions track trust independently while three currencies move through their own economies. Curfews, patrols, checkpoints, disguises, wanted levels, and tailing all have to stay consistent for every player on every login, and a 180-day campaign turns the community's combined choices into a historical ending that took me weeks to put together in a meaningful capacity hence why I'd say that this project deserves a L4 and not just a L3. 
