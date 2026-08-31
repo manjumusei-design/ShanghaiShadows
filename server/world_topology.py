@@ -129,3 +129,87 @@ APPROVED_BRIDGE_AREA_PAIRS = frozenset({
     frozenset((1, 5)), frozenset((2, 6)), frozenset((3, 7)),
     frozenset((5, 6)), frozenset((6, 7)),
 })
+
+ONE_STEP_EDGES = 120
+BRIDGE_COUNT = 8
+
+
+def _load_table():
+    with open(TABLE_PATH, encoding="utf-8") as handle:
+        return json.load(handle)
+
+
+def derive_adjacency(table=None):
+    table = table if table is not None else _load_table()
+    pos = {r: tuple(c) for r, c in table["public"].items()}
+    by_cell = {c: r for r, c in pos.items()}
+
+    edges = set()
+    for (x, y), room in by_cell.items():
+        for dx, dy in ((1, 0), (0, 1)):
+            neighbour = by_cell.get((x + dx, y + dy))
+            if neighbour:
+                edges.add(tuple(sorted((room, neighbour))))
+
+    area_of_room = {}
+    for area_key, meta in table["areas"].items():
+        for room in meta.get("rooms", []):
+            area_of_room[room] = int(area_key)
+    missing_area = sorted(set(pos) - set(area_of_room))
+    if missing_area:
+        raise TopologyValidationError(
+            "locked table has no area metadata for %s" % missing_area
+        )
+
+    bridges = []
+    for a, b in table["bridges"]:
+        ax, ay = pos[a]
+        bx, by = pos[b]
+        steps = abs(ax - bx) + abs(ay - by)
+        if steps != 2:
+            raise TopologyValidationError(
+                "bridge %s<->%s spans %d steps (must be 2)" % (a, b, steps)
+            )
+        if (ax - bx) and (ay - by):
+            raise TopologyValidationError(
+                "bridge %s<->%s is diagonal" % (a, b)
+            )
+        pair = frozenset((area_of_room[a], area_of_room[b]))
+        if len(pair) == 1:
+            raise TopologyValidationError(
+                "two-step link inside one area: %s<->%s" % (a, b)
+            )
+        if pair not in APPROVED_BRIDGE_AREA_PAIRS:
+            raise TopologyValidationError(
+                "bridge %s<->%s connects unapproved areas %d/%d"
+                % (a, b, area_of_room[a], area_of_room[b])
+            )
+        edges.add(tuple(sorted((a, b))))
+        bridges.append(tuple(sorted((a, b))))
+
+    one_step_count = len(edges) - len(bridges)
+    if len(pos) != 88:
+        raise TopologyValidationError("public rooms != 88 (%d)" % len(pos))
+    if one_step_count != ONE_STEP_EDGES:
+        raise TopologyValidationError(
+            "one-step connections != %d (%d)"
+            % (ONE_STEP_EDGES, one_step_count)
+        )
+    if len(bridges) != BRIDGE_COUNT:
+        raise TopologyValidationError(
+            "bridges != %d (%d)" % (BRIDGE_COUNT, len(bridges))
+        )
+
+    PORT_BY_DELTA = {(-1, 0): "west", (1, 0): "east",
+                     (0, -1): "north", (0, 1): "south"}
+    INVERSE = {"west": "east", "east": "west", "north": "south",
+               "south": "north"}
+    adjacency = {room: {} for room in pos}
+    for a, b in edges:
+        dx = (pos[b][0] > pos[a][0]) - (pos[b][0] < pos[a][0])
+        dy = (pos[b][1] > pos[a][1]) - (pos[b][1] < pos[a][1])
+        port_a = PORT_BY_DELTA[(dx, dy)]
+        adjacency[a][port_a] = b
+        adjacency[b][INVERSE[port_a]] = a
+    return pos, adjacency
+
