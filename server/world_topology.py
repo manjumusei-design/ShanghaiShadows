@@ -93,3 +93,39 @@ DISTRICT_OF = {
     "intelligence_bureau_annex": "Xujiahui",
     "hidden_altar_undercroft": "Xujiahui",
 }
+
+ZONE_TAG_OF_DISTRICT = {
+    "Bund": "bund",
+    "Nanjing Road": "nanjing_rd",
+    "Old City": "old_city",
+    "Hongkou": "hongkou",
+    "French Concession": "french",
+    "Yangpu": "yangpu",
+    "Zhabei": "zhabei",
+    "Xujiahui": "xujiahui",
+}
+
+
+class TopologyValidationError(Exception):
+    pass
+
+
+@dataclass(frozen=True)
+class Topology:
+    nodes: frozenset
+    district_of: dict
+    zone_tags: dict
+    exits: dict
+    coordinates: dict
+
+
+TABLE_PATH = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)),
+    "data", "map_presentation.json",
+)
+
+APPROVED_BRIDGE_AREA_PAIRS = frozenset({
+    frozenset((1, 2)), frozenset((2, 3)), frozenset((3, 4)),
+    frozenset((1, 5)), frozenset((2, 6)), frozenset((3, 7)),
+    frozenset((5, 6)), frozenset((6, 7)),
+})
