@@ -34,6 +34,14 @@ def ensure_items_identity(items) -> None:
             item.instance_id = f"{item.id}:{uuid4().hex}"
 
 
+def register_inventory_item(inventory: Any, item: Any) -> None:
+    identities = {getattr(carried, "instance_id", "") or "" for carried in inventory}
+    identity = getattr(item, "instance_id", "") or ""
+    if not identity or identity in identities:
+        item.instance_id = f"{item.id}:{uuid4().hex}"
+    inventory.append(item)
+
+
 def ensure_inventory_identity(player: Any) -> None:
     inventory = getattr(player, "inventory", [])
     slots = {
