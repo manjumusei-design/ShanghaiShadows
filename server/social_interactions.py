@@ -3,13 +3,13 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass
 import hashlib
 from pathlib import Path
-from typing import Any, Dict, Iterable, mapping
+from typing import Any, Dict, Iterable, Mapping
 
 import yaml
 
 from .npc_memory import NpcRelationship
 from .victory import _update_district_control
-
+from .content_validation import load_strict_yaml
 
 
 SOCIAL_INTERVAL_MINUTES = (20, 40)
@@ -26,7 +26,7 @@ ARCHETYPE_FALLBACKS = {
 @dataclass
 class SocialSchedule:
     next_action_minute: int
-    
+
     @classmethod
     def initial_for(cls, npc_id: str, current_minute: int) -> "SocialSchedule":
         offset = int(hashlib.sha256(npc_id.encode("utf-8")).hexdigest()[:8], 16) % 30
@@ -222,7 +222,8 @@ class SocialInteractionResolver:
         for item in list(source.inventory):
             if (item.get("id") if isinstance(item, dict) else getattr(item, "id", None)) == item_id:
                 source.inventory.remove(item)
-                recipient.inventory.append(item)
+                from .equipment import register_inventory_item
+                register_inventory_item(recipient.inventory, item)
                 return
 
     @staticmethod
@@ -244,7 +245,7 @@ class SocialInteractionResolver:
             remaining = max(0, DAILY_DISTRICT_INFLUENCE_CAP - already_applied)
             applied = min(max(0, int(amount)), remaining)
             if not applied:
-            continue
+                continue
             district_values = shared.district_influence.setdefault(district, {})
             district_values[faction] = max(0, min(100, district_values.get(faction, 0) + applied))
             _update_district_control(district, shared)
