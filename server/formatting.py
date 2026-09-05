@@ -75,3 +75,7 @@ def format_item_list(items: list) -> str:
 
 def format_exit(direction: str, destination: str) -> str:
     return f"{semantic_span(direction, 'exit')} ({semantic_span(destination, 'exit')})"
+
+
+def format_direction(direction: str) -> str:
+    return semantic_span(direction, "exit")
