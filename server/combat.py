@@ -26,7 +26,7 @@ def compute_effective_courage(
     attacker_morale: int,
     disguise_bonus: int = 0,
     courage_multiplier: float = 1.0,
-): 
+):
     effective_courage = attacker_courage
     if courage_multiplier != 1.0:
         effective_courage = int(attacker_courage * courage_multiplier)
@@ -83,7 +83,7 @@ def with_article(name: str) -> str:
         return f"an {name}"
     
     return f"a {name}"
-    
+
 
 @dataclass
 class CombatResult:
@@ -97,6 +97,7 @@ class CombatResult:
     messages: List[str] = field(default_factory=list)
     breakdown: str = ""
     sound_event: Optional["SoundEvent"] = None
+    attack_committed: bool = True
 
 
 _HIT_LINES = [
@@ -149,11 +150,11 @@ def resolve_attack(
                 msg = "Your weapon jams. The firing pin clicks on an empty chamber."
                 if backfire:
                     msg = "The weapon backfires! Hot metal burns your hand."
-                return CombatResult(won=False, instant_kill=False, silent=False, attacker_damaged=dmg,breakdown=f"Your {attacker_weapon.name} jams! (broken)", disarmed=False)
+                return CombatResult(won=False, instant_kill=False, silent=False, attacker_damaged=dmg,breakdown=f"Your {attacker_weapon.name} jams! (broken)", disarmed=False, attack_committed=False)
         elif attacker_weapon.durability <= 0:
             if random.random() < 0.20:
                 return CombatResult(won=False, instant_kill=False, silent=False,
-                                  breakdown=f"Your {attacker_weapon.name} fails! (broken)", disarmed=False)
+                                  breakdown=f"Your {attacker_weapon.name} fails! (broken)", disarmed=False, attack_committed=False)
 
     weapon_type = attacker_weapon.weapon_type if attacker_weapon else ""
     effective_courage, parts, defence, morale_pen = compute_effective_courage(
@@ -225,3 +226,35 @@ def degrade_armour(armour: "Item") -> tuple:
     if pct <= 20 and pct > 0:
         return False, f"Your {strip_article(armour.name)} is nearly destroyed ({pct}% durability)."
     return False, ""
+
+
+MILITARY_CURRENCY_FACTIONS = frozenset({"kempeitai", "german"})
+WEALTHY_BODY_LOOT_ROLES = frozenset({"vendor", "merchant"})
+SILVER_CARRY_CHANCE = 0.25
+MILITARY_YEN_RANGE = (5, 15)
+WEALTHY_FABI_RANGE = (8, 20)
+ORDINARY_FABI_RANGE = (2, 8)
+
+
+def is_wealthy_npc(npc) -> bool:
+    role = str(getattr(npc, "role", "")).lower()
+    return role in WEALTHY_BODY_LOOT_ROLES or bool(getattr(npc, "faction_leader", False))
+
+
+def body_currency_for(npc) -> tuple:
+    if getattr(npc, "faction", "") in MILITARY_CURRENCY_FACTIONS:
+        return random.randint(*MILITARY_YEN_RANGE), "military_yen"
+    if is_wealthy_npc(npc):
+        if random.random() < SILVER_CARRY_CHANCE:
+            return 1, "silver"
+        return random.randint(*WEALTHY_FABI_RANGE), "fabi"
+    return random.randint(*ORDINARY_FABI_RANGE), "fabi"
+
+
+def credit_body_currency(player, amount: int, currency: str) -> None:
+    wallet = {
+        "military_yen": "money_military_yen",
+        "silver": "money_silver",
+        "fabi": "money_fabi",
+    }[currency]
+    setattr(player, wallet, getattr(player, wallet) + amount)

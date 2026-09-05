@@ -1,7 +1,7 @@
 from pathlib import Path
 
+from .content_validation import ContentValidationError
 from .world import Item
-
 
 
 ITEMS_SOURCE = Path("server/data/items.yaml")
@@ -27,5 +27,6 @@ def grant_catalog_item(world, inventory: list[Item], item_id: str, *, contraband
         )
     if contraband:
         item.contraband_risk = True
-    inventory.append(item)
+    from .equipment import register_inventory_item
+    register_inventory_item(inventory, item)
     return item
