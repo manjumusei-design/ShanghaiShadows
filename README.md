@@ -7,7 +7,10 @@
 
 **Play it here:** <https://shanghai.dino.icu/login>
 
-I NEED TO RECORD A VIDEO FOR DEMO #TODO
+Video demonstration here:
+[Watch the Shanghai Shadows Demo](./images/ShanghaiShadows-demo.mp4)
+
+Limitations: NEST server is really laggy because of the proximity it is from my country to it, you might experience the same problem, it is not hardware related. It takes like 180mb of ram on the nest container.
 
 ## What Is It? / What Does It Do?
 
@@ -92,7 +95,7 @@ The interface went through a lot of iterations, and each one came from a specifi
 
 ![The final UI: map, vitals, terminal, and live state sidebar](images/ui-final.png)
 
-**Why the final build is better.**
+**Why the final build for the UI is just better.**
 
 Against my own earlier builds, each iteration solved a specific usability problem. Colours made the terminal easier to scan. Better room formatting made descriptions easier to read. Tab completion reduced the friction of typing commands. But one problem survived every redesign: the game’s state still lived in the scrollback.
 
@@ -109,7 +112,12 @@ I wanted to keep the part of that experience that made MUDs interesting to me in
 
 Tldr: You type when you want to change the world. You LOOK when you want to understand your current state. The terminal remains the place where the game happens, but it no longer has to be the place where every piece of information is stored and refreshed.
 
-![alt text](images/ui-final.png)
+![Final Uni](images/ui-final.png)
+
+
+![Weapons rust if you are outside for too long](image.png)
+Weapons rust if you are outside for too long in the rain for environmental realism which I plan to add more onto in the future.
+
 
 ### Running It Locally
 
@@ -162,7 +170,7 @@ Building this project taught me quite a lot:
 
 ## AI Disclosure
 
-I used AI tools while building this project. I asked questions when stuck on a concept, use it to speed up boilerplate and repetitive scaffolding and to consider possible edge cases that I may have missed out upon, get a second pair of eyes on bugs I was chasing in regards to edge cases, and draft text I then rewrote. The game's design, its systems, the historical research, the world and narrative direction, and every architectural decision are mine, and everything in this repo was reviewed, tested, debugged, and play-tested by me before shipping.
+I used AI tools while building this project. I asked questions when stuck on a concept, use it to speed up boilerplate and repetitive scaffolding and to consider possible edge cases that I may have missed out upon, get a second pair of eyes on bugs I was chasing in regards to edge cases, and draft text I then rewrote. The game's design, its systems, the historical research, the world and narrative direction, and every architectural decision are mine, and everything in this repo was reviewed, tested, debugged, and play-tested by me before shipping. Some UI components were also done with AI, but as this is a terminal based game it was kept to a minimum and mostly used for tag systems and css.
 
 
 ## Time spent on the project
