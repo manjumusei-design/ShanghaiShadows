@@ -8,7 +8,7 @@
 **Play it here:** <https://shanghai.dino.icu/login>
 
 Video demonstration here:
-[Watch the Shanghai Shadows Demo](./images/ShanghaiShadows-demo.mp4)
+[Watch the Shanghai Shadows Demo](./images/ShanghaiShadows_DemoCompressed.mp4)
 
 Limitations: NEST server is really laggy because of the proximity it is from my country to it, you might experience the same problem, it is not hardware related. It takes like 180mb of ram on the nest container.
 
