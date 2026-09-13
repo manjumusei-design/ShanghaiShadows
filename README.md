@@ -170,7 +170,7 @@ Building this project taught me quite a lot:
 
 ## AI Disclosure
 
-I used AI tools while building this project. I asked questions when stuck on a concept, use it to speed up boilerplate and repetitive scaffolding and to consider possible edge cases that I may have missed out upon, get a second pair of eyes on bugs I was chasing in regards to edge cases, and draft text I then rewrote. The game's design, its systems, the historical research, the world and narrative direction, and every architectural decision are mine, and everything in this repo was reviewed, tested, debugged, and play-tested by me before shipping. Some UI components were also done with AI, but as this is a terminal based game it was kept to a minimum and mostly used for tag systems and css.
+I used AI tools while building this project. I asked questions when stuck on a concept, use it to speed up boilerplate and repetitive scaffolding and to consider possible edge cases that I may have missed out upon, get a second pair of eyes on bugs I was chasing in regards to edge cases, and draft text I then rewrote. The game's design, its systems, the historical research, the world and narrative direction, and every architectural decision are mine, and everything in this repo was reviewed, tested, debugged, and play-tested by me before shipping. Some UI components were also done with AI, but as this is a terminal based game it was kept to a minimum and mostly used for tag systems and css. AI was also used to translate content from Mandarin to English and may come out a bit awkward but I for the future works, there will be a human team which will help with translations and localization for English.
 
 
 ## Time spent on the project
