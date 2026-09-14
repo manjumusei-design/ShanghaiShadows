@@ -115,7 +115,8 @@ Tldr: You type when you want to change the world. You LOOK when you want to unde
 ![Final Uni](images/ui-final.png)
 
 
-![Weapons rust if you are outside for too long](image.png)
+![Weapons rust if you are outside for too long](<img width="897" height="282" alt="Screenshot 2026-09-11 004323" src="https://github.com/user-attachments/assets/7048de4b-43e2-400f-b92e-6245e8824a49" />
+)
 Weapons rust if you are outside for too long in the rain for environmental realism which I plan to add more onto in the future.
 
 
