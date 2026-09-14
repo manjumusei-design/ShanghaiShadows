@@ -77,7 +77,7 @@ The interface went through a lot of iterations, and each one came from a specifi
 
 ![Colour-coded categories: exits, items, NPCs, tutorial hints](images/ui-colour-categories.png)
 
-**5. Making room entries breathe.** Room entry text got proper formatting: the room name is underlined as a heading, the atmospheric description sits in its own block, and tags like [safe] [indoors] sit on their own quiet line. The goal was that a room entry reads like a paragraph in a book, not a log dump. In the latest  rendition I moved the tags up to the right side of the UI.
+5. Room entry text got proper formatting: the room name is underlined as a heading, the atmospheric description sits in its own block, and tags like [safe] [indoors] sit on their own quiet line. The goal was that a room entry reads like a paragraph and not a verbose log dump. In the latest  rendition I moved the tags up to the right side of the UI.
 
 ![Tea House entry: underlined room name, prose block, quiet tags line](images/ui-room-formatting.png)
 
@@ -115,8 +115,8 @@ Tldr: You type when you want to change the world. You LOOK when you want to unde
 ![Final Uni](images/ui-final.png)
 
 
-![Weapons rust if you are outside for too long](<img width="897" height="282" alt="Screenshot 2026-09-11 004323" src="https://github.com/user-attachments/assets/7048de4b-43e2-400f-b92e-6245e8824a49" />
-)
+<img width="897" height="282" alt="Screenshot 2026-09-11 004323" src="https://github.com/user-attachments/assets/570a773b-8b93-4d2a-ba90-08dfb624a3f4" />
+
 Weapons rust if you are outside for too long in the rain for environmental realism which I plan to add more onto in the future.
 
 
