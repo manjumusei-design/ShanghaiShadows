@@ -139,6 +139,7 @@ export interface RoomData {
   npc_count?: number
   item_count?: number
   safe?: boolean
+  claimed?: boolean
   presentation_paths?: MapPresentationPath[]
 }
 
@@ -170,6 +171,7 @@ export interface RawMapRoom {
   npc_count?: number
   item_count?: number
   safe?: boolean
+  claimed?: boolean
   presentation_paths?: MapPresentationPath[]
 }
 
@@ -225,6 +227,7 @@ export function normalizeMapRooms(
       npc_count: r.npc_count,
       item_count: r.item_count,
       safe: r.safe,
+      claimed: r.claimed,
       presentation_paths: r.presentation_paths,
     }
   }
@@ -387,13 +390,13 @@ export default class MapRenderer {
     for (const room_key in this.renderRooms) {
       this.drawRoom(this.renderRooms[room_key], center_key)
     }
-    this.drawPlayerMarker(centerkey)
+    this.drawPlayerMarker(center_key)
 
     this.ctx.restore()
     this.last_center_key = center_key
   }
 
-  drawPlayerMaker(center_key: string) {
+  drawPlayerMarker(center_key: string) {
     const room = this.renderRooms[center_key]
     if (!room) return
     const x = (room.cx || 0) + this.unit
@@ -403,6 +406,7 @@ export default class MapRenderer {
     this.ctx.arc(x, y, this.unit * 0.32, 0, 2 * Math.PI)
     this.ctx.fill()
   }
+
   drawRoomConnections(room: RoomData) {
     if (this.map_mode === 'tutorial' && room.presentation_paths) {
       for (const path of room.presentation_paths) {
@@ -551,6 +555,12 @@ export default class MapRenderer {
       if (room.flags && room.flags.length) {
         this.drawRoomTab(x, y, room.flags, false)
       }
+    }
+    if (room.claimed) {
+      this.ctx.strokeStyle = COLORS.secondary
+      this.ctx.lineWidth = 2
+      this.ctx.strokeRect(x - 2, y - 2, w + 4, w + 4)
+      this.ctx.lineWidth = 1
     }
     if (room.up && room.down) {
       this.drawTriangle(x + 8, y + 5, { selected: true })
