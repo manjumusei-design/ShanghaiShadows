@@ -422,6 +422,7 @@ class SessionManager:
                 slot_id=slot.slot_id,
                 save_key=slot.save_key,
                 ephemeral=True,
+                pacing_enabled=True,
             )
         if not username:
             await websocket.send('{"type":"display","payload":"Username cannot be empty."}')
@@ -511,6 +512,7 @@ class SessionManager:
             audio_enabled=getattr(player, 'audio_enabled', True),
             slot_id=slot.slot_id,
             save_key=slot.save_key,
+            pacing_enabled=True,
         )
         from .storylet_cancellation import recover_cancellations
         try:
@@ -573,6 +575,7 @@ class SessionManager:
             ensure_tutorial_instance_for_player(session.player, self.shared)
             return await self._send_tutorial_map_data(session)
 
+        from .auth import resolve_spawn_room
         from .world import is_public_map_room
 
         visited = set(session.player.map_revealed)
@@ -624,6 +627,10 @@ class SessionManager:
                 "item_count": len(room.items) if hasattr(room, 'items') else 0,
                 "safe": room.safe_room if hasattr(room, 'safe_room') else False,
             }
+
+        claimed_id = getattr(session.player, "claimed_safehouse_id", "") or resolve_spawn_room(session.username) or ""
+        if claimed_id in rooms_data:
+            rooms_data[claimed_id]["claimed"] = True
 
         payload = {
             "rooms": rooms_data,
@@ -718,6 +725,9 @@ class SessionManager:
                 "npc_count": len(room.npcs) if hasattr(room, "npcs") else 0,
                 "item_count": len(room.items) if hasattr(room, "items") else 0,
                 "safe": room.safe_room if hasattr(room, "safe_room") else False,
+                "claimed": room_id == get_original_tutorial_room_id(
+                    instance_id, getattr(player, "claimed_safehouse_id", ""), self.shared
+                ),
                 "presentation_paths": presentation_paths.get(room_id, []),
             }
             for direction in blocked:
