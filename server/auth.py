@@ -18,7 +18,7 @@ def _get_db() -> AccountDB:
         _db = AccountDB()
         yaml_path = Path("server/data/accounts.yaml")
         if yaml_path.exists():
-            _db.migrate_from_yaml(sr(yaml_path))
+            _db.migrate_from_yaml(str(yaml_path))
     return _db
 
 
@@ -40,7 +40,7 @@ def invalidate_cache():
     _accounts_cache = None
 
 
-def _hash_password(oassword: str) -> str:
+def _hash_password(password: str) -> str:
     password = password.lower()
     salt = os.urandom(16).hex()
     hash_value = hashlib.sha256((salt + password).encode()).hexdigest()
@@ -50,13 +50,13 @@ def _hash_password(oassword: str) -> str:
 def _verify_password(password: str, stored_hash: str) -> bool:
     if not stored_hash:
         return False
-    
-    if stored_hash.startswith("$S2"):
+
+    if stored_hash.startswith("$2"):
         try:
             return bcrypt.checkpw(password.encode("utf-8"), stored_hash.encode("utf-8"))
         except Exception:
             return False
-        
+
     if "$" in stored_hash:
         salt, hash_value = stored_hash.split("$", 1)
         pw = password.lower()
@@ -85,7 +85,7 @@ def create_account(username: str, password: str) -> Account:
     return account
 
 
-def verify_password(username: str, password: str) -> Optional [Account]:
+def verify_password(username: str, password: str) -> Optional[Account]:
     key = username.strip().lower()
     cache = _load_cache()
     account = cache.get(key)
@@ -101,10 +101,10 @@ def add_character_to_account(username: str, character_slot: str) -> None:
     cache = _load_cache()
     account = cache.get(key)
     if not account:
-        raise Valueerror(f"Account '{username}' does not exist")
-    if charater_slot not in account.characters:
+        raise ValueError(f"Account '{username}' does not exist")
+    if character_slot not in account.characters:
         account.characters.append(character_slot)
-        _get_db().add_character(key, character_slot)
+    _get_db().add_character(key, character_slot)
 
 
 def list_characters(username: str) -> List[str]:
@@ -193,15 +193,15 @@ def create_living_slot(username: str, player, display_name: str = "") -> Charact
     db = _get_db()
     migrate_legacy_slots(key)
     if db.get_living_character_slot(key) is not None:
-        raise ValueError("account already has a living char slot")
+        raise ValueError("account already has a living character slot")
     pending = next(
         (
             candidate
             for candidate in db.list_character_slots(key)
-            if candidate.status == "unavailable" and candidate.unavbailable_reason == "slot_projection_pending"
+            if candidate.status == "unavailable" and candidate.unavailable_reason == "slot_projection_pending"
         ),
+        None,
     )
-    if pending is None:
     if pending is None:
         slot = db.create_character_slot(key, display_name or getattr(player, "name", "Stranger"), status="unavailable", unavailable_reason="slot_projection_pending")
     else:
@@ -242,6 +242,10 @@ def resolve_spawn_room(username: str) -> str:
     return ""
 
 
+def list_safehouse_sharers(room_id: str, exclude_username: str = "") -> list:
+    return _get_db().list_safehouse_sharers(room_id, exclude_username)
+
+
 def set_safehouse(username: str, room_id: str) -> None:
     key = username.strip().lower()
     cache = _load_cache()
@@ -258,13 +262,14 @@ def set_tutorial_complete(username: str, value: bool = True) -> None:
     account = cache.get(key)
     if not account:
         raise ValueError(f"Account '{username}' does not exist")
-    account.tutorial_complete =value
+    account.tutorial_complete = value
     _get_db().set_tutorial_complete(key, value)
 
 
 def get_stash(username: str) -> List[dict]:
     key = username.strip().lower()
     return _get_db().get_stash(key)
+
 
 def deposit_stash(username: str, items: List[dict]) -> None:
     key = username.strip().lower()
