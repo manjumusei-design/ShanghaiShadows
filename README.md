@@ -34,7 +34,7 @@ My gameplay loop is simple but more reactive where the player (who has 12 invent
 
 I made this MUD first and foremost because when I was reviewing projects  on Flavortown I came across [ForlornMUD](https://github.com/Snxhit/ForlornMUD) which is a MUD (Multi User Dungeon) that was themed around Flavortown built in Godot. I was pretty intrigued since I was under the perception that a MUD cant be that interesting, its literally text on a screen how will it ever be interesting? It sat at the back of my head for a few weeks and suddenly sprang up when I was in Shanghai visiting my grandparents they told me of stories during their time growing up as children in Shanghai, as well as what stories their parents had told them and the hardships they faced such as rationing and ration cards, secret police raids, resistance, and so on. This kinda clicked in my head because Shanghai as compared to the rest of China is relatively small and could work as a MUD to retell the stories my grandparents told me along with stories that I got from Chinese forums such as Tieba and Zhihu who discuss regularly about history. So after that moment it just clicked and I knew what I wanted to make. Also since the original project was written in Godot, I wanted to do it in python instead since I felt that Godot might be unnesecary and too powerful for the scope of a MUD game. 
 
-Now for the audience that I was targetting, I feel that this game would have some decent educational qualities as it is technically considered a history lesson bundled in a game so I settled that I wanted to keep this as a long horizon project and to get it super polished and then upload it to the middle school I graduated from as a game to teach middle and high schoolers on the axis occupation period. After doing some research I realized that I didnt really want it to be a main protagonist story where you defeat and liberate Shanghai from all of the evil bad guys since that didnt really happen and I wanted to focus on historical realism instead of revisionist history, thus I changed the gameplay loop to make the player/protagonist a nobody, a generic person in a sea of generic peoples that only wants to survive, explore and to be bounded by consequences of their own actions. Currently the project is still ongoing with a playable tutorial only, as school for me has started and I would like to complete the project in my own pace in another YSWS such as Stardance.
+Now for the audience that I was targetting, I feel that this game would have some decent educational qualities as it is technically considered a history lesson bundled in a game so I settled that I wanted to keep this as a long horizon project and to get it super polished and then upload or donate it to the middle school I graduated from as a game to teach middle and high schoolers on the axis occupation period. To clarify, this project was in no way shape or form sponsored by any third party and will be submitted only to Macondo but will remain open sourced. After doing some research I realized that I didnt really want it to be a main protagonist story where you defeat and liberate Shanghai from all of the evil bad guys since that didnt really happen and I wanted to focus on historical realism instead of revisionist history, thus I changed the gameplay loop to make the player/protagonist a nobody, a generic person in a sea of generic peoples that only wants to survive, explore and to be bounded by consequences of their own actions. Currently the project is still ongoing with a playable tutorial only, as school for me has started and I would like to complete the project in my own pace in another YSWS such as Stardance.
 
 ## How I Made It
 
@@ -77,7 +77,7 @@ The interface went through a lot of iterations, and each one came from a specifi
 
 ![Colour-coded categories: exits, items, NPCs, tutorial hints](images/ui-colour-categories.png)
 
-**5. Making room entries breathe.** Room entry text got proper formatting: the room name is underlined as a heading, the atmospheric description sits in its own block, and tags like [safe] [indoors] sit on their own quiet line. The goal was that a room entry reads like a paragraph in a book, not a log dump. In the latest  rendition I moved the tags up to the right side of the UI.
+5. Room entry text got proper formatting: the room name is underlined as a heading, the atmospheric description sits in its own block, and tags like [safe] [indoors] sit on their own quiet line. The goal was that a room entry reads like a paragraph and not a verbose log dump. In the latest  rendition I moved the tags up to the right side of the UI.
 
 ![Tea House entry: underlined room name, prose block, quiet tags line](images/ui-room-formatting.png)
 
@@ -115,7 +115,8 @@ Tldr: You type when you want to change the world. You LOOK when you want to unde
 ![Final Uni](images/ui-final.png)
 
 
-![Weapons rust if you are outside for too long](image.png)
+<img width="897" height="282" alt="Screenshot 2026-09-11 004323" src="https://github.com/user-attachments/assets/570a773b-8b93-4d2a-ba90-08dfb624a3f4" />
+
 Weapons rust if you are outside for too long in the rain for environmental realism which I plan to add more onto in the future.
 
 
@@ -170,7 +171,7 @@ Building this project taught me quite a lot:
 
 ## AI Disclosure
 
-I used AI tools while building this project. I asked questions when stuck on a concept, use it to speed up boilerplate and repetitive scaffolding and to consider possible edge cases that I may have missed out upon, get a second pair of eyes on bugs I was chasing in regards to edge cases, and draft text I then rewrote. The game's design, its systems, the historical research, the world and narrative direction, and every architectural decision are mine, and everything in this repo was reviewed, tested, debugged, and play-tested by me before shipping. Some UI components were also done with AI, but as this is a terminal based game it was kept to a minimum and mostly used for tag systems and css.
+I used AI tools while building this project. I asked questions when stuck on a concept, use it to speed up boilerplate and repetitive scaffolding and to consider possible edge cases that I may have missed out upon, get a second pair of eyes on bugs I was chasing in regards to edge cases, and draft text I then rewrote. The game's design, its systems, the historical research, the world and narrative direction, and every architectural decision are mine, and everything in this repo was reviewed, tested, debugged, and play-tested by me before shipping. Some UI components were also done with AI, but as this is a terminal based game it was kept to a minimum and mostly used for tag systems and css. AI was also used to translate content from Mandarin to English and may come out a bit awkward but I for the future works, there will be a human team which will help with translations and localization for English.
 
 
 ## Time spent on the project
