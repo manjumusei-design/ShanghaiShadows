@@ -196,7 +196,7 @@
         {{ connectionError }}
         <button @click="reconnect" class="reconnect-btn">Reconnect</button>
       </div>
-      <div class="terminal" ref="terminalEl" @click="inputEl?.focus()" @scroll="handleTerminalScroll">
+      <div class="terminal" ref="terminalEl" @click="handleTerminalClick" @scroll="handleTerminalScroll">
         <div
           v-for="msg in messages"
           :key="msg.id"
@@ -417,14 +417,23 @@ export default defineComponent({
       autoFollow.value = isNearBottom()
       if (autoFollow.value) hasUnreadOutput.value = false
     }
+    const hasTextSelection = (): boolean => {
+      const selection = window.getSelection()
+      return !!selection && selection.toString().length > 0
+    }
     const followOutput = () => {
       const el = terminalEl.value
       if (!el) return
-      if (autoFollow.value) {
-        el.scrollTop = el.scrollHeight
-      } else {
+      if (!autoFollow.value) {
         hasUnreadOutput.value = true
+        return
       }
+      if (hasTextSelection()) return
+      el.scrollTop = el.scrollHeight
+    }
+    const handleTerminalClick = () => {
+      if (hasTextSelection()) return
+      inputEl.value?.focus()
     }
     const jumpToBottom = () => {
       autoFollow.value = true

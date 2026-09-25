@@ -203,6 +203,8 @@ export default defineComponent({
     }
 
     const skipReveal = () => {
+      const selection = typeof window !== 'undefined' ? window.getSelection() : null
+      if (selection && selection.toString().length > 0) return
       if (isRevealing.value) completeReveal()
     }
 
